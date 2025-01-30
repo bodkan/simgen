@@ -3,8 +3,8 @@
 **A course on the fundamentals of population genomics and statistical inference,
 with a strong focus on good practices of reproducible research**
 
-_(Developed as part of the Twinning collaboration between University
-of Tartu and University of Copenhagen)_
+_(Developed as part of the **Twinning collaboration between University
+of Tartu and University of Copenhagen**)_
 
 ------------------------------------------------------------------------
 
