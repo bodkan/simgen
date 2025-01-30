@@ -252,7 +252,7 @@ to do the same!)
 
 
 
-# Exercise 1: Programming demographic models with _slendr_
+# Programming demographic models with _slendr_
 
 ### Part 1: Building a demographic model in _slendr_
 
@@ -769,7 +769,7 @@ ts_samples(ts) %>% group_by(pop, present_day = time == 0) %>% tally %>% select(p
 
 
 
-# Exercise 2: Computing popgen statistics on tree sequences from _slendr_
+# Computing popgen statistics on tree sequences from _slendr_
 
 In this exercise, you will build on top of the results from Exercise 1.
 Specifically, we will learn how to compute popgen statistics on _slendr_-simulated
@@ -1381,7 +1381,7 @@ distinct(all_f4s, abs(f4), .keep_all = TRUE)
 
 
 
-# Exercise 3: Simulation-based inference of $N_e$
+# Simulation-based inference of $N_e$
 
 So far we've learned how _slendr_ provides an easy way to define
 demographic models in R and simulate (even very large!) tree sequences from them.
@@ -1834,7 +1834,7 @@ delve into in the next exercise.
 
 
 
-# Exercise 4: Simulating (and detecting) natural selection
+# Simulating (and detecting) natural selection
 
 The primary motivation for designing _slendr_ was to make demographic modelling
 in R as trivially easy and fast as possible, focusing exclusively on neutral
@@ -2505,7 +2505,7 @@ on that tree sequence.
 <hr>
 
 
-# Exercise 5: Playing around with PCA patterns
+# Playing around with PCA patterns
 
 **Note:** We're unlikely to make it to this part, so this is extra bonus which
 can be ignored!
@@ -3017,14 +3017,29 @@ model <- landscape_model(rate = 0.3, Ne = 10000)
 
   samples <- ts_samples(ts)
 
-  ts_eigenstrat(ts, "data/spatial_pca")
+  ts_eigenstrat(ts, "data/spatial_pca1")
 
-  plot_pca("data/spatial_pca", ts, model = "map", color_by = "pop") 
+  plot_pca("data/spatial_pca1", ts, model = "map", color_by = "pop") 
 
 # }
 # dev.off()
+```
 
-# per-population Ne values ------------------------------------------------
+
+
+
+
+
+### Per-population Ne values
+
+```{r}
+library(slendr)
+init_env()
+
+library(admixr)
+library(cowplot)
+
+source("utils.R")
 
 Ne <- list(
   p1 = 10000,
@@ -3058,13 +3073,12 @@ schedule <- landscape_sampling(model, n)
 
 ts <- msprime(model, samples = schedule, sequence_length = 20e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
 
-ts_eigenstrat(ts, "data/spatial_pca")
+ts_eigenstrat(ts, "data/spatial_pca2")
 
-read_ind(eigenstrat("data/spatial_pca"))
-
+read_ind(eigenstrat("data/spatial_pca2"))
 ts_samples(ts)
 
-plot_pca("data/spatial_pca", ts, model = "map", color = "pop")
+plot_pca("data/spatial_pca2", ts, model = "map", color = "pop")
 ```
 
 
