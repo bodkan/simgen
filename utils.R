@@ -52,16 +52,25 @@ plot_tajima <- function(tajima_df) {
 
 # PCA ---------------------------------------------------------------------
 
-plot_pca <- function(prefix, ts, pc = c(1, 2), color_by = c("time", "pop"), return = c("plot", "pca", "both")) {
+plot_pca <- function(prefix, ts, pc = c(1, 2), model = c("map", "tree"),
+                     color_by = c("time", "pop"),
+                     return = c("plot", "pca", "both"),
+                     clear = FALSE) {
+  model <- match.arg(model, c("map", "tree"))
+  if (model == "map" && is.null(attr(ts, "model")$world))
+    model <- "tree"
+
   if (length(pc) != 2)
     stop("The 'pc' argument of 'plot_pca' must be an integer vector of length two", call. = FALSE)
 
-  samples <- ts_samples(ts) %>% mutate(pop = factor(pop, levels = c("popA", "popB", "popC")))
+  samples <- ts_samples(ts) #%>% mutate(pop = factor(pop, levels = c("popA", "popB", "popC")))
 
   return <- match.arg(return)
   color_by <- match.arg(color_by)
 
   tmp_pca <- file.path(tempdir(), paste0(basename(prefix), "_pca.rds"))
+  if (clear) unlink(tmp_pca)
+
   if (!file.exists(tmp_pca)) {
     message("PCA cache for the given EIGENSTRAT data was not found. Generating it now (this might take a moment)...")
     suppressMessages(pca <- smart_pca(snp_data = paste0(prefix, ".geno"), program_svd = "bootSVD", sample_group = samples$pop))
@@ -107,7 +116,10 @@ plot_pca <- function(prefix, ts, pc = c(1, 2), color_by = c("time", "pop"), retu
     gg_theme +
     ggtitle(paste0("EIGENSTRAT: ", prefix))
 
-  p_model <- plot_model(attr(ts, "model"), proportions = TRUE)
+  if (model == "tree")
+    p_model <- plot_model(attr(ts, "model"), proportions = TRUE)
+  else
+    p_model <- plot_map(attr(ts, "model"), gene_flow = TRUE, labels = TRUE)
 
   plot <- plot_grid(p_model, plot)
 

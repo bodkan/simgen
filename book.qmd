@@ -3,7 +3,7 @@ title: "Simulation-Based Population Genomics and Inference in R"
 subtitle: "A course on the fundamentals of population genomics and statistical inference, with a strong focus on good practices of reproducible research"
 author:
   - "Martin Petr"
-  - "[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)"
+  - "[CC BY SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)"
 #date: "January 2025"
 #date-format: "MMMM YYYY"
 format:
@@ -28,7 +28,7 @@ filters:
 
 ```{r}
 #| echo: FALSE
-RERUN <- FALSE
+RERUN <- TRUE
 ```
 
 
@@ -742,7 +742,7 @@ ts_samples(ts) %>% group_by(pop, present_day = time == 0) %>% tally %>% select(p
 :::
 
 
-<!-- End of Bonus exercises for Exercise 1 -->
+<!-- End of Bonus exercises -->
 
 
 
@@ -1347,7 +1347,7 @@ distinct(all_f4s, abs(f4), .keep_all = TRUE)
 ```
 :::
 ::::::
-<!-- End of Bonus exercises for Exercise 2 -->
+<!-- End of Bonus exercises -->
 
 
 
@@ -2106,7 +2106,7 @@ Eidos.
 
 
 **Take a look at the file `slim_extension.txt` provided in your working
-directory (it's also part of the GitHub repository [here](https://github.com/bodkan/cesky-krumlov-2025/blob/main/slim_extension.txt)).
+directory (it's also part of the GitHub repository [here](https://github.com/bodkan/simgen/blob/main/slim_extension.txt)).
 If you worked with SLiM before, glance through the script casually and see
 if it makes any sense to you. If you have not worked with SLiM before,
 look for the strange `{{elements}}` in curly brackets in the first ten lines
@@ -2221,7 +2221,7 @@ simulation result.
 2. The customized model will not only produce a tree sequence, but will
 also generate a table of allele frequencies in each population (SLiM experts
 might have noticed the revelant SLiM code when they were inspecting
-[`slim_extension.txt`](https://github.com/bodkan/cesky-krumlov-2025/blob/main/slim_extension.txt)). We need to be able to load both of these files after
+[`slim_extension.txt`](https://github.com/bodkan/simgen/blob/main/slim_extension.txt)). We need to be able to load both of these files after
 the simulation and thus need a path to a location we can find those files.
 We can do this by calling the `slim()` function as `path <- slim(..., path = TRUE)`
 (so with the extra `path =` argument). This will return a path to where the
@@ -2477,7 +2477,7 @@ on that tree sequence.
 
 
 :::
-<!-- End of Bonus exercises for Exercise 4 -->
+<!-- End of Bonus exercises -->
 
 
 
@@ -2726,7 +2726,7 @@ isn't doing anything magical -- it uses the [_smartsnp_ R package](https://chris
 to compute the principal components and visualize the results using _ggplot2_.
 This is something many of you could do given enough time but we want to focus
 on simulations and PCA, not pure R coding. If you're interested, take a look
-at my implementation of `plot_pca()` [here](https://github.com/bodkan/cesky-krumlov-2025/blob/main/utils.R#L15).
+at my implementation of `plot_pca()` [here](https://github.com/bodkan/simgen/blob/main/utils.R#L15).
 
 Here's how you can use this function (remeber that you need to put
 `source(here::here("utils.R"))` into your script!):
@@ -2958,7 +2958,7 @@ discovered for EUR/ASIAN/AFR/Indian populations.
 
 
 
-<!-- End of Bonus exercises for Exercise 5 -->
+<!-- End of Bonus exercises -->
 
 
 
@@ -2989,8 +2989,199 @@ discovered for EUR/ASIAN/AFR/Indian populations.
 
 
 
+## Spatial PCA
 
 
+**WIP:** Exploring how (and when) PCA patterns recapitulate geographical history of populations, inspired by this figure
+by Novembre _et al._ (2008).
+
+![Novembre et al., 2008](images/novembre2008a.jpg)
+
+```{r}
+library(slendr)
+init_env()
+
+library(admixr)
+library(cowplot)
+
+source("utils.R")
+
+model <- landscape_model(rate = 0.3, Ne = 10000)
+
+# pdf("exercise5.pdf", width = 8, height = 5)
+# for (n in c(50, 25, 10, 5, 2, 1)) {
+  n <- 10
+  schedule <- landscape_sampling(model, n)
+
+  ts <- msprime(model, samples = schedule, sequence_length = 20e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+
+  samples <- ts_samples(ts)
+
+  ts_eigenstrat(ts, "data/spatial_pca")
+
+  plot_pca("data/spatial_pca", ts, model = "map", color_by = "pop") 
+
+# }
+# dev.off()
+
+# per-population Ne values ------------------------------------------------
+
+Ne <- list(
+  p1 = 10000,
+  p2 = 10000,
+  p3 = 10000,
+  p4 = 10000,
+  p5 = 100,
+  p6 = 10000,
+  p7 = 10000,
+  p8 = 10000,
+  p9 = 10000,
+  p10 = 10000
+)
+
+model <- landscape_model(rate = 0.3, Ne = Ne)
+
+n <- list(
+  p1 = 50,
+  p2 = 50,
+  p3 = 50,
+  p4 = 50,
+  p5 = 5,
+  p6 = 50,
+  p7 = 50,
+  p8 = 50,
+  p9 = 50,
+  p10 = 50
+)
+
+schedule <- landscape_sampling(model, n)
+
+ts <- msprime(model, samples = schedule, sequence_length = 20e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+
+ts_eigenstrat(ts, "data/spatial_pca")
+
+read_ind(eigenstrat("data/spatial_pca"))
+
+ts_samples(ts)
+
+plot_pca("data/spatial_pca", ts, model = "map", color = "pop")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Ancestry tracts and chromosome painintg
+
+**WIP:** Extracting ancestry tracts, chromosome painting, and using
+admixture tracts and LD patterns for dating admixture events.
+
+```{r}
+library(slendr)
+init_env()
+
+library(cowplot)
+
+source("utils.R")
+
+popZ <- population("popZ", time = 3000, N = 5000)
+popX <- population("popX", time = 1500, N = 5000, parent = popZ)
+popY <- population("popY", time = 1500, N = 5000, parent = popZ)
+
+gf <- gene_flow(from = popX, to = popY, rate = 0.2, start = 800, end = 799)
+
+model <- compile_model(list(popZ, popX, popY), generation_time = 1, gene_flow = gf)
+
+schedule <- rbind(
+  schedule_sampling(model, times = seq(1500, 0, by = -100), list(popY, 50)),
+  schedule_sampling(model, times = 0, list(popX, 10), list(popZ, 10))
+)
+
+# Use the function plot_model() to make sure that the model and the sampling schedule
+# are defined correctly (there's no such thing as too many sanity checks when doing research)
+plot_model(model, proportions = TRUE, samples = schedule)
+
+ts <- msprime(model, samples = schedule, sequence_length = 100e6, recombination_rate = 1e-8)
+
+
+library(dplyr)
+library(ggplot2)
+
+tracts <- ts_tracts(ts, census = 800)
+tracts
+
+# Select sampled individuals from different ages (remember, we recorded oldest individuals
+# at 1000 generations ago, the youngest individuals at 0 generations ago). Use the function
+# plot_tracts to visualize their ancestry tracts. What do you see in terms of the number of
+# tracts and the length of tracts across these individuals? Can you eyeball some distinctive
+# pattern?
+
+subset_inds <- tracts %>% group_by(time) %>% distinct(name) %>% slice_sample(n = 1) %>% pull(name)
+subset_inds
+
+plot_tracts(tracts, subset_inds)
+
+# It looks like the older individual is, the closer they lived to the start of the admixture event,
+# and the longer the tracts they carry will be. Compute the average length of a ancestry tracts in each
+# sample age group and visualize the length distribution of these tracts based on their age:
+
+tracts %>%
+  group_by(time) %>%
+  summarise(mean(length))
+
+ggplot(tracts, aes(length, color = factor(time))) +
+  geom_density() +
+  coord_cartesian(xlim = c(0, 3e6)) +
+  theme_bw()
+
+
+# Now, try to work backwards. Assuming you have the following distribution of tract lengths...
+
+tracts <- filter(tracts, time == 0, length <= 1e6)
+bins <- hist(tracts$length, breaks = 50, plot = FALSE)
+length <- bins$mids
+density <- bins$density
+
+plot(length, density)
+
+lambda_mle <- 1 / mean(tracts$length)
+lambda_mle / 1e-8
+
+y_mle <- dexp(length, rate = lambda_mle)
+lines(length, y_mle, lty = 2, col = "darkgreen", lwd = 2)
+
+nls_res <- nls(density ~ SSasymp(length, Asym, R0, lrc))
+nls_res
+
+lambda_nls <- exp(unname(coef(nls_res)["lrc"]))
+lambda_nls / 1e-8
+
+y_nls <- predict(nls_res, newdata = data.frame(length = length))
+lines(length, y_nls, lty = 2, col = "purple", lwd = 2)
+
+legend("topright", fill = c("darkgreen", "purple"),
+       legend = c(paste("MLE, t =", round(lambda_mle / 1e-8, 1), "generations ago"),
+                  paste("MLE, t =", round(lambda_nls / 1e-8, 1), "generations ago")))
+
+```
 
 
 
