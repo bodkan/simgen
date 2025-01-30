@@ -2,7 +2,7 @@
 # in the activity based on the solutions provided in the exercises.qmd file.
 
 install.packages(c("slendr", "combinat", "cowplot", "dplyr", "readr",
-                   "tidyr", "ggplot2", "rmarkdown", "yaml"))
+                   "tidyr", "ggplot2", "rmarkdown", "yaml", "smartpca"))
 
 library(slendr)
 setup_env(agree = TRUE)

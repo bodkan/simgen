@@ -4,10 +4,10 @@ suppressPackageStartupMessages({
   library(ggplot2)
   library(tidyr)
   library(readr)
-  # library(ggrepel)
-  # library(smartsnp)
-  # library(scales)
-  # library(viridis)
+  library(ggrepel)
+  library(smartsnp)
+  library(scales)
+  library(viridis)
 })
 
 # Tajima's D --------------------------------------------------------------
