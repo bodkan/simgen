@@ -1,9 +1,3 @@
----
-format:
-  html:
-    embed-resources: true
----
-
 # Simulation-Based Population Genomics and Inference in R
 
 **A course on the fundamentals of population genomics and statistical inference,
