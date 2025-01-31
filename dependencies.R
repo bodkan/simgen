@@ -2,6 +2,7 @@
 # in the activity based on the solutions provided in the exercises.qmd file.
 
 install.packages(c("slendr", "combinat", "cowplot", "dplyr", "readr", "admixr",
+                   "sf", "stars", "rnaturalearth",
                    "ggrepel", "viridis", "tidyr", "ggplot2", "rmarkdown", "yaml", "smartsnp"))
 
 library(slendr)
