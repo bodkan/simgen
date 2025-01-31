@@ -18,6 +18,4 @@ all: slides handouts exercises
 #	git add handouts.html; git commit -m "Update handouts.html"; git push
 
 book:
-	quarto render book.qmd -o book.html
-	quarto publish quarto-pub --id 8e5cfd98-1d99-48e8-8045-070ea7562ae4 book.qmd
-	git add book*; git commit -m "Update book"; git push
+	quarto publish gh-pages
