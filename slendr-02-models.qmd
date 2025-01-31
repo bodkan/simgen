@@ -1,0 +1,522 @@
+---
+filters: 
+ - collapse-callout.lua
+---
+
+# Programming demographic models with _slendr_
+
+## Part 1: Building a demographic model in _slendr_
+
+**Use functions such as `population()`, `gene_flow()`, and `compile_model()`,
+which we discussed in the "crash course" at the
+start of this session, to program the following toy model of human demographic
+history in _slendr_.** (Apologies for my bad handwriting and poor artistic
+ability.)
+
+![](images/intro_model1.png){width="50%"}
+
+::: {.aside}
+**Note:** You could easily program the model so that different ancestral
+populations are represented by separate `population()` commands (i.e.,
+your model would start with a population called "human_chimp_ancestor" from
+which a "CHIMP" and "hominin_ancestor" populations would split at 6 Mya, etc.) but
+generally this is too annoying to do and requires too much code.
+
+Feel free to write the model so that "CHIMP" is the first population, then
+"AFR" population splits from it at 6 Mya, etc... Although it probably isn't
+the most accurate way to describe the real evolutionary history, it simplifies
+the coding significantly.
+
+<br>
+[Mya = million years ago;  kya = thousand years ago]
+:::
+
+
+**Hint:** Create a new script `exercise1.R` in your RStudio session using the following "template". Then add a sequence of appropriate `population()` calls using
+the syntax from the introductory slides (using the `parent = <pop>` argument
+for programming splits of daughter populations -- which will be all except
+the CHIMP lineage in our example), etc.
+
+```{r}
+#| eval: false
+#| code-fold: false
+library(slendr)
+init_env()
+
+# <replace this with `population()` definitions like in the slides>
+# <replace this with your gene-flow definition in variable `gf`>
+
+model <- compile_model(
+  populations = list(...), # <put your list of populations here>
+  gene_flow = gf,
+  generation_time = 30
+)
+```
+
+::: aside
+**Note:** With _slendr_ you can specify time in whatever format is more convenient or readable for your model. For instance here, because we're dealing with historical events which are commonly expressed in times given as"years ago", we can write them in a decreasing order – i.e. 7Mya → 6Mya → ..., as shown above – or, in terms of R code, 7e6 (or 7000000), 6e6 (6000000), etc.
+
+In a later example, you will see that you can also encode the events in the time
+direction going "forward" (i.e., the first event starting in generation 1, a
+following event in generation 42, and so on).
+:::
+
+**Hint:** Remember that _slendr_ is designed with interactivity in mind!
+When you write a chunk of code (such as a command to create a population
+through a population split, or model compilation to create a `model` object),
+execute that bit of code in the R console and inspect the summary information
+printed by evaluating the respective R object you just created. You can either
+copy-pasted stuff from your script to the R console, or use a convenient 
+RStudio shortcut like Ctrl+Enter (Linux and Windows), or Cmd+Enter (Mac).
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+#| collapse: true
+library(slendr)
+init_env()
+
+# Chimpanzee outgroup
+chimp <- population("CHIMP", time = 7e6, N = 5000)
+
+# Two populations of anatomically modern humans: Africans and Europeans
+afr <- population("AFR", parent = chimp, time = 6e6, N = 15000)
+eur <- population("EUR", parent = afr, time = 70e3, N = 3000)
+
+# Neanderthal population splitting at 600 ky ago from modern humans
+# (becomes extinct by 40 ky ago)
+nea <- population("NEA", parent = afr, time = 600e3, N = 1000, remove = 40e3)
+
+# Neanderthal introgression event (3% admixture between 55-50 kya)
+gf <- gene_flow(from = nea, to = eur, rate = 0.03, start = 55000, end = 50000)
+
+# Compile the entire model into a single slendr R object
+model <- compile_model(
+  populations = list(chimp, nea, afr, eur),
+  gene_flow = gf,
+  generation_time = 30,
+  path = here::here("data/introgression"),  # <--- don't worry about these two
+  overwrite = TRUE, force = TRUE            # <--- lines of code (ask me if interested)
+)
+```
+:::
+
+## Part 2: Inspecting the model visually
+
+To visualize a _slendr_ model, you use the function `plot_model()`.
+**Plot your compiled `model` to make sure you programmed it correctly!**
+Your figure should roughly correspond to my doodle above.
+
+::: aside
+**Note:** Plotting of models in _slendr_ can be sometimes a little wonky,
+especially if many things are happening at once. When plotting your
+model, experiment with arguments `log = TRUE`, `proportions = TRUE`,
+`gene_flow = TRUE`. Check `?plot_model` for more information on these.
+:::
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+#| collapse: false
+plot_model(model)
+plot_model(model, sizes = FALSE)
+plot_model(model, sizes = FALSE, log = TRUE)
+plot_model(model, log = TRUE, proportions = TRUE)
+```
+:::
+
+## Part 3: Simulating genomic data
+
+Once you have a compiled _slendr_ model stored in an R variable (from now on,
+`model` will always mean a variable containing a compiled _slendr_ model object relevant for the given exercise,
+for simplicity), we can simulate data from it. By default, _slendr_ models
+always produce a [tree sequence](https://tskit.dev/tutorials/what_is.html).
+
+::: {.aside}
+**Note:** Tree sequence provides an extremely efficient means to store and
+work with genomic data at a massive scale. However, you can always get
+simulated data even in [traditional file formats](https://www.slendr.net/reference/index.html#tree-sequence-format-conversion),
+such as VCF, EIGENSTRAT, or a plain old table of ancestral/derived genotypes.
+
+In this activity we will be only working with tree sequences, because it's much
+easier and faster to get interesting statistics from it directly in R.
+:::
+
+There are two simulation engines built into _slendr_ implemented by functions
+`msprime()` and `slim()`. For traditional, non-spatial, neutral demographic
+models, the engine provided by the `msprime()` function is much more efficient,
+so we'll be using that for the time being. However, from a popgen theoretical perspective, both simulation functions
+will give you the same results for any given compiled _slendr_ model (up to
+some level of stochastic noise, of course).
+
+::: aside
+**Note:** Yes, this means you don't have to write any _msprime_ (or SLiM) code
+to simulate data from a _slendr_ model!
+:::
+
+Here's how you can use the function to simulate a tree sequence from the
+model you've just created using `compile_model()` in your script:
+
+```{r}
+#| eval: false
+#| code-fold: false
+ts <- msprime(
+  model,
+  sequence_length = <length of sequence to simulate [as bp]>,
+  recombination_rate = <uniform recombination rate [per bp per generation]>
+)
+```
+
+You will be seeing this kind of pattern over and over again in this exercise, so
+it's a good idea to keep it in mind.
+
+
+**Hint:** The `msprime()` function has also arguments `debug` and `run` which can be extremely useful for debugging.
+
+**Simulate a tree sequence from your compiled `model` using the `msprime()`
+engine, storing it to a variable `ts` as shown right above.
+Use `sequence_length = 1e6` (so 1 Mb of sequence) and `recombination_rate = 1e-8` (crossover events per base pair per generation). Then experiment with
+setting `debug = TRUE` (this prints out _msprime_'s own debugging summary
+which you might already be familiar with from your previous activity?) and
+then `run = FALSE` (this prints out a raw command-line which can run a _slendr_
+simulation in the shell).**
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+#| collapse: true
+# This simulates a tskit tree sequence from a slendr model. Note that you didn't have
+# to write any msprime or tskit Python code!
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+
+# Setting `debug = TRUE` instructs slendr's built-in msprime script to print
+# out msprime's own debugger information. This can be very useful for debugging,
+# in addition to the visualization of the model as shown above.
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, debug = TRUE)
+
+# For debugging of technical issues (with msprime, with slendr, or both), it is
+# very useful to have the `msprime` function dump the "raw" command-line to
+# run the simulation on the terminal using plain Python interpreter
+msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, run = FALSE)
+```
+:::
+
+## Part 4: Inspecting the tree-sequence object
+
+As we will see later, _slendr_ provides an R-friendly interface to
+accessing a [subset of _tskit_'s functionality](https://tskit.dev/tskit/docs/stable/python-api.html)
+for working with tree sequences and for computing various popgen statistics.
+
+For now, **type out the `ts` object in the terminal – what do you see?** You
+should get a summary of a tree-sequence object that you're familiar with from
+your _msprime_ and _tskit_ activity earlier in the day.
+
+::: {.aside}
+**Note:** This is a very important feature of _slendr_ -- when a simulation is
+concluded (doesn't matter if it was a `slim()` or `msprime()` simulation),
+you will get a normal _tskit_ object. In fact, the fact that _slendr_ supports
+(so far, and likely always) only a "subset" of all of _tskit_'s functionality
+isn't stopping you to write custom Python/_tskit_ processing code of a tree
+sequence generated from a _slendr_ model. Under the hood, a _slendr_ simulation
+_really is_ just an _msprime_ (or SLiM) simulation! It's just executed through
+a simplified interface.
+:::
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+# Typing out the object with the result shows that it's a good old tskit
+# tree-sequence object
+ts
+```
+:::
+
+The brilliance of the tree-sequence data structure rests on its elegant
+table-based implementation (much more information on that is [here](https://tskit.dev/tskit/docs/stable/data-model.html)). _slendr_ isn't
+really designed to run very complex low-level manipulations of tree-sequence
+data (its strength lies in the convenient interface to popgen statistical
+functions implemented by _tskit_), but it does contain a couple of functions
+which can be useful for inspecting the lower-level nature of a tree sequence.
+Let's look at a couple of them now.
+
+**Use the `ts_table` function to inspect the low-level table-based representation of a tree sequence.** For instance, you can get the table of nodes with `ts_table(ts, "nodes")`, edges with `ts_table(ts, "edges")`, and do the same thing for "individuals", "mutations", and "sites". **Does your tree sequence contain any mutations? If not, why, and how can we even do any popgen with data without any mutations? As you're doing this, take a look at at the [following
+figure](https://tskit.dev/tutorials/_images/0327585c23c21d289094cc6394cc71ecc7e43f14197d7961b9d759c5abcc0e29.svg) (this was made from a different tree sequence than you have, but that's
+OK) to help you relate the information in the tables to a tree sequence which
+those tables (particularly tables of nodes and edges) implicitly encode.**
+
+This should convince you that the final product of a _slendr_ simulation
+really is the same kind of tree-sequence object that you learned about in
+the previous activities today. You don't have to study these tables in
+detail!
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+# slendr provides a helper function which allows access to all the low-level
+# components of every tree-sequence object
+ts_table(ts, "nodes")
+ts_table(ts, "edges")
+ts_table(ts, "individuals")
+# We didn't simulate any mutations, so we only have genealogies for now.
+ts_table(ts, "mutations")
+ts_table(ts, "sites")
+```
+:::
+
+There are also two _slendr_-specific functions called `ts_samples()` (which
+retrieves the "symbolic names" and dates of all recorded individuals at
+the end of a simulation) and `ts_nodes()`. **You can run them simply as
+`ts_samples(ts)` and `ts_nodes(ts)`. How many individuals (samples) are
+in your tree sequence as you simulated it? How is the result of `ts_nodes()`
+different from `ts_samples()`?**
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+# slendr provides a convenient function `ts_samples()` which allows us to
+# inspect the contents of a simulated tree sequence in a more human-readable,
+# simplified way. We can see that our tree sequence contains a massive number
+# of individuals. Too many, in fact -- we recorded every single individual alive
+# at the end of our simulation, which is something we're unlikely to be ever lucky
+# enough to have, regardless of which species we study.
+ts_samples(ts)
+ts_samples(ts) %>% nrow()
+
+library(dplyr)
+ts_samples(ts) %>% group_by(pop) %>% tally
+
+# This function returns a table similar to the one produced by `ts_table(ts, "nodes")`
+# above, except that it contains additional slendr metadata (names of individuals
+# belonging to each node, spatial coordinates of nodes for spatial models, etc.).
+# It's a bit more useful for analyzing tree-sequence data than the "low-level" functions.
+ts_nodes(ts) %>% head(5)
+
+ts_nodes(ts) %>% tail(5)
+```
+:::
+
+## Part 5: Scheduling sampling events
+
+In the table produced by the `ts_samples()` function you saw that the tree
+sequence we simulated recorded _everyone_. It's very unlikely, unless we're
+extremely lucky, that we'll ever have a sequence of every single individual
+in a population that we study. To get a little closer to the scale of the
+genomic data that we usually work with on a day-to-day basis, we can restrict
+our simulation to only record a subset of individuals.
+
+We can precisely define which individuals (from which populations, and at which times) should be recorded in a tree sequence using the _slendr_ function `schedule_sampling()`. For instance, if we have a `model` with some _slendr_ populations in variables `eur` and `afr`, we can schedule the recording of 5 individuals from each at times 10000 (years ago) and 0 (present-day) (using
+the "years before present" direction of time in our current model of
+Neanderthal introgression) with the following code:
+
+```{r}
+#| eval: false
+pop_schedule <- schedule_sampling(model, times = c(10000, 0), list(eur, 5), list(afr, 5))
+```
+
+This function simply returns a data frame. As such, we can create multiple of such schedules (of arbitrary complexity and granularity), and then bind them together into a single sampling schedule with a single line of code, like this:
+
+```{r}
+#| eval: false
+
+# Note that the `times =` argument of the `schedule_sampling()` function can be
+# a vector of times like here...
+ancient_times <- c(40000, 30000, 20000, 10000)
+eur_samples <- schedule_sampling(model, times = ancient_times, list(eur, 1))
+
+# ... but also just a single number like here
+afr_samples <- schedule_sampling(model, times = 0, list(afr, 1))
+nea_samples <- schedule_sampling(model, time = 60000, list(nea, 1))
+
+# But whatever the means you create the individual sampling schedules with,
+# you can always bind them all to a single table with the `rbind()` function
+schedule <- rbind(eur_samples, afr_samples, nea_samples)
+schedule
+```
+
+**Using the function `schedule_sampling` (and with the help of `rbind` as
+shown in the previous code chunk), program the sampling of the following
+sample sets at given times, saving it to variable called `schedule`:**
+
+| time  | population | \# individuals |
+|-------|:-----------|----------------|
+| 70000 | nea        | 1              |
+| 40000 | nea        | 1              |
+| 0     | chimp      | 1              |
+| 0     | afr        | 5              |
+| 0     | eur        | 10             |
+
+**Additionally, schedule the sampling of a single `eur` individual at the
+following times:**
+
+```{r}
+t <- seq(40000, 2000, by = -2000)
+```
+
+::: aside
+**Note:** You can provide a vector variable (such as `t` in this example) as the
+`times =` argument of `schedule_sampling()`.
+:::
+
+**In total, you should schedule the recording of 38 individuals.**
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+# Here we scheduled the sampling of two Neanderthals at 70kya and 40kya
+nea_samples <- schedule_sampling(model, times = c(70000, 40000), list(nea, 1))
+nea_samples # (this function produces a plain old data frame!)
+
+# Here we schedule one Chimpanzee sample, 5 African samples, and 10 European samples
+present_samples <- schedule_sampling(model, times = 0, list(chimp, 1), list(afr, 5), list(eur, 10))
+
+# We also schedule the recording of one European sample between 50kya and 2kya,
+# every 2000 years
+times <- seq(40000, 2000, by = -2000)
+emh_samples <- schedule_sampling(model, times, list(eur, 1))
+
+# Because those functions produce nothing but a data frame, we can bind
+# individual sampling schedules together
+schedule <- rbind(nea_samples, present_samples, emh_samples)
+schedule
+```
+:::
+
+**Then, verify the correctness of your overall sampling `schedule` by visualizing
+it together with your `model` like this:**
+
+::: aside
+**Note:** As you've seen above, the visualization is often a bit wonky and convoluted with overlapping elements and it can be even worse with samples added, but try to experiment with arguments to `plot_model` described above to make the plot a bit more helpful for sanity checking.
+:::
+
+```{r}
+#| eval: false
+plot_model(model, samples = schedule)
+```
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+plot_model(model, sizes = FALSE, samples = schedule)
+```
+
+```{r}
+plot_model(model, sizes = FALSE, log = TRUE, samples = schedule)
+```
+:::
+
+## Part 6: Simulating a defined set of individuals
+
+You have now both a compiled _slendr_ `model` and a well-defined sampling `schedule`.
+
+**Use your combined sampling schedule stored in the `schedule` variable to run a
+new tree-sequence simulation from your model (again using the `msprime()` function),
+this time restricted to just those individuals scheduled for recording. You can
+do this by providing the combined sampling `schedule` as the `samples = schedule` argument
+of the function `msprime` you used above.** Just replace the line(s) with your first
+`msprime()` from the previous part of this exercise with the new one, which
+uses the `schedule` for customized sampling.
+
+**Also, while you're doing this, use the `ts_mutate()` function to 
+overlay neutral mutations on the simulated tree sequence right after the
+`msprime()` call.** (Take a look at the handounts for a reminder of the `%>%`
+pipe patterns I showed you.)
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+#| echo: false
+model <- read_model(here::here("data/introgression"))
+ts <- ts_read(file = here::here("data/introgression.trees"), model = model)
+```
+
+```{r}
+#| eval: false
+# The command below will likely take a few minutes to run, so feel free to go
+# down from 100 Mb sequence_length to even 10Mb (it doesn't matter much).
+# (The `random_seed =` argument is there for reproducibility purposes.)
+ts <-
+  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>%
+  ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)
+# Time difference of 2.141642 mins
+
+# If you're bothered by ho long this takes, feel free to call these two lines
+# to 100% reproduce my results without any expensive computation:
+model <- read_model(here::here("data/introgression"))
+ts <- ts_read(here::here(file = "data/introgression.trees"), model = model)
+
+# We can save a tree sequence object using a slendr function `ts_write` (this
+# can be useful if we want to save the results of a simulation for later use).
+dir.create("data", showWarnings = FALSE)
+ts_write(ts, "data/introgression.trees")
+```
+:::
+
+**Inspect the tree-sequence object saved in the `ts` variable by typing
+it into the R console again** (this interactivity really helps with catching
+nasty bugs early during the programming of your script). **You can
+also do a similar thing via the table produced by the `ts_samples()` function.
+You should see a much smaller number of individuals being recorded, indicating
+that the simulation was much more efficient and produced genomic data for
+only the individuals of interest.**
+
+::: aside
+**Note:** When you think about it, it's actually quite astonishing how fast
+_msprime_ and _tskit_ are when dealing with such a huge amount of sequence
+data from tens of thousands of individuals on a simple laptop!
+:::
+
+::: callout-note
+#### Click to see the solution
+
+```{r}
+# Inspect the (tskit/Python-based) summary of the new tree sequence
+# (note the much smaller number of "sample nodes"!)
+ts
+
+# Get the table of all recorded samples in the tree sequence
+ts_samples(ts)
+
+# Compute the count of individuals in different time points
+library(dplyr)
+
+ts_samples(ts) %>% group_by(pop, present_day = time == 0) %>% tally %>% select(present_day, pop, n)
+```
+:::
+
+
+<!-- End of Bonus exercises -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
