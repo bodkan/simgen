@@ -17,7 +17,7 @@ RERUN <- TRUE
 
 
 
-# Introduction to _slendr_
+# Simulations with _slendr_ {.unnumbered}
 
 
 
@@ -52,31 +52,60 @@ RERUN <- TRUE
 
 
 
-::: callout-note
-#### Setup on your own computer
+## Installation and setup {.unnumbered}
 
-**If you want to set up everything on your local machine from scratch
-(maybe after the course is over and you want to return to the material on
-yor own), just follow the couple of steps right below.**
+The easiest way to set up everything on your computer is to download all of
+the book materials (text, code, data, everything) to your machine
+by following these steps:
 
-1. **Clone the repository with the activity materials**. In a shell terminal on
+1. **Clone the repository with the course materials**. In a shell terminal on
 Linux or macOS, in your home directory (or anywhere else, really) you can run:
 
     ```         
     $ git clone https://github.com/bodkan/simgen ~/simgen
     ```
 
-(For Windows users: You can download a zip file with the whole course
-even without git.)
+(For Windows users only: You should be able to do all of this on Windows too, but
+that would require you having some kind of Linux environment (terminal, R, etc.)
+already set up. Unfortunately I don't know much about that so my recommendation
+is that, if you do use Windows, just do the exercises on the cloud instance
+provided by the course organizers.)
 
-2. **Open RStudio and install all of the following dependencies:**
+2. **Install all R package dependencies** by going into the activity repository
+directory you just cloned and installing the necessary R packages by following
+these steps:
+
+- First **go into the project directory you just cloned**:
 
     ```         
-    > install.packages(c("slendr", "combinat", "cowplot", "dplyr", "readr",
-                         "tidyr", "ggplot2", "rmarkdown", "yaml"))
+    $ cd ~/simgen
     ```
 
-3. **Set up the Python environment used by the _slendr_ R package** for simulation and tree-sequence analysis (still in the R console!):
+- **Open the R terminal in that directory**. You should get a note that the _renv_
+package is being automatically setup, like this:
+
+    ```         
+    $ R
+
+    [... R startup information stuff ...]
+
+    # Bootstrapping renv 1.0.11 --------------------------------------------------
+    - Downloading renv ... OK
+    - Installing renv  ... OK
+
+    - Project '~/simgen' loaded. [renv 1.0.11]
+    - One or more packages recorded in the lockfile are not installed.
+    - Use `renv::status()` for more details.
+    ```
+
+- **Install R package dependencies** (still in the R console!):
+
+    ```         
+    > renv::restore(prompt = FALSE)
+    ```
+
+-   **Set up the Python environment** used by the _slendr_ R package for simulation
+and tree-sequence analysis (still in the R console!):
 
     ```         
     > slendr::setup_env(agree = TRUE)
@@ -93,9 +122,10 @@ even without git.)
     =======================================================================
     ```
 
-4. **Open your RStudio (unless you did the above steps already in RStudio)**, and you're good to go!
-
----
+4. **Open the repository directory in RStudio** (on your laptop if you cloned
+the repository there, or in your browser if you're using the provided cloud
+instance) and navigate to the book repository directory via `File -> Open Project...`
+in the RStudio menu, opening the `simgen.Rproj` file.
 
 **If the `setup_env()` installation procedure fails, try the following:**
 
@@ -111,19 +141,6 @@ slendr::clear_env(force = TRUE, all = TRUE)
 slendr::setup_env(agree = TRUE, pip = TRUE)
 ```
 
-In every previous installments of this workshop, this is all that was needed to resolve problems.*
-
----
-
-**Installing SLiM**
-
-It's unclear whether we will manage to go through the entirety of the
-selection-based exercise. However, to be able to do this, having SLiM at
-least version 4.2 (and it being available in your unix `$PATH!`) is required. If this isn't possible for your, don't worry. You'll be able to do most of
-that exercise even without SLiM by using cached results of the SLiM
-simulation that I provided.
-
-:::
 
 
 
@@ -152,8 +169,7 @@ simulation that I provided.
 
 
 
-
-# Organization of the exercises
+# Organization of the exercises {.unnumbered}
 
 For each exercise, you will get a brief explanation of the problem at hand and
 some information about functions that could be useful to solve the exercise.
@@ -170,25 +186,6 @@ one upon the other in the order they are specified. As you progress through
 sequential parts of each exercise, you will be adding code to your script for
 that exercise.**
 
-#### Don't worry about the number of exercises you're _"supposed to do"_
-
-How far we manage to crunch through the content of this session will depend on
-everybody's level of confidence in programming _and_ population genetics.
-The contents of the activities as a whole are designed so that no matter
-the moment at which we run out of time, you will take home enough knowledge of
-_slendr_ to be able to immediately apply it to your own projects.
-
-**To avoid anyone getting overwhelmed, I'll be stopping the activity at
-some "checkpoints", to check in with how everything is going and quickly go
-through the example solutions for the parts until that point, and give a quick
-explanation.**
-
-If you find yourself way ahead, there are bonus exercises (which I will not be
-going through with everyone) -- those should provide at entertainment and
-a bit more challenge for you while the rest of us are catching up. If you're
-_really_ far ahead, just continue to the next exercise without waiting for
-the rest of us.
-
 #### Note on the programming aspect of the exercises
 
 All the exercises will involve "real coding"! If you've never really programmed
@@ -198,7 +195,7 @@ hidden) under each exercise part. Always try to work on a solution on your
 own, but never let this be a barrier to your progress. Feel free to copy-paste
 bits of my solutions into your own scripts.
 
-If you find yourself [_totally lost_](https://scryfall.com/card/gtc/54/totally-lost),
+If you find yourself totally lost,
 don't hesitate to read my solutions from the get go, copy-pasting them into your
 own script in the RStudio, executing them line by line, and trying to understand
 what's going on. **It's the understanding that we're after here. Whether or not
@@ -238,7 +235,7 @@ to do the same!)
 
 # Programming demographic models with _slendr_
 
-### Part 1: Building a demographic model in _slendr_
+## Part 1: Building a demographic model in _slendr_
 
 **Use functions such as `population()`, `gene_flow()`, and `compile_model()`,
 which we discussed in the "crash course" at the
@@ -335,7 +332,7 @@ model <- compile_model(
 ```
 :::
 
-### Part 2: Inspecting the model visually
+## Part 2: Inspecting the model visually
 
 To visualize a _slendr_ model, you use the function `plot_model()`.
 **Plot your compiled `model` to make sure you programmed it correctly!**
@@ -360,7 +357,7 @@ plot_model(model, log = TRUE, proportions = TRUE)
 ```
 :::
 
-### Part 3: Simulating genomic data
+## Part 3: Simulating genomic data
 
 Once you have a compiled _slendr_ model stored in an R variable (from now on,
 `model` will always mean a variable containing a compiled _slendr_ model object relevant for the given exercise,
@@ -437,7 +434,7 @@ msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, run = FALSE)
 ```
 :::
 
-### Part 4: Inspecting the tree-sequence object
+## Part 4: Inspecting the tree-sequence object
 
 As we will see later, _slendr_ provides an R-friendly interface to
 accessing a [subset of _tskit_'s functionality](https://tskit.dev/tskit/docs/stable/python-api.html)
@@ -534,7 +531,7 @@ ts_nodes(ts) %>% tail(5)
 ```
 :::
 
-### Part 5: Scheduling sampling events
+## Part 5: Scheduling sampling events
 
 In the table produced by the `ts_samples()` function you saw that the tree
 sequence we simulated recorded _everyone_. It's very unlikely, unless we're
@@ -645,7 +642,7 @@ plot_model(model, sizes = FALSE, log = TRUE, samples = schedule)
 ```
 :::
 
-### Part 6: Simulating a defined set of individuals
+## Part 6: Simulating a defined set of individuals
 
 You have now both a compiled _slendr_ `model` and a well-defined sampling `schedule`.
 
