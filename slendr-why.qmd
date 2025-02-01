@@ -1,0 +1,333 @@
+---
+filters: 
+ - collapse-callout.lua
+---
+
+
+
+
+# Why _slendr_?
+
+::: {.columns} 
+::: {.column width="70%"}
+> Many problems in population genetics cannot be solved by a mathematician,
+no matter how gifted. \[It\] is already clear that computer methods are very
+powerful. This is good. It \[...\] permits people with limited mathematical
+knowledge to work on important problems \[...\].
+:::
+
+::: {.column width="30%"}
+![](images/crow.jpeg)
+
+[James F. Crow](https://en.wikipedia.org/wiki/James_F._Crow) -- [interview](http://www.gnxp.com/blog/2006/06/10-questions-for-jim-crow.php)
+:::
+:::
+
+
+
+
+
+
+
+
+
+
+# Why use simulations?
+
+1. Developing intuition into statistics
+2. Estimating model parameters (i.e. [ABC](https://en.wikipedia.org/wiki/Approximate_Bayesian_computation))
+3. Ground truth for method development
+
+
+
+
+
+
+
+
+
+
+## Developing intuition into statistics
+
+<center>![](images/fstats_sims.png)</center>
+
+::: {.aside}
+<small>Image from [Peter (2016)](https://academic.oup.com/genetics/article/202/4/1485/5930214)</small>
+:::
+
+
+
+
+
+
+
+
+
+
+## Developing intuition into statistics
+
+<center>![](images/admixture.png)</center>
+
+::: {.aside}
+<small>Image from [Lawson _et al._ (2018)](https://www.nature.com/articles/s41467-018-05257-7)</small>
+:::
+
+
+
+
+
+
+
+
+
+
+## Estimating model parameters (i.e. [ABC](https://en.wikipedia.org/wiki/Approximate_Bayesian_computation))
+
+<center>![](images/abc_scheme.png){width="50%"}</center>
+
+::: {.aside}
+<small>Image from [Wikipedia on ABC](https://en.wikipedia.org/wiki/Approximate_Bayesian_computation)</small>
+:::
+
+
+
+
+
+
+
+
+
+
+## Ground truth for method development
+
+<center>![](images/mcmc.png)</center>
+
+::: {.aside}
+<small>Image from [Schiffels and Durbin (2014)](https://www.nature.com/articles/ng.3015)</small>
+:::
+
+
+
+
+
+
+
+
+## Simulation software
+
+The most famous and widely used are [SLiM](https://messerlab.org/slim/) and [_msprime_](https://tskit.dev/msprime/docs/stable/intro.html).
+
+::: {.fragment}
+
+They are <u>very</u> powerful and (nearly) infinitely flexible.
+
+:::
+
+::: {.fragment}
+
+However, they both require:
+
+- quite a bit of code for complex simulations (what is "complex" is relative, of course!),
+- relatively high confidence in programming
+
+<!-- (🐛🪲🐜). -->
+:::
+
+::: {.fragment}
+<center>
+
+<h3>Our exercises will focus on the [_slendr_](http://www.slendr.net) simulation toolkit for population genetics in R.</h3>
+
+</center>
+:::
+
+::: {.fragment}
+<center><br>But, as a recap, let's look at _msprime_ and SLiM a little bit...</center>
+:::
+
+
+
+
+
+
+
+
+
+
+## 
+
+::: {.columns} 
+
+::: {.column width="60%"}
+<h2>What is _msprime_?</h2>
+
+- A Python module for writing **coalescent simulations**
+
+-   Extremely fast (genome-scale, population-scale data!)
+
+-   You should know Python fairly well to build complex models
+:::
+
+::: {.column width="40%"}
+<center>
+
+![<small>Image modified from [Alexei Drummond</small>](http://alexeidrummond.org/bayesian_phylo_lectures/lecture10/)](images/sim_sketches.001.png){width="100%"}
+
+
+</center>
+:::
+
+:::
+
+
+
+
+
+
+
+
+
+
+## Simple simulation using _msprime_
+
+```{bash}
+#| echo: false
+cat script.py
+```
+
+
+
+
+
+
+## 
+
+::: {.columns} 
+::: {.column width="60%"}
+<h2>What is SLiM?</h2>
+
+- **A forward-time simulator**
+
+- Has its own programming language
+
+- Massive library of functions for:
+  - demographic events
+  - various mating systems
+  - natural selection
+
+-   More than 700 pages long [manual](https://github.com/MesserLab/SLiM/releases/download/v4.3/SLiM_Manual.pdf)!
+:::
+
+::: {.column width="40%"}
+<center>
+
+![<small>Image modified from [Alexei Drummond</small>](http://alexeidrummond.org/bayesian_phylo_lectures/lecture10/)](images/sim_sketches.001.png){width="100%"}
+
+</center>
+:::
+:::
+
+
+
+
+
+
+
+
+
+
+## Simple neutral simulation in SLiM
+
+```{bash}
+#| echo: false
+cat script.slim
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#
+
+<center>
+<h1>SLiM and _msprime_ are absolutely incredible pieces of software...</h1>
+</center>
+
+
+
+
+
+## ... and yet I built _something else_ 🙄
+
+<center>
+
+![](images/slendr_logo.png){width="30%"}
+
+<h4 style="font-family: 'Courier New'">[www.slendr.net](https://www.slendr.net)</h4>
+
+</center>
+
+<small><br></small>
+
+<center>
+
+<h2>Why?</h2>
+
+</center>
+
+
+
+
+
+
+
+
+
+
+## First motivation: spatial simulations!
+
+<center>![](images/animation.gif){width="70%"}</center>
+
+
+
+
+
+
+
+
+
+
+## A broader motivation for _slendr_
+
+- Most researchers are not expert programmers
+
+- All but the most trivial simulations require lots of code
+
+::: {.fragment}
+- Yet, 90% <sup><font color="blue">\[citation needed\]</font></sup> of simulations are basically the same!
+
+  - create populations (splits and $N_e$ changes)
+
+  - specify admixture rates and admixture times
+
+- ... all this means duplication of code across many projects
+:::
+
+::: {.fragment}
+- Computing statistics presents even more hurdles
+:::
+
+::: {.fragment}
+<center><h4>_slendr_ makes this <u>very easy</u>, even for "complex models"</h4></center>
+:::
+

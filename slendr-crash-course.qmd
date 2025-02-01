@@ -1,368 +1,7 @@
 ---
-title: "Simulation-Based Population Genomics and Inference in R"
-subtitle: "A course on the fundamentals of population genomics and statistical inference, with a strong focus on good practices of reproducible research"
-author:
-  - "Martin Petr"
-  - "[CC BY SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)"
-date: "January 2025"
-date-format: "MMMM YYYY"
-format:
-  revealjs:                     ### slides
-    echo: true                  ### slides
-    code-line-numbers: false    ### slides
-    fig-align: center           ### slides
-    slide-number: true          ### slides
-    self-contained: true        ### slides
-  html:                         ### handouts
-    echo: true                  ### handouts
-    code-line-numbers: false    ### handouts
-    fig-align: center           ### handouts
-    self-contained: true        ### handouts
-
 filters: 
  - collapse-callout.lua
 ---
-
-
-
-
-
-
-
-
-# 
-
-::: {.columns} 
-::: {.column width="70%"}
-> Many problems in population genetics cannot be solved by a mathematician,
-no matter how gifted. \[It\] is already clear that computer methods are very
-powerful. This is good. It \[...\] permits people with limited mathematical
-knowledge to work on important problems \[...\].
-:::
-
-::: {.column width="30%"}
-![](images/crow.jpeg)
-
-[James F. Crow](https://en.wikipedia.org/wiki/James_F._Crow) -- [interview](http://www.gnxp.com/blog/2006/06/10-questions-for-jim-crow.php)
-:::
-:::
-
-
-
-
-
-
-
-
-
-
-# Why use simulations?
-
-1. Developing intuition into statistics
-2. Estimating model parameters (i.e. [ABC](https://en.wikipedia.org/wiki/Approximate_Bayesian_computation))
-3. Ground truth for method development
-
-
-
-
-
-
-
-
-
-
-## Developing intuition into statistics
-
-<center>![](images/fstats_sims.png)</center>
-
-::: {.aside}
-<small>Image from [Peter (2016)](https://academic.oup.com/genetics/article/202/4/1485/5930214)</small>
-:::
-
-
-
-
-
-
-
-
-
-
-<!-- ## Developing intuition into statistics -->
-
-<!-- <center>![](images/admixture.png)</center> -->
-
-<!-- ::: {.aside} -->
-<!-- <small>Image from [Lawson _et al._ (2018)](https://www.nature.com/articles/s41467-018-05257-7)</small> -->
-<!-- ::: -->
-
-
-
-
-
-
-
-
-
-
-## Estimating model parameters (i.e. [ABC](https://en.wikipedia.org/wiki/Approximate_Bayesian_computation))
-
-<center>![](images/abc_scheme.png){width="50%"}</center>
-
-::: {.aside}
-<small>Image from [Wikipedia on ABC](https://en.wikipedia.org/wiki/Approximate_Bayesian_computation)</small>
-:::
-
-
-
-
-
-
-
-
-
-
-## Ground truth for method development
-
-<center>![](images/mcmc.png)</center>
-
-::: {.aside}
-<small>Image from [Schiffels and Durbin (2014)](https://www.nature.com/articles/ng.3015)</small>
-:::
-
-
-
-
-
-
-
-
-## Simulation software
-
-The most famous and widely used are [SLiM](https://messerlab.org/slim/) and [_msprime_](https://tskit.dev/msprime/docs/stable/intro.html).
-
-::: {.fragment}
-
-They are <u>very</u> powerful and (nearly) infinitely flexible.
-
-:::
-
-::: {.fragment}
-
-However, they both require:
-
-- quite a bit of code for complex simulations (what is "complex" is relative, of course!),
-- relatively high confidence in programming
-
-<!-- (🐛🪲🐜). -->
-:::
-
-::: {.fragment}
-<center>
-
-<h3>Our exercises will focus on the [_slendr_](http://www.slendr.net) simulation toolkit for population genetics in R.</h3>
-
-</center>
-:::
-
-::: {.fragment}
-<center><br>But, as a recap, let's look at _msprime_ and SLiM a little bit...</center>
-:::
-
-
-
-
-
-
-
-
-
-
-## 
-
-::: {.columns} 
-
-::: {.column width="60%"}
-<h2>What is _msprime_?</h2>
-
-- A Python module for writing **coalescent simulations**
-
--   Extremely fast (genome-scale, population-scale data!)
-
--   You should know Python fairly well to build complex models
-:::
-
-::: {.column width="40%"}
-<center>
-
-![<small>Image modified from [Alexei Drummond</small>](http://alexeidrummond.org/bayesian_phylo_lectures/lecture10/)](images/sim_sketches.001.png){width="100%"}
-
-
-</center>
-:::
-
-:::
-
-
-
-
-
-
-
-
-
-
-## Simple simulation using _msprime_
-
-```{bash}
-#| echo: false
-cat script.py
-```
-
-
-
-
-
-
-## 
-
-::: {.columns} 
-::: {.column width="60%"}
-<h2>What is SLiM?</h2>
-
-- **A forward-time simulator**
-
-- Has its own programming language
-
-- Massive library of functions for:
-  - demographic events
-  - various mating systems
-  - natural selection
-
--   More than 700 pages long [manual](https://github.com/MesserLab/SLiM/releases/download/v4.3/SLiM_Manual.pdf)!
-:::
-
-::: {.column width="40%"}
-<center>
-
-![<small>Image modified from [Alexei Drummond</small>](http://alexeidrummond.org/bayesian_phylo_lectures/lecture10/)](images/sim_sketches.001.png){width="100%"}
-
-</center>
-:::
-:::
-
-
-
-
-
-
-
-
-
-
-## Simple neutral simulation in SLiM
-
-```{bash}
-#| echo: false
-cat script.slim
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
-
-<center>
-<h1>SLiM and _msprime_ are absolutely incredible pieces of software...</h1>
-</center>
-
-
-
-
-
-## ... and yet I built _something else_ 🙄
-
-<center>
-
-![](images/slendr_logo.png){width="30%"}
-
-<h4 style="font-family: 'Courier New'">[www.slendr.net](https://www.slendr.net)</h4>
-
-</center>
-
-<small><br></small>
-
-<center>
-
-<h2>Why?</h2>
-
-</center>
-
-
-
-
-
-
-
-
-
-
-## First motivation: spatial simulations!
-
-<center>![](images/animation.gif){width="70%"}</center>
-
-
-
-
-
-
-
-
-
-
-## A broader motivation for _slendr_
-
-- Most researchers are not expert programmers
-
-- All but the most trivial simulations require lots of code
-
-::: {.fragment}
-- Yet, 90% <sup><font color="blue">\[citation needed\]</font></sup> of simulations are basically the same!
-
-  - create populations (splits and $N_e$ changes)
-
-  - specify admixture rates and admixture times
-
-- ... all this means duplication of code across many projects
-:::
-
-::: {.fragment}
-- Computing statistics presents even more hurdles
-:::
-
-::: {.fragment}
-<center><h4>_slendr_ makes this <u>very easy</u>, even for "complex models"</h4></center>
-:::
-
-
-
-
-
-
-
-
-
 
 # _slendr_ crash course
 
@@ -1668,281 +1307,157 @@ not a data frame).
 
 
 
+## Tree sequences are _very_ efficient
 
-<!-- ## More information -->
+<br>
 
-<!-- - The _slendr_ paper is published in [PCI EvolBiol](https://evolbiol.peercommunityin.org/articles/rec?id=630) -->
+This simulates 2 $\times$ 10000 chromosomes of 100 Mb:
 
-<!-- - The website of the _slendr_ package is [here](https://www.slendr.net) -->
+```{r}
+#| eval: false
 
-<!-- - Detailed tutorials are under [Articles](https://www.slendr.net/articles) on the website -->
+pop <- population("pop", time = 1e6, N = 10000)
+model <- compile_model(pop, generation_time = 30, direction = "backward")
+ts <- msprime(model, sequence_length = 100e6, recombination_rate = 1e-8)
 
-<!-- - GitHub repo (bug reports!) is [here](http://github.com/bodkan/slendr) -->
+```
 
-<!-- <hr> -->
 
-<!-- - Check out my new package [_demografr_](http://github.com/bodkan/demografr) -->
+<br>
 
-<!--   - It builds on _slendr_! -->
-<!--   - Useful for simulation-based inference (ABC, etc.) -->
+**Runs in less than 30 seconds on my laptop!**
 
+**Takes about 66 Mb of memory!**
 
+## How does this work?!
 
 
+<center>
 
+![](images/tables.jpeg)
 
+<center>
 
+## Tree-sequence tables
 
+::: row
 
+::: {.columns}
 
+::: {.column width="60%"}
 
+A tree (sequence) can be represented by
 
-<!-- # Let's get started -->
+::: incremental
 
+-   a table of <font color="orange">n</font><font color="green">o</font><font color="darkblue">d</font><font color="green">e</font><font color="darkblue">s</font>,
 
+-   a table of [edges]{.underline} between nodes,
 
+-   a table of <font color="red">mutations</font> on edges
 
+:::
 
+:::
 
+::: {.column width="40%"}
 
+<br>
 
+<center>![](images/tree_diagram.png)</center>
 
-<!-- ## Topics of the exercises -->
+:::
 
-<!-- A quick "the best of..." tour of _slendr_ features: -->
+:::
 
-<!-- 1. **Building a demographic model** and simulating genomic data from it -->
+:::
 
-<!-- 2. Using _slendr_ as a sandbox for **exploring population genetic statistics** -->
+. . .
 
-<!-- 3. An example of **simulation-based inference** (a toy ABC-like inference procedure) -->
+<center>
 
-<!-- 4. **Simulating natural selection with _slendr_** -->
+<h3>**A set of such tables is a tree sequence.**</h3>
 
+</center>
 
+::: {.aside}
 
+You can find much more information in  ([tskit docs](https://tskit.dev/tutorials/tables_and_editing.html))
 
-<!-- ## Resources and exercise materials -->
+:::
 
-<!-- These slides and other materials are (and always will be) at: -->
+## Tree-sequence tables in practice
 
-<!-- [github.com/bodkan/simgen](https://github.com/bodkan/simgen) -->
+::: {.columns}
 
-<!-- (also linked in the schedule of the Workshop) -->
+::: {.column width="50%"}
 
-<!-- <br> -->
+```{r}
+#| echo: false
+#| fig-height: 13
 
-<!-- On that GitHub page, you will find links to: -->
+set.seed(123)
 
-<!-- - a version of these slides as a single-page document -->
-<!-- - **exercise materials** (with solutions built-in) -->
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, random_seed = 42) %>% ts_mutate(1e-8, random_seed = 42)
 
+# make a tiny example simplified tree sequence
 
+ts_tiny <- ts_samples(ts) %>% sample_n(4) %>% pull(name) %>% ts_simplify(ts, simplify_to = .)
 
+# extract tree #1 as an ape tree and also a tskit tree
 
+t_phylo <- ts_phylo(ts_tiny, 1, quiet = TRUE)
+t_tskit <- ts_tree(ts_tiny, 1)
 
+# plot the phylo tree with ape
 
+suppressPackageStartupMessages(library(ggtree))
+nodes <- ts_nodes(t_phylo) %>% as_tibble %>% dplyr::select(node = phylo_id, pop, node_id)
 
+ggtree(t_phylo, branch.length = "none") %<+% nodes +
+  geom_label(aes(label = node_id), size = 15) +
+  guides(color = "none")
 
+```
 
+:::
 
+::: {.column width="50%"}
 
+::: {.fragment}
 
+nodes:
 
+```{r}
+#| echo: false
+ts_nodes(t_phylo) %>% head(3) %>% .[, c("node_id", "pop_id", "time")] %>% as.data.frame()
+```
 
+:::
 
+::: {.fragment}
 
+edges:
 
+```{r}
+#| echo: false
+ts_edges(t_phylo) %>% head(3) %>% .[, c("child_node_id", "parent_node_id")] %>% as.data.frame()
+```
 
+:::
 
+::: {.fragment}
 
+mutations:
 
+```{r}
+#| echo: false
+ts_table(ts_tiny, "mutations") %>% filter(node %in% c(53, 22, 20, 74, 9)) %>% head(3) %>% .[, c("id", "site", "node", "time")] %>% as.data.frame()
+```
 
+:::
 
+:::
 
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- ## Tree sequences are _very_ efficient -->
-
-<!-- <br> -->
-
-<!-- This simulates 2 $\times$ 10000 chromosomes of 100 Mb: -->
-
-<!-- ```{r} -->
-
-<!-- #| eval: false -->
-
-<!-- pop <- population("pop", time = 1e6, N = 10000) -->
-
-<!-- model <- compile_model(pop, generation_time = 30, direction = "backward") -->
-
-<!-- ts <- msprime(model, sequence_length = 100e6, recombination_rate = 1e-8) -->
-
-<!-- ``` -->
-
-<!-- . . . -->
-
-<!-- <br> -->
-
-<!-- **Runs in less than 30 seconds on my laptop!** -->
-
-<!-- **Takes about 66 Mb of memory!** -->
-
-<!-- ## How does this work?! -->
-
-<!-- . . . -->
-
-<!-- <center> -->
-
-<!-- ![](images/tables.jpeg) -->
-
-<!-- <center> -->
-
-<!-- ## Tree-sequence tables -->
-
-<!-- ::: row -->
-
-<!-- ::: {.columns}  -->
-
-<!-- ::: {.column width="60%"} -->
-
-<!-- A tree (sequence) can be represented by -->
-
-<!-- ::: incremental -->
-
-<!-- -   a table of <font color="orange">n</font><font color="green">o</font><font color="darkblue">d</font><font color="green">e</font><font color="darkblue">s</font>, -->
-
-<!-- -   a table of [edges]{.underline} between nodes, -->
-
-<!-- -   a table of <font color="red">mutations</font> on edges -->
-
-<!-- ::: -->
-
-<!-- ::: -->
-
-<!-- ::: {.column width="40%"} -->
-
-<!-- <br> -->
-
-<!-- <center>![](images/tree_diagram.png)</center> -->
-
-<!-- ::: -->
-
-<!-- ::: -->
-
-<!-- ::: -->
-
-<!-- . . . -->
-
-<!-- <center> -->
-
-<!-- <h3>**A set of such tables is a tree sequence.**</h3> -->
-
-<!-- </center> -->
-
-<!-- ::: {.aside} -->
-
-<!-- You can find much more information in  ([tskit docs](https://tskit.dev/tutorials/tables_and_editing.html)) -->
-
-<!-- ::: -->
-
-<!-- ## Tree-sequence tables in practice -->
-
-<!-- ::: {.columns}  -->
-
-<!-- ::: {.column width="50%"} -->
-
-<!-- ```{r} -->
-
-<!-- #| echo: false -->
-
-<!-- #| fig-height: 13 -->
-
-<!-- set.seed(123) -->
-
-<!-- ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, random_seed = 42) %>% ts_mutate(1e-8, random_seed = 42) -->
-
-<!-- # make a tiny example simplified tree sequence -->
-
-<!-- ts_tiny <- ts_samples(ts) %>% sample_n(4) %>% pull(name) %>% ts_simplify(ts, simplify_to = .) -->
-
-<!-- # extract tree #1 as an ape tree and also a tskit tree -->
-
-<!-- t_phylo <- ts_phylo(ts_tiny, 1, quiet = TRUE) -->
-
-<!-- t_tskit <- ts_tree(ts_tiny, 1) -->
-
-<!-- # plot the phylo tree with ape -->
-
-<!-- suppressPackageStartupMessages(library(ggtree)) -->
-
-<!-- nodes <- ts_nodes(t_phylo) %>% as_tibble %>% dplyr::select(node = phylo_id, pop, node_id) -->
-
-<!-- ggtree(t_phylo, branch.length = "none") %<+% nodes + -->
-
-<!--   geom_label(aes(label = node_id), size = 15) +  -->
-
-<!--   guides(color = "none") -->
-
-<!-- ``` -->
-
-<!-- ::: -->
-
-<!-- ::: {.column width="50%"} -->
-
-<!-- ::: {.fragment} -->
-
-<!-- nodes: -->
-
-<!-- ```{r} -->
-
-<!-- #| echo: false -->
-
-<!-- ts_nodes(t_phylo) %>% head(3) %>% .[, c("node_id", "pop_id", "time")] %>% as.data.frame() -->
-
-<!-- ``` -->
-
-<!-- ::: -->
-
-<!-- ::: {.fragment} -->
-
-<!-- edges: -->
-
-<!-- ```{r} -->
-
-<!-- #| echo: false -->
-
-<!-- ts_edges(t_phylo) %>% head(3) %>% .[, c("child_node_id", "parent_node_id")] %>% as.data.frame() -->
-
-<!-- ``` -->
-
-<!-- ::: -->
-
-<!-- ::: {.fragment} -->
-
-<!-- mutations: -->
-
-<!-- ```{r} -->
-
-<!-- #| echo: false -->
-
-<!-- ts_table(ts_tiny, "mutations") %>% filter(node %in% c(53, 22, 20, 74, 9)) %>% head(3) %>% .[, c("id", "site", "node", "time")] %>% as.data.frame() -->
-
-<!-- ``` -->
-
-<!-- ::: -->
-
-<!-- ::: -->
-
-<!-- ::: -->
+:::
 
