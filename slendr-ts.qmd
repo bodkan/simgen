@@ -1,0 +1,157 @@
+---
+  filters:
+  - collapse-callout.lua
+---
+
+
+## Tree-sequence data structure
+
+<br>
+
+This simulates 2 $\times$ 10000 chromosomes of 100 Mb:
+
+```{r}
+#| eval: false
+
+pop <- population("pop", time = 1e6, N = 10000)
+model <- compile_model(pop, generation_time = 30, direction = "backward")
+ts <- msprime(model, sequence_length = 100e6, recombination_rate = 1e-8)
+```
+
+
+<br>
+
+**Runs in less than 30 seconds on my laptop!**
+
+**Takes about 66 Mb of memory!**
+
+## How does this work?!
+
+
+<center>
+
+![](images/tables.jpeg)
+
+<center>
+
+## Tree-sequence tables
+
+::: row
+
+::: {.columns}
+
+::: {.column width="60%"}
+
+A tree (sequence) can be represented by
+
+::: incremental
+
+-   a table of <font color="orange">n</font><font color="green">o</font><font color="darkblue">d</font><font color="green">e</font><font color="darkblue">s</font>,
+
+-   a table of [edges]{.underline} between nodes,
+
+-   a table of <font color="red">mutations</font> on edges
+
+:::
+
+:::
+
+::: {.column width="40%"}
+
+<br>
+
+<center>![](images/tree_diagram.png)</center>
+
+:::
+
+:::
+
+:::
+
+<center>
+
+<h3>**A set of such tables is a tree sequence.**</h3>
+
+</center>
+
+::: {.aside}
+
+You can find much more information in  ([tskit docs](https://tskit.dev/tutorials/tables_and_editing.html))
+
+:::
+
+## Tree-sequence tables in practice
+
+::: {.columns}
+
+::: {.column width="50%"}
+
+```{r}
+#| echo: false
+#| fig-height: 13
+
+set.seed(123)
+
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, random_seed = 42) %>% ts_mutate(1e-8, random_seed = 42)
+
+# make a tiny example simplified tree sequence
+
+ts_tiny <- ts_samples(ts) %>% sample_n(4) %>% pull(name) %>% ts_simplify(ts, simplify_to = .)
+
+# extract tree #1 as an ape tree and also a tskit tree
+
+t_phylo <- ts_phylo(ts_tiny, 1, quiet = TRUE)
+t_tskit <- ts_tree(ts_tiny, 1)
+
+# plot the phylo tree with ape
+
+suppressPackageStartupMessages(library(ggtree))
+nodes <- ts_nodes(t_phylo) %>% as_tibble %>% dplyr::select(node = phylo_id, pop, node_id)
+
+ggtree(t_phylo, branch.length = "none") %<+% nodes +
+  geom_label(aes(label = node_id), size = 15) +
+  guides(color = "none")
+
+```
+
+:::
+
+  ::: {.column width="50%"}
+
+::: {.fragment}
+
+nodes:
+
+```{r}
+#| echo: false
+ts_nodes(t_phylo) %>% head(3) %>% .[, c("node_id", "pop_id", "time")] %>% as.data.frame()
+```
+
+:::
+
+::: {.fragment}
+
+edges:
+
+```{r}
+#| echo: false
+ts_edges(t_phylo) %>% head(3) %>% .[, c("child_node_id", "parent_node_id")] %>% as.data.frame()
+```
+
+:::
+
+::: {.fragment}
+
+mutations:
+
+```{r}
+#| echo: false
+ts_table(ts_tiny, "mutations") %>% filter(node %in% c(53, 22, 20, 74, 9)) %>% head(3) %>% .[, c("id", "site", "node", "time")] %>% as.data.frame()
+```
+
+:::
+
+:::
+
+:::
+
