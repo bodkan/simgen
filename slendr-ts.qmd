@@ -11,7 +11,8 @@
 This simulates 2 $\times$ 10000 chromosomes of 100 Mb:
 
 ```{r}
-#| eval: false
+library(slendr)
+init_env()
 
 pop <- population("pop", time = 1e6, N = 10000)
 model <- compile_model(pop, generation_time = 30, direction = "backward")
@@ -89,6 +90,9 @@ You can find much more information in  ([tskit docs](https://tskit.dev/tutorials
 ```{r}
 #| echo: false
 #| fig-height: 13
+library(ggplot2)
+library(dplyr)
+library(ggtree)
 
 set.seed(123)
 
@@ -105,13 +109,11 @@ t_tskit <- ts_tree(ts_tiny, 1)
 
 # plot the phylo tree with ape
 
-suppressPackageStartupMessages(library(ggtree))
 nodes <- ts_nodes(t_phylo) %>% as_tibble %>% dplyr::select(node = phylo_id, pop, node_id)
 
 ggtree(t_phylo, branch.length = "none") %<+% nodes +
   geom_label(aes(label = node_id), size = 15) +
   guides(color = "none")
-
 ```
 
 :::
