@@ -1,0 +1,51 @@
+---
+  filters:
+  - collapse-callout.lua
+---
+
+
+## Other data formats
+
+
+```{r}
+library(slendr)
+init_env(quiet = TRUE)
+
+pop <- population("pop", time = 1e6, N = 100)
+model <- compile_model(pop, generation_time = 30, direction = "backward")
+ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+  ts_mutate(1e-8)
+```
+
+
+
+## Standard genotype formats
+
+If a tree sequence doesn't cut it, you can always:
+
+-   export genotypes to a VCF file:
+
+```{r}
+#| eval: false
+ts_vcf(ts, path = "path/to/a/file.vcf.gz")
+```
+
+-   export genotypes in an EIGENSTRAT format:
+
+```{r}
+#| eval: false
+ts_eigenstrat(ts, prefix = "path/to/eigenstrat/prefix")
+```
+
+-   access genotypes in a data frame:
+
+```{r}
+#| eval: false
+ts_genotypes(ts)
+```
+
+```{r}
+#| echo: false
+library(dplyr)
+ts_genotypes(ts) %>% as.data.frame() %>% .[1:2, 1:7]
+```
