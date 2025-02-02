@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Introduction – Simulation-Based Population Genomics and Inference in R</title>
+<title>4&nbsp; Tree-sequence data structure – Simulation-Based Population Genomics and Inference in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,6 +20,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -30,8 +64,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./slendr-setup.html" rel="next">
-<link href="./index.html" rel="prev">
+<link href="./popgen-f.html" rel="next">
+<link href="./slendr-models.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -101,7 +135,7 @@ window.Quarto = {
 
 </head>
 
-<body class="nav-sidebar floating">
+<body class="nav-sidebar floating slimcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -110,7 +144,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./intro.html">Introduction</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slendr-setup.html"><em>slendr</em></a></li><li class="breadcrumb-item"><a href="./slendr-ts.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Tree-sequence data structure</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -143,7 +177,7 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./intro.html" class="sidebar-item-text sidebar-link active">
+  <a href="./intro.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Introduction</span></a>
   </div>
 </li>
@@ -182,7 +216,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slendr-ts.html" class="sidebar-item-text sidebar-link">
+  <a href="./slendr-ts.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Tree-sequence data structure</span></span></a>
   </div>
 </li>
@@ -257,15 +291,23 @@ window.Quarto = {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#how-does-this-work" id="toc-how-does-this-work" class="nav-link active" data-scroll-target="#how-does-this-work"><span class="header-section-number">4.1</span> How does this work?!</a></li>
+  <li><a href="#tree-sequence-tables" id="toc-tree-sequence-tables" class="nav-link" data-scroll-target="#tree-sequence-tables"><span class="header-section-number">4.2</span> Tree-sequence tables</a></li>
+  <li><a href="#tree-sequence-tables-in-practice" id="toc-tree-sequence-tables-in-practice" class="nav-link" data-scroll-target="#tree-sequence-tables-in-practice"><span class="header-section-number">4.3</span> Tree-sequence tables in practice</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slendr-setup.html"><em>slendr</em></a></li><li class="breadcrumb-item"><a href="./slendr-ts.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Tree-sequence data structure</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Introduction</h1>
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Tree-sequence data structure</span></h1>
 </div>
 
 
@@ -282,9 +324,130 @@ window.Quarto = {
 </header>
 
 
-<p><strong>TODO:</strong> Introduction to the course, why it exists, and why it exists in the presented form (R, <em>slendr</em>, <em>demografr</em>, and <em>tidyverse</em>).</p>
+<p><br></p>
+<p>This simulates 2 <span class="math inline">\(\times\)</span> 10000 chromosomes of 100 Mb:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The interface to all required Python modules has been activated.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="fl">1e6</span>, <span class="at">N =</span> <span class="dv">10000</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(pop, <span class="at">generation_time =</span> <span class="dv">30</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">100e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><br></p>
+<p><strong>Runs in less than 30 seconds on my laptop!</strong></p>
+<p><strong>Takes about 66 Mb of memory!</strong></p>
+<section id="how-does-this-work" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="how-does-this-work"><span class="header-section-number">4.1</span> How does this work?!</h2>
+<center>
+<p><img src="images/tables.jpeg" class="img-fluid"></p>
+<center>
+</center></center></section>
+<section id="tree-sequence-tables" class="level2 page-columns page-full" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="tree-sequence-tables"><span class="header-section-number">4.2</span> Tree-sequence tables</h2>
+<div class="row">
+<div class="columns">
+<div class="column" style="width:60%;">
+<p>A tree (sequence) can be represented by</p>
+<div class="incremental">
+<ul class="incremental">
+<li><p>a table of <font color="orange">n</font><font color="green">o</font><font color="darkblue">d</font><font color="green">e</font><font color="darkblue">s</font>,</p></li>
+<li><p>a table of <u>edges</u> between nodes,</p></li>
+<li><p>a table of <font color="red">mutations</font> on edges</p></li>
+</ul>
+</div>
+</div><div class="column" style="width:40%;">
+<p><br></p>
+<center>
+<img src="images/tree_diagram.png" class="img-fluid">
+</center>
+</div>
+</div>
+</div>
+<center>
+<h3 class="anchored">
+<strong>A set of such tables is a tree sequence.</strong>
+</h3>
+</center>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p>You can find much more information in (<a href="https://tskit.dev/tutorials/tables_and_editing.html">tskit docs</a>)</p>
+</div></div></section>
+<section id="tree-sequence-tables-in-practice" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="tree-sequence-tables-in-practice"><span class="header-section-number">4.3</span> Tree-sequence tables in practice</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>ggtree v3.14.0 Learn more at https://yulab-smu.top/contribution-tree-data/
+
+Please cite:
+
+S Xu, Z Dai, P Guo, X Fu, S Liu, L Zhou, W Tang, T Feng, M Chen, L
+Zhan, T Wu, E Hu, Y Jiang, X Bo, G Yu. ggtreeExtra: Compact
+visualization of richly annotated phylogenetic data. Molecular Biology
+and Evolution. 2021, 38(9):4039-4042. doi: 10.1093/molbev/msab166</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="slendr-ts_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div><p>::: {.column width=“50%”}</p><div class="fragment">
+<p>nodes:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>  node_id pop_id     time
+1     360      0 871895.1
+2     256      0 475982.3
+3     255      0 471179.5</code></pre>
+</div>
+</div>
+</div><div class="fragment">
+<p>edges:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>  child_node_id parent_node_id
+1           256            360
+2           255            256
+3            69            256</code></pre>
+</div>
+</div>
+</div><div class="fragment">
+<p>mutations:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>   id site node     time
+1  69   69   74 125539.4
+2 272  272   22 242337.9
+3 277  277   22 129474.1</code></pre>
+</div>
+</div>
+</div>
+</div>
+<p>:::</p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -706,13 +869,13 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Preface">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Preface</span>
+      <a href="./slendr-models.html" class="pagination-link" aria-label="Programming demographic models with _slendr_">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Programming demographic models with <em>slendr</em></span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./slendr-setup.html" class="pagination-link" aria-label="Installation and setup">
-        <span class="nav-page-text">Installation and setup</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./popgen-f.html" class="pagination-link" aria-label="Computing statistics on tree sequences from _slendr_">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Computing statistics on tree sequences from <em>slendr</em></span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
