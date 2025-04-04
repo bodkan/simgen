@@ -1,4 +1,4 @@
-all: slides handouts exercises
+all: book
 
 #slides:
 #	sed -i '/### handouts/ s/^/#/' slides.qmd
