@@ -42,6 +42,11 @@ library(ggplot2)
 tracts <- ts_tracts(ts, census = 800)
 tracts
 
+sample_times <- ts_samples(ts) %>% select(name, time)
+
+# adding haplotype ID and time (automatically done by the dev slendr)
+tracts <- tracts %>% dplyr::group_by(name) %>% dplyr::mutate(haplotype = dplyr::dense_rank(node_id)) %>% dplyr::ungroup() %>% inner_join(sample_times) 
+
 # Select sampled individuals from different ages (remember, we recorded oldest individuals
 # at 1000 generations ago, the youngest individuals at 0 generations ago). Use the function
 # plot_tracts to visualize their ancestry tracts. What do you see in terms of the number of
