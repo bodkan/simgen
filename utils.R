@@ -118,8 +118,14 @@ plot_pca <- function(prefix, ts, pc = c(1, 2), model = c("map", "tree"),
 
   if (model == "tree")
     p_model <- plot_model(attr(ts, "model"), proportions = TRUE)
-  else
-    p_model <- plot_map(attr(ts, "model"), gene_flow = TRUE, labels = TRUE)
+  else {
+    if (packageVersion("slendr") != "1.0.1") {
+      warning("Visualising population labels on a map requires a higher slendr version",
+              call. = FALSE)
+      p_model <- plot_map(attr(ts, "model"), gene_flow = TRUE)
+    } else
+      p_model <- plot_map(attr(ts, "model"), gene_flow = TRUE, labels = TRUE)
+  }
 
   plot <- plot_grid(p_model, plot)
 
