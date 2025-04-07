@@ -17,7 +17,7 @@ handouts: handouts.qmd
 	quarto publish quarto-pub --id 0289a039-7c5d-44a8-8487-f2fcb3ff4294 handouts.qmd
 	sed -i '/### slides/ s/^#//' slides.qmd
 	git add handouts.html; git commit -m "Update handouts.html"; git push
-	rm handounts.qmd
+	rm handouts.qmd
 
 slides.qmd:
 	cat slides_header.txt slendr-why.qmd slendr-crash-course.qmd > slides.qmd
