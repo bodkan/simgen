@@ -90,7 +90,7 @@ is stochastic, so your numbers will be different, of course):
 ```{r}
 #| echo: false
 library(slendr)
-init_env()
+init_env(quiet=TRUE)
 
 # simulate_afs <- function(Ne) {
 #   n <- 20 # 1 is for the fixed sites included by tskit
@@ -128,10 +128,13 @@ simulate_afs(Ne = 1000)
 
 ::: callout-note
 #### Click to see the solution
+
+A function can be understood as a independent unit of a computer program
+which executes a block of code inside the {...} brackets given some
+values of some parameters. In our example, we programmed a function
+`simulate_sfs()` which accepts a single parameter, `Ne`.
+
 ```{r}
-# An R function can be understood as a block of a computer program which executes
-# a block of code inside the {...} brackets given a certain value of a parameter
-# (here 'Ne' just after the word 'function')
 simulate_afs <- function(Ne) {
   # create a slendr model with a single population of size Ne = N
   pop <- population("pop", N = Ne, time = 1)
@@ -150,19 +153,37 @@ simulate_afs <- function(Ne) {
 
   afs
 }
+```
 
-# Let's use our custom function to simulate AFS vector for Ne = 1k, 10k, and 30k
+Our functions is supposed to produce an AFS vector of counts of alleles
+observed at a given frequency a the population sample:
+
+Let's use our custom function to simulate AFS vector for Ne = 1k, 10k, and 30k:
+
+```{r}
 afs_1k <- simulate_afs(1000)
 afs_10k <- simulate_afs(10000)
 afs_30k <- simulate_afs(30000)
+```
 
-# Plot the three simulated AFS using base R plotting functionality
+Here's one of those vectors. We can see that the function does, indeed, produce
+a result of the correct format:
+
+```{r}
+afs_1k
+```
+
+To see the results of this function in a clearer context, let's visualize
+the vectors in the same plot:
+
+```{r}
 plot(afs_30k, type = "o", main = "AFS, Ne = 30000", col = "cyan",)
 lines(afs_10k, type = "o", main = "AFS, Ne = 10000", col = "purple")
 lines(afs_1k, type = "o", main = "AFS, Ne = 1000", col = "blue")
 legend("topright", legend = c("Ne = 1k", "Ne = 10k", "Ne = 30k"),
        fill = c("blue", "purple", "cyan"))
 ```
+
 :::
 
 
