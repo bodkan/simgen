@@ -12,8 +12,9 @@ filters:
 We will always start our R scripts with this:
 
 ```{r}
+#| output: false
 library(slendr) # You can safely ignore any potential warnings!
-init_env()      # This takes a moment in the cloud (but we run it just once)
+init_env()      # This activates the internal Python environmet
 ```
 
 <br>Followed by some combination of the following:
@@ -33,7 +34,7 @@ init_env()      # This takes a moment in the cloud (but we run it just once)
 
 
 
-## Creating a population
+## Creating populations
 
 At minimum, we need its name, size and "time of appearance":
 
@@ -1251,7 +1252,7 @@ not a data frame).
 
 
 
-## Tree sequences
+## Tree sequence tables
 
 <br>
 
@@ -1259,11 +1260,11 @@ This simulates 2 $\times$ 10000 chromosomes of 100 Mb:
 
 ```{r}
 library(slendr)
-init_env()
+init_env(quiet = FALSE)
 
 pop <- population("pop", time = 1e6, N = 10000)
 model <- compile_model(pop, generation_time = 30, direction = "backward")
-ts <- msprime(model, sequence_length = 100e6, recombination_rate = 1e-8)
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
 ```
 
 
@@ -1271,9 +1272,9 @@ ts <- msprime(model, sequence_length = 100e6, recombination_rate = 1e-8)
 
 **Runs in less than 30 seconds on my laptop!**
 
-**Takes about 66 Mb of memory!**
+**Takes only about 66 Mb of memory!**
 
-## How does this work?!
+## How is this even possible?!
 
 
 <center>
@@ -1324,19 +1325,16 @@ A tree (sequence) can be represented by
 
 ::: {.aside}
 
+**Note:** This is quite a signification simplification of the entire picture.
 You can find much more information in  ([tskit docs](https://tskit.dev/tutorials/tables_and_editing.html))
 
 :::
 
 ## Tree-sequence tables in practice
 
-::: {.columns}
-
-::: {.column width="50%"}
-
 ```{r}
 #| echo: false
-#| fig-height: 13
+#| fig-height: 5
 suppressPackageStartupMessages({
 library(ggplot2)
 library(dplyr)
@@ -1361,13 +1359,13 @@ t_tskit <- ts_tree(ts_tiny, 1)
 nodes <- ts_nodes(t_phylo) %>% as_tibble %>% dplyr::select(node = phylo_id, pop, node_id)
 
 ggtree(t_phylo, branch.length = "none") %<+% nodes +
-  geom_label(aes(label = node_id), size = 15) +
+  geom_label(aes(label = node_id)) +
   guides(color = "none")
 ```
 
-:::
+::: {.columns}
 
-::: {.column width="50%"}
+::: {.column width="30%"}
 
 ::: {.fragment}
 
@@ -1375,10 +1373,16 @@ nodes:
 
 ```{r}
 #| echo: false
-ts_nodes(t_phylo) %>% head(3) %>% .[, c("node_id", "pop_id", "time")] %>% as.data.frame()
+ts_nodes(t_phylo) %>% head(3) %>% .[, c("node_id", "time")] %>% as.data.frame() %>%
+  setNames(c("node", "time"))
 ```
 
 :::
+
+:::
+
+
+::: {.column width="30%"}
 
 ::: {.fragment}
 
@@ -1386,10 +1390,14 @@ edges:
 
 ```{r}
 #| echo: false
-ts_edges(t_phylo) %>% head(3) %>% .[, c("child_node_id", "parent_node_id")] %>% as.data.frame()
+ts_edges(t_phylo) %>% head(3) %>% .[, c("child_node_id", "parent_node_id")] %>% setNames(c("child", "parent")) %>% as.data.frame()
 ```
 
 :::
+
+:::
+
+::: {.column width="30%"}
 
 ::: {.fragment}
 
@@ -1397,7 +1405,7 @@ mutations:
 
 ```{r}
 #| echo: false
-ts_table(ts_tiny, "mutations") %>% filter(node %in% c(53, 22, 20, 74, 9)) %>% head(3) %>% .[, c("id", "site", "node", "time")] %>% as.data.frame()
+ts_table(ts_tiny, "mutations") %>% filter(node %in% c(53, 22, 20, 74, 9)) %>% head(3) %>% .[, c("id", "node", "time")] %>% as.data.frame()
 ```
 
 :::
@@ -1410,6 +1418,8 @@ ts_table(ts_tiny, "mutations") %>% filter(node %in% c(53, 22, 20, 74, 9)) %>% he
 
 ## Other data formats
 
+Tree sequence is an incredibly useful data structure, but there's a whole world
+of well-established bioinformatics tools 
 
 ```{r}
 library(slendr)
