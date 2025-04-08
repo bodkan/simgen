@@ -65,7 +65,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./references.html" rel="next">
-<link href="./popgen-tracts-dating.html" rel="prev">
+<link href="./popgen-selection.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -198,7 +198,7 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slendr-why.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Why <em>slendr</em>?</span></a>
+  <a href="./slendr-why.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Why use simulations?</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -219,17 +219,12 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slendr-models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Demographic models</span></a>
+  <a href="./popgen-models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Demographic models</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./popgen-stats.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Tree-sequence statistics</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./popgen-selection.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Natural selection</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -245,6 +240,11 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./popgen-tracts-dating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Admixture tracts and dating</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-selection.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Natural selection</span></a>
   </div>
 </li>
       </ul>
@@ -320,9 +320,9 @@ window.Quarto = {
 <p>This is exactly what you’ll be doing just now in Exercise 3.</p>
 <section id="part-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="part-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs">Part 1: A self-contained <em>slendr</em> function of <span class="math inline">\(N_e \rightarrow \textrm{AFS}\)</span></h2>
-<p><strong>In a new script <code>exercise3.R</code> write a custom R function called <code>simulate_afs()</code>, which will take <code>Ne</code> as its only parameter. Use this function to compute (and return) <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">AFS vectors</a> for a couple of <code>Ne</code> values of your choosing, but staying between <code>Ne = 1000</code> and <code>Ne = 30000</code> Plot those AFS vectors and observe how (and why?) do they differ based on <code>Ne</code> parameter you used in each respective simulation.</strong></p>
+<p><strong>In a new script <code>afs.R</code> write a custom R function called <code>simulate_afs()</code>, which will take <code>Ne</code> as its only parameter. Use this function to compute (and return) <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">AFS vectors</a> for a couple of <code>Ne</code> values of your choosing, but staying between <code>Ne = 1000</code> and <code>Ne = 30000</code> Plot those AFS vectors and observe how (and why?) do they differ based on <code>Ne</code> parameter you used in each respective simulation.</strong></p>
 <p><strong>Hint:</strong> The function should create a one-population <em>forward-time</em> model (our population starting at <code>time = 1</code>, with the model <code>simulation_length = 100000</code> and <code>generation_time = 1</code> in <code>compile_model()</code>), simulate 10Mb tree sequence using <code>msprime()</code> (recombination rate 1e-8) and then overlay neutral mutations on it at <code>mutation_rate = 1e-8</code>), compute AFS for 10 samples and return the AFS vector as result of this custom function.</p>
-<p><strong>Hint:</strong> If you’ve never programmed before, the concept of a “custom function” might be very alien to you. Again, if you need help, feel free to start building your <code>exercise3.R</code> solution based on this “template” (just fill in missing relevant bits of <em>slendr</em> code that you should be already familiar with):</p>
+<p><strong>Hint:</strong> If you’ve never programmed before, the concept of a “custom function” might be very alien to you. Again, if you need help, feel free to start building your <code>afs.R</code> solution based on this “template” (just fill in missing relevant bits of <em>slendr</em> code that you should be already familiar with):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -353,8 +353,8 @@ window.Quarto = {
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># to the number of fixed mutations in our sample of 10 individuals</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 437 241 131  77  82  74  56  42  32  28  30  37  14  30  22  29  18  12  29
-[20]  21</code></pre>
+<pre><code> [1] 482 186 151 101 101  86  70  56  51  34  53  32  35  30  15  23  28  32  20
+[20]  46</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -401,8 +401,8 @@ Click to see the solution
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>afs_1k</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 459 190 117 102  96  50  67  49  35  26  28  42  29  21  35  39  19  13  19
-[20]   5</code></pre>
+<pre><code> [1] 375 142 124 110  98  76  51  73  57  37  51  38  32  32  26  23  11  12  16
+[20]  21</code></pre>
 </div>
 </div>
 <p>To see the results of this function in a clearer context, let’s visualize the vectors in the same plot:</p>
@@ -531,24 +531,24 @@ Click to see the solution to “Option 2”
 <span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>afs_grid[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$`1000`
- [1] 434 214 133 117  69  81  48  60  30  40  32  26  19  41  38  26  19  31  30
-[20]  20
+ [1] 434 199 150 126  93  72  81  44  42  35  36  26  33  33  20  19  15   8  13
+[20]   5
 
 $`1500`
- [1] 641 341 176 159 132  80  66  72  61  63  65  48  33  33  46  52  26  33  26
+ [1] 556 389 193 143 141 116  83  84  70  49  75  40  43  34  65  20  31  38  33
 [20]  22
 
 $`2000`
- [1] 773 424 268 167 133 119  91 151  95  67  74  92  64  42  41  47  59  33  37
-[20]  39
+ [1] 769 403 258 239 182 141 125 103  92 102  67  68  74  57  49  48  38  32  39
+[20]  53
 
 $`2500`
- [1] 1035  501  289  256  243  178  197  140  105   91   88   73  106   68   53
-[16]   56   42   46   45   31
+ [1] 906 511 384 246 191 196 147 115 102 113  89 104  84  62  59  57  68  55  43
+[20]  42
 
 $`3000`
- [1] 1199  559  351  330  288  192  184  158  110  117  113  110   79   83   84
-[16]   84   86   76   67   67</code></pre>
+ [1] 1110  650  490  283  193  193  165  142  117  140   87  135   87   96   39
+[16]   79   81   59   50   67</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the observed AFS...</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span>
@@ -1027,8 +1027,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./popgen-tracts-dating.html" class="pagination-link" aria-label="Admixture tracts and dating">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Admixture tracts and dating</span></span>
+      <a href="./popgen-selection.html" class="pagination-link" aria-label="Natural selection">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Natural selection</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
