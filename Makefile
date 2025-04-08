@@ -1,10 +1,11 @@
-all: book
+all: book slides handouts
 
 book:
 	quarto publish gh-pages
 
 slides: slides.qmd
 	sed -i '/### handouts/ s/^/#/' slides.qmd
+	sed -i '/### remove for slides/d' slides.qmd
 	quarto render slides.qmd -o slides.html
 	quarto publish quarto-pub --id 89c6a0e8-85a2-4c7c-8f00-76a654bb3394 slides.qmd
 	sed -i '/### handouts/ s/^#//' slides.qmd
@@ -20,7 +21,7 @@ handouts: handouts.qmd
 	rm handouts.qmd
 
 slides.qmd:
-	cat slides_header.txt slendr-why.qmd slendr-crash-course.qmd > slides.qmd
+	cat slides_header.txt slendr-why.qmd slendr-crash-course.qmd slides_footer.txt > slides.qmd
 
 handouts.qmd:
-	cat slides_header.txt slendr-why.qmd slendr-crash-course.qmd > handouts.qmd
+	cat slides_header.txt slendr-why.qmd slendr-crash-course.qmd slides_footer.txt > handouts.qmd
