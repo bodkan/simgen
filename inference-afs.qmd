@@ -293,42 +293,51 @@ The true $N_e$ was 6543!
 ::: callout-note
 #### Click to see the solution to "Option 2"
 
+This is the observed AFS with which we want to compare our simulated AFS
+vectors:
+
 ```{r}
-# This is our starting observed AFS which we want to compare simulated AFS vectors to
 afs_observed <- c(2520, 1449, 855, 622, 530, 446, 365, 334, 349, 244,
                   264, 218,  133, 173, 159, 142, 167, 129, 125, 143)
+```
 
-# Generate regularly spaced values of potential Ne values (our parameter grid)
+We know that the true $N_e$ is supposed to be between 1000 and 30000.
+Let's generate regularly spaced values of potential Ne values whose AFS
+we want to investigate and compare to the obesrved AFS (our parameter grid):
+
+```{r}
 Ne_grid <- seq(from = 1000, to = 30000, by = 500)
 Ne_grid
+```
 
-# I'm not entirely sure if your workshop cloud instances support big
-# parallelization runs -- if not, you can modify the `mc.cores =` argument
-# a couple of lines below to a smaller number (`mc.cores = 1` would make
-# the simulation run on a single processor, i.e. no parallelization).
+With the parameter grid `Ne_grid` set up, let's simulate an AFS from each
+$N_e$ model:
+
+```{r}
 library(parallel)
 
-# Compute AFS (in parallel, to make things faster) across the entire grid of possible Ne values
 afs_grid <- mclapply(Ne_grid, simulate_afs, mc.cores = detectCores())
 names(afs_grid) <- Ne_grid
 
-# Show the first five simulated AFS vectors, for brevity
+# show the first five simulated AFS vectors, for brevity, just to demonstrate
+# what the output of the grid simulations is supposed to look like
 afs_grid[1:5]
+```
 
 
+Plot the observed AFS and overlay the simulated AFS vectors on top of it:
 
-# Plot the observed AFS...
+```{r}
 plot(afs_observed, type = "b", col = "black", lwd = 3, xlab = "allele count bin", ylab = "count")
-# ... and overlay the simulated AFS vectors on top of it
 for (i in seq_along(Ne_grid)) {
   lines(afs_grid[[i]], lwd = 0.5)
 }
 legend("topright", legend = c("observed AFS", "simulated AFS"), fill = c("black", "gray"))
+```
 
+Compute mean-squared error of the AFS produced by each $N_e$ value across the grid:
 
-
-
-# Compute mean-squared error of the AFS produced by each Ne value across the grid
+```{r}
 errors <- sapply(afs_grid, function(sim_afs) {
   sum((sim_afs - afs_observed)^2) / length(sim_afs)
 })
@@ -336,12 +345,12 @@ errors <- sapply(afs_grid, function(sim_afs) {
 plot(Ne_grid, errors, ylab = "error")
 abline(v = Ne_grid[which.min(errors)], col = "red")
 legend("topright", legend = paste("minimum error Ne =", Ne_grid[which.min(errors)]), fill = "red")
+```
 
+Plot the AFS again, but this time highlight the most likely spectrum
+(i.e. the one which gave the lowest RMSE value):
 
-
-
-# Plot the AFS again, but this time highlight the most likely spectrum
-# (i.e. the one which gave the lowest RMSE value)
+```{r}
 plot(afs_observed, type = "b", col = "black", lwd = 3, xlab = "allele count bin", ylab = "count")
 for (i in seq_along(Ne_grid)) {
   color <- if (i == which.min(errors)) "red" else "gray"
