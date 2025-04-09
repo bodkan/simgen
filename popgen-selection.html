@@ -318,6 +318,9 @@ window.Quarto = {
 </header>
 
 
+<hr>
+<p><strong>Note:</strong> Unfortunately, the most recent SLiM v4.3 is <a href="https://github.com/MesserLab/SLiM/issues/495">a little broken</a>, largely sabotaging the second half of this exercise in which <em>slendr</em> uses SLiM for non-neutral simulations. That said, the first half of the exercise works perfectly fine and, once SLiM v5.0 comes out (soon), everything from the first half will apply to the selection simulations. Alternatively, if you have the option, use SLiM 4.2.x.</p>
+<hr>
 <p>The primary motivation for designing <em>slendr</em> was to make demographic modelling in R as trivially easy and fast as possible, focusing exclusively on neutral models. However, as <em>slendr</em> became popular, people have been asking for the possibility of simulating natural selection. After all, a large part of <em>slendr</em>’s functionality deals with population genetic <a href="https://www.slendr.net/articles/vignette-06-locations.html">models across geographical landscapes</a>, which requires SLiM. So why not support selection simulations using <em>slendr</em> as well?</p>
 <p>In December 2024 I caved in and added support for modifying <em>slendr</em> demographic models with bits of SLiM code, which allows simulating pretty much any arbitrary selection scenario you might be interested in.</p>
 <p>This exercise is a quick demonstration of how this works and how you might simulate selection using <em>slendr</em>. We will do this using another toy model of ancient human history, which we will first use as a basis for simulating the frequency trajectory of an allele under positive selection, and then implementing a toy selection scan using Tajima’s D.</p>
@@ -409,7 +412,7 @@ Click to see the solution
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │      17992║
+║Trees          │      17928║
 ╟───────────────┼───────────╢
 ║Sequence Length│   10000000║
 ╟───────────────┼───────────╢
@@ -422,7 +425,7 @@ Click to see the solution
 ╔═══════════╤═════╤═════════╤════════════╗
 ║Table      │Rows │Size     │Has Metadata║
 ╠═══════════╪═════╪═════════╪════════════╣
-║Edges      │78826│  2.4 MiB│          No║
+║Edges      │79270│  2.4 MiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Individuals│  200│  5.5 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
@@ -430,7 +433,7 @@ Click to see the solution
 ╟───────────┼─────┼─────────┼────────────╢
 ║Mutations  │    0│ 16 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Nodes      │22130│605.1 KiB│          No║
+║Nodes      │22332│610.6 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Populations│    6│417 Bytes│         Yes║
 ╟───────────┼─────┼─────────┼────────────╢
@@ -551,10 +554,10 @@ $YAM
 <pre><code># A tibble: 4 × 2
   set         D
   &lt;chr&gt;   &lt;dbl&gt;
-1 ANA    0.139 
-2 EHG    0.0983
+1 ANA    0.0930
+2 EHG    0.0808
 3 EUR   -0.507 
-4 YAM   -0.241 </code></pre>
+4 YAM   -0.240 </code></pre>
 </div>
 </div>
 </div>
@@ -614,23 +617,23 @@ Click to see the solution
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>tajima_wins[<span class="dv">1</span>, ]<span class="sc">$</span>D</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$`1`
- [1]  0.85366756 -0.36925784  1.12497243  0.83908401 -0.22101146 -0.36298446
- [7] -0.43896438  0.52261654  0.88463938 -0.27791923  0.25205542 -0.34887928
-[13] -0.14326682  0.16734303 -1.40149322 -0.74549056 -0.09512486 -0.30193099
-[19]  0.36648140  0.51380624  0.36094888 -0.58855473 -0.92695111  0.11894804
-[25] -0.51999493  0.76695157  0.02355389  0.60211060  1.16676983  1.18143472
-[31] -0.06750928  0.32835207  0.44173660  0.06740290  1.07593374  0.36579825
-[37] -0.12810871 -0.53614484 -0.29656960 -0.14096175 -0.14726630  0.91740006
-[43] -0.39615893 -0.28697146 -0.36908782 -0.24395611  0.28836698  0.09070190
-[49]  0.40139409  0.30182502  0.67010416  0.53616436  0.39458042 -0.15225907
-[55]  0.11381057  0.68490381  0.42498272  0.43435921  0.22260306 -0.25439026
-[61]  0.42174204  0.14056208  0.12863243  0.33717707  0.38404867 -0.01602143
-[67]  0.71532358 -0.44037491  0.55891700  0.56910303 -0.96745806 -0.07062307
-[73] -0.60858662  0.51328913  0.28648119  0.02905245  0.74870907 -0.40612209
-[79]  0.71107289  0.11821869  0.29023382 -0.42643529  0.07288002  1.18145203
-[85] -0.25275104  0.24073474 -0.41077493 -0.59911774  0.30480631 -0.09373708
-[91]  0.58772333 -0.05048895  0.01315355 -0.08122462  0.25683980  0.12980977
-[97] -0.30866880 -1.11531777 -0.35990554</code></pre>
+ [1]  0.59175982  0.85035730  0.43643741 -0.30785395  0.05299144  0.08227384
+ [7]  0.12596791  0.55313277 -0.48234461 -0.24454306  0.35172901  0.46077574
+[13]  0.21400507 -0.30729237  0.01142803 -0.55458126  0.39681462 -0.65975264
+[19]  0.47262092  0.93678520  1.30396444  0.58932486 -0.95421276  0.43282704
+[25] -0.03839589  0.49305862  0.07828220 -0.33457130 -0.11256060 -0.30747035
+[31] -0.23126894 -0.40433647  0.90541981 -0.51880077 -0.08878819  0.01472611
+[37] -0.26474237 -0.14689457 -0.69061162 -1.07675089 -0.18427116 -0.61429053
+[43] -0.35145562  0.15191200  0.25103186 -0.68050452 -0.34271573 -0.35718833
+[49]  0.09370031 -0.18536781  0.55101452 -0.28938040  0.30154754  0.24506667
+[55]  0.16680623  0.15857736  0.28257250  0.22163523 -0.33526947  0.20866374
+[61] -0.48773165 -0.80142582  0.67860504  0.04423645 -0.15306676  0.95935040
+[67]  0.14254521  0.23878106 -0.34758274 -0.42150296 -0.03738918  0.29126065
+[73] -1.00330649  0.49516147  0.03398328 -0.65559100  0.85965565  0.29701913
+[79] -0.56050422 -0.84332050  0.26176755  0.22434536  0.09289977  0.84273720
+[85]  0.85791133  0.65457737 -0.70825581 -0.21752282  0.75232375  0.89674866
+[91] -0.44429135  0.33044963  0.33404375  0.81923866  0.02733803 -0.02638220
+[97]  0.47238971  0.58982796  0.51617579</code></pre>
 </div>
 </div>
 </div>
@@ -660,18 +663,18 @@ Click to see the solution
 <span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>tajima_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 396 × 3
-   set        D window
-   &lt;chr&gt;  &lt;dbl&gt;  &lt;int&gt;
- 1 ANA    0.854      1
- 2 ANA   -0.369      2
- 3 ANA    1.12       3
- 4 ANA    0.839      4
- 5 ANA   -0.221      5
- 6 ANA   -0.363      6
- 7 ANA   -0.439      7
- 8 ANA    0.523      8
- 9 ANA    0.885      9
-10 ANA   -0.278     10
+   set         D window
+   &lt;chr&gt;   &lt;dbl&gt;  &lt;int&gt;
+ 1 ANA    0.592       1
+ 2 ANA    0.850       2
+ 3 ANA    0.436       3
+ 4 ANA   -0.308       4
+ 5 ANA    0.0530      5
+ 6 ANA    0.0823      6
+ 7 ANA    0.126       7
+ 8 ANA    0.553       8
+ 9 ANA   -0.482       9
+10 ANA   -0.245      10
 # ℹ 386 more rows</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Now let's visualize the window-based Tajima's D along the simulated genome</span></span>
@@ -712,7 +715,7 @@ Click to see the solution
 <span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>extension</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "/var/folders/h2/qs0z_44x2vn2sskqc0cct7540000gn/T//RtmppMZ37J/file1857f27c066b2"</code></pre>
+<pre><code>[1] "/var/folders/h2/qs0z_44x2vn2sskqc0cct7540000gn/T//RtmpHShFcg/file17b35db4cea1"</code></pre>
 </div>
 </div>
 <p>You can see that <code>substitute_values()</code> returned a path to a file. <strong>Take a look at that file in your terminal – you should see each of the three <code>{placeholder}</code> parameters replaced with a concrete given value.</strong></p>
@@ -1020,12 +1023,12 @@ $YAM
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_tajima</span>(ts, <span class="at">sample_sets =</span> samples, <span class="at">mode =</span> <span class="st">"branch"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 4 × 2
-  set          D
-  &lt;chr&gt;    &lt;dbl&gt;
-1 ANA   -0.0312 
-2 EHG    0.00455
-3 EUR   -0.452  
-4 YAM   -0.353  </code></pre>
+  set         D
+  &lt;chr&gt;   &lt;dbl&gt;
+1 ANA    0.0273
+2 EHG   -0.0111
+3 EUR   -0.448 
+4 YAM   -0.348 </code></pre>
 </div>
 </div>
 <div class="cell">
