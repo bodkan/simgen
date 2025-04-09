@@ -24,7 +24,7 @@ init_env()
 
 chimp <- population("CHIMP", time = 7e6, N = 5000)
 afr <- population("AFR", parent = chimp, time = 6e6, N = 15000)
-eur <- population("EUR", parent = afr, time = 70e3, N = 3000)
+eur <- population("EUR", parent = afr, time = 60e3, N = 3000)
 nea <- population("NEA", parent = afr, time = 600e3, N = 1000, remove = 40e3)
 
 gf <- gene_flow(from = nea, to = eur, rate = 0.03, start = 55000, end = 50000)
@@ -35,16 +35,35 @@ model <- compile_model(
   generation_time = 30
 )
 
-# We will read a cached version of a tree sequence I simulated myself
-# to make sure we're all on the same page. That said, if you managed to
-# do Exercise 1 on your own, feel free to stick with your own tree sequence!
-ts <- ts_read(here::here("data/introgression.trees"), model = model)
-
 cowplot::plot_grid(
   plot_model(model, proportions = TRUE),
   plot_model(model, proportions = TRUE, log = TRUE),
   nrow = 1
 )
+
+# Here we scheduled the sampling of two Neanderthals at 70kya and 40kya
+nea_samples <- schedule_sampling(model, times = c(70000, 40000), list(nea, 1))
+
+# Here we schedule one Chimpanzee sample, 5 African samples, and 10 European samples
+present_samples <- schedule_sampling(model, times = 0, list(chimp, 1), list(afr, 5), list(eur, 10))
+
+# We also schedule the recording of one European sample between 50kya and 2kya,
+# every 2000 years
+times <- seq(40000, 2000, by = -2000)
+emh_samples <- schedule_sampling(model, times, list(eur, 1))
+
+# Because those functions produce nothing but a data frame, we can bind
+# individual sampling schedules together
+schedule <- rbind(nea_samples, present_samples, emh_samples)
+
+# We will read a cached version of a tree sequence I simulated myself
+# to make sure we're all on the same page. That said, if you managed to
+# do Exercise 1 on your own, feel free to stick with your own tree sequence!
+ts <-
+  msprime(model, sequence_length = 20e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>%
+  ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)
+
+ts
 ```
 
 As a sanity check, let's use a couple of tidyverse table-munging tricks

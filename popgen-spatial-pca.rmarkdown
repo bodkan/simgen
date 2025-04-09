@@ -1,0 +1,105 @@
+---
+filters: 
+ - collapse-callout.lua
+---
+
+
+
+# Spatial PCA
+
+
+**WIP:** Exploring how (and when) PCA patterns recapitulate geographical history of populations, inspired by this figure
+by Novembre _et al._ (2008).
+
+![Novembre et al., 2008](images/novembre2008a.jpg)
+
+
+
+```{r}
+library(slendr)
+init_env()
+
+library(admixr)
+library(cowplot)
+
+source("utils.R")
+
+model <- landscape_model(rate = 0.3, Ne = 10000)
+
+# pdf("exercise5.pdf", width = 8, height = 5)
+# for (n in c(50, 25, 10, 5, 2, 1)) {
+  n <- 10
+  schedule <- landscape_sampling(model, n)
+
+  ts <- msprime(model, samples = schedule, sequence_length = 20e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+
+  samples <- ts_samples(ts)
+
+  ts_eigenstrat(ts, "data/spatial_pca1")
+
+  plot_pca("data/spatial_pca1", ts, model = "map", color_by = "pop") 
+
+# }
+# dev.off()
+```
+
+
+
+
+
+
+
+
+### Per-population Ne values
+
+
+
+```{r}
+library(slendr)
+init_env()
+
+library(admixr)
+library(cowplot)
+
+source("utils.R")
+
+Ne <- list(
+  p1 = 10000,
+  p2 = 10000,
+  p3 = 10000,
+  p4 = 10000,
+  p5 = 100,
+  p6 = 10000,
+  p7 = 10000,
+  p8 = 10000,
+  p9 = 10000,
+  p10 = 10000
+)
+
+model <- landscape_model(rate = 0.3, Ne = Ne)
+
+n <- list(
+  p1 = 50,
+  p2 = 50,
+  p3 = 50,
+  p4 = 50,
+  p5 = 5,
+  p6 = 50,
+  p7 = 50,
+  p8 = 50,
+  p9 = 50,
+  p10 = 50
+)
+
+schedule <- landscape_sampling(model, n)
+
+ts <- msprime(model, samples = schedule, sequence_length = 20e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+
+ts_eigenstrat(ts, "data/spatial_pca2")
+
+read_ind(eigenstrat("data/spatial_pca2"))
+ts_samples(ts)
+
+plot_pca("data/spatial_pca2", ts, model = "map", color = "pop")
+```
+
