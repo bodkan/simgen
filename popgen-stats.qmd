@@ -35,12 +35,6 @@ model <- compile_model(
   generation_time = 30
 )
 
-cowplot::plot_grid(
-  plot_model(model, proportions = TRUE),
-  plot_model(model, proportions = TRUE, log = TRUE),
-  nrow = 1
-)
-
 # Here we scheduled the sampling of two Neanderthals at 70kya and 40kya
 nea_samples <- schedule_sampling(model, times = c(70000, 40000), list(nea, 1))
 
@@ -56,9 +50,9 @@ emh_samples <- schedule_sampling(model, times, list(eur, 1))
 # individual sampling schedules together
 schedule <- rbind(nea_samples, present_samples, emh_samples)
 
-# We will read a cached version of a tree sequence I simulated myself
-# to make sure we're all on the same page. That said, if you managed to
-# do Exercise 1 on your own, feel free to stick with your own tree sequence!
+# Simulate a tree sequence (with mutations) -- feel free to increase the amount
+# of sequence from 20Mb to something like 100Mb (100e6 bp) if you want  to reduce
+# the statistical noise a bit
 ts <-
   msprime(model, sequence_length = 20e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>%
   ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)
