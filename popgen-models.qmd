@@ -78,7 +78,7 @@ RStudio shortcut like Ctrl+Enter (Linux and Windows), or Cmd+Enter (Mac).
 library(slendr)
 init_env()
 
-dir.create("data/introgression", recursive = TRUE, showWarnings = FALSE)
+dir.create("popgen_files/introgression", recursive = TRUE, showWarnings = FALSE)
 
 # Chimpanzee outgroup
 chimp <- population("CHIMP", time = 7e6, N = 5000)
@@ -99,7 +99,7 @@ model <- compile_model(
   populations = list(chimp, nea, afr, eur),
   gene_flow = gf,
   generation_time = 30,
-  path = "data/introgression",     # <--- don't worry about these two
+  path = "popgen_files/introgression",     # <--- don't worry about these two
   overwrite = TRUE, force = TRUE   # <--- lines of code (ask me if interested)
 )
 ```
@@ -436,12 +436,6 @@ pipe patterns I showed you.)
 #### Click to see the solution
 
 ```{r}
-#| echo: false
-model <- read_model(here::here("data/introgression"))
-ts <- ts_read(file = here::here("data/introgression.trees"), model = model)
-```
-
-```{r}
 #| eval: false
 # The command below will likely take a few minutes to run, so feel free to go
 # down from 100 Mb sequence_length to even 10Mb (it doesn't matter much).
@@ -453,14 +447,21 @@ ts <-
 
 # If you're bothered by ho long this takes, feel free to call these two lines
 # to 100% reproduce my results without any expensive computation:
-model <- read_model(here::here("data/introgression"))
-ts <- ts_read(here::here(file = "data/introgression.trees"), model = model)
+model <- read_model(here::here("popgen_files/introgression"))
+ts <- ts_read(here::here(file = "popgen_files/introgression.trees"), model = model)
 
 # We can save a tree sequence object using a slendr function `ts_write` (this
 # can be useful if we want to save the results of a simulation for later use).
 dir.create("data", showWarnings = FALSE)
-ts_write(ts, "data/introgression.trees")
+ts_write(ts, here::here("popgen_files/introgression.trees"))
 ```
+
+```{r}
+#| echo: false
+model <- read_model(here::here("popgen_files/introgression"))
+ts <- ts_read(file = here::here("popgen_files/introgression.trees"), model = model)
+```
+
 :::
 
 **Inspect the tree-sequence object saved in the `ts` variable by typing
