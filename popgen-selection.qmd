@@ -1,6 +1,8 @@
 ---
 filters: 
  - collapse-callout.lua
+execute:
+  freeze: auto  # re-render only when source changes
 ---
 
 # Natural selection
@@ -44,7 +46,7 @@ init_env(quiet = TRUE)
 
 # This line sources a script in which I provide a few useful helper functions
 # which you can use in this exercise
-source(here::here("popgen_utils.R"))
+source(here::here("popgen_files/popgen_utils.R"))
 
 # African ancestral population
 afr <- population("AFR", time = 65000, N = 5000)
@@ -230,7 +232,7 @@ of my helper functions `plot_tajima(tajima_df)`.**
 
 ::: aside
 **Note:** Making the `process_tajima()` and `plot_tajima()` function available
-in your R code is the purpose of the `source(here::here("popgen_utils.R"))` command
+in your R code is the purpose of the `source(here::here("popgen_files/popgen_utils.R"))` command
 at the beginning of your script for this exercise.
 :::
 
@@ -311,7 +313,7 @@ for those parameters like this:**
 
 ```{r}
 extension <- substitute_values(
-  template = here::here("slim_extension.txt"),
+  template = here::here("popgen_files/slim_extension.txt"),
   origin_pop = "EUR",
   s = 0.15,
   onset_time = 12000
@@ -333,7 +335,7 @@ you can use `less` in plain unix terminal.
 **Before -- see the {{placeholder}} parameters in their original form:**
 ```{r}
 #| echo: false
-cat(paste(readLines("slim_extension.txt")[1:11], collapse = "\n"))
+cat(paste(readLines(here::here("popgen_files/slim_extension.txt"))[1:11], collapse = "\n"))
 ```
 
 **After -- see the {{placeholder}} parameters with concrete values!**
@@ -440,7 +442,7 @@ file -- this was done by the SLiM customization snippet we provided to
 ```{r}
 # If you don't have SLiM set up, just use the simulated results from my own
 # run of the same simulation
-path <- here::here("data/selection")
+path <- here::here("popgen_files/data/selection")
 
 # We can verify that the path not only contains a tree-sequence file but also
 # the table of allele frequencies.
@@ -520,7 +522,7 @@ it possible to do. Just copy it in your `selection.R` script as it is:
 ```{r}
 # Let's use my own saved simulation results, so that we're all on the
 # same page going forward
-path <- here::here("data/selection")
+path <- here::here("popgen_files/data/selection")
 
 ts <-
   file.path(path, "slim.trees") %>%  # 1. compose full path to the slim.trees file
@@ -640,11 +642,12 @@ selection-based workflow in this exercise.
 ```{r}
 #| eval: false
 extension <- substitute_values(
-  template = "slim_extension.txt",
+  template = here::here("popgen_files/slim_extension.txt"),
   origin_pop = "EHG",
   s = 0.1,
   onset_time = 12000
 )
+
 model <- compile_model(
   populations = list(afr, ooa, ehg, eur, ana, yam),
   gene_flow = gf, generation_time = 30,
