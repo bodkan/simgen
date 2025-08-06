@@ -28,6 +28,8 @@ you're still writing programs. You're a programmer. Exercises in this chapter
 are designed to make you comfortable with programming and algorithmic thinking.
 
 ```{r}
+library(magrittr)
+
 simulate_trajectory <- function(p_init, generations, Ne) {
   trajectory <- c(p_init)
 
@@ -45,40 +47,16 @@ simulate_trajectory <- function(p_init, generations, Ne) {
   return(trajectory)
 }
 
-simulate_and_plot <- function(p0, s, total_time, N_loci, Ne, h=0.5) {
-    traj <- simulate_selection(p0, s, h, total_time, N_loci, Ne)
+traj1 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj2 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj3 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj4 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj5 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
 
-    # plot the average Nea. ancestry and the prediction from the theory
-    print(
-        qplot(x = 1:total_time, y = apply(traj, 1, mean), geom = "line",
-              xlab = "time [generations]", ylab = "frequency",
-              ylim=c(0, 1),
-              main="Average frequencies (black) vs single-locus theory (red)") +
-        geom_line(
-            aes(x = 1:total_time, y = map_dbl(1:total_time, ~ deterministic_solution(p0, s, t = .x))),
-            col="red"
-        )
-    )
-
-    # plot the individual allele frequencies and the prediction from the theory
-    print(
-        as.data.frame(traj) %>% mutate(gen=1:total_time) %>% gather(allele, freq, -gen) %>%
-        ggplot(aes(gen, freq, group=allele)) + ylim(0, 1) +
-        ggtitle("Allele frequencies (black) vs single-locus theory (red)") +
-        geom_line(size=0.05) +
-        geom_line(aes(gen, freq, color = "red"),
-                      data = data.frame(
-                      gen = 1:total_time,
-                      allele = "theory",
-                      freq = map_dbl(1:total_time, ~ deterministic_solution(p0, s, t = .x)))) +
-        theme(legend.position="none") +
-        labs(x = "time [generations]", y = "frequency")
-    )
-
-    # plot the SFS of Nea. alleles
-    #print(qplot(traj[total_time, ], bins=100, xlim=c(-0.05, 1.05), main="SFS of Nea. introgressed alleles"))
-}
-
-simulate_and_plot(p0 = 0.5, s = 0.0, total_time = 2000, N_loci = 200, Ne = 10000)
+plot(traj1, type = "l", ylim = c(0, 1), xlab = "generations", ylab = "allele frequency")
+lines(traj2)
+lines(traj3)
+lines(traj4)
+lines(traj5)
 ```
 
