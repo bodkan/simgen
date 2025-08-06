@@ -1,0 +1,84 @@
+# R programming language
+
+In a wider programming world, R sometimes has a slightly unfortunate reputation
+as a badly designed "calculator language". A computing environment which is
+maybe good for working with data frames and creating figures, but that's about
+it. While certainly very useful for data science, R is a full-blown programming
+language which is actually quite powerful even from a purely computer science
+perspective.
+
+Although this entire workshop is very firmly standing in the field of data
+science and computational population genetics, and we will certainly use R
+as a statistical and visualization environment, neglecting the "normal" aspects
+of R as a "proper" programming language like any other and, worse still,
+not regarding our use of R as programming, can be quite detrimental.
+Even when "just" doing data science and statistics, we still use programming
+constructs, we need to be aware of data types, algorithmic thinking, etc.
+Neglecting these things makes it easy to introduce bugs into our code, make
+it hard to find those bugs, and make our programs less efficient even when
+they do work.
+
+This chapter will help you get familiar with some of the less obvious aspects
+of the R language or programming in general, definitely how data science is
+presented in undergratuate courses in life sciences.
+
+Because here's a crucial idea you might not be aware of: even when you're
+"just" writing data analysis scripts, even when you're "just" plotting results,
+you're still writing programs. You're a programmer. Exercises in this chapter
+are designed to make you comfortable with programming and algorithmic thinking.
+
+```{r}
+simulate_trajectory <- function(p_init, generations, Ne) {
+  trajectory <- c(p_init)
+
+  # for each generation...
+  for (gen in seq_len(generations)) {
+    # ... based on the allele frequency in the current generation...
+    p_current <- trajectory[gen]
+    # ... compute the frequency in the next generation...
+    n_next <- rbinom(Ne, 1, p_current)
+    p_next <- sum(n_next) / Ne
+    # ... and save it in the trajectory vector
+    trajectory[gen + 1] <- p_next
+  }
+  
+  return(trajectory)
+}
+
+simulate_and_plot <- function(p0, s, total_time, N_loci, Ne, h=0.5) {
+    traj <- simulate_selection(p0, s, h, total_time, N_loci, Ne)
+
+    # plot the average Nea. ancestry and the prediction from the theory
+    print(
+        qplot(x = 1:total_time, y = apply(traj, 1, mean), geom = "line",
+              xlab = "time [generations]", ylab = "frequency",
+              ylim=c(0, 1),
+              main="Average frequencies (black) vs single-locus theory (red)") +
+        geom_line(
+            aes(x = 1:total_time, y = map_dbl(1:total_time, ~ deterministic_solution(p0, s, t = .x))),
+            col="red"
+        )
+    )
+
+    # plot the individual allele frequencies and the prediction from the theory
+    print(
+        as.data.frame(traj) %>% mutate(gen=1:total_time) %>% gather(allele, freq, -gen) %>%
+        ggplot(aes(gen, freq, group=allele)) + ylim(0, 1) +
+        ggtitle("Allele frequencies (black) vs single-locus theory (red)") +
+        geom_line(size=0.05) +
+        geom_line(aes(gen, freq, color = "red"),
+                      data = data.frame(
+                      gen = 1:total_time,
+                      allele = "theory",
+                      freq = map_dbl(1:total_time, ~ deterministic_solution(p0, s, t = .x)))) +
+        theme(legend.position="none") +
+        labs(x = "time [generations]", y = "frequency")
+    )
+
+    # plot the SFS of Nea. alleles
+    #print(qplot(traj[total_time, ], bins=100, xlim=c(-0.05, 1.05), main="SFS of Nea. introgressed alleles"))
+}
+
+simulate_and_plot(p0 = 0.5, s = 0.0, total_time = 2000, N_loci = 200, Ne = 10000)
+```
+
