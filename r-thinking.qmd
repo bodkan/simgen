@@ -1,1 +1,62 @@
 # Algorithmic thinking
+
+
+## Part N: Generalizing code as a function
+
+::: {.callout-note collapse="true"}
+#### Click to see the solution
+
+```{r}
+simulate_trajectory <- function(p_init, generations, Ne) {
+  trajectory <- c(p_init)
+
+  # for each generation...
+  for (gen in seq_len(generations)) {
+    # ... based on the allele frequency in the current generation...
+    p_current <- trajectory[gen]
+    # ... compute the frequency in the next generation...
+    n_next <- rbinom(Ne, 1, p_current)
+    p_next <- sum(n_next) / Ne
+    # ... and save it in the trajectory vector
+    trajectory[gen + 1] <- p_next
+  }
+  
+  return(trajectory)
+}
+
+traj1 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj2 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj3 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+
+plot(traj1, type = "l", xlim = c(1, 1000), ylim = c(0, 1), xlab = "generations", ylab = "allele frequency")
+lines(traj2)
+lines(traj3)
+```
+
+:::
+
+## Part N: Running simulations in a loop
+
+::: {.callout-note collapse="true"}
+#### Click to see the solution
+
+```{r}
+n_reps <- 20
+
+traj_list <- lapply(
+  1:n_reps,
+  function(i) simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+)
+
+# create an empty plot (we have to specify the boundaries and other parameters!)
+plot(NULL, type = "l", xlim = c(1, 1000), ylim = c(0, 1), xlab = "generations", ylab = "allele frequency")
+
+# then overlay all trajectories in an automated way
+for (traj in traj_list) {
+  lines(traj)
+}
+```
+
+:::
+
+
