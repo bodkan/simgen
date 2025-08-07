@@ -20,41 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -334,45 +299,6 @@ window.Quarto = {
 <p>Although this entire workshop is very firmly standing in the field of data science and computational population genetics, and we will certainly use R as a statistical and visualization environment, neglecting the “normal” aspects of R as a “proper” programming language like any other and, worse still, not regarding our use of R as programming, can be quite detrimental. Even when “just” doing data science and statistics, we still use programming constructs, we need to be aware of data types, algorithmic thinking, etc. Neglecting these things makes it easy to introduce bugs into our code, make it hard to find those bugs, and make our programs less efficient even when they do work.</p>
 <p>This chapter will help you get familiar with some of the less obvious aspects of the R language or programming in general, definitely how data science is presented in undergratuate courses in life sciences.</p>
 <p>Because here’s a crucial idea you might not be aware of: even when you’re “just” writing data analysis scripts, even when you’re “just” plotting results, you’re still writing programs. You’re a programmer. Exercises in this chapter are designed to make you comfortable with programming and algorithmic thinking.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(magrittr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>simulate_trajectory <span class="ot">&lt;-</span> <span class="cf">function</span>(p_init, generations, Ne) {</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  trajectory <span class="ot">&lt;-</span> <span class="fu">c</span>(p_init)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># for each generation...</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (gen <span class="cf">in</span> <span class="fu">seq_len</span>(generations)) {</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... based on the allele frequency in the current generation...</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    p_current <span class="ot">&lt;-</span> trajectory[gen]</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... compute the frequency in the next generation...</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    n_next <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(Ne, <span class="dv">1</span>, p_current)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    p_next <span class="ot">&lt;-</span> <span class="fu">sum</span>(n_next) <span class="sc">/</span> Ne</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... and save it in the trajectory vector</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    trajectory[gen <span class="sc">+</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> p_next</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(trajectory)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>traj1 <span class="ot">&lt;-</span> <span class="fu">simulate_trajectory</span>(<span class="at">p_init =</span> <span class="fl">0.5</span>, <span class="at">generations =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>traj2 <span class="ot">&lt;-</span> <span class="fu">simulate_trajectory</span>(<span class="at">p_init =</span> <span class="fl">0.5</span>, <span class="at">generations =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>traj3 <span class="ot">&lt;-</span> <span class="fu">simulate_trajectory</span>(<span class="at">p_init =</span> <span class="fl">0.5</span>, <span class="at">generations =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>traj4 <span class="ot">&lt;-</span> <span class="fu">simulate_trajectory</span>(<span class="at">p_init =</span> <span class="fl">0.5</span>, <span class="at">generations =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>traj5 <span class="ot">&lt;-</span> <span class="fu">simulate_trajectory</span>(<span class="at">p_init =</span> <span class="fl">0.5</span>, <span class="at">generations =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(traj1, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>), <span class="at">xlab =</span> <span class="st">"generations"</span>, <span class="at">ylab =</span> <span class="st">"allele frequency"</span>)</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(traj2)</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(traj3)</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(traj4)</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(traj5)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
 
 
 
