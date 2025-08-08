@@ -29,13 +29,13 @@ handouts: $(handouts_html)
 $(rendered_dir)/slides_%.html: slides_%.qmd
 	sed -i '/### handouts/ s/^/#/' $<
 	sed -i '/### remove for slides/d' $<
-	quarto publish quarto-pub --no-browser $<
+	quarto publish quarto-pub --no-prompt --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
 	mv $(notdir $@) $(rendered_dir); rm $<
 
 $(rendered_dir)/handouts_%.html: handouts_%.qmd
 	sed -i '/### slides/ s/^/#/' $<
-	quarto publish quarto-pub --no-browser $<
+	quarto publish quarto-pub --no-prompt --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
 	mv $(notdir $@) $(rendered_dir); rm $<
 
