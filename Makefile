@@ -11,7 +11,9 @@ all: book slides handouts
 book:
 	quarto publish gh-pages
 
-slides: $(slides_files)
+slides: $(slides_html)
+
+handouts: $(handouts_html)
 
 slides_%.html: slides_%.qmd
 	sed -i '/### handouts/ s/^/#/' $<
