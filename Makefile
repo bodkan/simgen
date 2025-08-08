@@ -2,41 +2,48 @@ chapters := slendr
 
 rendered_dir := rendered
 
-slides_qmd := $(foreach chapter,$(chapters),$(rendered_dir)/slides_$(chapter).html)
+slides_qmd := $(foreach chapter,$(chapters),slides_$(chapter).qmd)
+slides_html := $(addprefix $(rendered_dir)/,$(subst .qmd,.html,$(slides_qmd)))
+
 handouts_qmd := $(subst slides,handouts,$(slides_qmd))
+handouts_html := $(subst slides,handouts,$(slides_html))
 
-slides_html := $(subst .html,.qmd,$(slides_qmd))
-handouts_html := $(subst .html,.qmd,$(handouts_qmd))
+debug:
+	@echo $(slides_qmd)
+	@echo $(handouts_qmd)
+	@echo "---"
+	@echo $(slides_html)
+	@echo $(handouts_html)
 
-all: book slides_html handouts_html
+all: book slides handouts
 
 book:
 	quarto publish gh-pages
 
-slides_html: $(slides_html)
+slides: $(slides_html)
 
-handouts_html: $(handouts_html)
+handouts: $(handouts_html)
 
-$(rendered_dir)/slides_%.html: $(rendered_dir)/slides_%.qmd
+$(rendered_dir)/slides_%.html: slides_%.qmd
 	sed -i '/### handouts/ s/^/#/' $<
 	sed -i '/### remove for slides/d' $<
 	quarto publish quarto-pub --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
-	rm $<
+	mv $(notdir $@) $(rendered_dir); rm $<
 
-$(rendered_dir)/handouts_%.html: $(rendered_dir)/handouts_%.qmd
+$(rendered_dir)/handouts_%.html: handouts_%.qmd
 	sed -i '/### slides/ s/^/#/' $<
 	quarto publish quarto-pub --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
-	rm $<
+	mv $(notdir $@) $(rendered_dir); rm $<
 
-$(rendered_dir)/slides_%.qmd: %.qmd
+slides_%.qmd: %.qmd
 	mkdir -p $(rendered_dir)
 	cat slides_header.txt $< slides_footer.txt > $@
 
-$(rendered_dir)/handouts_slendr.qmd:
+handouts_%.qmd:
 	mkdir -p $(rendered_dir)
 	cat slides_header.txt $< slides_footer.txt > $@
 
 clean:
-	rm -r $(rendered_dir)
+	rm -f $(slides_qmd) $(handouts_qmd) $(slides_html) $(handouts_html)
