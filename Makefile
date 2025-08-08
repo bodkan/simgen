@@ -20,7 +20,7 @@ debug:
 all: book slides handouts
 
 book: $(handouts_qmd)
-	quarto publish gh-pages
+	quarto publish gh-pages --no-prompt
 
 slides: $(addprefix $(rendered_dir)/,$(slides_html))
 
