@@ -19,7 +19,7 @@ debug:
 
 all: book slides handouts
 
-book:
+book: $(handouts_qmd)
 	quarto publish gh-pages
 
 slides: $(addprefix $(rendered_dir)/,$(slides_html))
@@ -37,7 +37,7 @@ $(rendered_dir)/handouts_%.html: handouts_%.qmd
 	sed -i '/### slides/ s/^/#/' $<
 	quarto publish quarto-pub --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
-	mv $(notdir $@) $(rendered_dir); rm $<
+	mv $(notdir $@) $(rendered_dir)
 
 slides_%.qmd: %.qmd
 	cat slides_header.txt $< slides_footer.txt > $@
