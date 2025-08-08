@@ -1,7 +1,9 @@
 chapters := slendr
 
-slides_qmd := $(foreach chapter,$(chapters),rendered/slides_$(chapter).html)
-handouts_qmd := $(foreach chapter,$(chapters),rendered/handouts_$(chapter).html)
+rendered_dir := rendered
+
+slides_qmd := $(foreach chapter,$(chapters),$(rendered_dir)/slides_$(chapter).html)
+handouts_qmd := $(subst slides,handouts,$(slides_qmd))
 
 slides_html := $(subst .html,.qmd,$(slides_qmd))
 handouts_html := $(subst .html,.qmd,$(handouts_qmd))
@@ -15,27 +17,26 @@ slides_html: $(slides_html)
 
 handouts_html: $(handouts_html)
 
-rendered/slides_%.html: slides_%.qmd
+$(rendered_dir)/slides_%.html: $(rendered_dir)/slides_%.qmd
 	sed -i '/### handouts/ s/^/#/' $<
 	sed -i '/### remove for slides/d' $<
 	quarto publish quarto-pub --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
 	rm $<
 
-rendered/handouts_%.html: handouts_%.qmd
+$(rendered_dir)/handouts_%.html: $(rendered_dir)/handouts_%.qmd
 	sed -i '/### slides/ s/^/#/' $<
 	quarto publish quarto-pub --no-browser $<
 	git add $@; git commit -m "Update $@"; git push
 	rm $<
 
-rendered/slides_%.qmd: %.qmd
-	cat slides_files/slides_header.txt $< slides_files/slides_footer.txt > $@
+$(rendered_dir)/slides_%.qmd: %.qmd
+	mkdir -p $(rendered_dir)
+	cat slides_header.txt $< slides_footer.txt > $@
 
-rendered/handouts_slendr.qmd:
-	cat slides_files/slides_header.txt $< slides_files/slides_footer.txt > $@
+$(rendered_dir)/handouts_slendr.qmd:
+	mkdir -p $(rendered_dir)
+	cat slides_header.txt $< slides_footer.txt > $@
 
-clean_qmd:
-	rm -f $(slides_qmd) $(handouts_qmd)
-
-clean_html:
-	rm -f $(slides_html) $(handouts_html) $(slides_qmd) $(handouts_qmd)
+clean:
+	rm -r $(rendered_dir)
