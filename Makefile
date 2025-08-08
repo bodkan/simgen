@@ -42,7 +42,7 @@ $(rendered_dir)/handouts_%.html: handouts_%.qmd
 slides_%.qmd: %.qmd
 	cat slides_header.txt $< slides_footer.txt > $@
 
-handouts_%.qmd:
+handouts_%.qmd: %.qmd
 	cat slides_header.txt $< slides_footer.txt > $@
 
 clean:
