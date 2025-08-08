@@ -1,8 +1,3 @@
-all: book slides handouts
-
-book:
-	quarto publish gh-pages
-
 chapters := slendr
 
 slides_qmd := $(foreach chapter,$(chapters),slides_$(chapter).html)
@@ -10,6 +5,11 @@ handouts_qmd := $(foreach chapter,$(chapters),handouts_$(chapter).html)
 
 slides_html := $(subst .html,.qmd,$(slides_qmd))
 handouts_html := $(subst .html,.qmd,$(handouts_qmd))
+
+all: book slides handouts
+
+book:
+	quarto publish gh-pages
 
 slides: $(slides_files)
 
