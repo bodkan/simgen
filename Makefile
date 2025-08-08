@@ -2,6 +2,8 @@ chapters := slendr
 
 rendered_dir := rendered
 
+$(shell mkdir -p $(rendered_dir))
+
 slides_qmd := $(foreach chapter,$(chapters),slides_$(chapter).qmd)
 slides_html := $(addprefix $(rendered_dir)/,$(subst .qmd,.html,$(slides_qmd)))
 
@@ -38,11 +40,9 @@ $(rendered_dir)/handouts_%.html: handouts_%.qmd
 	mv $(notdir $@) $(rendered_dir); rm $<
 
 slides_%.qmd: %.qmd
-	mkdir -p $(rendered_dir)
 	cat slides_header.txt $< slides_footer.txt > $@
 
 handouts_%.qmd:
-	mkdir -p $(rendered_dir)
 	cat slides_header.txt $< slides_footer.txt > $@
 
 clean:
