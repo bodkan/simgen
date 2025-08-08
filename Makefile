@@ -46,4 +46,7 @@ handouts_%.qmd:
 	cat slides_header.txt $< slides_footer.txt > $@
 
 clean:
-	rm -rf $(slides_qmd) $(handouts_qmd) $(slides_html) $(handouts_html) $(rendered_dir)
+	rm -rf $(slides_qmd) $(handouts_qmd) $(slides_html) $(handouts_html)
+
+clean-all:
+	rm -rf  $(rendered_dir)
