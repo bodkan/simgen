@@ -24,7 +24,7 @@ $(rendered_dir)/slides_%.html: slides_%.qmd
 	mv $(notdir $@) $(rendered_dir)
 
 handouts_%.qmd: slides_%.qmd
-	grep -v '### slides' $< > $@
+	grep -v '### slides' $< | grep -v '^---$$' > $@
 
 clean:
 	rm -rf  $(rendered_dir)
