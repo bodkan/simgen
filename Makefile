@@ -4,24 +4,36 @@ book:
 	quarto publish gh-pages
 
 chapters := slendr
-slides_files := $(foreach chapter,$(chapters),slides_$(chapter).qmd)
-handouts_files := $(foreach chapter,$(chapters),handouts_$(chapter).qmd)
 
-slides: slides_slendr.qmd
-	sed -i '/### handouts/ s/^/#/' slides_slendr.qmd
-	sed -i '/### remove for slides/d' slides_slendr.qmd
-	quarto publish quarto-pub --no-prompt slides_slendr.qmd
-	git add slides_slendr.html; git commit -m "Update slides_slendr.html"; git push
-	rm slides_slendr.qmd
+slides_qmd := $(foreach chapter,$(chapters),slides_$(chapter).html)
+handouts_qmd := $(foreach chapter,$(chapters),handouts_$(chapter).html)
 
-handouts: handouts_slendr.qmd
-	sed -i '/### slides/ s/^/#/' handouts_slendr.qmd
-	quarto publish quarto-pub --no-prompt handouts_slendr.qmd
-	git add handouts_slendr.html; git commit -m "Update handouts_slendr.html"; git push
-	rm handouts_slendr.qmd
+slides_html := $(subst .html,.qmd,$(slides_qmd))
+handouts_html := $(subst .html,.qmd,$(handouts_qmd))
 
-slides_slendr.qmd:
-	cat slides_files/slides_header.txt slendr-why.qmd slendr-crash-course.qmd slides_files/slides_footer.txt > slides_slendr.qmd
+slides: $(slides_files)
+
+slides_%.html: slides_%.qmd
+	sed -i '/### handouts/ s/^/#/' $<
+	sed -i '/### remove for slides/d' $<
+	quarto publish quarto-pub --no-browser $<
+	git add $@; git commit -m "Update $@"; git push
+	rm $<
+
+handouts_%.html: handouts_%.qmd
+	sed -i '/### slides/ s/^/#/' $<
+	quarto publish quarto-pub --no-browser $<
+	git add $@; git commit -m "Update $@"; git push
+	rm $<
+
+slides_%.qmd: %.qmd
+	cat slides_files/slides_header.txt $< slides_files/slides_footer.txt > $@
 
 handouts_slendr.qmd:
-	cat slides_files/slides_header.txt slendr-why.qmd slendr-crash-course.qmd slides_files/slides_footer.txt > handouts_slendr.qmd
+	cat slides_files/slides_header.txt $< slides_files/slides_footer.txt > $@
+
+clean_qmd:
+	rm -f $(slides_qmd) $(handouts_qmd)
+
+clean_html:
+	rm -f $(slides_html) $(handouts_html) $(slides_qmd) $(handouts_qmd)
