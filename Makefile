@@ -9,7 +9,7 @@ debug:
 	@echo $(slides_html)
 	@echo $(handouts_qmd)
 
-all: book slides handouts
+all: book slides
 
 book: $(handouts_qmd)
 	quarto publish gh-pages --no-prompt
