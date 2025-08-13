@@ -7,10 +7,22 @@ structure encoding the relationships between populations and gene flows
 between them". For the time being, these models will be always neutral and will
 conform to Wright-Fisher assumptions.
 
+::: {.aside}
+**Note:** This exercise session is split into individual **"Parts"** intended to be
+solved in order. Different tasks within each individual Part are **highlighted
+in bold**.
+
+If you ever get totally stuck, take a look at the provided solution. The point
+of these exercises is to learn things, not fight through endless frustration.
+That said, try not to look at the solution automatically, always take a stab at
+solving each exercise on your own first.
+:::
+
 ## Part 1: Building a demographic model in _slendr_
 
 **Use functions such as `population()`, `gene_flow()`, and `compile_model()`,
-which we discussed in the "_slendr_ crash course", to program the following
+which we discussed in ["Introduction to _slendr"_](https://bodkan.net/simgen/handouts_slendr.html),
+to program the following
 toy model of human demographic history in _slendr_.** (Apologies for my
 bad handwriting and the lack of any artistic skill.)
 
@@ -435,21 +447,28 @@ pipe patterns I showed you.)
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+The command below will likely take a few minutes to run, so feel free to go
+down from 100 Mb sequence_length to even 10Mb (it doesn't matter much).
+(The `random_seed =` argument is there for reproducibility purposes.)
+
 ```{r}
 #| eval: false
-# The command below will likely take a few minutes to run, so feel free to go
-# down from 100 Mb sequence_length to even 10Mb (it doesn't matter much).
-# (The `random_seed =` argument is there for reproducibility purposes.)
 ts <-
   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>%
   ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)
 # Time difference of 2.141642 mins
+```
 
-# If you're bothered by ho long this takes, feel free to call these two lines
-# to 100% reproduce my results without any expensive computation:
-model <- read_model(here::here("files/popgen/introgression"))
+
+If you're bothered by how long the simulation takes, feel free to call these two lines
+to 100% reproduce my results without any expensive computation:
+
+```{r}
 ts <- ts_read(here::here(file = "files/popgen/introgression.trees"), model = model)
+```
 
+```{r}
+#| echo: false
 # We can save a tree sequence object using a slendr function `ts_write` (this
 # can be useful if we want to save the results of a simulation for later use).
 dir.create("data", showWarnings = FALSE)
