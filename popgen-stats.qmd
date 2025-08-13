@@ -172,16 +172,20 @@ data frame as a new column.
 
 **Population-based nucleotide diversity:**
 
+Let's first get a named list of individuals in each group we want to be
+working with (slendr tree-sequence statistic functions generally operate
+with this kind of structure):
+
 ```{r}
-# Let's first get a named list of individuals in each group we want to be
-# working with (slendr tree-sequence statistic functions generally operate
-# with this kind of structure)
 sample_sets <- ts_names(ts, split = "pop")
 sample_sets
+```
 
-# We can use such `sample_sets` object to compute nucleotide diversity (pi)\
-# in each population, in a bit of a similar manner to how we would do it
-# with the standard tskit in Python
+We can use such `sample_sets` object to compute nucleotide diversity (pi)\
+in each population, in a bit of a similar manner to how we would do it
+with the [standard _tskit_ in Python](https://tskit.dev/tskit/docs/stable/python-api.html#tskit.TreeSequence.diversity):
+
+```{r}
 pi_pop <- ts_diversity(ts, sample_sets = sample_sets)
 arrange(pi_pop, diversity)
 ```
@@ -193,18 +197,22 @@ long-term $N_e$ encoded by your _slendr_ demografr model.
 
 We can do this by passing the vector of individual names directory as the `sample_sets =` argument, rather than in a list of groups as we did above.
 
+For convenience, we first get a table of all individuals (which of course
+contains also their names) and in the next step, we'll just add their
+heterozygosities as a new column:
+
 ```{r}
-# For convenience, we first get a table of all individuals (which of course
-# contains also their names) and in the next step, we'll just add their
-# heterozygosities as a new column.
 pi_df <- ts_samples(ts)
 pi_df$name
 
 pi_df$diversity <- ts_diversity(ts, sample_sets = pi_df$name)$diversity
 pi_df
+```
 
-# Let's plot the results using the ggplot2 package
-# (because a picture is worth a thousand numbers!)
+Let's plot the results using the ggplot2 package (because a picture is worth
+a thousand numbers!)
+
+```{r}
 library(ggplot2)
 
 ggplot(pi_df, aes(pop, diversity, color = pop, group = pop)) +
@@ -212,6 +220,7 @@ ggplot(pi_df, aes(pop, diversity, color = pop, group = pop)) +
   geom_jitter() +
   theme_bw()
 ```
+
 :::
 
 ## Part 2: Computing pairwise divergence
@@ -315,27 +324,34 @@ of this exercise.)
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
+Compute the difference in the amount of allele sharing between two African
+individuals and a Neanderthal:
+
 ```{r}
-# Compute the difference in the amount of allele sharing between two African
-# individuals and a Neanderthal
 f4_null <- ts_f4(ts, W = "AFR_1", X = "AFR_2", Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
 f4_null
+```
 
-# Compute the difference in the amount of allele sharing between an African
-# individual vs European individual and a Neanderthal
+Compute the difference in the amount of allele sharing between an African
+individual vs European individual and a Neanderthal:
+
+```{r}
 f4_alt <- ts_f4(ts, W = "AFR_1", X = "EUR_1", Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
 f4_alt
-
-# We can see that the second test resulted in an f4 value about ~20 times more
-# negative than the first test, indicating that a European in our test carries
-# "significantly more" Neanderthal alleles compared to the baseline expectation
-# of no introgression established by the comparison to an African ...
-abs(f4_alt$f4 / f4_null$f4)
-
-# ... although this is not a real test of significance (we have no Z-score or
-# standard error which would give us something like a p-value for the hypothesis
-# test, as we get by jackknife procedure in ADMIXTOOLS)
 ```
+
+We can see that the second test resulted in an f4 value about ~20 times more
+negative than the first test, indicating that a European in our test carries
+"significantly more" Neanderthal alleles compared to the baseline expectation
+of no introgression established by the comparison to an African ...
+
+```{r}
+abs(f4_alt$f4 / f4_null$f4)
+```
+
+... although this is not a real test of significance (we have no Z-score or
+standard error which would give us something like a p-value for the hypothesis
+test, as we get by jackknife procedure in ADMIXTOOLS)
 :::
 
 ## Part 4: Detecting Neanderthal admixture in Europeans v2.0
@@ -398,15 +414,19 @@ df_f4 <- do.call(rbind, list_f4)
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
+This gives us list of vectors of the names of all individuals in each
+population...
+
 ```{r}
-# This gives us list of vectors of the names of all individuals in each
-# population...
 sample_sets <- ts_names(ts, split = "pop")
 # ... which we can then access like this
 sample_sets$AFR # all Africans
 sample_sets$EUR # all Europeans
+```
 
-# Let's compute the f4 statistic for all Africans... 
+Let's compute the f4 statistic for all Africans... 
+
+```{r}
 f4_afr_list <- lapply(
   sample_sets$AFR,
   function(x) ts_f4(ts, W = "AFR_1", X = x, Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
@@ -416,19 +436,25 @@ f4_eur_list <- lapply(
   sample_sets$EUR,
   function(x) ts_f4(ts, W = "AFR_1", X = x, Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
 )
+```
 
-# Bind each list of data frames into a single data frame
+Bind each list of data frames into a single data frame:
+
+```{r}
 f4_afr <- do.call(rbind, f4_afr_list)
 f4_eur <- do.call(rbind, f4_eur_list)
 
-# Let's add population columns to each of the two results for easier plotting
+# add population columns to each of the two results for easier plotting
 f4_afr$pop <- "AFR"
 f4_eur$pop <- "EUR"
 
-# Bind both tables together
+# bind both tables together
 f4_results <- rbind(f4_afr, f4_eur)
+```
 
-# Visualize the results
+Now we can visualize the results:
+
+```{r}
 f4_results %>%
   ggplot(aes(pop, f4, color = pop)) +
   geom_boxplot() +
@@ -478,8 +504,9 @@ See [this tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-base
 ### Click to see the solution
 
 ```{r}
-# f3(A, B; C) = E[ (A - C) * (B - C) ]
-# This means that in tskit, C is the outgroup (different from ADMIXTOOLS!)
+# Standard formalism is this:
+#    f3(A, B; C) = E[ (A - C) * (B - C) ]
+# But in tskit, A is the outgroup (different from ADMIXTOOLS!), see below...
 
 # We can compute f3 for individuals...
 ts_f3(ts, B = "AFR_1", C = "EUR_1", A = "CHIMP_1")
@@ -511,6 +538,7 @@ homemade_f3 <- (
   ts_f2(ts, A = "AFR_2", B = "CHIMP_1")$f2 -
   ts_f2(ts, A = "AFR_1", B = "AFR_2")$f2
 ) / 2
+
 homemade_f3
 ```
 :::
