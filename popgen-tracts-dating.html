@@ -348,24 +348,44 @@ window.Quarto = {
 </div>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"files/popgen/popgen_utils.R"</span>)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>popZ <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popZ"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>popX <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popX"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popZ)</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>popY <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popY"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popZ)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># helper function for plotting tracts simulated later</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>plot_tracts <span class="ot">&lt;-</span> <span class="cf">function</span>(tracts, ind) {</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  ind_tracts <span class="ot">&lt;-</span> <span class="fu">filter</span>(tracts, name <span class="sc">%in%</span> ind) <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">haplotype =</span> <span class="fu">paste0</span>(name, <span class="st">"</span><span class="sc">\n</span><span class="st">hap. "</span>, haplotype))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  ind_tracts<span class="sc">$</span>haplotype <span class="ot">&lt;-</span> <span class="fu">factor</span>(ind_tracts<span class="sc">$</span>haplotype, <span class="at">levels =</span> <span class="fu">unique</span>(ind_tracts<span class="sc">$</span>haplotype[<span class="fu">order</span>(ind_tracts<span class="sc">$</span>node_id)]))</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> popX, <span class="at">to =</span> popY, <span class="at">rate =</span> <span class="fl">0.2</span>, <span class="at">start =</span> <span class="dv">800</span>, <span class="at">end =</span> <span class="dv">799</span>)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(popZ, popX, popY), <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">gene_flow =</span> gf)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">1500</span>, <span class="dv">0</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">100</span>), <span class="fu">list</span>(popY, <span class="dv">50</span>)),</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(popX, <span class="dv">10</span>), <span class="fu">list</span>(popZ, <span class="dv">10</span>))</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the function plot_model() to make sure that the model and the sampling schedule</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># are defined correctly (there's no such thing as too many sanity checks when doing research)</span></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">samples =</span> schedule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(ind_tracts) <span class="sc">+</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_rect</span>(<span class="fu">aes</span>(<span class="at">xmin =</span> left, <span class="at">xmax =</span> right, <span class="at">ymin =</span> <span class="dv">1</span>, <span class="at">ymax =</span> <span class="dv">2</span>, <span class="at">fill =</span> name), <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"coordinate along a chromosome [bp]"</span>) <span class="sc">+</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>      <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      <span class="at">axis.ticks =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.border =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">panel.grid =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_grid</span>(haplotype <span class="sc">~</span> .) <span class="sc">+</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">expand_limits</span>(<span class="at">x =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>popZ <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popZ"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>popX <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popX"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popZ)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>popY <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popY"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popZ)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> popX, <span class="at">to =</span> popY, <span class="at">rate =</span> <span class="fl">0.2</span>, <span class="at">start =</span> <span class="dv">800</span>, <span class="at">end =</span> <span class="dv">799</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(popZ, popX, popY), <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">gene_flow =</span> gf)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">1500</span>, <span class="dv">0</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">100</span>), <span class="fu">list</span>(popY, <span class="dv">50</span>)),</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(popX, <span class="dv">10</span>), <span class="fu">list</span>(popZ, <span class="dv">10</span>))</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the function plot_model() to make sure that the model and the sampling schedule</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a><span class="co"># are defined correctly (there's no such thing as too many sanity checks when doing research)</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">samples =</span> schedule)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -376,57 +396,71 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">samples =</span> schedule, <span class="at">sequence_length =</span> <span class="fl">100e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>tracts <span class="ot">&lt;-</span> <span class="fu">ts_tracts</span>(ts, <span class="at">census =</span> <span class="dv">800</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>tracts <span class="ot">&lt;-</span> <span class="fu">ts_tracts</span>(ts, <span class="at">census =</span> <span class="dv">800</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 PopAncestry summary
 Number of ancestral populations:    3
 Number of sample chromosomes:       1540
-Number of ancestors:            57370
+Number of ancestors:            57467
 Total length of genomes:        154000000000.000000
 Ancestral coverage:             84000000000.000000</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>tracts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>tracts</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 51,115 × 10
+<pre><code># A tibble: 56,489 × 10
    name     haplotype  time pop   source_pop    left  right length source_pop_id
    &lt;chr&gt;        &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;fct&gt;        &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;         &lt;dbl&gt;
- 1 popY_351         1   700 popY  popX        6.24e6 7.06e6 8.17e5             1
- 2 popY_351         1   700 popY  popX        7.06e6 8.85e6 1.79e6             1
- 3 popY_351         1   700 popY  popX        1.20e7 1.33e7 1.37e6             1
- 4 popY_351         1   700 popY  popX        1.36e7 1.44e7 7.71e5             1
- 5 popY_351         1   700 popY  popX        1.59e7 1.69e7 9.71e5             1
- 6 popY_351         1   700 popY  popX        1.99e7 2.03e7 4.06e5             1
- 7 popY_351         1   700 popY  popX        3.04e7 3.20e7 1.59e6             1
- 8 popY_351         1   700 popY  popX        3.66e7 3.69e7 2.98e5             1
- 9 popY_351         1   700 popY  popX        4.61e7 4.69e7 8.15e5             1
-10 popY_351         1   700 popY  popX        5.58e7 5.81e7 2.26e6             1
-# ℹ 51,105 more rows
+ 1 popY_351         1   700 popY  popX        1.03e7 1.19e7 1.65e6             1
+ 2 popY_351         1   700 popY  popX        2.42e7 2.63e7 2.05e6             1
+ 3 popY_351         1   700 popY  popX        3.80e7 3.82e7 1.73e5             1
+ 4 popY_351         1   700 popY  popX        3.83e7 3.91e7 8.03e5             1
+ 5 popY_351         1   700 popY  popX        4.06e7 4.38e7 3.23e6             1
+ 6 popY_351         1   700 popY  popX        4.72e7 4.80e7 7.93e5             1
+ 7 popY_351         1   700 popY  popX        5.35e7 5.53e7 1.83e6             1
+ 8 popY_351         1   700 popY  popX        5.53e7 5.66e7 1.28e6             1
+ 9 popY_351         1   700 popY  popX        6.35e7 6.42e7 6.86e5             1
+10 popY_351         1   700 popY  popX        6.82e7 7.04e7 2.23e6             1
+# ℹ 56,479 more rows
 # ℹ 1 more variable: node_id &lt;dbl&gt;</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>sample_times <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">select</span>(name, time)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># adding haplotype ID and time (automatically done by the dev slendr)</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>tracts <span class="ot">&lt;-</span> tracts <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(name) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">haplotype =</span> dplyr<span class="sc">::</span><span class="fu">dense_rank</span>(node_id)) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> <span class="fu">inner_join</span>(sample_times) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>sample_times <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">select</span>(name, time)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># adding haplotype ID and time (automatically done by the dev slendr)</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>tracts <span class="ot">&lt;-</span> tracts <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">group_by</span>(name) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">haplotype =</span> dplyr<span class="sc">::</span><span class="fu">dense_rank</span>(node_id)) <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> <span class="fu">inner_join</span>(sample_times) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Joining with `by = join_by(name, time)`</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select sampled individuals from different ages (remember, we recorded oldest individuals</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># at 1000 generations ago, the youngest individuals at 0 generations ago). Use the function</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_tracts to visualize their ancestry tracts. What do you see in terms of the number of</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># tracts and the length of tracts across these individuals? Can you eyeball some distinctive</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># pattern?</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>subset_inds <span class="ot">&lt;-</span> tracts <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(name) <span class="sc">%&gt;%</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(name)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>subset_inds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Select sampled individuals from different ages (remember, we recorded oldest individuals</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># at 1000 generations ago, the youngest individuals at 0 generations ago). Use the function</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># plot_tracts to visualize their ancestry tracts. What do you see in terms of the number of</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># tracts and the length of tracts across these individuals? Can you eyeball some distinctive</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># pattern?</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>subset_inds <span class="ot">&lt;-</span> tracts <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(name) <span class="sc">%&gt;%</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(name)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>subset_inds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "popY_731" "popY_681" "popY_603" "popY_552" "popY_505" "popY_467" "popY_425"
-[8] "popY_351"</code></pre>
+<pre><code>[1] "popY_716" "popY_681" "popY_601" "popY_575" "popY_536" "popY_476" "popY_444"
+[8] "popY_372"</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_tracts</span>(tracts, subset_inds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_tracts</span>(tracts, subset_inds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -434,30 +468,30 @@ Ancestral coverage:             84000000000.000000</code></pre>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># It looks like the older individual is, the closer they lived to the start of the admixture event,</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and the longer the tracts they carry will be. Compute the average length of a ancestry tracts in each</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="co"># sample age group and visualize the length distribution of these tracts based on their age:</span></span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>tracts <span class="sc">%&gt;%</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">mean</span>(length))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># It looks like the older individual is, the closer they lived to the start of the admixture event,</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co"># and the longer the tracts they carry will be. Compute the average length of a ancestry tracts in each</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co"># sample age group and visualize the length distribution of these tracts based on their age:</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>tracts <span class="sc">%&gt;%</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">mean</span>(length))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 8 × 2
    time `mean(length)`
   &lt;dbl&gt;          &lt;dbl&gt;
-1     0        161274.
-2   100        183932.
-3   200        218659.
-4   300        257520.
-5   400        311576.
-6   500        413906.
-7   600        635001.
-8   700       1221067.</code></pre>
+1     0        161582.
+2   100        185339.
+3   200        209314.
+4   300        252602.
+5   400        316835.
+6   500        414118.
+7   600        627441.
+8   700       1229885.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(tracts, <span class="fu">aes</span>(length, <span class="at">color =</span> <span class="fu">factor</span>(time))) <span class="sc">+</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>() <span class="sc">+</span></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">3e6</span>)) <span class="sc">+</span></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(tracts, <span class="fu">aes</span>(length, <span class="at">color =</span> <span class="fu">factor</span>(time))) <span class="sc">+</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">3e6</span>)) <span class="sc">+</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -465,47 +499,47 @@ Ancestral coverage:             84000000000.000000</code></pre>
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Now, try to work backwards. Assuming you have the following distribution of tract lengths...</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>tracts <span class="ot">&lt;-</span> <span class="fu">filter</span>(tracts, time <span class="sc">==</span> <span class="dv">0</span>, length <span class="sc">&lt;=</span> <span class="fl">1e6</span>)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>bins <span class="ot">&lt;-</span> <span class="fu">hist</span>(tracts<span class="sc">$</span>length, <span class="at">breaks =</span> <span class="dv">50</span>, <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>length <span class="ot">&lt;-</span> bins<span class="sc">$</span>mids</span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>density <span class="ot">&lt;-</span> bins<span class="sc">$</span>density</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(length, density)</span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="fu">mean</span>(tracts<span class="sc">$</span>length)</span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="sc">/</span> <span class="fl">1e-8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Now, try to work backwards. Assuming you have the following distribution of tract lengths...</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>tracts <span class="ot">&lt;-</span> <span class="fu">filter</span>(tracts, time <span class="sc">==</span> <span class="dv">0</span>, length <span class="sc">&lt;=</span> <span class="fl">1e6</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>bins <span class="ot">&lt;-</span> <span class="fu">hist</span>(tracts<span class="sc">$</span>length, <span class="at">breaks =</span> <span class="dv">50</span>, <span class="at">plot =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>length <span class="ot">&lt;-</span> bins<span class="sc">$</span>mids</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>density <span class="ot">&lt;-</span> bins<span class="sc">$</span>density</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(length, density)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="fu">mean</span>(tracts<span class="sc">$</span>length)</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>lambda_mle <span class="sc">/</span> <span class="fl">1e-8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 627.5798</code></pre>
+<pre><code>[1] 627.5832</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>y_mle <span class="ot">&lt;-</span> <span class="fu">dexp</span>(length, <span class="at">rate =</span> lambda_mle)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(length, y_mle, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"darkgreen"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>nls_res <span class="ot">&lt;-</span> <span class="fu">nls</span>(density <span class="sc">~</span> <span class="fu">SSasymp</span>(length, Asym, R0, lrc))</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>nls_res</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>y_mle <span class="ot">&lt;-</span> <span class="fu">dexp</span>(length, <span class="at">rate =</span> lambda_mle)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(length, y_mle, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"darkgreen"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>nls_res <span class="ot">&lt;-</span> <span class="fu">nls</span>(density <span class="sc">~</span> <span class="fu">SSasymp</span>(length, Asym, R0, lrc))</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>nls_res</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Nonlinear regression model
   model: density ~ SSasymp(length, Asym, R0, lrc)
    data: parent.frame()
       Asym         R0        lrc 
- 2.910e-08  6.428e-06 -1.193e+01 
- residual sum-of-squares: 9.151e-13
+ 1.791e-08  6.301e-06 -1.196e+01 
+ residual sum-of-squares: 6.03e-13
 
 Number of iterations to convergence: 0 
-Achieved convergence tolerance: 9.374e-08</code></pre>
+Achieved convergence tolerance: 8.001e-07</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>lambda_nls <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">unname</span>(<span class="fu">coef</span>(nls_res)[<span class="st">"lrc"</span>]))</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>lambda_nls <span class="sc">/</span> <span class="fl">1e-8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>lambda_nls <span class="ot">&lt;-</span> <span class="fu">exp</span>(<span class="fu">unname</span>(<span class="fu">coef</span>(nls_res)[<span class="st">"lrc"</span>]))</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>lambda_nls <span class="sc">/</span> <span class="fl">1e-8</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 657.6946</code></pre>
+<pre><code>[1] 637.8381</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>y_nls <span class="ot">&lt;-</span> <span class="fu">predict</span>(nls_res, <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">length =</span> length))</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(length, y_nls, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"darkgreen"</span>, <span class="st">"purple"</span>),</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">"MLE, t ="</span>, <span class="fu">round</span>(lambda_mle <span class="sc">/</span> <span class="fl">1e-8</span>, <span class="dv">1</span>), <span class="st">"generations ago"</span>),</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">paste</span>(<span class="st">"MLE, t ="</span>, <span class="fu">round</span>(lambda_nls <span class="sc">/</span> <span class="fl">1e-8</span>, <span class="dv">1</span>), <span class="st">"generations ago"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>y_nls <span class="ot">&lt;-</span> <span class="fu">predict</span>(nls_res, <span class="at">newdata =</span> <span class="fu">data.frame</span>(<span class="at">length =</span> length))</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(length, y_nls, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"purple"</span>, <span class="at">lwd =</span> <span class="dv">2</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"darkgreen"</span>, <span class="st">"purple"</span>),</span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="fu">paste</span>(<span class="st">"MLE, t ="</span>, <span class="fu">round</span>(lambda_mle <span class="sc">/</span> <span class="fl">1e-8</span>, <span class="dv">1</span>), <span class="st">"generations ago"</span>),</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>                  <span class="fu">paste</span>(<span class="st">"MLE, t ="</span>, <span class="fu">round</span>(lambda_nls <span class="sc">/</span> <span class="fl">1e-8</span>, <span class="dv">1</span>), <span class="st">"generations ago"</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
