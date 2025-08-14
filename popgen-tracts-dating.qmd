@@ -9,7 +9,27 @@ init_env()
 
 library(cowplot)
 
-source("files/popgen/popgen_utils.R")
+# helper function for plotting tracts simulated later
+plot_tracts <- function(tracts, ind) {
+  ind_tracts <- filter(tracts, name %in% ind) %>%
+    mutate(haplotype = paste0(name, "\nhap. ", haplotype))
+  ind_tracts$haplotype <- factor(ind_tracts$haplotype, levels = unique(ind_tracts$haplotype[order(ind_tracts$node_id)]))
+
+  ggplot(ind_tracts) +
+    geom_rect(aes(xmin = left, xmax = right, ymin = 1, ymax = 2, fill = name), linewidth = 1) +
+    labs(x = "coordinate along a chromosome [bp]") +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      axis.text.y = element_blank(),
+      axis.ticks = element_blank(),
+      panel.border = element_blank(),
+      panel.grid = element_blank()
+    ) +
+    facet_grid(haplotype ~ .) +
+    expand_limits(x = 0) +
+    scale_x_continuous(labels = scales::comma)
+}
 
 popZ <- population("popZ", time = 3000, N = 5000)
 popX <- population("popX", time = 1500, N = 5000, parent = popZ)
