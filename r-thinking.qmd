@@ -4,10 +4,11 @@
 **This chapter is a work-in-progress!**
 ⚠️⚠️⚠️
 
-## Part N: Generalizing code as a function
+## Part XYZ: Generalizing code as a function
 
 You now have all the individual pieces to construct a vector of allele
-frequency trajectories of a given length. **Write a function `simulate_trajectory()`,
+frequency trajectories of a given length (one number in that vector corresponding
+to one generation of a simulation). **Write a function `simulate_trajectory()`,
 which will accept the following three parameters and returns the trajectory
 vector as its output.**
 
@@ -16,18 +17,47 @@ vector as its output.**
 - `Ne`: effective population size
 
 Then **simulate three trajectories with the same parameters (`p_init = 0.5`,
-`generations = 1000`, `Ne = 1000`) and visualize them on a single plot using
-the functions `plot()` and `lines()`**.
+`generations = 1000`, `Ne = 1000` -- save them in variables `traj1`, `traj2`,
+`traj3`) and visualize them on a single plot using the functions `plot()` and
+`lines()` just as we did earlier**.
+
+Yes, this basically involves taking the code you have already written and just
+wrapping it up in a self-contained function!
+
+::: {.callout-tip collapse="true" icon=false}
+#### Click here if you need a hint
+If you need a little help, you can start with this "template" of the function
+structure, and just fill in the details.
+
+This is the structure of your function:
+
+```{r}
+simulate_trajectory <- function(p_init, Ne, generatinos) {
+  # ...
+  # here is where you will put your code
+  # ...
+}
+```
+
+And this is how you then call it:
+
+```{r}
+traj <- simulate_trajectory(p_init = 0.5, Ne = 1000, generations = 1000)
+```
+
+Of course, you should inspect the result `traj` and plot it too.
+
+:::
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-simulate_trajectory <- function(p_init, generations, Ne) {
+simulate_trajectory <- function(p_init, Ne, generations) {
   trajectory <- c(p_init)
 
   # for each generation...
-  for (gen in seq_len(generations)) {
+  for (gen in seq_len(generations - 1)) {
     # ... based on the allele frequency in the current generation...
     p_current <- trajectory[gen]
     # ... compute the frequency in the next generation...
@@ -40,9 +70,9 @@ simulate_trajectory <- function(p_init, generations, Ne) {
   return(trajectory)
 }
 
-traj1 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
-traj2 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
-traj3 <- simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+traj1 <- simulate_trajectory(p_init = 0.5, Ne = 1000, generations = 1000)
+traj2 <- simulate_trajectory(p_init = 0.5, Ne = 1000, generations = 1000)
+traj3 <- simulate_trajectory(p_init = 0.5, Ne = 1000, generations = 1000)
 
 plot(traj1, type = "l", xlim = c(1, 1000), ylim = c(0, 1), xlab = "generations", ylab = "allele frequency")
 lines(traj2)
@@ -51,33 +81,109 @@ lines(traj3)
 
 :::
 
-## Part N: Running simulations in a loop
+## Part XYZ: Return result as a data frame
 
-You have now generalized your code so that it is much more flexible by accepting
-parameters as function inputs. Let's **utilize this self-contained function to
-run 50 simulations using the function `lapply` and then plot the results
-in a `for` loop.**
+Now, this one will probably not make much sense now but let's do this as a
+practice, for the time being. **Modify the `simulate_trajectory()` function
+to return a data frame with the following format (this shows just the first
+five rows)**. In other words:
+
+- the column `time` gives the time at which the frequency was simulated
+- the column `frequency` contains the simulated vector,
+(basically, the index of the for loop iteration),
+- `p_init_` and `Ne` indicate the parameters of the simulation run (and are,
+therefore, constant for all rows).
+
+
+```{r}
+#| echo: false
+library(tibble)
+
+df <- tibble(
+  p_init = 0.5,
+  Ne = 1000,
+  time = 1:1000,
+  frequency = simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
+)
+
+knitr::kable(head(df, 5), format = "html")
+```
+
+**Hint:** Remember to use the `tibble()` function to create your data frame (you
+will need to first load the _tibble_ R package with `library(tibble)`!), not
+the default `data.frame()` function. This will make your life significantly
+easier.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-n_reps <- 20
+simulate_trajectory <- function(p_init, Ne, generations) {
+  trajectory <- c(p_init)
 
-traj_list <- lapply(
-  1:n_reps,
+  # for each generation...
+  for (gen in seq_len(generations - 1)) {
+    # ... based on the allele frequency in the current generation...
+    p_current <- trajectory[gen]
+    # ... compute the frequency in the next generation...
+    n_next <- rbinom(Ne, 1, p_current)
+    p_next <- sum(n_next) / Ne
+    # ... and save it in the trajectory vector
+    trajectory[gen + 1] <- p_next
+  }
+  
+  df <- tibble(
+    p_init = p_init,
+    Ne = Ne,
+    time = generations,
+    frequency = trajectory
+  )
+  
+  df
+}
+
+simulate_trajectory(p_init = 0.5, Ne = 1000, generations = 1000)
+```
+:::
+
+## Part XYZ: Running simulations in a loop
+
+You have now generalized your code so that it is much more flexible by accepting
+parameters as function inputs. Let's **utilize this self-contained function to
+run 20 simulations using the function `lapply` (getting 20 vectors saved in
+a list in a variable `traj_list`) and then plot the results by looping over
+each vector of `traj_list` in a `for` loop.**
+
+**Hint**: You can first initialize an empty plot by calling this bit of code:
+
+```{r}
+#| eval: false
+plot(NULL, type = "l", xlim = c(1, 1000), ylim = c(0, 1),
+     xlab = "generations", ylab = "allele frequency")
+```
+
+This basically sets up the context for all trajectories, which you can
+then plot in the `for` loop by calling something like
+`lines(<variable>)` in the loop body.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+# run 20 replicates of the simulation
+replicates <- 20
+
+simulations <- lapply(
+  1:replicates,
   function(i) simulate_trajectory(p_init = 0.5, generations = 1000, Ne = 1000)
 )
 
 # create an empty plot (we have to specify the boundaries and other parameters!)
 plot(NULL, type = "l", xlim = c(1, 1000), ylim = c(0, 1), xlab = "generations", ylab = "allele frequency")
 
-# then overlay all trajectories in an automated way
-for (traj in traj_list) {
-  lines(traj)
+# then overlay all trajectories in a loop
+for (df in simulations) {
+  lines(df$frequency)
 }
 ```
-
 :::
-
-
