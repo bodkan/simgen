@@ -6,30 +6,38 @@
 
 In a wider programming world, R sometimes has a slightly unfortunate reputation
 as a badly designed "calculator language". A computing environment which is
-maybe good for working with data frames and creating figures, but that's about
-it. While certainly very useful for data science, R is a full-blown programming
-language which is actually quite powerful even from a purely computer science
-perspective.
+(maybe!) good for working with data frames and creating figures, but that's about
+it. However, while certainly very useful for data science, R is a full-blown
+programming language which is actually quite powerful even from a purely
+computer science perspective.
 
-Although this entire workshop is very firmly standing in the field of data
-science and computational population genetics, and we will certainly use R
-as a statistical and visualization environment, neglecting the "normal" aspects
-of R as a "proper" programming language like any other and, worse still,
-not regarding our use of R as programming, can be quite detrimental.
-Even when "just" doing data science and statistics, we still use programming
-constructs, we need to be aware of data types, algorithmic thinking, etc.
+But still, this is a book about population genomics and data science in R.
+Why does this matter?
+
+Well, although this entire workshop will primarily focus on using R primarily
+as a statistical and visualization environment, neglecting the aspects of R
+which make it a "proper" programming language (or even considering data science
+as "not real programming") is a huge problem.
+
+Even when "just" doing data science and statistics, we still use typical
+programming constructs, we need to be aware of underlying data types behind
+our data (mostly contents of tables), and we need to still think algorithmically.
+In short, even when we "just" do data science, we are still computer programmers.
 Neglecting these things makes it easy to introduce bugs into our code, make
 it hard to find those bugs, and make our programs less efficient even when
 they do work.
 
 This chapter will help you get familiar with some of the less obvious aspects
-of the R language or programming in general, definitely how data science is
-presented in undergratuate courses in life sciences.
+of the R language or programming in general, certainly the parts which are often
+skipped in undergratuate courses in the life sciences. The good thing is,
+there isn't that much we need to learn.
 
-Because here's a crucial idea you might not be aware of: even when you're
+Let's say it again, because people with non-computational backgrounds often feel
+inadequate when it comes to computational aspects of their work: **Even when you're
 "just" writing data analysis scripts, even when you're "just" plotting results,
-you're still writing programs. You're a programmer. Exercises in this chapter
-are designed to make you comfortable with programming and algorithmic thinking.
+you're still writing programs. You're a programmer.** How exciting, right?
+Exercises in this chapter are designed to make you comfortable with programming
+and algorithmic thinking.
 
 ## Part 1: Atomic data types
 
@@ -165,7 +173,7 @@ is.list(w2)
 ```
 
 
-## Data frames
+## Part 4: Data frames
 
 ```{r}
 df <- data.frame(
@@ -200,4 +208,161 @@ df[["w"]]
 
 Note that the operator must be `[[`, because `[` does something slightly different
 
+## Part 5: Inspecting column types
 
+Let's go back to our example data frame:
+
+```{r}
+df1 <- data.frame(
+  w = c(1.0, 2.72, 3.14),
+  x = c(1, 13, 42),
+  y = c("hello", "folks", "!"),
+  z = c(TRUE, FALSE, FALSE)
+)
+
+df1
+```
+
+**Use the function `str()` and by calling `str(df1)`, inspect the types of
+columns in the table.**
+
+```{r}
+str(df1)
+```
+
+Sometimes (usually when we read data from disk, like from another software),
+a data point sneaks in which makes a column apparently non numeric. Consider
+this new table called `df2`:
+
+```{r}
+df2 <- data.frame(
+  w = c(1.0, 2.72, 3.14),
+  x = c(1, "13", 42),
+  y = c("hello", "folks", "!"),
+  z = c(TRUE, FALSE, FALSE)
+)
+
+df2
+```
+
+Just by looking at this, the table looks the same as `df1` above. **Use `str()`
+again to see where the problem is.**
+
+```{r}
+str(df2)
+```
+
+
+
+## Part 6: Functions
+
+Let's say you have the following numeric vector:
+
+```{r}
+vec <- c(-0.32, 0.78, -0.68, 0.28, -1.96, 0.21, -0.07, -1.01, 0.06, 0.74,
+         -0.37, -0.6, -0.08, 1.81, -0.65, -1.23, -1.28, 0.11, -1.74,  -1.68)
+```
+
+With numeric vectors (which could be base qualities, genotype qualities, 
+$f$-statistics, etc.), we often need to compute a couple of summary
+statistics (mean, median, quartile, minimum, maximum, etc.).
+
+::: {.aside}
+In R, we have a very useful built-in function `summary()`, which does exactly that.
+But let's ignore this for the moment, for learning purposes.
+:::
+
+Here is how you can compute those summary statistics individually:
+
+```{r}
+min(vec)
+quantile(vec, probs = 0.25)
+median(vec)
+mean(vec)
+quantile(vec, probs = 0.75)
+max(vec)
+```
+
+Now, you can imagine that you have many more of such vectors (results for different
+sequenced samples, different computed population genetic metrics, etc.). Having
+to type out all of these commands for every single one of those vectors would
+very quickly get extremely tiresome. Worse still, when we would do this, we would
+certainly resort to copy-pasting, which is guaranteed to lead to errors.
+
+**Write a custom function called `my_summary`, which will accept a single input
+named `values`, and returns a list which binds all the six summary statistics together.
+Name the elements of that list as `"min"`, `"quartile_1"`, `"median"`, `"mean"`,
+`"quartile_3"`, and `"max"`.**
+
+```{r}
+my_summary <- function(values) {
+  a <- min(vec)
+  b <- quantile(vec, probs = 0.25)
+  c <- median(vec)
+  d <- mean(vec)
+  e <- quantile(vec, probs = 0.75)
+  f <- max(vec)
+  
+  result <- list(min = a, quartile_1 = b, median = c, mean = d, quartile_3 = e, max = f)
+  
+  return(result)
+}
+```
+
+Note that yes, we had to write the code anyway, but it is now "encapsulated" in
+a fully self-contained form and can be called repeatably, without any copy-pasting.
+
+In other words, if we imagine having these three vectors of numeric values:
+
+```{r}
+vec1 <- runif(10)
+vec2 <- runif(10)
+vec3 <- runif(10)
+```
+
+We can now compute our summary statistics by calling our function `my_summary()`:
+
+```{r}
+my_summary(vec1)
+my_summary(vec2)
+my_summary(vec3)
+```
+
+And, surprise! This is what the incredibly useful built-in function `summary()`
+provided with every R installation does!
+
+```{r}
+summary(vec1)
+summary(vec2)
+summary(vec3)
+```
+
+
+
+
+## Part 7: Iteration and loops
+
+Functions help us take pieces of code and _generalize_ them to reduce the amount
+of code needed to do similar things, repeatedly, multiple times. You could think
+of _iteration_ as generalizing those repetitions.
+
+This is very vague and abstract
+
+
+
+# Take home message
+
+It's worth acknowledging that developing code as proper functions, using iteration,
+and generally think about solving problems using "proper" program approaches
+like that is a lot of work. It might seem that "just copying a bit of code
+a couple of times" is easier. In the moment, it actually is.
+
+Except we rarely, if ever, do things only once. We have to come back to old
+scripts, update them, or add new steps. Doing this for every single bit of
+copy pasted code (sometimes in multiple scripts) is awful, and almost always
+results in bugs. Even missing one edit in one copy of a piece of code will
+make our results wrong.
+
+**It's always worth investing a bit extra time into extracting repeated
+pieces of code into individual functions. It will always result in _less work_
+in the long run.**
