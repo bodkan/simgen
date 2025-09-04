@@ -164,7 +164,7 @@ mixed_vector1
 ```
 
 ```{r}
-model(mixed_vector1)
+mode(mixed_vector1)
 ```
 :::
 
@@ -220,29 +220,128 @@ happen when manually entering data in Excel, etc.). This will be much clearer
 when we get to data frames below.
 :::
 
+**You can create vector of consecutive values of certain forms using everal
+approaches. Try these options:**
 
-## Part 3: Indexing
+1. **Create a sequence of values from `i` to `j` as `i:j`. Create a vector of
+numbers 1:20**
 
+2. **Do the same using the function `seq()`. Read `?seq` to find out what
+parameters you should specify (and how) to get the same result as the `i:j`
+shortcut.
 
-## Part 4: Lists
+3. **Modify the arguments given to `seq()` so that you create a vector of
+numbers from 20 to 1.**
+
+4. **Use the `by =` argument of `seq()` to create a vector of only odd
+values starting from 1.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
-w3 <- list(1.0, 2.72, 3.14)
-x3 <- list(1, 13, 42)
-y3 <- list("hello", "folks", "!")
-z3 <- list(TRUE, FALSE)
+# 1
+1:20
+# another option is this ("give me sequence of the length N)
+seq_len(20)
+
+# 2
+seq(from = 1, to = 20)
+
+# 3
+seq(from = 20, to = 1)
+
+# 4
+seq(1, 20, by = 2)
 ```
 
-```{r}
-w3
-```
+This might look boring, but these functions are super useful to generate
+indices for data, adding indices as columns to tabular data, etc.**
+:::
+
+**Another very useful built-in helper function (especially when we get to
+the iteration part below) is `seq_along()`. What does it give you when you run
+it on this vector, for instance?**
 
 ```{r}
-mode(w3)
+v <- c(1, "42", "hello", 3.1416)
 ```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+seq_along(v)
+```
+
+This function allows you to quickly iterate over elements of a vector (or a list)
+using indices into that vector (or a list).
+:::
+
+## Part 3: Lists
+
+Lists are a little similar to vectors but very different in a couple of important
+respects. Remember how we tested what happens when we put different types of
+values in a vector (reminder: vectors must be "homogeneous" in terms of the
+data types of their elements!)? **What happens when you create lists with
+different types of values using the code in the following chunk? Use `mode()`
+on the resulting objects and compare your results to those you got on "mixed
+value" vectors above.**
+
+```{r}
+w3 <- list(1.0, "2.72", 3.14)
+x3 <- list(1, 13, 42, "billion")
+y3 <- list("hello", "folks", "!", 123, "wow a number follows again", 42)
+z3 <- list(TRUE, FALSE, 13, "string")
+```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+When we type the list variable in the R console, we no longer see the "coercion"
+we observed for vectors (numbers remain numbers even though the list contains
+strings):
+
+```{r}
+y3
+```
+
+**Calling `mode()` will (disappointingly) not tell us much about the data types
+of each individual element. Why is that?**
+
+```{r}
+mode(y3)
+```
+:::
+
+**Try also a different function called for `str()` (for "structure") and apply
+it on one of those lists. Is `mode()` or `str()` more useful to inspect what
+kind of data is stored in a list (`str` will be very useful when we get to data
+frames for -- spoiler alert! -- exactly this reason). Why?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+str(y3)
+```
+:::
 
 ```{r}
 is.list(w3)
+```
+
+**Use `is.vector()` and `is.list()` on one of the lists above (like `w3` perhaps).
+Why do you get the result that you got? Then run both functions on one of the
+vectors you created above (like `w2`). What does this mean?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+- Let's take this list:
+
+```{r}
+w3
 ```
 
 Lists are vectors!
@@ -251,10 +350,45 @@ Lists are vectors!
 is.vector(w3)
 ```
 
-But vectors are not lists!
+Lists are lists (obviously!):
+
+```{r}
+is.list(w3)
+```
+
+- Now let's take this vector:
+
+```{r}
+w2
+```
+
+Vectors are not lists!
 
 ```{r}
 is.list(w2)
+```
+
+So:
+
+1. Every list is also a vector.
+2. But vectors are not lists.
+
+This makes sense because lists can (but don't have to) contain values
+:::
+
+
+
+## Part 4: Indexing
+
+To extract an i-th element of a vector `xyz`, we can use the `[]` operator like
+this: `xyz[i]`. For instance, we can take the 13-th element of this vector
+as `xyz[13]`.
+
+**Familiarize yourselves with the `[]` operator by taking out some specific
+values from this vector, like the 5-th element.**
+
+```{r}
+vector <- c(1, 10, 100, 1000, 10000, 100000, 1000000)
 ```
 
 
