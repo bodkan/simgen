@@ -12,25 +12,26 @@ programming language which is actually quite powerful even from a purely
 computer science perspective.
 
 But still, this is a book about population genomics and data science in R.
-Why does this matter?
+Why does this matter how much "real coding" we do in it?
 
-Well, although this entire workshop will primarily focus on using R primarily
+Well, although this entire workshop will primarily focus on R primarily as 
 as a statistical and visualization environment, neglecting the aspects of R
 which make it a "proper" programming language (or even considering data science
 as "not real programming") is a huge problem.
 
-Even when "just" doing data science and statistics, we still use typical
+First, even when "just" doing data science and statistics, we still use typical
 programming constructs, we need to be aware of underlying data types behind
-our data (mostly contents of tables), and we need to still think algorithmically.
-In short, even when we "just" do data science, we are still computer programmers.
+our data (mostly contents of tables), and we need to think algorithmically.
 Neglecting these things makes it easy to introduce bugs into our code, make
 it hard to find those bugs, and make our programs less efficient even when
 they do work.
 
 This chapter will help you get familiar with some of the less obvious aspects
 of the R language or programming in general, certainly the parts which are often
-skipped in undergratuate courses in the life sciences. The good thing is,
-there isn't that much we need to learn.
+skipped in undergratuate courses in the life sciences in favor of just teaching
+plotting and running statistical tests. The good thing is, there isn't that much
+you need to learn. And what you do learn will continue paying dividents for the
+rest of your research career!
 
 Let's say it again, because people with non-computational backgrounds often feel
 inadequate when it comes to computational aspects of their work: **Even when you're
@@ -40,6 +41,9 @@ Exercises in this chapter are designed to make you comfortable with programming
 and algorithmic thinking.
 
 ## Part 1: Atomic data types
+
+**Create the following variables in your R script and then evaluate this code
+in your R console:**
 
 ```{r}
 w1 <- 3.14
@@ -55,14 +59,28 @@ y1
 z1
 ```
 
+What are the data "types" you get when you apply function `mode()` on each of
+these variables?
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
 ```{r}
 mode(w1)
 mode(x1)
 mode(y1)
 mode(z1)
 ```
+:::
 
 ## Part 2: Vectors
+
+Vectors are, roughly speaking, collections of values. We could also say "a list",
+but that's not entirely precise in the context of R as we'll see below.
+
+We can create a vector by calling the `c()` function ("c" stands for
+"concatenate", or "joining together"). **Create the following variables containing
+these vectors. Then inspect their data types using `mode()` again.**
 
 ```{r}
 w2 <- c(1.0, 2.72, 3.14)
@@ -78,25 +96,40 @@ y2
 z2
 ```
 
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 ```{r}
 mode(w2)
 mode(x2)
 mode(y2)
 mode(z2)
 ```
+:::
 
+**We can use the function `is.vector()` to test that a given object really is a
+vector. Try this on your vector variables.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 ```{r}
 is.vector(w2)
 is.vector(x2)
 is.vector(y2)
 is.vector(z2)
 ```
+:::
 
-Even scalars (singular values) are formally vectors:
+**What happens when you call `is.vector()` on the variables `x1`, `y1,` etc. from
+the previous part?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
-is.vector(1)
+is.vector(42)
 ```
+
+Even scalars (i.e., singular values) are formally vectors!
 
 This is why we see the [1] index when we type a single number:
 
@@ -111,31 +144,81 @@ In fact, even when we create a vector of length 1, we still get a scalar result:
 c(1)
 ```
 
-Try creating a vector with values `1`, `"42"`, and `"hello"`. Can you do it? What happens when you try?
+The conclusion is, R doesn't actually distinguish between scalars and vectors!
+A scalar (a single value) is simply a vector of length 1. Think of it this way:
+in a strange mathematically-focused way, even a single tree is a forest. 🙃
+:::
+
+**Do elements of vectors need to be homogeneous (i.e., of the same data type)?
+Try creating a vector with values `1`, `"42"`, and `"hello"`. Can you do it?
+What happens when you try? Inspect the result in the R console (take a close look
+at how the result is presented in text and the quotes that you will see), or
+use the `mode()` function again.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
 mixed_vector1 <- c(1, "42", "hello")
 mixed_vector1
 ```
 
-As you can see, vectors must carry values of just one type. If they don't, they are converted by a straightforward "cascade" of coercions. Can you figure out some of these rules based on different composition of value types you put into the `c()` vector constructing function?
-
-**Hint:** Try creating a vector which has integers and strings, integers and floats, integers and logicals, floats and logicals, floats and strings, and logicals and strings:
-
 ```{r}
-c(1, "42", "hello")
-
-c(1, 42.13, 123)
-
-c(1, 42, TRUE)
-
-c(1.12, 42.13, FALSE)
-
-c(42.13, "hello")
-
-c(TRUE, "hello")
+model(mixed_vector1)
 ```
+:::
 
+As you could see, vectors must carry values of just one type. If they don't, they
+are converted by a straightforward cascade of so-called "coercions".
+
+**Try to figure out some of these coercion rules based on different composition
+of value types you put into the `c()` vector constructing function?**
+
+**Hint:** Try creating a vector which has integers and strings, integers and
+floats, integers and logicals, floats and logicals, floats and strings, and
+logicals and strings. Observe the format of the result that you get, and
+build your intuition by calling `mode()` on each vector object to verify this.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+```{r}
+v1 <- c(1, "42", "hello")
+v1
+mode(v1)
+
+v2 <- c(1, 42.13, 123)
+v2
+mode(v2)
+
+v3 <- c(1, 42, TRUE)
+v3
+mode(v3)
+
+v4 <- c(1.12, 42.13, FALSE)
+v4
+mode(v4)
+
+v5 <- c(42.13, "hello")
+v5
+mode(v5)
+
+v6 <- c(TRUE, "hello")
+v6
+mode(v6)
+```
+:::
+
+**Out of all these data type exploration, this part is probably the most crucial
+for any kind of data science work. Why?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+Imagine what kinds of trouble can happen if you just load a table data from
+somewhere, if the values are not properly formatted. For instance, if a "numeric"
+column of your table has accidentally some characters (which can very easily
+happen when manually entering data in Excel, etc.). This will be much clearer
+when we get to data frames below.
+:::
 
 
 
