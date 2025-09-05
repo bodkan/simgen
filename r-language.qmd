@@ -446,15 +446,47 @@ This makes sense because lists can (but don't have to) contain values
 Not only can lists contain arbitrary values of mixed types (atomic data
 types from Part 1 of this exercise), they can also contain non-atomic data
 as well, such as other lists! In fact, you can, in principle, create lists
-of lists of lists of... lists! **Create this kind of data and type it out
-back in your R console, just to see how R presents such data back to you.
-In the next part, we will learn how to explore this type of data better.**
+of lists of lists of... lists! **Try creating a `list()` which, in addition
+to a couple of normal values (numbers, strings, doesn't matter) also contains
+one or two other lists (we call them "nested"). Don't think about this too much,
+just create something arbitrary to get a bit of practice. Save this in a
+variable called `weird_list` and type it back in your R console, just to see
+how R presents such data back to you. In the next part, we will learn how to
+explore this type of data better.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's an example of such "nested list":
+
+```{r}
+weird_list <- list(
+  1,
+  "two",
+  list(
+    "three",
+    4,
+    list(5, "six", 7)
+  )
+)
+```
+
+When we type it out in the R console, we see that R tries to lay out the
+structure of this data with numerical indices (we'll talk about indices below!)
+indicating the "depth" of each nested pieces of data (either a plain number or
+character, or another list!)
+
+```{r}
+weird_list
+```
+:::
 
 **Note:** If you are confused (or even annoyed) why we are even doing this,
 in the later discussion of data frames and spatial data structures, it
 will become much clearer why putting lists into other lists allows a whole
 another level of data science work. Please bear with me for now! This is
 just laying the groundwork for some very cool things later down the line.
+
 
 ## Part 4: Indexing
 
@@ -472,6 +504,14 @@ vector <- c(1, 10, 100, 1000, 10000, 100000, 1000000)
 
 ## Part 5: Data frames
 
+Every scientists works with tables of data, in one way or another. R provides
+first class support for working with tables, which are formally called
+"data frames". We will be spending most of our time of this workshop learning
+to manipulate, filter, modify, and plot data frames, often times with data
+that is too big to look at all at once. For simplicity, just to get started
+and to explain the basic fundamentals, let's begin with something trivially
+easy, like this little data frame here:
+
 ```{r}
 df <- data.frame(
   w = c(1.0, 2.72, 3.14),
@@ -483,11 +523,74 @@ df <- data.frame(
 df
 ```
 
-Data frames are lists!
+First, here's the first killer bit of information: data frames are normal lists!
 
 ```{r}
 is.list(df)
 ```
+
+How is this even possible? And why is this even the case?
+Explaining this in full would be too much detail,
+even for a course which tries to go beyond "R only as a plotting tool" as I
+promised you in the introduction. Still, for now let's say that R objects
+can store so called "attributes", which -- in the case of data frame objects --
+makes them behave as "something more than just a list". These attributes are
+called "classes".
+
+**You can poke into these internals but "unclassing" an object. Call `unclass(df)`
+in your R console and observe what result you get (just to convince yourself
+that data frames really are lists under the hood).**
+
+::: {.aside}
+**Note:** Honest admission -- you will never need this `unclass()` stuff in
+practice, ever. I'm really showing you to demonstrate what "data frame" actually
+is on a lower-level of R programming. If you're confused, don't worry. The fact
+that data frames are lists matters infinitely more than knowing exactly how
+is that accomplished inside R.
+:::
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+This is what a normal data frame looks like to us:
+
+```{r}
+df
+```
+
+Here is how a data frame is represented under the hood:
+
+```{r}
+unclass(df)
+```
+
+It really is just a list!
+:::
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+When we create a normal plain R list...
+
+```{r}
+homebrew <- list(col_a = 1:3, col_b = c("one", "two", "three"))
+homebrew
+```
+
+... and assing a "data.frame" class attribute to it like this...
+
+```{r}
+class(homebrew) <- "data.frame"
+```
+
+... we get a data frame!
+
+```{r}
+homebrew
+```
+:::
+
+
 
 Two ways of extracting a data-frame column:
 
