@@ -656,35 +656,45 @@ str(df2)
 
 ## Part 7: Functions
 
-The motto of this part could be summarized by an ancient motto of programming:
+The motivation for this part could be summarized by an ancient motto of programming:
 [Don't repeat yourself (DRY)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
 _"[...] a modification of any single element of a system does not require
 a change in other logically unrelated elements."_.
 
-Let's say you have the following numeric vector:
+Let's demonstrate this idea in practice.
+
+Let's say you have the following numeric vector (these could be base qualities,
+genotype qualities, $f$-statistics, sequencing coverage, anything):
 
 ```{r}
-vec <- c(-0.32, 0.78, -0.68, 0.28, -1.96, 0.21, -0.07, -1.01, 0.06, 0.74,
-         -0.37, -0.6, -0.08, 1.81, -0.65, -1.23, -1.28, 0.11, -1.74,  -1.68)
+vec <- c(0.32, 0.78, 0.68, 0.28, 1.96, 0.21, 0.07, 1.01, 0.06, 0.74,
+         0.37, 0.6, 0.08, 1.81, 0.65, 1.23, 1.28, 0.11, 1.74,  1.68)
 ```
 
-With numeric vectors (which could be base qualities, genotype qualities, 
-$f$-statistics, etc.), we often need to compute a couple of summary
-statistics (mean, median, quartile, minimum, maximum, etc.).
+With numeric vectors, we often need to compute some summary statistics
+(mean, median, quartile, minimum, maximum, etc.). What's more, in a given project,
+we often have to do this computation multiple times in a number of places.
 
 ::: {.aside}
 In R, we have a very useful built-in function `summary()`, which does exactly that.
 But let's ignore this for the moment, for learning purposes.
 :::
 
-Here is how you can compute those summary statistics individually:
+Here is how we can compute those summary statistics individually:
 
 ```{r}
 min(vec)
+
+# first quartile (a value which is higher than the bottom 25% of the data)
 quantile(vec, probs = 0.25)
+
 median(vec)
+
 mean(vec)
+
+# third quartile (a value which is higher than the bottom 75% of the data)
 quantile(vec, probs = 0.75)
+
 max(vec)
 ```
 
@@ -695,9 +705,14 @@ very quickly get extremely tiresome. Worse still, when we would do this, we woul
 certainly resort to copy-pasting, which is guaranteed to lead to errors.
 
 **Write a custom function called `my_summary`, which will accept a single input
-named `values`, and returns a list which binds all the six summary statistics together.
-Name the elements of that list as `"min"`, `"quartile_1"`, `"median"`, `"mean"`,
-`"quartile_3"`, and `"max"`.**
+named `values`, and returns a list which binds all the six summary statistics
+together. Name the elements of that list as `"min"`, `"quartile_1"`, `"median"`,
+`"mean"`, `"quartile_3"`, and `"max"`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here is how we could write the function:
 
 ```{r}
 my_summary <- function(values) {
@@ -714,10 +729,32 @@ my_summary <- function(values) {
 }
 ```
 
-Note that yes, we had to write the code anyway, but it is now "encapsulated" in
-a fully self-contained form and can be called repeatably, without any copy-pasting.
+Although I would probably prefer to write it a bit more tersely like this:
 
-In other words, if we imagine having these three vectors of numeric values:
+```{r}
+my_summary <- function(values) {
+  result <- list(
+    min = min(vec),
+    quartile_1 = quantile(vec, probs = 0.25),
+    median = median(vec),
+    mean = mean(vec),
+    quartile_3 = quantile(vec, probs = 0.75),
+    max = max(vec)
+  )
+  
+  return(result)
+}
+```
+:::
+
+Let's acknowledge one thing straight away: yes, we had to write the code anyway,
+we even had to do the extra work of wrapping it inside other code (the `function`
+body, name the one input argument `values`, which could be multiple arguments
+for more complex function). So, one could argue that we didn't actually save any
+time. However, that code is now "encapsulated" in a fully self-contained form
+and can be called repeatably, without any copy-pasting.
+
+In other words, if you now **create these three vectors of numeric values**:
 
 ```{r}
 vec1 <- runif(10)
@@ -725,7 +762,11 @@ vec2 <- runif(10)
 vec3 <- runif(10)
 ```
 
-We can now compute our summary statistics by calling our function `my_summary()`:
+You can now **compute our summary statistics by calling our function `my_summary()`
+on these vectors, without any code repetition**:
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
 my_summary(vec1)
@@ -741,6 +782,12 @@ summary(vec1)
 summary(vec2)
 summary(vec3)
 ```
+:::
+
+The punchline is this: if we ever need to modify how are summary statistics
+are computed, _we only have to make a single change in the function code
+instead of having to modify multiple copies of the code in multiple locations
+in our project_.
 
 
 
