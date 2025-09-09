@@ -1106,6 +1106,107 @@ This is very vague and abstract
 
 
 
+
+## Part 9: Base R plotting
+
+As a final short section, it's worth pointing out some very basic base R plotting
+functions. We won't be getting into detail because _tidyverse_ provides a
+much more powerful and more convenient set of functionality for visualizing data.
+Still, base R is often convenient for quick troubleshooting or quick plotting
+of data at least in the initial phases of data exploration.
+
+So far we've worked with a really oversimplified data frame. For more interesting
+demonstration, R bundles with a realistic data frame of penguin data:
+
+```{r}
+head(penguins)
+```
+
+```{r}
+#| echo: false
+penguins <- penguins[!is.na(penguins$sex), ]
+```
+
+
+**Use the function `hist()` to plot a histogram of the body mass of the entire
+penguins data set.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+hist(penguins$body_mass)
+```
+
+Sometimes it is convenient to adjust the bin width:
+
+```{r}
+hist(penguins$body_mass, breaks = 50)
+```
+:::
+
+The dataset also contains the measure of bill length. **Use the function `plot()`
+to visualize a scatter plot of two vectors: `penguins$flipper_len` against
+`penguins$body_mass`. Is there an indication of a relationship between the two
+metrics?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+plot(penguins$flipper_len, penguins$body_mass)
+
+# we can also overlay a linear fit (first computed with the `lm()` function,
+# then visualized as a red dashed line)
+lm_fit <- lm(body_mass ~ flipper_len, data = penguins)
+abline(lm_fit, col = "red", lty = 2)
+```
+
+We can also see that we have data for three different species of penguins.
+We can therefore partition the visualization for each species individually:
+
+```{r}
+plot(penguins$flipper_len, penguins$body_mass, col = penguins$species)
+```
+:::
+
+Base R plotting is very convenient for quick and dirty data summaries, particularly
+immediately after reading unknown data. However, for anything more complex
+(and anything more pretty), ggplot2 is unbeatable. We will be looking at ggplot2
+visualization in the session on _tidyverse_ but as a sneakpeak, you can take
+a look at the beautiful figures you'll learn how to make later.
+
+::: {.callout-note collapse="true" icon=false}
+#### See the sneakpeak
+
+Look how comparatively little code we need to make beautiful informative figures
+which immediately tell a clear story! Stay tuned for later! :)
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+ggplot(penguins) +
+  geom_histogram(aes(flipper_len, fill = species), alpha = 0.5) +
+  theme_minimal() +
+  ggtitle("Distribution of flipper lengths across species")
+```
+
+```{r}
+ggplot(penguins, aes(flipper_len, body_mass, shape = sex, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ species) +
+  theme_minimal() +
+  ggtitle("Body mass as a function of flipper length across penguin species")
+```
+:::
+
+
+
+
 # Take home message
 
 It's worth acknowledging that developing code as proper functions, using iteration,
