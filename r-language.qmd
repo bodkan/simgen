@@ -789,6 +789,118 @@ df[df$w < 1000, ]
 :::
 
 
+#### Creating (and deleting) columns
+
+The `$` and `[]` operators can be used to create new columns. For instance,
+the `paste()` function in R can be used to combine a pair of values into one.
+Try running `paste(df$v, df$y)` to see what the result of this operation is.
+
+The general pattern to do this is:
+
+```{r}
+#| eval: false
+df$<name of the new column> <- <vector of values to assign to it>
+```
+
+**Create a new column called `"new_col"` and assign to it the result of
+`paste(df$v, df$y)`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df["new_col"] <- paste(df$v, df$y)
+
+# new column appears!
+df
+```
+:::
+
+When we want to remove a column from a data frame (for instance, we only used
+it to store some temporary result in a script), we actually do the same thing,
+except we assign to it the value `NULL`.
+
+**Remove the column `new_col`**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df$new_col <- NULL
+
+# and the column is gone
+df
+```
+:::
+
+
+#### "Improper" column names
+
+Most column names you will be using in your own script will (well, should!) follow
+the same rules as apply for variable names -- they can't start with a number,
+have to compose of alphanumeric characters, and can't contain any other characters
+except for underscores (and occasionally dots). To quote from the venerable
+[R language reference](https://cran.r-project.org/doc/manuals/r-release/R-lang.html#Identifiers):
+
+> Identifiers consist of a sequence of letters, digits, the period (‘.’) and the underscore. They must not start with a digit or an underscore, or with a period followed by a digit.
+
+For instance, these are examples of proper identifiers which can serve as
+variable names, column names and (later) function names:
+
+- `variable1`
+- `a_longer_var_42`
+- `anotherVariableName`
+
+Unfortunately, when you encounter data in the wild, especially in tables you
+get from other people or download as supplementary information from the internet,
+they are rarely this perfect. Here's a little example of such data frame:
+
+```{r}
+#| echo: false
+weird_df <- data.frame(
+  `v with spaces` = c("one", "two", "three", "four", "five"),
+  w = c(1.0, 2.72, 3.14, 1000.1, 1e6),
+  `y with % sign` = c("folks", "hello", "from", "data frame", "!")
+)
+names(weird_df) <- c("v with spaces", "w", "y with % sign")
+```
+
+```{r}
+weird_df
+```
+
+If you look closely, you see that some columns have spaces `" "` and also strange
+characters `%` which are not allowed? Which of the `$`, `[]` and `[[]]` operators
+can you use to extract `v with spaces` and `y with % sign` columns as vectors?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+`[]` and `[[]]` work just as before, because they accept a string by default
+anyway, so spaces and other characters are not a problem:
+
+```{r}
+weird_df["v with spaces"]
+
+weird_df[["y with % sign"]]
+```
+
+The `$` operator needs bit more work. When you encounter an "improper" column
+name in a data frame, you have to enclose the whole "symbol" or "identifier"
+in "back ticks" like this:
+
+```{r}
+weird_df$`y with % sign`
+```
+
+This is super useful when working with tabular data you get from someone else,
+especially if they prepared it in Excel. But you should never create data
+frames with these weird column names yourself. Always use names that would
+be appropriate as normal standard R identifiers on their own (just alphanumeric
+symbols or underscores).
+:::
+
+
 
 
 #### The _tidyverse_ approach
