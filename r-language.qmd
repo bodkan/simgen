@@ -490,16 +490,189 @@ just laying the groundwork for some very cool things later down the line.
 
 ## Part 4: Indexing into vectors and lists
 
+To extract a specific element(s) of a vector or a list (or to assign its given
+position(s)), we use a so-called "indexing" operation. Generally speaking,
+we can do indexing in three ways:
+
+1. **numerical-based indexing** (by specifying a set of integer numbers),
+
+2. **logical-based indexing** (by specifying a vector of `TRUE` / `FALSE` values of the
+same length as the vector we're indexing into)
+
+3. **name-based indexing** (by specifying names of elements to index)
+
+Let's practice those for vectors and lists separately. Later, when we introduce
+data frames, we will return to the topic of indexing again.
+
+### Vectors
+
+#### 1. Numerical-based indexing
+
 To extract an i-th element of a vector `xyz`, we can use the `[]` operator like
 this: `xyz[i]`. For instance, we can take the 13-th element of this vector
 as `xyz[13]`.
 
 **Familiarize yourselves with the `[]` operator by taking out some specific
-values from this vector, like the 5-th element.**
+values from this vector, let's say its 5-th element.**
 
 ```{r}
-vector <- c(1, 10, 100, 1000, 10000, 100000, 1000000)
+v <- c("hi", "folks", "what's", "up", "folks")
 ```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+v[5]
+```
+:::
+
+The `[]` operator is "vectorized", meaning that it can actually accept multiple
+values given as a vector themselves (i.e, something like `v[c(1, 3, 4)]` will
+extract the first, third, and fourth element of the vector `v`. **In this way,
+extract the first and fifth element of the vector `v`. What happens if you
+try to extract a tenth element from `v`?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+v[c(1, 5)]
+```
+
+Accessing a non-existent element gives us a "not available" or "missing" value.
+
+```{r}
+v[10]
+```
+
+:::
+
+
+#### 2. Logical-based indexing
+
+Rather than giving the `[]` operator a specific set of integer numbers, we
+can provide a vector of `TRUE` / `FALSE` values which specify which element
+of the input vector do we want to "extract". Note that this `TRUE` / `FALSE`
+indexing vector must have the same length as our original vector!
+
+**Create variable containing a vector of five `TRUE` or `FALSE` values (i.e.,
+with something like `index <- c(TRUE, FALSE, ...)` but with five `TRUE` or `FALSE`
+values total, and use that `index` variable in a `v[index]` indexing operation.**
+
+```{r}
+index <- c(TRUE, FALSE, TRUE, TRUE, FALSE)
+v[index]
+```
+
+
+Usually we never want to create this "indexing vector" manually (imagine doing
+this for a vector of million values -- impossible!). Instead, we create this
+indexing vector "programmatically", based on a certain condition, like this:
+
+```{r}
+index <- v == "up"
+```
+
+This checks which values of `v` are equal to "three", creating a logical `TRUE` /
+`FALSE` vector in the process, storing it in the variable `index`:
+
+```{r}
+index
+```
+
+**Use the same principle to extract the elements of the vector matching the
+value "folks".**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+index <- v == "folks"
+index
+```
+
+A nice trick is that summing a logical vector using `sum()` gives you the
+number of `TRUE` matches:
+
+```{r}
+sum(index)
+```
+
+This is actually why we do this indexing operation on vectors in the first places, most
+of the time -- when we want to count how many data points match a certain criterion.
+
+Let's extract our matching values:
+
+```{r}
+v[index]
+```
+:::
+
+
+
+
+### Lists
+
+
+### Negative indexing
+
+
+### Named indexing
+
+
+Here's a neat thing we can do with vectors and lists. They don't have to contain
+just values themselves (which can be then extracted using integer or logical
+indices as we've done above), but those values can be assigned names too.
+
+Consider this vector and list:
+
+```{r}
+v <- c(1, 2, 3, 4, 5)
+v
+
+l <- list(1, 2, 3, 4, 5)
+l
+```
+
+As a recap, we can index into them in the usual manner like this:
+
+```{r}
+v[c(1, 3, 5)]
+l[c(1, 3)]
+```
+
+But we can also name the values like this (note that the names appear in the
+print out you get from R in the console):
+
+```{r}
+v <- c(one = 1, two = 2, three = 3, four = 4, five = 5)
+v
+
+l <- list(one = 1, two = 2, three = 3, four = 4, five = 5)
+l
+```
+
+When you have a named data structure like this, you can index into it using
+those names as well, which can be very convenient. Imagine having data described
+not by indices but actualy readable names (such as names of people, or excavation
+sites!):
+
+```{r}
+l[["three"]]
+
+l[c("two", "five")]
+```
+
+Spoiler alert: this is exactly what data frames are, under the hood (named lists!),
+as we'll see in the next section.
+
+
+
+
+
+
+
 
 
 ## Part 5: Data frames
@@ -568,6 +741,11 @@ unclass(df)
 It really is just a list!
 :::
 
+
+Remember how we talked about "named lists" in the previous section! Yes, data
+frames really are just normal named lists with extra bit of behavior added
+to them (namely the fact that these lists are printed in a nice, readable, 
+tabular form).
 
 ### Selecting columns
 
