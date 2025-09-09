@@ -488,7 +488,7 @@ another level of data science work. Please bear with me for now! This is
 just laying the groundwork for some very cool things later down the line.
 
 
-## Part 4: Indexing
+## Part 4: Indexing into vectors and lists
 
 To extract an i-th element of a vector `xyz`, we can use the `[]` operator like
 this: `xyz[i]`. For instance, we can take the 13-th element of this vector
@@ -514,10 +514,11 @@ easy, like this little data frame here:
 
 ```{r}
 df <- data.frame(
-  w = c(1.0, 2.72, 3.14),
-  x = c(1, 13, 42),
-  y = c("hello", "folks", "!"),
-  z = c(TRUE, FALSE, FALSE)
+  v = c("one", "two", "three", "four", "five"),
+  w = c(1.0, 2.72, 3.14, 1000.1, 1e6),
+  x = c(1, 13, 42, 123, 0),
+  y = c("folks", "hello", "from", "data frame", "!"),
+  z = c(TRUE, FALSE, FALSE, TRUE, TRUE)
 )
 
 df
@@ -567,46 +568,237 @@ unclass(df)
 It really is just a list!
 :::
 
+
+### Selecting columns
+
+Quite often we need to extract values of an entire column of a data frame. In
+the Part about indexing, you have learned about the `[]` operator (for vectors
+and lists), and also about the `$` and `[[]]` operator (for lists). Now that
+you've learned that data frames are (on a lower level) just lists, what does
+it mean for wanting to extract a column from a data frame?
+
+**Try to use the three indexing options to extract the column named `"z"`
+from your data frame `df`. How do the results differ depending on the indexing
+method chosen? Is the indexing (and its result) different to indexing a
+plain list?**
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-When we create a normal plain R list...
+We can extract a given column with...
+
+1. the `$` operator (column name as a symbol), which gives us a vector:
 
 ```{r}
-homebrew <- list(col_a = 1:3, col_b = c("one", "two", "three"))
-homebrew
+df$z
 ```
 
-... and assing a "data.frame" class attribute to it like this...
+2. the `[` operator (column name as a string), which gives us a (single-column)
+data frame:
 
 ```{r}
-class(homebrew) <- "data.frame"
+df["z"]
 ```
 
-... we get a data frame!
-
-```{r}
-homebrew
-```
-:::
-
-
-
-Two ways of extracting a data-frame column:
-
-- `$` operator (column name as a symbol):
-
-```{r}
-df$w
-```
-
-- `[[` operator (column name as a string):
+3. the `[[` operator (column name as a string), which gives us vector again:
 
 ```{r}
 df[["w"]]
 ```
 
-Note that the operator must be `[[`, because `[` does something slightly different
+Let's create a list-version of this data frame:
+
+```{r}
+df_list <- as.list(df)
+df_list
+```
+
+The indexing results match what we get for the data frame. After all, a data
+frame really is just list (with some very convenient behavior, such as
+presenting the data in a tabular form). The only exception is the result
+of `df_list["v"]` which results a data frame but only returns a list when
+applied on a list:
+
+```{r}
+df_list$v
+df_list["v"]
+df_list[["v"]]
+```
+:::
+
+#### The _tidyverse_ approach
+
+In the chapter on _tidyverse_, we will learn much more powerful and easier
+tools to do these types of data-frame operations, particularly the `select()`
+function. That said, even when you use _tidyverse_ exclusively, you will
+still encounter code in the wild which uses this base R way of doing things.
+Additionally, for certain trivial actions, doing "the base R thing" is just
+quicker to types. This is why knowing the basics of `$`, `[]`, and `[[]]` will
+always be useful.
+
+
+### Selecting rows ("filtering")
+
+Of course, we often need to refer not just to specific columns of data frames,
+but also to given rows. Let's consider our data frame again:
+
+```{r}
+df
+```
+
+In the section on indexing into vectors and lists above, we learned primarily
+about two means of indexing into vectors. Let's revisit them in the context
+of data frames:
+
+1. **Integer-based indexing**
+
+**What happens when you use the `[1:3]` index into the `df` data frame, just
+as you would do by extracting the first three elements of a vector?
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Somewhat curiously, you get the first three columns, not rows!
+
+```{r}
+df[1:3]
+```
+:::
+
+When indexing into a data frame (or even a matrix, although we won't be getting
+into those in our course), you need to distinguish the _dimension_ along which
+you're indexing: either a row, or a column dimension. Just like in referring to
+a cell coordinate in Excel, for example.
+
+The way you do this for data frames in R is to separate the dimensions into
+which you're indexing with a comma in this way: `[row-index, column-name-or-index]`.
+**Try to extract the first three elements (`1:3`) of the data frame `df` by
+`df[1:3, ]`.** Note the empty space after the comma `,`! **Then try to
+select a subset of the `df` data frame to only show the row #1 and #4 for
+columns `"x"` and `"z"`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Extract the first three rows of `df`:
+
+```{r}
+df[1:3, ]
+```
+
+Extract the rows number 1 and 4 for columns "x" and "z":
+
+```{r}
+df[c(1, 4), c("x", "z")]
+```
+
+Of course, the actual indexing dimensions can be (and often is) specified in
+variables. For instance, we often have code which firsts computes the indexes,
+and then we access them into the data frames. The equivalent of this here would
+be:
+
+```{r}
+row_indices <- 1:3
+
+df[row_indices, ]
+```
+
+Extract the rows number 1 and 4 for columns "x" and "z":
+
+```{r}
+row_indices <- c(1, 4)
+col_indices <- c("x", "z")
+
+df[row_indices, col_indices]
+```
+
+
+2. **Logical-based indexing**
+
+Similarly to indexing into vectors, you can also specify which rows should
+be extracted "at once", using a single logical vector (you can also do this
+for columns but I honestly don't remember the last time I had to do this). 
+
+**The most frequent use for this is to select all rows of a data frame for
+which a given column (or multiple columns) carry a certain value. Select
+only those rows for which the column "y" has a value "hello"**:
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Let's first use a vectorized comparison to get a `TRUE` / `FALSE` vector
+indicating which values of the "v" column contain the string "hello".
+Remember, that if you take a vector (of arbitrary length) and compare it
+to some value, you will get a `TRUE` / `FALSE` vector of the same length:
+
+```{r}
+# this is what the column (vector, really) contains
+df$y
+```
+
+```{r}
+# this is how we can find out, which element(s) of the vector match
+df$y == "hello"
+```
+
+```{r}
+# let's save the result to a new variable
+row_indices <- df$y == "hello"
+row_indices
+```
+:::
+
+Now we can use this vector as a row index into our data frame (don't forget
+the comma `,`, without which you'd be indexing into the column-dimension,
+not the row-dimension!).
+
+```{r}
+df[row_indices, ]
+```
+
+Of course, you can also both _filter_ (remember this word) for a subset of rows
+and also, at the same time, _select_ (remember this word too) a subset of
+columns at the same time:
+
+```{r}
+df[row_indices, c("v", "y", "z")]
+```
+:::
+
+**Now instead of filtering rows where column `y` matches "hello", filter for rows
+where `w` column is less than 1000.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We can again store the filtered rows in a separate variable, and then use that
+variable to index into the data frame:
+
+```{r}
+row_indices <- df$w < 1000
+row_indices
+
+df[row_indices, ]
+```
+
+Often, we want to be more consise and do everything in one go:
+
+```{r}
+df[df$w < 1000, ]
+```
+:::
+
+
+
+
+#### The _tidyverse_ approach
+
+Similarly to previous section on column selection, there's a much more convenient
+and faster-to-type way of doing filtering, using the _tidyverse_ function `filter()`.
+Still, as with the column selection, sometimes doing the quick and easy thing
+is just more convenient. The minimum on filtering rows of data frames introduced
+in this section will be enough for you, even in the long run!
+
 
 ## Part 6: Inspecting column types
 
