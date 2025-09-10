@@ -369,7 +369,14 @@ window.Quarto = {
   <li><a href="#part-1-basic-data-types" id="toc-part-1-basic-data-types" class="nav-link active" data-scroll-target="#part-1-basic-data-types">Part 1: Basic data types</a></li>
   <li><a href="#part-2-vectors" id="toc-part-2-vectors" class="nav-link" data-scroll-target="#part-2-vectors">Part 2: Vectors</a></li>
   <li><a href="#part-3-lists" id="toc-part-3-lists" class="nav-link" data-scroll-target="#part-3-lists">Part 3: Lists</a></li>
-  <li><a href="#part-4-indexing-into-vectors-and-lists" id="toc-part-4-indexing-into-vectors-and-lists" class="nav-link" data-scroll-target="#part-4-indexing-into-vectors-and-lists">Part 4: Indexing into vectors and lists</a></li>
+  <li><a href="#part-4-indexing-into-vectors-and-lists" id="toc-part-4-indexing-into-vectors-and-lists" class="nav-link" data-scroll-target="#part-4-indexing-into-vectors-and-lists">Part 4: Indexing into vectors and lists</a>
+  <ul class="collapse">
+  <li><a href="#vectors" id="toc-vectors" class="nav-link" data-scroll-target="#vectors">Vectors</a></li>
+  <li><a href="#lists" id="toc-lists" class="nav-link" data-scroll-target="#lists">Lists</a></li>
+  <li><a href="#traversing-nested-lists" id="toc-traversing-nested-lists" class="nav-link" data-scroll-target="#traversing-nested-lists">Traversing nested lists</a></li>
+  <li><a href="#named-indexing-for-vectors-and-lists" id="toc-named-indexing-for-vectors-and-lists" class="nav-link" data-scroll-target="#named-indexing-for-vectors-and-lists">Named indexing for vectors and lists</a></li>
+  <li><a href="#negative-indexing" id="toc-negative-indexing" class="nav-link" data-scroll-target="#negative-indexing">Negative indexing</a></li>
+  </ul></li>
   <li><a href="#part-5-data-frames" id="toc-part-5-data-frames" class="nav-link" data-scroll-target="#part-5-data-frames">Part 5: Data frames</a>
   <ul class="collapse">
   <li><a href="#selecting-columns" id="toc-selecting-columns" class="nav-link" data-scroll-target="#selecting-columns">Selecting columns</a></li>
@@ -1089,47 +1096,23 @@ Click to see the solution
 </section>
 <section id="part-4-indexing-into-vectors-and-lists" class="level2">
 <h2 class="anchored" data-anchor-id="part-4-indexing-into-vectors-and-lists">Part 4: Indexing into vectors and lists</h2>
+<p>To extract a specific element(s) of a vector or a list (or to assign its given position(s)), we use a so-called “indexing” operation. Generally speaking, we can do indexing in three ways:</p>
+<ol type="1">
+<li><p><strong>numerical-based indexing</strong> (by specifying a set of integer numbers),</p></li>
+<li><p><strong>logical-based indexing</strong> (by specifying a vector of <code>TRUE</code> / <code>FALSE</code> values of the same length as the vector we’re indexing into)</p></li>
+<li><p><strong>name-based indexing</strong> (by specifying names of elements to index)</p></li>
+</ol>
+<p>Let’s practice those for vectors and lists separately. Later, when we introduce data frames, we will return to the topic of indexing again.</p>
+<section id="vectors" class="level3">
+<h3 class="anchored" data-anchor-id="vectors">Vectors</h3>
+<section id="numerical-based-indexing" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-based-indexing">1. Numerical-based indexing</h4>
 <p>To extract an i-th element of a vector <code>xyz</code>, we can use the <code>[]</code> operator like this: <code>xyz[i]</code>. For instance, we can take the 13-th element of this vector as <code>xyz[13]</code>.</p>
-<p><strong>Familiarize yourselves with the <code>[]</code> operator by taking out some specific values from this vector, like the 5-th element.</strong></p>
+<p><strong>Familiarize yourselves with the <code>[]</code> operator by taking out some specific values from this vector, let’s say its 5-th element.</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1000</span>, <span class="dv">10000</span>, <span class="dv">100000</span>, <span class="dv">1000000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hi"</span>, <span class="st">"folks"</span>, <span class="st">"what's"</span>, <span class="st">"up"</span>, <span class="st">"folks"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-<section id="part-5-data-frames" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="part-5-data-frames">Part 5: Data frames</h2>
-<p>Every scientists works with tables of data, in one way or another. R provides first class support for working with tables, which are formally called “data frames”. We will be spending most of our time of this workshop learning to manipulate, filter, modify, and plot data frames, often times with data that is too big to look at all at once. For simplicity, just to get started and to explain the basic fundamentals, let’s begin with something trivially easy, like this little data frame here:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">v =</span> <span class="fu">c</span>(<span class="st">"one"</span>, <span class="st">"two"</span>, <span class="st">"three"</span>, <span class="st">"four"</span>, <span class="st">"five"</span>),</span>
-<span id="cb129-3"><a href="#cb129-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">w =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">2.72</span>, <span class="fl">3.14</span>, <span class="fl">1000.1</span>, <span class="fl">1e6</span>),</span>
-<span id="cb129-4"><a href="#cb129-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">13</span>, <span class="dv">42</span>, <span class="dv">123</span>, <span class="dv">0</span>),</span>
-<span id="cb129-5"><a href="#cb129-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"folks"</span>, <span class="st">"hello"</span>, <span class="st">"from"</span>, <span class="st">"data frame"</span>, <span class="st">"!"</span>),</span>
-<span id="cb129-6"><a href="#cb129-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>)</span>
-<span id="cb129-7"><a href="#cb129-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb129-8"><a href="#cb129-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb129-9"><a href="#cb129-9" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>      v          w   x          y     z
-1   one       1.00   1      folks  TRUE
-2   two       2.72  13      hello FALSE
-3 three       3.14  42       from FALSE
-4  four    1000.10 123 data frame  TRUE
-5  five 1000000.00   0          !  TRUE</code></pre>
-</div>
-</div>
-<p>First, here’s the first killer bit of information: data frames are normal lists!</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.list</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
-</div>
-</div>
-<p>How is this even possible? And why is this even the case? Explaining this in full would be too much detail, even for a course which tries to go beyond “R only as a plotting tool” as I promised you in the introduction. Still, for now let’s say that R objects can store so called “attributes”, which – in the case of data frame objects – makes them behave as “something more than just a list”. These attributes are called “classes”.</p>
-<p><strong>You can poke into these internals but “unclassing” an object. Call <code>unclass(df)</code> in your R console and observe what result you get (just to convince yourself that data frames really are lists under the hood).</strong></p>
-
-<div class="no-row-height column-margin column-container"><div class="margin-aside">
-<p><strong>Note:</strong> Honest admission – you will never need this <code>unclass()</code> stuff in practice, ever. I’m really showing you to demonstrate what “data frame” actually is on a lower-level of R programming. If you’re confused, don’t worry. The fact that data frames are lists matters infinitely more than knowing exactly how is that accomplished inside R.</p>
-</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
@@ -1141,21 +1124,692 @@ Click to see the solution
 </div>
 <div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a>v[<span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "folks"</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>The <code>[]</code> operator is “vectorized”, meaning that it can actually accept multiple values given as a vector themselves (i.e, something like <code>v[c(1, 3, 4)]</code> will extract the first, third, and fourth element of the vector <code>v</code>. <strong>In this way, extract the first and fifth element of the vector <code>v</code>. What happens if you try to extract a tenth element from <code>v</code>?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a>v[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">5</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hi"    "folks"</code></pre>
+</div>
+</div>
+<p>Accessing a non-existent element gives us a “not available” or “missing” value.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb133"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>v[<span class="dv">10</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] NA</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="logical-based-indexing" class="level4">
+<h4 class="anchored" data-anchor-id="logical-based-indexing">2. Logical-based indexing</h4>
+<p>Rather than giving the <code>[]</code> operator a specific set of integer numbers, we can provide a vector of <code>TRUE</code> / <code>FALSE</code> values which specify which element of the input vector do we want to “extract”. Note that this <code>TRUE</code> / <code>FALSE</code> indexing vector must have the same length as our original vector!</p>
+<p><strong>Create variable containing a vector of five <code>TRUE</code> or <code>FALSE</code> values (i.e., with something like <code>index &lt;- c(TRUE, FALSE, ...)</code> but with five <code>TRUE</code> or <code>FALSE</code> values total, and use that <code>index</code> variable in a <code>v[index]</code> indexing operation.</strong></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb135"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb135-2"><a href="#cb135-2" aria-hidden="true" tabindex="-1"></a>v[index]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hi"     "what's" "up"    </code></pre>
+</div>
+</div>
+<p>Usually we never want to create this “indexing vector” manually (imagine doing this for a vector of million values – impossible!). Instead, we create this indexing vector “programmatically”, based on a certain condition, like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> v <span class="sc">==</span> <span class="st">"up"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>This checks which values of <code>v</code> are equal to “three”, creating a logical <code>TRUE</code> / <code>FALSE</code> vector in the process, storing it in the variable <code>index</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb138"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb138-1"><a href="#cb138-1" aria-hidden="true" tabindex="-1"></a>index</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE FALSE FALSE  TRUE FALSE</code></pre>
+</div>
+</div>
+<p><strong>Use the same principle to extract the elements of the vector matching the value “folks”.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb140"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a>index <span class="ot">&lt;-</span> v <span class="sc">==</span> <span class="st">"folks"</span></span>
+<span id="cb140-2"><a href="#cb140-2" aria-hidden="true" tabindex="-1"></a>index</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE  TRUE FALSE FALSE  TRUE</code></pre>
+</div>
+</div>
+<p>A nice trick is that summing a logical vector using <code>sum()</code> gives you the number of <code>TRUE</code> matches:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb142"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(index)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 2</code></pre>
+</div>
+</div>
+<p>This is actually why we do this indexing operation on vectors in the first places, most of the time – when we want to count how many data points match a certain criterion.</p>
+<p>Let’s extract our matching values:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb144"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a href="#cb144-1" aria-hidden="true" tabindex="-1"></a>v[index]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "folks" "folks"</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="lists" class="level3">
+<h3 class="anchored" data-anchor-id="lists">Lists</h3>
+<p>This section will be a repetition on the previous exercises about vectors. <strong>Don’t forget – lists are just vectors, except that they can contain values of heterogeneous types (numbers, characters, anything). As a result, everything that applies to vectors above applies also here.</strong></p>
+<p>But practice makes perfect, so let’s go through a couple of examples anyway:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb146"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a>l <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"hello"</span>, <span class="st">"folks"</span>, <span class="st">"!"</span>, <span class="dv">123</span>, <span class="st">"wow a number follows again"</span>, <span class="dv">42</span>)</span>
+<span id="cb146-2"><a href="#cb146-2" aria-hidden="true" tabindex="-1"></a>l</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "hello"
+
+[[2]]
+[1] "folks"
+
+[[3]]
+[1] "!"
+
+[[4]]
+[1] 123
+
+[[5]]
+[1] "wow a number follows again"
+
+[[6]]
+[1] 42</code></pre>
+</div>
+</div>
+<section id="numerical-based-indexing-1" class="level4">
+<h4 class="anchored" data-anchor-id="numerical-based-indexing-1">1. Numerical-based indexing</h4>
+<p>The same applies to numerical-based indexing as what we’ve shown for vectors.</p>
+<p><strong>Extract the second and fourth elements from <code>l</code>.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-18" class="callout-18-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb148"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a>l[<span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">4</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "folks"
+
+[[2]]
+[1] 123</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="logical-based-indexing-1" class="level4">
+<h4 class="anchored" data-anchor-id="logical-based-indexing-1">2. Logical-based indexing</h4>
+<p>Similarly, you can do the same with <code>TRUE</code> / <code>FALSE</code> indexing vectors for lists as what we did with normal (single-type) vectors. Rather than go through the variation of the same exercises, let’s introduce another very useful pattern related to logical-based indexing and that’s removing invalid elements.</p>
+<p>Consider this vector:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb150"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"folks"</span>, <span class="st">"!"</span>, <span class="cn">NA</span>, <span class="st">"wow another NAs are coming"</span>, <span class="cn">NA</span>, <span class="cn">NA</span>, <span class="st">"42"</span>)</span>
+<span id="cb150-2"><a href="#cb150-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-3"><a href="#cb150-3" aria-hidden="true" tabindex="-1"></a>v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hello"                      "folks"                     
+[3] "!"                          NA                          
+[5] "wow another NAs are coming" NA                          
+[7] NA                           "42"                        </code></pre>
+</div>
+</div>
+<p>Notice the <code>NA</code> values. One operation we have to do very often (particularly in data frames, whose columns are vectors as we will see below!) is to remove those invalid elements, using the function <code>is.na()</code>.</p>
+<p>This function returns a <code>TRUE</code> / <code>FALSE</code> vector which, as you now already know, can be used for logical-based indexing!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb152"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb152-1"><a href="#cb152-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.na</span>(v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE FALSE FALSE  TRUE FALSE  TRUE  TRUE FALSE</code></pre>
+</div>
+</div>
+<p>A very useful trick in programming is <em>negation</em> (using the <code>!</code> operator), which flips the <code>TRUE</code> / <code>FALSE</code> states. In other words, prefixing with <code>!</code> returns a vector saying which elements of the input vector <em>are not</em> <code>NA</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb154"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb154-1"><a href="#cb154-1" aria-hidden="true" tabindex="-1"></a><span class="sc">!</span><span class="fu">is.na</span>(v)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE  TRUE  TRUE FALSE  TRUE FALSE FALSE  TRUE</code></pre>
+</div>
+</div>
+<p><strong>Use <code>is.na(v)</code> and the negation operator <code>!</code> to remove the <code>NA</code> elements of the vector <code>v</code>!</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-19" class="callout-19-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb156"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb156-1"><a href="#cb156-1" aria-hidden="true" tabindex="-1"></a>v[<span class="sc">!</span><span class="fu">is.na</span>(v)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hello"                      "folks"                     
+[3] "!"                          "wow another NAs are coming"
+[5] "42"                        </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="vs-operators" class="level4">
+<h4 class="anchored" data-anchor-id="vs-operators"><code>[]</code> vs <code>[[]]</code> operators</h4>
+<p>Let’s move to a more interesting topic. There’s another operator useful for lists, and that’s <code>[[ ]]</code> (not <code>[ ]</code>!). <strong>Extract the third element of the list <code>l</code> using <code>l[4]</code> and <code>l[[4]]]</code>. What’s the difference between the results? If you’re unsure, use the <code>mode()</code> function on <code>l[3]</code> and <code>l[[3]]</code> to help you.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Strange, isn’t it? The <code>[ ]</code> operator seems to return a list, even though we expect the result <code>123</code>?</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb158"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb158-1"><a href="#cb158-1" aria-hidden="true" tabindex="-1"></a>l[<span class="dv">4</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 123</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb160"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb160-1"><a href="#cb160-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mode</span>(l[<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "list"</code></pre>
+</div>
+</div>
+<p>On the other hand, <code>l[[4]]</code> gives us just a number!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb162"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb162-1"><a href="#cb162-1" aria-hidden="true" tabindex="-1"></a>l[[<span class="dv">4</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 123</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb164"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb164-1"><a href="#cb164-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mode</span>(l[[<span class="dv">4</span>]])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "numeric"</code></pre>
+</div>
+</div>
+<p>I simply cannot not link to <a href="https://r4ds.hadley.nz/diagrams/pepper.png">this</a> brilliant figure, which explains this result in a very fun way. The left picture shows our list <code>l</code>, the middle picture shows <code>l[4]</code>, the right picture shows <code>l[[4]]</code>. Spend some time experimenting with the behavior of <code>[ ]</code> and <code>[[ ]]</code> on our list <code>l</code>! This will come in handy many times in your R carreer!</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="traversing-nested-lists" class="level3">
+<h3 class="anchored" data-anchor-id="traversing-nested-lists">Traversing nested lists</h3>
+<p>Remember our nested list from earlier? Here’s it again:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb166"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb166-1"><a href="#cb166-1" aria-hidden="true" tabindex="-1"></a>weird_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb166-2"><a href="#cb166-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>,</span>
+<span id="cb166-3"><a href="#cb166-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"two"</span>,</span>
+<span id="cb166-4"><a href="#cb166-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb166-5"><a href="#cb166-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"three"</span>,</span>
+<span id="cb166-6"><a href="#cb166-6" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>,</span>
+<span id="cb166-7"><a href="#cb166-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(</span>
+<span id="cb166-8"><a href="#cb166-8" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span>, <span class="st">"six"</span>,</span>
+<span id="cb166-9"><a href="#cb166-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">list</span>(<span class="st">"seven"</span>, <span class="dv">8</span>)</span>
+<span id="cb166-10"><a href="#cb166-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb166-11"><a href="#cb166-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb166-12"><a href="#cb166-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>What do you get when you run <code>weird_list[[1]]</code>? How about <code>weird_list[[3]]</code>? And how about <code>weird_list[[3]][[2]]</code>?</strong> Things are getting a little complicated (or interesting, depending on how nerdy you are :)).</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-21-contents" aria-controls="callout-21" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-21" class="callout-21-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This takes out the first value of the list:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb167"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">1</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1</code></pre>
+</div>
+</div>
+<p>Note the <code>[[]]</code> operator. Here’s what we would get with the <code>[]</code> operator (basically, a “sublist”):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb169"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a>weird_list[<span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb171"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mode</span>(weird_list[<span class="dv">1</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "list"</code></pre>
+</div>
+</div>
+<p>This extracts the 3rd value, which is itself a list!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "three"
+
+[[2]]
+[1] 4
+
+[[3]]
+[[3]][[1]]
+[1] 5
+
+[[3]][[2]]
+[1] "six"
+
+[[3]][[3]]
+[[3]][[3]][[1]]
+[1] "seven"
+
+[[3]][[3]][[2]]
+[1] 8</code></pre>
+</div>
+</div>
+<p>And because this is just any other list (just nested), we can also index <em>into that list</em>! Glancing at the result of <code>weird_list[[3]]</code> just above, we see that the 2nd value of that list is a number 4. Let’s verify that:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb175"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]][[<span class="dv">2</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 4</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p><strong>What’s the sequence of this “chaining” of indexing operators to extract the number 8?</strong></p>
+<p><strong>Hint:</strong> You can leverage the interactive nature of evaluating intermediate results in the R console, adding things to the expression (i.e., a chunk of code) in sequence.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-22-contents" aria-controls="callout-22" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-22" class="callout-22-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Let’s take it step by step, interactively:</p>
+<ol type="1">
+<li>We know that the nested list sits at the 3rd position of the whole list:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "three"
+
+[[2]]
+[1] 4
+
+[[3]]
+[[3]][[1]]
+[1] 5
+
+[[3]][[2]]
+[1] "six"
+
+[[3]][[3]]
+[[3]][[3]][[1]]
+[1] "seven"
+
+[[3]][[3]][[2]]
+[1] 8</code></pre>
+</div>
+</div>
+<ol start="2" type="1">
+<li>The other nested list is at index number 3 again:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]][[<span class="dv">3</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 5
+
+[[2]]
+[1] "six"
+
+[[3]]
+[[3]][[1]]
+[1] "seven"
+
+[[3]][[2]]
+[1] 8</code></pre>
+</div>
+</div>
+<ol start="3" type="1">
+<li>And the final list, the one carrying the number 8, is again in the 3rd position:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb181"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb181-1"><a href="#cb181-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]][[<span class="dv">3</span>]][[<span class="dv">3</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "seven"
+
+[[2]]
+[1] 8</code></pre>
+</div>
+</div>
+<ol start="4" type="1">
+<li>Finally, we can extract the number 8 from the index at the second position:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb183"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb183-1"><a href="#cb183-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]][[<span class="dv">3</span>]][[<span class="dv">3</span>]][[<span class="dv">2</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8</code></pre>
+</div>
+</div>
+<p><em>Whew!</em> That was something, wasn’t it. Kind of annoying, if you ask me.</p>
+<p>Luckily, you will not have to do these kind of complex shenanigans in R very often (maybe even never). Still, nested lists are sometimes used in capturing more complex types of data than just lists of numbers or tables (for instance, nested lists capture tree-like structures). In any case, using <em>names</em> instead of just <em>integers</em> as indices makes the whole process much easier, as we will see below.</p>
+<p>In data you encounter in practice, the most extreme case of data indexing you will have to do probably won’t be more complex than two nested indexing operators in a row (i.e., the equivalent of doing <code>data[[2]][[3]])</code>.</p>
+<p>Particularly when we discuss some very convenient <em>tidyverse</em> operations later, having an idea about what a nested list even is will be very useful, so bear with me please!</p>
+</div>
+</div>
+</div>
+</section>
+<section id="named-indexing-for-vectors-and-lists" class="level3">
+<h3 class="anchored" data-anchor-id="named-indexing-for-vectors-and-lists">Named indexing for vectors and lists</h3>
+<p>Here’s a neat thing we can do with vectors and lists. They don’t have to contain just values themselves (which can be then extracted using integer or logical indices as we’ve done above), but those values can be assigned names too.</p>
+<p>Consider this vector and list:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb185"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb185-1"><a href="#cb185-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
+<span id="cb185-2"><a href="#cb185-2" aria-hidden="true" tabindex="-1"></a>v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 2 3 4 5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb187"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb187-1"><a href="#cb187-1" aria-hidden="true" tabindex="-1"></a>l <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>)</span>
+<span id="cb187-2"><a href="#cb187-2" aria-hidden="true" tabindex="-1"></a>l</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 1
+
+[[2]]
+[1] 2
+
+[[3]]
+[1] 3
+
+[[4]]
+[1] 4
+
+[[5]]
+[1] 5</code></pre>
+</div>
+</div>
+<p>As a recap, we can index into them in the usual manner like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb189"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb189-1"><a href="#cb189-1" aria-hidden="true" tabindex="-1"></a>v[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 3 5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb191"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb191-1"><a href="#cb191-1" aria-hidden="true" tabindex="-1"></a>l[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 1
+
+[[2]]
+[1] 3</code></pre>
+</div>
+</div>
+<p>But we can also name the values like this (note that the names appear in the print out you get from R in the console):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb193"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb193-1"><a href="#cb193-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">one =</span> <span class="dv">1</span>, <span class="at">two =</span> <span class="dv">2</span>, <span class="at">three =</span> <span class="dv">3</span>, <span class="at">four =</span> <span class="dv">4</span>, <span class="at">five =</span> <span class="dv">5</span>)</span>
+<span id="cb193-2"><a href="#cb193-2" aria-hidden="true" tabindex="-1"></a>v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  one   two three  four  five 
+    1     2     3     4     5 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb195"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb195-1"><a href="#cb195-1" aria-hidden="true" tabindex="-1"></a>l <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">one =</span> <span class="dv">1</span>, <span class="at">two =</span> <span class="dv">2</span>, <span class="at">three =</span> <span class="dv">3</span>, <span class="at">four =</span> <span class="dv">4</span>, <span class="at">five =</span> <span class="dv">5</span>)</span>
+<span id="cb195-2"><a href="#cb195-2" aria-hidden="true" tabindex="-1"></a>l</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$one
+[1] 1
+
+$two
+[1] 2
+
+$three
+[1] 3
+
+$four
+[1] 4
+
+$five
+[1] 5</code></pre>
+</div>
+</div>
+<p>When you have a named data structure like this, you can index into it using those names as well, which can be very convenient. Imagine having data described not by indices but actualy readable names (such as names of people, or excavation sites!):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb197"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb197-1"><a href="#cb197-1" aria-hidden="true" tabindex="-1"></a>l[[<span class="st">"three"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb199"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb199-1"><a href="#cb199-1" aria-hidden="true" tabindex="-1"></a>l[<span class="fu">c</span>(<span class="st">"two"</span>, <span class="st">"five"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$two
+[1] 2
+
+$five
+[1] 5</code></pre>
+</div>
+</div>
+<p>–</p>
+<p><em>Spoiler alert: this is exactly what data frames are, under the hood (named lists!), as we’ll see in the next section.</em></p>
+<p>–</p>
+<p>Let’s return (one last time, I promise!) to our nested list example, this time presenting it in a more convenient way.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb201"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb201-1"><a href="#cb201-1" aria-hidden="true" tabindex="-1"></a>weird_list <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb201-2"><a href="#cb201-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span>,</span>
+<span id="cb201-3"><a href="#cb201-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"two"</span>,</span>
+<span id="cb201-4"><a href="#cb201-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">nested1 =</span> <span class="fu">list</span>(</span>
+<span id="cb201-5"><a href="#cb201-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"three"</span>,</span>
+<span id="cb201-6"><a href="#cb201-6" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>,</span>
+<span id="cb201-7"><a href="#cb201-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">nested2 =</span> <span class="fu">list</span>(</span>
+<span id="cb201-8"><a href="#cb201-8" aria-hidden="true" tabindex="-1"></a>      <span class="dv">5</span>, <span class="st">"six"</span>,</span>
+<span id="cb201-9"><a href="#cb201-9" aria-hidden="true" tabindex="-1"></a>      <span class="at">nested3 =</span> <span class="fu">list</span>(<span class="st">"seven"</span>, <span class="dv">8</span>)</span>
+<span id="cb201-10"><a href="#cb201-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb201-11"><a href="#cb201-11" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb201-12"><a href="#cb201-12" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With a list like that, when we previously had to extract the element 8 like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb202"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb202-1"><a href="#cb202-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="dv">3</span>]][[<span class="dv">3</span>]][[<span class="dv">3</span>]][[<span class="dv">2</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8</code></pre>
+</div>
+</div>
+<p>we can now do this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb204"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb204-1"><a href="#cb204-1" aria-hidden="true" tabindex="-1"></a>weird_list[[<span class="st">"nested1"</span>]][[<span class="st">"nested2"</span>]][[<span class="st">"nested3"</span>]][[<span class="dv">2</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 8</code></pre>
+</div>
+</div>
+<p>Much more readable!</p>
+</section>
+<section id="negative-indexing" class="level3">
+<h3 class="anchored" data-anchor-id="negative-indexing">Negative indexing</h3>
+<p>Consider this vector again:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb206"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb206-1"><a href="#cb206-1" aria-hidden="true" tabindex="-1"></a>v <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hi"</span>, <span class="st">"folks"</span>, <span class="st">"what's"</span>, <span class="st">"up"</span>, <span class="st">"folks"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><strong>What happens when you index into <code>v</code> using the <code>[]</code> operator but give it a negative number between 1 and 5?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-23-contents" aria-controls="callout-23" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-23" class="callout-23-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Negative indices remove elements!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb207"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb207-1"><a href="#cb207-1" aria-hidden="true" tabindex="-1"></a>v[<span class="sc">-</span><span class="dv">1</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "folks"  "what's" "up"     "folks" </code></pre>
+</div>
+</div>
+<p>When we exclude all indices <code>1:5</code>, we remove everything, oops!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb209"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb209-1"><a href="#cb209-1" aria-hidden="true" tabindex="-1"></a>v[<span class="sc">-</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>character(0)</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>A very useful function is <code>length()</code>, which gives the length of a given vector (or a list – remember, lists are vectors!). <strong>Use it to remove the last element of <code>v</code>. How would you remove both the first and last element of a vector or a list (assuming you don’t know the length beforehand, i.e., you can’t put a fixed number as the index of the last element)?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-24-contents" aria-controls="callout-24" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-24" class="callout-24-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb211"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb211-1"><a href="#cb211-1" aria-hidden="true" tabindex="-1"></a>v[<span class="sc">-</span><span class="fu">length</span>(v)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "hi"     "folks"  "what's" "up"    </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb213"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb213-1"><a href="#cb213-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this gives us the index of the first and last element</span></span>
+<span id="cb213-2"><a href="#cb213-2" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="dv">1</span>, <span class="fu">length</span>(v))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1 5</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb215"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb215-1"><a href="#cb215-1" aria-hidden="true" tabindex="-1"></a><span class="co"># then we can prefix this with the minus sign to remove them</span></span>
+<span id="cb215-2"><a href="#cb215-2" aria-hidden="true" tabindex="-1"></a>v[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="fu">length</span>(v))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "folks"  "what's" "up"    </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="part-5-data-frames" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="part-5-data-frames">Part 5: Data frames</h2>
+<p>Every scientists works with tables of data, in one way or another. R provides first class support for working with tables, which are formally called “data frames”. We will be spending most of our time of this workshop learning to manipulate, filter, modify, and plot data frames, often times with data that is too big to look at all at once. For simplicity, just to get started and to explain the basic fundamentals, let’s begin with something trivially easy, like this little data frame here:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb217"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb217-1"><a href="#cb217-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb217-2"><a href="#cb217-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">v =</span> <span class="fu">c</span>(<span class="st">"one"</span>, <span class="st">"two"</span>, <span class="st">"three"</span>, <span class="st">"four"</span>, <span class="st">"five"</span>),</span>
+<span id="cb217-3"><a href="#cb217-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">w =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">2.72</span>, <span class="fl">3.14</span>, <span class="fl">1000.1</span>, <span class="fl">1e6</span>),</span>
+<span id="cb217-4"><a href="#cb217-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">13</span>, <span class="dv">42</span>, <span class="cn">NA</span>, <span class="cn">NA</span>),</span>
+<span id="cb217-5"><a href="#cb217-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"folks"</span>, <span class="st">"hello"</span>, <span class="st">"from"</span>, <span class="st">"data frame"</span>, <span class="st">"!"</span>),</span>
+<span id="cb217-6"><a href="#cb217-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>, <span class="cn">TRUE</span>, <span class="cn">TRUE</span>)</span>
+<span id="cb217-7"><a href="#cb217-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb217-8"><a href="#cb217-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb217-9"><a href="#cb217-9" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      v          w  x          y     z
+1   one       1.00  1      folks  TRUE
+2   two       2.72 13      hello FALSE
+3 three       3.14 42       from FALSE
+4  four    1000.10 NA data frame  TRUE
+5  five 1000000.00 NA          !  TRUE</code></pre>
+</div>
+</div>
+<p>First, here’s the first killer bit of information: data frames are normal lists!</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb219"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb219-1"><a href="#cb219-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is.list</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+</div>
+<p>How is this even possible? And why is this even the case? Explaining this in full would be too much detail, even for a course which tries to go beyond “R only as a plotting tool” as I promised you in the introduction. Still, for now let’s say that R objects can store so called “attributes”, which – in the case of data frame objects – makes them behave as “something more than just a list”. These attributes are called “classes”.</p>
+<p><strong>You can poke into these internals but “unclassing” an object. Call <code>unclass(df)</code> in your R console and observe what result you get (just to convince yourself that data frames really are lists under the hood).</strong></p>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><strong>Note:</strong> Honest admission – you will never need this <code>unclass()</code> stuff in practice, ever. I’m really showing you to demonstrate what “data frame” actually is on a lower-level of R programming. If you’re confused, don’t worry. The fact that data frames are lists matters infinitely more than knowing exactly how is that accomplished inside R.</p>
+</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-25-contents" aria-controls="callout-25" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-25" class="callout-25-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p>This is what a normal data frame looks like to us:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb133"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb133-1"><a href="#cb133-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb221"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb221-1"><a href="#cb221-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      v          w   x          y     z
-1   one       1.00   1      folks  TRUE
-2   two       2.72  13      hello FALSE
-3 three       3.14  42       from FALSE
-4  four    1000.10 123 data frame  TRUE
-5  five 1000000.00   0          !  TRUE</code></pre>
+<pre><code>      v          w  x          y     z
+1   one       1.00  1      folks  TRUE
+2   two       2.72 13      hello FALSE
+3 three       3.14 42       from FALSE
+4  four    1000.10 NA data frame  TRUE
+5  five 1000000.00 NA          !  TRUE</code></pre>
 </div>
 </div>
 <p>Here is how a data frame is represented under the hood:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb135"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unclass</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb223"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb223-1"><a href="#cb223-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unclass</span>(df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$v
 [1] "one"   "two"   "three" "four"  "five" 
@@ -1164,7 +1818,7 @@ $w
 [1]       1.00       2.72       3.14    1000.10 1000000.00
 
 $x
-[1]   1  13  42 123   0
+[1]  1 13 42 NA NA
 
 $y
 [1] "folks"      "hello"      "from"       "data frame" "!"         
@@ -1180,12 +1834,13 @@ attr(,"row.names")
 </div>
 </div>
 </div>
+<p>Remember how we talked about “named lists” in the previous section! Yes, data frames really are just normal named lists with extra bit of behavior added to them (namely the fact that these lists are printed in a nice, readable, tabular form).</p>
 <section id="selecting-columns" class="level3">
 <h3 class="anchored" data-anchor-id="selecting-columns">Selecting columns</h3>
 <p>Quite often we need to extract values of an entire column of a data frame. In the Part about indexing, you have learned about the <code>[]</code> operator (for vectors and lists), and also about the <code>$</code> and <code>[[]]</code> operator (for lists). Now that you’ve learned that data frames are (on a lower level) just lists, what does it mean for wanting to extract a column from a data frame?</p>
 <p><strong>Try to use the three indexing options to extract the column named <code>"z"</code> from your data frame <code>df</code>. How do the results differ depending on the indexing method chosen? Is the indexing (and its result) different to indexing a plain list?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-26-contents" aria-controls="callout-26" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1194,14 +1849,14 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div id="callout-26" class="callout-26-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>We can extract a given column with…</p>
 <ol type="1">
 <li>the <code>$</code> operator (column name as a symbol), which gives us a vector:</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>z</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb225"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb225-1"><a href="#cb225-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>z</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]  TRUE FALSE FALSE  TRUE  TRUE</code></pre>
 </div>
@@ -1210,7 +1865,7 @@ Click to see the solution
 <li>the <code>[</code> operator (column name as a string), which gives us a (single-column) data frame:</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb139"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"z"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb227"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb227-1"><a href="#cb227-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"z"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      z
 1  TRUE
@@ -1224,15 +1879,15 @@ Click to see the solution
 <li>the <code>[[</code> operator (column name as a string), which gives us vector again:</li>
 </ol>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb141"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1" aria-hidden="true" tabindex="-1"></a>df[[<span class="st">"w"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb229"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb229-1"><a href="#cb229-1" aria-hidden="true" tabindex="-1"></a>df[[<span class="st">"w"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]       1.00       2.72       3.14    1000.10 1000000.00</code></pre>
 </div>
 </div>
 <p>Let’s create a list-version of this data frame:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb143"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a>df_list <span class="ot">&lt;-</span> <span class="fu">as.list</span>(df)</span>
-<span id="cb143-2"><a href="#cb143-2" aria-hidden="true" tabindex="-1"></a>df_list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb231"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb231-1"><a href="#cb231-1" aria-hidden="true" tabindex="-1"></a>df_list <span class="ot">&lt;-</span> <span class="fu">as.list</span>(df)</span>
+<span id="cb231-2"><a href="#cb231-2" aria-hidden="true" tabindex="-1"></a>df_list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$v
 [1] "one"   "two"   "three" "four"  "five" 
@@ -1241,7 +1896,7 @@ $w
 [1]       1.00       2.72       3.14    1000.10 1000000.00
 
 $x
-[1]   1  13  42 123   0
+[1]  1 13 42 NA NA
 
 $y
 [1] "folks"      "hello"      "from"       "data frame" "!"         
@@ -1252,16 +1907,16 @@ $z
 </div>
 <p>The indexing results match what we get for the data frame. After all, a data frame really is just list (with some very convenient behavior, such as presenting the data in a tabular form). The only exception is the result of <code>df_list["v"]</code> which results a data frame but only returns a list when applied on a list:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb145"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a>df_list<span class="sc">$</span>v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb233"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb233-1"><a href="#cb233-1" aria-hidden="true" tabindex="-1"></a>df_list<span class="sc">$</span>v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "one"   "two"   "three" "four"  "five" </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb147"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1" aria-hidden="true" tabindex="-1"></a>df_list[<span class="st">"v"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb235"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb235-1"><a href="#cb235-1" aria-hidden="true" tabindex="-1"></a>df_list[<span class="st">"v"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$v
 [1] "one"   "two"   "three" "four"  "five" </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb149"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb149-1"><a href="#cb149-1" aria-hidden="true" tabindex="-1"></a>df_list[[<span class="st">"v"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb237"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb237-1"><a href="#cb237-1" aria-hidden="true" tabindex="-1"></a>df_list[[<span class="st">"v"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "one"   "two"   "three" "four"  "five" </code></pre>
 </div>
@@ -1278,14 +1933,14 @@ $z
 <h3 class="anchored" data-anchor-id="selecting-rows-filtering">Selecting rows (“filtering”)</h3>
 <p>Of course, we often need to refer not just to specific columns of data frames, but also to given rows. Let’s consider our data frame again:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb239"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb239-1"><a href="#cb239-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      v          w   x          y     z
-1   one       1.00   1      folks  TRUE
-2   two       2.72  13      hello FALSE
-3 three       3.14  42       from FALSE
-4  four    1000.10 123 data frame  TRUE
-5  five 1000000.00   0          !  TRUE</code></pre>
+<pre><code>      v          w  x          y     z
+1   one       1.00  1      folks  TRUE
+2   two       2.72 13      hello FALSE
+3 three       3.14 42       from FALSE
+4  four    1000.10 NA data frame  TRUE
+5  five 1000000.00 NA          !  TRUE</code></pre>
 </div>
 </div>
 <p>In the section on indexing into vectors and lists above, we learned primarily about two means of indexing into vectors. Let’s revisit them in the context of data frames:</p>
@@ -1294,7 +1949,7 @@ $z
 </ol>
 <p>**What happens when you use the <code>[1:3]</code> index into the <code>df</code> data frame, just as you would do by extracting the first three elements of a vector?</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-27-contents" aria-controls="callout-27" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1303,18 +1958,18 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div id="callout-27" class="callout-27-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Somewhat curiously, you get the first three columns, not rows!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a>df[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb241"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb241-1"><a href="#cb241-1" aria-hidden="true" tabindex="-1"></a>df[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      v          w   x
-1   one       1.00   1
-2   two       2.72  13
-3 three       3.14  42
-4  four    1000.10 123
-5  five 1000000.00   0</code></pre>
+<pre><code>      v          w  x
+1   one       1.00  1
+2   two       2.72 13
+3 three       3.14 42
+4  four    1000.10 NA
+5  five 1000000.00 NA</code></pre>
 </div>
 </div>
 </div>
@@ -1323,7 +1978,7 @@ Click to see the solution
 <p>When indexing into a data frame (or even a matrix, although we won’t be getting into those in our course), you need to distinguish the <em>dimension</em> along which you’re indexing: either a row, or a column dimension. Just like in referring to a cell coordinate in Excel, for example.</p>
 <p>The way you do this for data frames in R is to separate the dimensions into which you’re indexing with a comma in this way: <code>[row-index, column-name-or-index]</code>. <strong>Try to extract the first three elements (<code>1:3</code>) of the data frame <code>df</code> by <code>df[1:3, ]</code>.</strong> Note the empty space after the comma <code>,</code>! <strong>Then try to select a subset of the <code>df</code> data frame to only show the row #1 and #4 for columns <code>"x"</code> and <code>"z"</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-29-contents" aria-controls="callout-29" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1332,11 +1987,11 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-19" class="callout-19-contents callout-collapse collapse">
+<div id="callout-29" class="callout-29-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Extract the first three rows of <code>df</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb155"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb155-1"><a href="#cb155-1" aria-hidden="true" tabindex="-1"></a>df[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb243"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb243-1"><a href="#cb243-1" aria-hidden="true" tabindex="-1"></a>df[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      v    w  x     y     z
 1   one 1.00  1 folks  TRUE
@@ -1346,18 +2001,18 @@ Click to see the solution
 </div>
 <p>Extract the rows number 1 and 4 for columns “x” and “z”:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb157"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb157-1"><a href="#cb157-1" aria-hidden="true" tabindex="-1"></a>df[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>), <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"z"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb245"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb245-1"><a href="#cb245-1" aria-hidden="true" tabindex="-1"></a>df[<span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>), <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"z"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>    x    z
-1   1 TRUE
-4 123 TRUE</code></pre>
+<pre><code>   x    z
+1  1 TRUE
+4 NA TRUE</code></pre>
 </div>
 </div>
 <p>Of course, the actual indexing dimensions can be (and often is) specified in variables. For instance, we often have code which firsts computes the indexes, and then we access them into the data frames. The equivalent of this here would be:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb159"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb159-1"><a href="#cb159-1" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
-<span id="cb159-2"><a href="#cb159-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb159-3"><a href="#cb159-3" aria-hidden="true" tabindex="-1"></a>df[row_indices, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb247"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb247-1"><a href="#cb247-1" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">3</span></span>
+<span id="cb247-2"><a href="#cb247-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb247-3"><a href="#cb247-3" aria-hidden="true" tabindex="-1"></a>df[row_indices, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      v    w  x     y     z
 1   one 1.00  1 folks  TRUE
@@ -1367,14 +2022,14 @@ Click to see the solution
 </div>
 <p>Extract the rows number 1 and 4 for columns “x” and “z”:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb161"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb161-1"><a href="#cb161-1" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>)</span>
-<span id="cb161-2"><a href="#cb161-2" aria-hidden="true" tabindex="-1"></a>col_indices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"z"</span>)</span>
-<span id="cb161-3"><a href="#cb161-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb161-4"><a href="#cb161-4" aria-hidden="true" tabindex="-1"></a>df[row_indices, col_indices]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb249"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb249-1"><a href="#cb249-1" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">4</span>)</span>
+<span id="cb249-2"><a href="#cb249-2" aria-hidden="true" tabindex="-1"></a>col_indices <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"x"</span>, <span class="st">"z"</span>)</span>
+<span id="cb249-3"><a href="#cb249-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb249-4"><a href="#cb249-4" aria-hidden="true" tabindex="-1"></a>df[row_indices, col_indices]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>    x    z
-1   1 TRUE
-4 123 TRUE</code></pre>
+<pre><code>   x    z
+1  1 TRUE
+4 NA TRUE</code></pre>
 </div>
 </div>
 <ol start="2" type="1">
@@ -1383,7 +2038,7 @@ Click to see the solution
 <p>Similarly to indexing into vectors, you can also specify which rows should be extracted “at once”, using a single logical vector (you can also do this for columns but I honestly don’t remember the last time I had to do this).</p>
 <p><strong>The most frequent use for this is to select all rows of a data frame for which a given column (or multiple columns) carry a certain value. Select only those rows for which the column “y” has a value “hello”</strong>:</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-28-contents" aria-controls="callout-28" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1392,27 +2047,27 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-18" class="callout-18-contents callout-collapse collapse">
+<div id="callout-28" class="callout-28-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Let’s first use a vectorized comparison to get a <code>TRUE</code> / <code>FALSE</code> vector indicating which values of the “v” column contain the string “hello”. Remember, that if you take a vector (of arbitrary length) and compare it to some value, you will get a <code>TRUE</code> / <code>FALSE</code> vector of the same length:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb163"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb163-1"><a href="#cb163-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is what the column (vector, really) contains</span></span>
-<span id="cb163-2"><a href="#cb163-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb251"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb251-1"><a href="#cb251-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is what the column (vector, really) contains</span></span>
+<span id="cb251-2"><a href="#cb251-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "folks"      "hello"      "from"       "data frame" "!"         </code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb165"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb165-1"><a href="#cb165-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is how we can find out, which element(s) of the vector match</span></span>
-<span id="cb165-2"><a href="#cb165-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>y <span class="sc">==</span> <span class="st">"hello"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb253"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb253-1"><a href="#cb253-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is how we can find out, which element(s) of the vector match</span></span>
+<span id="cb253-2"><a href="#cb253-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>y <span class="sc">==</span> <span class="st">"hello"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE  TRUE FALSE FALSE FALSE</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb167"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb167-1"><a href="#cb167-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's save the result to a new variable</span></span>
-<span id="cb167-2"><a href="#cb167-2" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> df<span class="sc">$</span>y <span class="sc">==</span> <span class="st">"hello"</span></span>
-<span id="cb167-3"><a href="#cb167-3" aria-hidden="true" tabindex="-1"></a>row_indices</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb255"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb255-1"><a href="#cb255-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's save the result to a new variable</span></span>
+<span id="cb255-2"><a href="#cb255-2" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> df<span class="sc">$</span>y <span class="sc">==</span> <span class="st">"hello"</span></span>
+<span id="cb255-3"><a href="#cb255-3" aria-hidden="true" tabindex="-1"></a>row_indices</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE  TRUE FALSE FALSE FALSE</code></pre>
 </div>
@@ -1422,7 +2077,7 @@ Click to see the solution
 </div>
 <p>Now we can use this vector as a row index into our data frame (don’t forget the comma <code>,</code>, without which you’d be indexing into the column-dimension, not the row-dimension!).</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb169"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb169-1"><a href="#cb169-1" aria-hidden="true" tabindex="-1"></a>df[row_indices, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb257"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb257-1"><a href="#cb257-1" aria-hidden="true" tabindex="-1"></a>df[row_indices, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    v    w  x     y     z
 2 two 2.72 13 hello FALSE</code></pre>
@@ -1430,7 +2085,7 @@ Click to see the solution
 </div>
 <p>Of course, you can also both <em>filter</em> (remember this word) for a subset of rows and also, at the same time, <em>select</em> (remember this word too) a subset of columns at the same time:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb171"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb171-1"><a href="#cb171-1" aria-hidden="true" tabindex="-1"></a>df[row_indices, <span class="fu">c</span>(<span class="st">"v"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb259"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb259-1"><a href="#cb259-1" aria-hidden="true" tabindex="-1"></a>df[row_indices, <span class="fu">c</span>(<span class="st">"v"</span>, <span class="st">"y"</span>, <span class="st">"z"</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    v     y     z
 2 two hello FALSE</code></pre>
@@ -1441,7 +2096,7 @@ Click to see the solution
 </div>
 <p><strong>Now instead of filtering rows where column <code>y</code> matches “hello”, filter for rows where <code>w</code> column is less than 1000.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-30-contents" aria-controls="callout-30" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1450,16 +2105,16 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div id="callout-30" class="callout-30-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>We can again store the filtered rows in a separate variable, and then use that variable to index into the data frame:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb173"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb173-1"><a href="#cb173-1" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> df<span class="sc">$</span>w <span class="sc">&lt;</span> <span class="dv">1000</span></span>
-<span id="cb173-2"><a href="#cb173-2" aria-hidden="true" tabindex="-1"></a>row_indices</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb261"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb261-1"><a href="#cb261-1" aria-hidden="true" tabindex="-1"></a>row_indices <span class="ot">&lt;-</span> df<span class="sc">$</span>w <span class="sc">&lt;</span> <span class="dv">1000</span></span>
+<span id="cb261-2"><a href="#cb261-2" aria-hidden="true" tabindex="-1"></a>row_indices</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1]  TRUE  TRUE  TRUE FALSE FALSE</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb175"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb175-1"><a href="#cb175-1" aria-hidden="true" tabindex="-1"></a>df[row_indices, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb263"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb263-1"><a href="#cb263-1" aria-hidden="true" tabindex="-1"></a>df[row_indices, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      v    w  x     y     z
 1   one 1.00  1 folks  TRUE
@@ -1469,7 +2124,41 @@ Click to see the solution
 </div>
 <p>Often, we want to be more consise and do everything in one go:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb177"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb177-1"><a href="#cb177-1" aria-hidden="true" tabindex="-1"></a>df[df<span class="sc">$</span>w <span class="sc">&lt;</span> <span class="dv">1000</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb265"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb265-1"><a href="#cb265-1" aria-hidden="true" tabindex="-1"></a>df[df<span class="sc">$</span>w <span class="sc">&lt;</span> <span class="dv">1000</span>, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>      v    w  x     y     z
+1   one 1.00  1 folks  TRUE
+2   two 2.72 13 hello FALSE
+3 three 3.14 42  from FALSE</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Remember how we used to filter out elements of a vector using the <code>!is.na(...)</code> operation? You can see that <code>df</code> contains some <code>NA</code> values in the <code>x</code> column. <strong>Use the fact that you can filter rows of a data frame using logical-based vectors (as demonstrated above) to filter out rows of <code>df</code> at which the <code>x</code> column contains <code>NA</code> values.</strong></p>
+<p><strong>Hint:</strong> You can get indices of the rows of <code>df</code> we you want to retain with <code>!is.na(df$x)</code>.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-31-contents" aria-controls="callout-31" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-31" class="callout-31-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This gives us indices of the rows we want to keep:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb267"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb267-1"><a href="#cb267-1" aria-hidden="true" tabindex="-1"></a><span class="sc">!</span><span class="fu">is.na</span>(df<span class="sc">$</span>x)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1]  TRUE  TRUE  TRUE FALSE FALSE</code></pre>
+</div>
+</div>
+<p>This is how we can filter out unwanted rows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb269"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb269-1"><a href="#cb269-1" aria-hidden="true" tabindex="-1"></a>df[<span class="sc">!</span><span class="fu">is.na</span>(df<span class="sc">$</span>x), ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>      v    w  x     y     z
 1   one 1.00  1 folks  TRUE
@@ -1485,11 +2174,11 @@ Click to see the solution
 <p>The <code>$</code> and <code>[]</code> operators can be used to create new columns. For instance, the <code>paste()</code> function in R can be used to combine a pair of values into one. Try running <code>paste(df$v, df$y)</code> to see what the result of this operation is.</p>
 <p>The general pattern to do this is:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb179"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb179-1"><a href="#cb179-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span><span class="er">&lt;</span>name of the new column<span class="sc">&gt;</span> <span class="er">&lt;</span><span class="sc">-</span> <span class="er">&lt;</span>vector of values to assign to it<span class="sc">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb271"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb271-1"><a href="#cb271-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span><span class="er">&lt;</span>name of the new column<span class="sc">&gt;</span> <span class="er">&lt;</span><span class="sc">-</span> <span class="er">&lt;</span>vector of values to assign to it<span class="sc">&gt;</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Create a new column called <code>"new_col"</code> and assign to it the result of <code>paste(df$v, df$y)</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-21-contents" aria-controls="callout-21" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-32-contents" aria-controls="callout-32" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1498,20 +2187,20 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-21" class="callout-21-contents callout-collapse collapse">
+<div id="callout-32" class="callout-32-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb180"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb180-1"><a href="#cb180-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"new_col"</span>] <span class="ot">&lt;-</span> <span class="fu">paste</span>(df<span class="sc">$</span>v, df<span class="sc">$</span>y)</span>
-<span id="cb180-2"><a href="#cb180-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb180-3"><a href="#cb180-3" aria-hidden="true" tabindex="-1"></a><span class="co"># new column appears!</span></span>
-<span id="cb180-4"><a href="#cb180-4" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb272"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb272-1"><a href="#cb272-1" aria-hidden="true" tabindex="-1"></a>df[<span class="st">"new_col"</span>] <span class="ot">&lt;-</span> <span class="fu">paste</span>(df<span class="sc">$</span>v, df<span class="sc">$</span>y)</span>
+<span id="cb272-2"><a href="#cb272-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb272-3"><a href="#cb272-3" aria-hidden="true" tabindex="-1"></a><span class="co"># new column appears!</span></span>
+<span id="cb272-4"><a href="#cb272-4" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      v          w   x          y     z         new_col
-1   one       1.00   1      folks  TRUE       one folks
-2   two       2.72  13      hello FALSE       two hello
-3 three       3.14  42       from FALSE      three from
-4  four    1000.10 123 data frame  TRUE four data frame
-5  five 1000000.00   0          !  TRUE          five !</code></pre>
+<pre><code>      v          w  x          y     z         new_col
+1   one       1.00  1      folks  TRUE       one folks
+2   two       2.72 13      hello FALSE       two hello
+3 three       3.14 42       from FALSE      three from
+4  four    1000.10 NA data frame  TRUE four data frame
+5  five 1000000.00 NA          !  TRUE          five !</code></pre>
 </div>
 </div>
 </div>
@@ -1520,7 +2209,7 @@ Click to see the solution
 <p>When we want to remove a column from a data frame (for instance, we only used it to store some temporary result in a script), we actually do the same thing, except we assign to it the value <code>NULL</code>.</p>
 <p><strong>Remove the column <code>new_col</code></strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-22-contents" aria-controls="callout-22" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-33-contents" aria-controls="callout-33" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1529,20 +2218,20 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-22" class="callout-22-contents callout-collapse collapse">
+<div id="callout-33" class="callout-33-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb182"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb182-1"><a href="#cb182-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>new_col <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb182-2"><a href="#cb182-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb182-3"><a href="#cb182-3" aria-hidden="true" tabindex="-1"></a><span class="co"># and the column is gone</span></span>
-<span id="cb182-4"><a href="#cb182-4" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb274"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb274-1"><a href="#cb274-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>new_col <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb274-2"><a href="#cb274-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb274-3"><a href="#cb274-3" aria-hidden="true" tabindex="-1"></a><span class="co"># and the column is gone</span></span>
+<span id="cb274-4"><a href="#cb274-4" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>      v          w   x          y     z
-1   one       1.00   1      folks  TRUE
-2   two       2.72  13      hello FALSE
-3 three       3.14  42       from FALSE
-4  four    1000.10 123 data frame  TRUE
-5  five 1000000.00   0          !  TRUE</code></pre>
+<pre><code>      v          w  x          y     z
+1   one       1.00  1      folks  TRUE
+2   two       2.72 13      hello FALSE
+3 three       3.14 42       from FALSE
+4  four    1000.10 NA data frame  TRUE
+5  five 1000000.00 NA          !  TRUE</code></pre>
 </div>
 </div>
 </div>
@@ -1563,7 +2252,7 @@ Click to see the solution
 </ul>
 <p>Unfortunately, when you encounter data in the wild, especially in tables you get from other people or download as supplementary information from the internet, they are rarely this perfect. Here’s a little example of such data frame:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb184"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb184-1"><a href="#cb184-1" aria-hidden="true" tabindex="-1"></a>weird_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb276"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb276-1"><a href="#cb276-1" aria-hidden="true" tabindex="-1"></a>weird_df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  v with spaces          w y with % sign
 1           one       1.00         folks
@@ -1575,7 +2264,7 @@ Click to see the solution
 </div>
 <p>If you look closely, you see that some columns have spaces <code>" "</code> and also strange characters <code>%</code> which are not allowed? Which of the <code>$</code>, <code>[]</code> and <code>[[]]</code> operators can you use to extract <code>v with spaces</code> and <code>y with % sign</code> columns as vectors?**</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-23-contents" aria-controls="callout-23" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-34-contents" aria-controls="callout-34" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1584,11 +2273,11 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-23" class="callout-23-contents callout-collapse collapse">
+<div id="callout-34" class="callout-34-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><code>[]</code> and <code>[[]]</code> work just as before, because they accept a string by default anyway, so spaces and other characters are not a problem:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb186"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb186-1"><a href="#cb186-1" aria-hidden="true" tabindex="-1"></a>weird_df[<span class="st">"v with spaces"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb278"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb278-1"><a href="#cb278-1" aria-hidden="true" tabindex="-1"></a>weird_df[<span class="st">"v with spaces"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  v with spaces
 1           one
@@ -1597,14 +2286,14 @@ Click to see the solution
 4          four
 5          five</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb188"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb188-1"><a href="#cb188-1" aria-hidden="true" tabindex="-1"></a>weird_df[[<span class="st">"y with % sign"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb280"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb280-1"><a href="#cb280-1" aria-hidden="true" tabindex="-1"></a>weird_df[[<span class="st">"y with % sign"</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "folks"      "hello"      "from"       "data frame" "!"         </code></pre>
 </div>
 </div>
 <p>The <code>$</code> operator needs bit more work. When you encounter an “improper” column name in a data frame, you have to enclose the whole “symbol” or “identifier” in “back ticks” like this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb190"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb190-1"><a href="#cb190-1" aria-hidden="true" tabindex="-1"></a>weird_df<span class="sc">$</span><span class="st">`</span><span class="at">y with % sign</span><span class="st">`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb282"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb282-1"><a href="#cb282-1" aria-hidden="true" tabindex="-1"></a>weird_df<span class="sc">$</span><span class="st">`</span><span class="at">y with % sign</span><span class="st">`</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "folks"      "hello"      "from"       "data frame" "!"         </code></pre>
 </div>
@@ -1624,14 +2313,14 @@ Click to see the solution
 <h2 class="anchored" data-anchor-id="part-6-inspecting-column-types">Part 6: Inspecting column types</h2>
 <p>Let’s go back to our example data frame:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb192"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb192-1"><a href="#cb192-1" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb192-2"><a href="#cb192-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">w =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">2.72</span>, <span class="fl">3.14</span>),</span>
-<span id="cb192-3"><a href="#cb192-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">13</span>, <span class="dv">42</span>),</span>
-<span id="cb192-4"><a href="#cb192-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"folks"</span>, <span class="st">"!"</span>),</span>
-<span id="cb192-5"><a href="#cb192-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
-<span id="cb192-6"><a href="#cb192-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb192-7"><a href="#cb192-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb192-8"><a href="#cb192-8" aria-hidden="true" tabindex="-1"></a>df1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb284"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb284-1"><a href="#cb284-1" aria-hidden="true" tabindex="-1"></a>df1 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb284-2"><a href="#cb284-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">w =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">2.72</span>, <span class="fl">3.14</span>),</span>
+<span id="cb284-3"><a href="#cb284-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">13</span>, <span class="dv">42</span>),</span>
+<span id="cb284-4"><a href="#cb284-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"folks"</span>, <span class="st">"!"</span>),</span>
+<span id="cb284-5"><a href="#cb284-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb284-6"><a href="#cb284-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb284-7"><a href="#cb284-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb284-8"><a href="#cb284-8" aria-hidden="true" tabindex="-1"></a>df1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     w  x     y     z
 1 1.00  1 hello  TRUE
@@ -1641,7 +2330,7 @@ Click to see the solution
 </div>
 <p><strong>Use the function <code>str()</code> and by calling <code>str(df1)</code>, inspect the types of columns in the table.</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb194"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb194-1"><a href="#cb194-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb286"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb286-1"><a href="#cb286-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>'data.frame':   3 obs. of  4 variables:
  $ w: num  1 2.72 3.14
@@ -1652,14 +2341,14 @@ Click to see the solution
 </div>
 <p>Sometimes (usually when we read data from disk, like from another software), a data point sneaks in which makes a column apparently non numeric. Consider this new table called <code>df2</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb196"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb196-1"><a href="#cb196-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb196-2"><a href="#cb196-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">w =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">2.72</span>, <span class="fl">3.14</span>),</span>
-<span id="cb196-3"><a href="#cb196-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="st">"13"</span>, <span class="dv">42</span>),</span>
-<span id="cb196-4"><a href="#cb196-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"folks"</span>, <span class="st">"!"</span>),</span>
-<span id="cb196-5"><a href="#cb196-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
-<span id="cb196-6"><a href="#cb196-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb196-7"><a href="#cb196-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb196-8"><a href="#cb196-8" aria-hidden="true" tabindex="-1"></a>df2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb288"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb288-1"><a href="#cb288-1" aria-hidden="true" tabindex="-1"></a>df2 <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb288-2"><a href="#cb288-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">w =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="fl">2.72</span>, <span class="fl">3.14</span>),</span>
+<span id="cb288-3"><a href="#cb288-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="st">"13"</span>, <span class="dv">42</span>),</span>
+<span id="cb288-4"><a href="#cb288-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"folks"</span>, <span class="st">"!"</span>),</span>
+<span id="cb288-5"><a href="#cb288-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">z =</span> <span class="fu">c</span>(<span class="cn">TRUE</span>, <span class="cn">FALSE</span>, <span class="cn">FALSE</span>)</span>
+<span id="cb288-6"><a href="#cb288-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb288-7"><a href="#cb288-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb288-8"><a href="#cb288-8" aria-hidden="true" tabindex="-1"></a>df2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>     w  x     y     z
 1 1.00  1 hello  TRUE
@@ -1669,7 +2358,7 @@ Click to see the solution
 </div>
 <p>Just by looking at this, the table looks the same as <code>df1</code> above. <strong>Use <code>str()</code> again to see where the problem is.</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb198"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb198-1"><a href="#cb198-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb290"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb290-1"><a href="#cb290-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>'data.frame':   3 obs. of  4 variables:
  $ w: num  1 2.72 3.14
@@ -1685,8 +2374,8 @@ Click to see the solution
 <p>Let’s demonstrate this idea in practice.</p>
 <p>Let’s say you have the following numeric vector (these could be base qualities, genotype qualities, <span class="math inline">\(f\)</span>-statistics, sequencing coverage, anything):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb200"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb200-1"><a href="#cb200-1" aria-hidden="true" tabindex="-1"></a>vec <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.32</span>, <span class="fl">0.78</span>, <span class="fl">0.68</span>, <span class="fl">0.28</span>, <span class="fl">1.96</span>, <span class="fl">0.21</span>, <span class="fl">0.07</span>, <span class="fl">1.01</span>, <span class="fl">0.06</span>, <span class="fl">0.74</span>,</span>
-<span id="cb200-2"><a href="#cb200-2" aria-hidden="true" tabindex="-1"></a>         <span class="fl">0.37</span>, <span class="fl">0.6</span>, <span class="fl">0.08</span>, <span class="fl">1.81</span>, <span class="fl">0.65</span>, <span class="fl">1.23</span>, <span class="fl">1.28</span>, <span class="fl">0.11</span>, <span class="fl">1.74</span>,  <span class="fl">1.68</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb292"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb292-1"><a href="#cb292-1" aria-hidden="true" tabindex="-1"></a>vec <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.32</span>, <span class="fl">0.78</span>, <span class="fl">0.68</span>, <span class="fl">0.28</span>, <span class="fl">1.96</span>, <span class="fl">0.21</span>, <span class="fl">0.07</span>, <span class="fl">1.01</span>, <span class="fl">0.06</span>, <span class="fl">0.74</span>,</span>
+<span id="cb292-2"><a href="#cb292-2" aria-hidden="true" tabindex="-1"></a>         <span class="fl">0.37</span>, <span class="fl">0.6</span>, <span class="fl">0.08</span>, <span class="fl">1.81</span>, <span class="fl">0.65</span>, <span class="fl">1.23</span>, <span class="fl">1.28</span>, <span class="fl">0.11</span>, <span class="fl">1.74</span>,  <span class="fl">1.68</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>With numeric vectors, we often need to compute some summary statistics (mean, median, quartile, minimum, maximum, etc.). What’s more, in a given project, we often have to do this computation multiple times in a number of places.</p>
 
@@ -1694,31 +2383,31 @@ Click to see the solution
 <p>In R, we have a very useful built-in function <code>summary()</code>, which does exactly that. But let’s ignore this for the moment, for learning purposes.</p>
 </div></div><p>Here is how we can compute those summary statistics individually:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb201"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb201-1"><a href="#cb201-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb293"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb293-1"><a href="#cb293-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.06</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb203"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb203-1"><a href="#cb203-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first quartile (a value which is higher than the bottom 25% of the data)</span></span>
-<span id="cb203-2"><a href="#cb203-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb295"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb295-1"><a href="#cb295-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first quartile (a value which is higher than the bottom 25% of the data)</span></span>
+<span id="cb295-2"><a href="#cb295-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   25% 
 0.2625 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb205"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb205-1"><a href="#cb205-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb297"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb297-1"><a href="#cb297-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.665</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb207"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb207-1"><a href="#cb207-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb299"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb299-1"><a href="#cb299-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0.783</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb209"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb209-1"><a href="#cb209-1" aria-hidden="true" tabindex="-1"></a><span class="co"># third quartile (a value which is higher than the bottom 75% of the data)</span></span>
-<span id="cb209-2"><a href="#cb209-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb301"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb301-1"><a href="#cb301-1" aria-hidden="true" tabindex="-1"></a><span class="co"># third quartile (a value which is higher than the bottom 75% of the data)</span></span>
+<span id="cb301-2"><a href="#cb301-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   75% 
 1.2425 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb211"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb211-1"><a href="#cb211-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb303"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb303-1"><a href="#cb303-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1.96</code></pre>
 </div>
@@ -1726,7 +2415,7 @@ Click to see the solution
 <p>Now, you can imagine that you have many more of such vectors (results for different sequenced samples, different computed population genetic metrics, etc.). Having to type out all of these commands for every single one of those vectors would very quickly get extremely tiresome. Worse still, when we would do this, we would certainly resort to copy-pasting, which is guaranteed to lead to errors.</p>
 <p><strong>Write a custom function called <code>my_summary</code>, which will accept a single input named <code>values</code>, and returns a list which binds all the six summary statistics together. Name the elements of that list as <code>"min"</code>, <code>"quartile_1"</code>, <code>"median"</code>, <code>"mean"</code>, <code>"quartile_3"</code>, and <code>"max"</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-24-contents" aria-controls="callout-24" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-35-contents" aria-controls="callout-35" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1735,37 +2424,37 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-24" class="callout-24-contents callout-collapse collapse">
+<div id="callout-35" class="callout-35-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Here is how we could write the function:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb213"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb213-1"><a href="#cb213-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
-<span id="cb213-2"><a href="#cb213-2" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">min</span>(vec)</span>
-<span id="cb213-3"><a href="#cb213-3" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span>
-<span id="cb213-4"><a href="#cb213-4" aria-hidden="true" tabindex="-1"></a>  c <span class="ot">&lt;-</span> <span class="fu">median</span>(vec)</span>
-<span id="cb213-5"><a href="#cb213-5" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">mean</span>(vec)</span>
-<span id="cb213-6"><a href="#cb213-6" aria-hidden="true" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span>
-<span id="cb213-7"><a href="#cb213-7" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> <span class="fu">max</span>(vec)</span>
-<span id="cb213-8"><a href="#cb213-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb213-9"><a href="#cb213-9" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">min =</span> a, <span class="at">quartile_1 =</span> b, <span class="at">median =</span> c, <span class="at">mean =</span> d, <span class="at">quartile_3 =</span> e, <span class="at">max =</span> f)</span>
-<span id="cb213-10"><a href="#cb213-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb213-11"><a href="#cb213-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb213-12"><a href="#cb213-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb305"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb305-1"><a href="#cb305-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
+<span id="cb305-2"><a href="#cb305-2" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">min</span>(vec)</span>
+<span id="cb305-3"><a href="#cb305-3" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span>
+<span id="cb305-4"><a href="#cb305-4" aria-hidden="true" tabindex="-1"></a>  c <span class="ot">&lt;-</span> <span class="fu">median</span>(vec)</span>
+<span id="cb305-5"><a href="#cb305-5" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">mean</span>(vec)</span>
+<span id="cb305-6"><a href="#cb305-6" aria-hidden="true" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span>
+<span id="cb305-7"><a href="#cb305-7" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> <span class="fu">max</span>(vec)</span>
+<span id="cb305-8"><a href="#cb305-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb305-9"><a href="#cb305-9" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">min =</span> a, <span class="at">quartile_1 =</span> b, <span class="at">median =</span> c, <span class="at">mean =</span> d, <span class="at">quartile_3 =</span> e, <span class="at">max =</span> f)</span>
+<span id="cb305-10"><a href="#cb305-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb305-11"><a href="#cb305-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb305-12"><a href="#cb305-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Although I would probably prefer to write it a bit more tersely like this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb214"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb214-1"><a href="#cb214-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
-<span id="cb214-2"><a href="#cb214-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb214-3"><a href="#cb214-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(vec),</span>
-<span id="cb214-4"><a href="#cb214-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_1 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
-<span id="cb214-5"><a href="#cb214-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(vec),</span>
-<span id="cb214-6"><a href="#cb214-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(vec),</span>
-<span id="cb214-7"><a href="#cb214-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_3 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>),</span>
-<span id="cb214-8"><a href="#cb214-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(vec)</span>
-<span id="cb214-9"><a href="#cb214-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb214-10"><a href="#cb214-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb214-11"><a href="#cb214-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb214-12"><a href="#cb214-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb306"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb306-1"><a href="#cb306-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
+<span id="cb306-2"><a href="#cb306-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb306-3"><a href="#cb306-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(vec),</span>
+<span id="cb306-4"><a href="#cb306-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_1 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
+<span id="cb306-5"><a href="#cb306-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(vec),</span>
+<span id="cb306-6"><a href="#cb306-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(vec),</span>
+<span id="cb306-7"><a href="#cb306-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_3 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>),</span>
+<span id="cb306-8"><a href="#cb306-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(vec)</span>
+<span id="cb306-9"><a href="#cb306-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb306-10"><a href="#cb306-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb306-11"><a href="#cb306-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb306-12"><a href="#cb306-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -1773,13 +2462,13 @@ Click to see the solution
 <p>Let’s acknowledge one thing straight away: yes, we had to write the code anyway, we even had to do the extra work of wrapping it inside other code (the <code>function</code> body, name the one input argument <code>values</code>, which could be multiple arguments for more complex function). So, one could argue that we didn’t actually save any time. However, that code is now “encapsulated” in a fully self-contained form and can be called repeatably, without any copy-pasting.</p>
 <p>In other words, if you now <strong>create these three vectors of numeric values</strong>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb215"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb215-1"><a href="#cb215-1" aria-hidden="true" tabindex="-1"></a>vec1 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
-<span id="cb215-2"><a href="#cb215-2" aria-hidden="true" tabindex="-1"></a>vec2 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
-<span id="cb215-3"><a href="#cb215-3" aria-hidden="true" tabindex="-1"></a>vec3 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb307"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb307-1"><a href="#cb307-1" aria-hidden="true" tabindex="-1"></a>vec1 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
+<span id="cb307-2"><a href="#cb307-2" aria-hidden="true" tabindex="-1"></a>vec2 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
+<span id="cb307-3"><a href="#cb307-3" aria-hidden="true" tabindex="-1"></a>vec3 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>You can now <strong>compute our summary statistics by calling our function <code>my_summary()</code> on these vectors, without any code repetition</strong>:</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-25-contents" aria-controls="callout-25" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-36-contents" aria-controls="callout-36" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1788,10 +2477,10 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-25" class="callout-25-contents callout-collapse collapse">
+<div id="callout-36" class="callout-36-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb216"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb216-1"><a href="#cb216-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb308"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb308-1"><a href="#cb308-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$min
 [1] 0.06
@@ -1813,7 +2502,7 @@ $quartile_3
 $max
 [1] 1.96</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb218"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb218-1"><a href="#cb218-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb310"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb310-1"><a href="#cb310-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$min
 [1] 0.06
@@ -1835,7 +2524,7 @@ $quartile_3
 $max
 [1] 1.96</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb220"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb220-1"><a href="#cb220-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb312"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb312-1"><a href="#cb312-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$min
 [1] 0.06
@@ -1860,20 +2549,20 @@ $max
 </div>
 <p>And, surprise! This is what the incredibly useful built-in function <code>summary()</code> provided with every R installation does!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb222"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb222-1"><a href="#cb222-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb314"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb314-1"><a href="#cb314-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.2423  0.3360  0.6197  0.5770  0.7563  0.9838 </code></pre>
+ 0.0122  0.5311  0.6336  0.5594  0.6780  0.8835 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb224"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb224-1"><a href="#cb224-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-0.003564 0.130089 0.499572 0.466309 0.800353 0.948916 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb226"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb226-1"><a href="#cb226-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb316"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb316-1"><a href="#cb316-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.2331  0.4597  0.7262  0.6365  0.7961  0.9476 </code></pre>
+0.08785 0.27314 0.47802 0.50048 0.69614 0.92772 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb318"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb318-1"><a href="#cb318-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.07824 0.24565 0.43793 0.45245 0.50205 0.95731 </code></pre>
 </div>
 </div>
 </div>
@@ -1891,7 +2580,7 @@ $max
 <p>As a final short section, it’s worth pointing out some very basic base R plotting functions. We won’t be getting into detail because <em>tidyverse</em> provides a much more powerful and more convenient set of functionality for visualizing data. Still, base R is often convenient for quick troubleshooting or quick plotting of data at least in the initial phases of data exploration.</p>
 <p>So far we’ve worked with a really oversimplified data frame. For more interesting demonstration, R bundles with a realistic data frame of penguin data:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb228"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb228-1"><a href="#cb228-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb320"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb320-1"><a href="#cb320-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(penguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  species    island bill_len bill_dep flipper_len body_mass    sex year
 1  Adelie Torgersen     39.1     18.7         181      3750   male 2007
@@ -1904,7 +2593,7 @@ $max
 </div>
 <p><strong>Use the function <code>hist()</code> to plot a histogram of the body mass of the entire penguins data set.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-26-contents" aria-controls="callout-26" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-37-contents" aria-controls="callout-37" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1913,25 +2602,25 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-26" class="callout-26-contents callout-collapse collapse">
+<div id="callout-37" class="callout-37-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb230"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb230-1"><a href="#cb230-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb322"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb322-1"><a href="#cb322-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-73-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="r-language_files/figure-html/unnamed-chunk-113-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>Sometimes it is convenient to adjust the bin width:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb231"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb231-1"><a href="#cb231-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb323"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb323-1"><a href="#cb323-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-74-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="r-language_files/figure-html/unnamed-chunk-114-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1941,7 +2630,7 @@ Click to see the solution
 </div>
 <p>The dataset also contains the measure of bill length. <strong>Use the function <code>plot()</code> to visualize a scatter plot of two vectors: <code>penguins$flipper_len</code> against <code>penguins$body_mass</code>. Is there an indication of a relationship between the two metrics?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-27-contents" aria-controls="callout-27" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-38-contents" aria-controls="callout-38" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1950,30 +2639,30 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-27" class="callout-27-contents callout-collapse collapse">
+<div id="callout-38" class="callout-38-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb232"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb232-1"><a href="#cb232-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(penguins<span class="sc">$</span>flipper_len, penguins<span class="sc">$</span>body_mass)</span>
-<span id="cb232-2"><a href="#cb232-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb232-3"><a href="#cb232-3" aria-hidden="true" tabindex="-1"></a><span class="co"># we can also overlay a linear fit (first computed with the `lm()` function,</span></span>
-<span id="cb232-4"><a href="#cb232-4" aria-hidden="true" tabindex="-1"></a><span class="co"># then visualized as a red dashed line)</span></span>
-<span id="cb232-5"><a href="#cb232-5" aria-hidden="true" tabindex="-1"></a>lm_fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(body_mass <span class="sc">~</span> flipper_len, <span class="at">data =</span> penguins)</span>
-<span id="cb232-6"><a href="#cb232-6" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(lm_fit, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb324"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb324-1"><a href="#cb324-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(penguins<span class="sc">$</span>flipper_len, penguins<span class="sc">$</span>body_mass)</span>
+<span id="cb324-2"><a href="#cb324-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb324-3"><a href="#cb324-3" aria-hidden="true" tabindex="-1"></a><span class="co"># we can also overlay a linear fit (first computed with the `lm()` function,</span></span>
+<span id="cb324-4"><a href="#cb324-4" aria-hidden="true" tabindex="-1"></a><span class="co"># then visualized as a red dashed line)</span></span>
+<span id="cb324-5"><a href="#cb324-5" aria-hidden="true" tabindex="-1"></a>lm_fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(body_mass <span class="sc">~</span> flipper_len, <span class="at">data =</span> penguins)</span>
+<span id="cb324-6"><a href="#cb324-6" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(lm_fit, <span class="at">col =</span> <span class="st">"red"</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-75-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="r-language_files/figure-html/unnamed-chunk-115-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>We can also see that we have data for three different species of penguins. We can therefore partition the visualization for each species individually:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb233"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb233-1"><a href="#cb233-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(penguins<span class="sc">$</span>flipper_len, penguins<span class="sc">$</span>body_mass, <span class="at">col =</span> penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb325"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb325-1"><a href="#cb325-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(penguins<span class="sc">$</span>flipper_len, penguins<span class="sc">$</span>body_mass, <span class="at">col =</span> penguins<span class="sc">$</span>species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-76-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="r-language_files/figure-html/unnamed-chunk-116-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1983,7 +2672,7 @@ Click to see the solution
 </div>
 <p>Base R plotting is very convenient for quick and dirty data summaries, particularly immediately after reading unknown data. However, for anything more complex (and anything more pretty), ggplot2 is unbeatable. We will be looking at ggplot2 visualization in the session on <em>tidyverse</em> but as a sneakpeak, you can take a look at the beautiful figures you’ll learn how to make later.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-28-contents" aria-controls="callout-28" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-39-contents" aria-controls="callout-39" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1992,12 +2681,12 @@ See the sneakpeak
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-28" class="callout-28-contents callout-collapse collapse">
+<div id="callout-39" class="callout-39-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Look how comparatively little code we need to make beautiful informative figures which immediately tell a clear story! Stay tuned for later! :)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb234"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb234-1"><a href="#cb234-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb234-2"><a href="#cb234-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb326"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb326-1"><a href="#cb326-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb326-2"><a href="#cb326-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
 Attaching package: 'dplyr'</code></pre>
@@ -2014,35 +2703,35 @@ Attaching package: 'dplyr'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb238"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb238-1"><a href="#cb238-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(penguins) <span class="sc">+</span></span>
-<span id="cb238-2"><a href="#cb238-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(flipper_len, <span class="at">fill =</span> species), <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb238-3"><a href="#cb238-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb238-4"><a href="#cb238-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Distribution of flipper lengths across species"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb330"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb330-1"><a href="#cb330-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(penguins) <span class="sc">+</span></span>
+<span id="cb330-2"><a href="#cb330-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="fu">aes</span>(flipper_len, <span class="at">fill =</span> species), <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb330-3"><a href="#cb330-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb330-4"><a href="#cb330-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Distribution of flipper lengths across species"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-78-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="r-language_files/figure-html/unnamed-chunk-118-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb240"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb240-1"><a href="#cb240-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(penguins, <span class="fu">aes</span>(flipper_len, body_mass, <span class="at">shape =</span> sex, <span class="at">color =</span> species)) <span class="sc">+</span></span>
-<span id="cb240-2"><a href="#cb240-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb240-3"><a href="#cb240-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
-<span id="cb240-4"><a href="#cb240-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> species) <span class="sc">+</span></span>
-<span id="cb240-5"><a href="#cb240-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb240-6"><a href="#cb240-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Body mass as a function of flipper length across penguin species"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb332"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb332-1"><a href="#cb332-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(penguins, <span class="fu">aes</span>(flipper_len, body_mass, <span class="at">shape =</span> sex, <span class="at">color =</span> species)) <span class="sc">+</span></span>
+<span id="cb332-2"><a href="#cb332-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb332-3"><a href="#cb332-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span></span>
+<span id="cb332-4"><a href="#cb332-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> species) <span class="sc">+</span></span>
+<span id="cb332-5"><a href="#cb332-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb332-6"><a href="#cb332-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Body mass as a function of flipper length across penguin species"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="r-language_files/figure-html/unnamed-chunk-79-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="r-language_files/figure-html/unnamed-chunk-119-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
