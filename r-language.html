@@ -2552,17 +2552,17 @@ $max
 <div class="sourceCode cell-code" id="cb314"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb314-1"><a href="#cb314-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.0122  0.5311  0.6336  0.5594  0.6780  0.8835 </code></pre>
+0.01462 0.11829 0.50697 0.43967 0.59797 0.93903 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb316"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb316-1"><a href="#cb316-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-0.08785 0.27314 0.47802 0.50048 0.69614 0.92772 </code></pre>
+0.09719 0.32031 0.40902 0.47891 0.71375 0.83827 </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb318"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb318-1"><a href="#cb318-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-0.07824 0.24565 0.43793 0.45245 0.50205 0.95731 </code></pre>
+ 0.2207  0.4002  0.6175  0.6301  0.9008  0.9642 </code></pre>
 </div>
 </div>
 </div>
@@ -2739,6 +2739,80 @@ Attaching package: 'dplyr'</code></pre>
 </div>
 </div>
 </div>
+<p>Let’s revisit the concept of a function introduced earlier and explore it in a much more practically useful setting – defining customized plotting functions. This is, honestly, one of the most applications of custom functions in your own research.</p>
+<p><strong>In the example above, you used <code>hist(penguins$body_mass)</code> to plot a histogram of the penguins’ body mass. Write a custom function <code>penguin_hist()</code> which will accept two arguments: 1. the name of the column in the <code>penguins</code> data frame, and 2. the number of histogram breakpoints to use as the <code>breaks =</code> arguments in a <code>hist(&lt;vector&gt;, breaks = ...)</code> call.</strong></p>
+<p><strong>Hint:</strong> Remember that you can extract a column of a data frame as a vector not just using a symbolic identifier with the <code>$</code> operator but also as a string name with the <code>[[]]</code> operator.</p>
+<p><strong>Hint:</strong> A useful new argument of the <code>hist()</code> function is <code>main =</code>. You can specify this as a string and the contents of this argument will be plotted as the figure’s title.</p>
+<p>If you need further help, feel free to use this template and fill the insides of the function body with your code:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb334"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb334-1"><a href="#cb334-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
+<span id="cb334-2"><a href="#cb334-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... put your hist() code here</span></span>
+<span id="cb334-3"><a href="#cb334-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-40-contents" aria-controls="callout-40" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-40" class="callout-40-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>We can extract a column <code>column</code> of any data frame <code>df</code> with <code>df[[column]]</code>, therefore, we only need to do this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb335"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb335-1"><a href="#cb335-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
+<span id="cb335-2"><a href="#cb335-2" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Histogram of the column"</span>, column)</span>
+<span id="cb335-3"><a href="#cb335-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hist</span>(df[[column]], <span class="at">breaks =</span> breaks, <span class="at">main =</span> title)</span>
+<span id="cb335-4"><a href="#cb335-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can then use our fancy new function like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb336"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb336-1"><a href="#cb336-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"bill_len"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-language_files/figure-html/unnamed-chunk-122-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb337"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb337-1"><a href="#cb337-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"bill_dep"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-language_files/figure-html/unnamed-chunk-123-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb338"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb338-1"><a href="#cb338-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"flipper_len"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-language_files/figure-html/unnamed-chunk-124-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb339"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb339-1"><a href="#cb339-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"body_mass"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-language_files/figure-html/unnamed-chunk-125-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>If this function stuff appears overwhelming, don’t worry. In the remainder of this workshop you will get a lot of opportunities to practice coding so that it becomes completely trivial at the end.</p>
 </section>
 <section id="take-home-message" class="level1">
 <h1>Take home message</h1>
