@@ -614,7 +614,12 @@ v[index]
 
 ### Lists
 
-Let's get back to our example list from earlier:
+This section will be a repetition on the previous exercises about vectors.
+**Don't forget -- lists are just vectors, except that they can contain
+values of heterogeneous types (numbers, characters, anything). As a result,
+everything that applies to vectors above applies also here.**
+
+But practice makes perfect, so let's go through a couple of examples anyway:
 
 ```{r}
 l <- list("hello", "folks", "!", 123, "wow a number follows again", 42)
@@ -677,9 +682,120 @@ shows `l[[4]]`. Spend some time experimenting with the behavior of `[ ]` and
 
 
 
+### Traversing nested lists
+
+Remember our nested list from earlier? Here's it again:
+
+```{r}
+weird_list <- list(
+  1,
+  "two",
+  list(
+    "three",
+    4,
+    list(
+      5, "six",
+      list("seven", 8)
+    )
+  )
+)
+```
+
+**What do you get when you run `weird_list[[1]]`? How about `weird_list[[3]]`?
+And how about `weird_list[[3]][[2]]`?** Things are getting a little complicated
+(or interesting, depending on how nerdy you are :)).
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+This takes out the first value of the list:
+
+```{r}
+weird_list[[1]]
+```
+
+Note the `[[]]` operator. Here's what we would get with the `[]` operator
+(basically, a "sublist"):
+
+```{r}
+weird_list[1]
+
+mode(weird_list[1])
+```
+
+This extracts the 3rd value, which is itself a list!
+
+```{r}
+weird_list[[3]]
+```
+
+And because this is just any other list (just nested), we can also index
+_into that list_! Glancing at the result of `weird_list[[3]]` just above,
+we see that the 2nd value of that list is a number 4. Let's verify that:
+
+```{r}
+weird_list[[3]][[2]]
+```
+:::
+
+**What's the sequence of this "chaining" of indexing operators to extract
+the number 8?**
+
+**Hint:** You can leverage the interactive nature of evaluating intermediate
+results in the R console, adding things to the expression (i.e., a chunk
+of code) in sequence.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Let's take it step by step, interactively:
+
+1. We know that the nested list sits at the 3rd position of the whole list:
+
+```{r}
+weird_list[[3]]
+```
+
+2. The other nested list is at index number 3 again:
+
+```{r}
+weird_list[[3]][[3]]
+```
+
+3. And the final list, the one carrying the number 8, is again in the 3rd position:
+
+```{r}
+weird_list[[3]][[3]][[3]]
+```
+
+4. Finally, we can extract the number 8 from the index at the second position:
+
+```{r}
+weird_list[[3]][[3]][[3]][[2]]
+```
+
+_Whew!_ That was something, wasn't it. Kind of annoying, if you ask me.
+
+Luckily, you will not have to do these kind of complex shenanigans in R very
+often (maybe even never). Still, nested lists are sometimes used in capturing
+more complex types of data than just lists of numbers or tables (for instance,
+nested lists capture tree-like structures). In any case, using _names_ instead
+of just _integers_ as indices makes the whole process much easier, as we will
+see below.
+
+In data you encounter in practice, the most extreme case of data indexing you
+will have to do probably won't be more complex than two nested indexing
+operators in a row (i.e., the equivalent of doing `data[[2]][[3]])`.
+:::
 
 
-### Named indexing
+
+
+
+
+
+
+### Named indexing for vectors and lists
 
 
 Here's a neat thing we can do with vectors and lists. They don't have to contain
