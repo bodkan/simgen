@@ -1004,7 +1004,7 @@ easy, like this little data frame here:
 df <- data.frame(
   v = c("one", "two", "three", "four", "five"),
   w = c(1.0, 2.72, 3.14, 1000.1, 1e6),
-  x = c(1, 13, 42, 123, 0),
+  x = c(1, 13, 42, NA, NA),
   y = c("folks", "hello", "from", "data frame", "!"),
   z = c(TRUE, FALSE, FALSE, TRUE, TRUE)
 )
@@ -1280,6 +1280,33 @@ Often, we want to be more consise and do everything in one go:
 df[df$w < 1000, ]
 ```
 :::
+
+Remember how we used to filter out elements of a vector using the `!is.na(...)`
+operation? You can see that `df` contains some `NA` values in the `x` column.
+**Use the fact that you can filter rows of a data frame using logical-based
+vectors (as demonstrated above) to filter out rows of `df` at which the `x`
+column contains `NA` values.**
+
+**Hint:** You can get indices of the rows of `df` we you want to retain
+with `!is.na(df$x)`.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+This gives us indices of the rows we want to keep:
+
+```{r}
+!is.na(df$x)
+```
+
+This is how we can filter out unwanted rows:
+
+```{r}
+df[!is.na(df$x), ]
+```
+:::
+
+
 
 
 #### Creating (and deleting) columns
@@ -1697,6 +1724,71 @@ ggplot(penguins, aes(flipper_len, body_mass, shape = sex, color = species)) +
 ```
 :::
 
+
+Let's revisit the concept of a function introduced earlier and explore it in
+a much more practically useful setting -- defining customized plotting functions.
+This is, honestly, one of the most applications of custom functions in your own
+research.
+
+**In the example above, you used `hist(penguins$body_mass)` to plot a histogram
+of the penguins' body mass. Write a custom function `penguin_hist()` which will
+accept two arguments: 1. the name of the column in the `penguins` data frame,
+and 2. the number of histogram breakpoints to use as the `breaks =` arguments
+in a `hist(<vector>, breaks = ...)` call.**
+
+**Hint:** Remember that you can extract a column of a data frame as a vector
+not just using a symbolic identifier with the `$` operator but also as a
+string name with the `[[]]` operator.
+
+**Hint:** A useful new argument of the `hist()` function is `main =`. You
+can specify this as a string and the contents of this argument will be
+plotted as the figure's title.
+
+If you need further help, feel free to use this template and fill the insides
+of the function body with your code:
+
+```{r}
+penguin_hist <- function(df, column, breaks) {
+  # ... put your hist() code here
+}
+```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We can extract a column `column` of any data frame `df` with `df[[column]]`,
+therefore, we only need to do this:
+
+```{r}
+penguin_hist <- function(df, column, breaks) {
+  title <- paste("Histogram of the column", column)
+  hist(df[[column]], breaks = breaks, main = title)
+}
+```
+
+We can then use our fancy new function like this:
+
+```{r}
+penguin_hist(penguins, "bill_len", breaks = 50)
+```
+
+```{r}
+penguin_hist(penguins, "bill_dep", breaks = 50)
+```
+
+```{r}
+penguin_hist(penguins, "flipper_len", breaks = 50)
+```
+
+```{r}
+penguin_hist(penguins, "body_mass", breaks = 50)
+```
+:::
+
+
+If this function stuff appears overwhelming, don't worry. In the remainder
+of this workshop you will get a lot of opportunities to practice coding so
+that it becomes completely trivial at the end.
 
 
 
