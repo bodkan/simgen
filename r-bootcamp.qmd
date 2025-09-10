@@ -1,44 +1,34 @@
-# R programming language
+# R bootcamp
 
 ⚠️⚠️⚠️
 **This chapter is a work-in-progress!**
 ⚠️⚠️⚠️
 
-In a wider programming world, R sometimes has a slightly unfortunate reputation
-as a badly designed "calculator language". A computing environment which is
-(maybe!) good for working with data frames and creating figures, but that's about
-it. However, while certainly very useful for data science, R is a full-blown
-programming language which is actually quite powerful even from a purely
-computer science perspective.
+## Part 0: Getting help
 
-But still, this is a book about population genomics and data science in R.
-Why does this matter how much "real coding" we do in it?
+Before we even get started, there's one thing we should make clear: R (and
+R packages) have an absolutely stellar documentation and help system. What's
+more, this documentation is standardized, has always the same format, and is
+accessible in the same way. The primary way of interacting with it from inside
+R (and RStudio) is the `?` operator. For instance, to get help about the `hist()`
+function (histograms), you can type `?hist` in the R console. This documentation
+has a consistent format and appears in the "Help" pane in your RStudio window.
 
-Well, although this entire workshop will primarily focus on R primarily as 
-as a statistical and visualization environment, neglecting the aspects of R
-which make it a "proper" programming language (or even considering data science
-as "not real programming") is a huge problem.
+There are a couple of things to look for:
 
-First, even when "just" doing data science and statistics, we still use typical
-programming constructs, we need to be aware of underlying data types behind
-our data (mostly contents of tables), and we need to think algorithmically.
-Neglecting these things makes it easy to introduce bugs into our code, make
-it hard to find those bugs, and make our programs less efficient even when
-they do work.
+1. On the top of the documentation page, you will always see a brief description
+of the _arguments_ of each function. This is what you'll be looking for most
+of the time ("How do I do specify this or that? How do I modify the behavior
+of the function?").
 
-This chapter will help you get familiar with some of the less obvious aspects
-of the R language or programming in general, certainly the parts which are often
-skipped in undergratuate courses in the life sciences in favor of just teaching
-plotting and running statistical tests. The good thing is, there isn't that much
-you need to learn. And what you do learn will continue paying dividents for the
-rest of your research career!
+2. On the bottom of the page are examples. These are small bits of code which
+often explain the behavior of some functionality in a very helpful way.
 
-Let's say it again, because people with non-computational backgrounds often feel
-inadequate when it comes to computational aspects of their work: **Even when you're
-"just" writing data analysis scripts, even when you're "just" plotting results,
-you're still writing programs. You're a programmer.** How exciting, right?
-Exercises in this chapter are designed to make you comfortable with programming
-and algorithmic thinking.
+Whenever you're lost or can't remember some detail about some piece of R
+functionality, looking up `?` documentation is always very helpful.
+
+**As a practice and to build a habit, whenever we introduce a new function
+in this course, use `?<name of the function>` to open its documentation.**
 
 ## Part 1: Basic data types
 
@@ -1146,7 +1136,7 @@ of data frames:
 1. **Integer-based indexing**
 
 **What happens when you use the `[1:3]` index into the `df` data frame, just
-as you would do by extracting the first three elements of a vector?
+as you would do by extracting the first three elements of a vector?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1615,19 +1605,7 @@ in our project_.
 
 
 
-
-## Part 8: Iteration and loops
-
-Functions help us take pieces of code and _generalize_ them to reduce the amount
-of code needed to do similar things, repeatedly, multiple times. You could think
-of _iteration_ as generalizing those repetitions.
-
-This is very vague and abstract
-
-
-
-
-## Part 9: Base R plotting
+## Part 8: Base R plotting
 
 As a final short section, it's worth pointing out some very basic base R plotting
 functions. We won't be getting into detail because _tidyverse_ provides a
@@ -1789,6 +1767,230 @@ penguin_hist(penguins, "body_mass", breaks = 50)
 If this function stuff appears overwhelming, don't worry. In the remainder
 of this workshop you will get a lot of opportunities to practice coding so
 that it becomes completely trivial at the end.
+
+
+
+
+
+
+## Part 9: Iteration and loops
+
+Functions help us take pieces of code and _generalize_ them to reduce the amount
+of code needed to do similar things, repeatedly, multiple times, and avoid
+code duplication by copy-pasting (nearly the same) chunks of code over and over.
+You could think of _iteration_ as generalizing those repetitions even further. 
+Instead of _manually_ calling a bit of code repeatedly, we can iterate over
+that code in an _iterative_ way.
+
+In general, there are two types of loops:
+
+### 1. Loops producing a value for each iteration
+
+The loops in this category which we are going to encounter most often are
+those of the `apply` family, like `lapply()` or `sapply()`. The general pattern
+like this:
+
+```{r}
+#| eval: false
+result <- lapply(<vector/list of values>, <function>)
+```
+
+The `lapply` and `sapply` functions take, at minimum, a vector or a list as
+their first argument, and then a function which takes a single argument. Then
+they apply the given function to each element of the vector/list, and return
+either a list (if we use the `lapply()` function) or a vector (if we use the `sapply()` function).
+
+Let's consider this more concrete example:
+
+```{r}
+input_list <- list("hello", "this", 123, "is", "a mixed", 42, "list")
+
+result_list <- lapply(input_list, is.numeric)
+
+result_list
+```
+
+We took an `input_list` and _applied_ a function to each element, automatically,
+gathering the results in another list!
+
+**Create the following function which, for a given number, returns `TRUE`
+if this number is even and `FALSE` if the number is odd. Then use `sapply()`
+to test which of the following numbers in the `input_vector` is odd or even.**
+Notice that we can do thousands or even millions of operations like this
+(for very very long input vectors) with a single `sapply()` command!
+
+```{r}
+input_vector <- c(23, 11, 8, 36, 47, 6, 66, 94, 20, 2)
+
+is_even <- function(x) {
+  x %% 2 == 0 # this answers the question "does x divided by 2 give 0?")
+}
+```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Let's first test our custom-made function on a couple of examples. This is always
+a good idea when we want to do iteration using `lapply()` / `sapply()`.
+
+```{r}
+is_even(2)
+is_even(7)
+is_even(10)
+is_even(11)
+```
+
+Now we _apply_ `is_even` to every element of our `input_vector`:
+
+```{r}
+result <- sapply(input_vector, is_even)
+result
+```
+:::
+
+**As a practice of indexing, use the result of the `sapply()` you just got to
+filter the `input_vector` values to only odd numbers.**
+
+**Hint:** Remember that you can negate any `TRUE` / `FALSE` value (even vector)
+using the `!` operator.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Again, this is how we detected which numbers are even:
+
+```{r}
+even_numbers <- sapply(input_vector, is_even)
+even_numbers
+```
+
+This is how we can flip this vector to get odd number indices:
+
+```{r}
+odd_numbers <- !even_numbers
+odd_numbers
+```
+
+And finally, this is how we can filter the original vector to only numbers
+that are odd:
+
+```{r}
+input_vector[odd_numbers]
+```
+
+Here's a secret: there's a much quicker way to do this, even without looping,
+utilizing the fact that many operations can be performed on vectors in a
+"vectorized" way (for every element at the same time):
+
+This gives us even numbers right away:
+
+```{r}
+input_vector %% 2 != 0
+```
+
+This is how we can do the filtering in one go:
+
+```{r}
+input_vector[input_vector %% 2 != 0]
+```
+:::
+
+These are perhaps too boring to see immediate usefulness of `sapply()` and
+`lapply()` for real-world applications. In later sessions, we will see more
+complex (and more useful) applications of these functions in daily data analysis
+tasks.
+
+That said, you can hopefully see how automating an action of many things at
+once can be very useful means to save yourself repeated typing of the same
+command over and over. Again, consider a situation in which you have thousands
+or even millions of data points!
+
+
+
+#### 2. Loops which don't necessarily return a value
+
+This category of loops most often takes form of a `for` loop, which generally
+have the following shape:
+
+```{r}
+#| eval: false
+for (<item> in <vector or list>) {
+  ... some commands ...
+}
+```
+
+The most trivial runnable example I could think of is this:
+
+```{r}
+# "input" vector of x values
+xs <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+# take each x out of all given xs in sequence...
+for (x in xs) {
+  # ... and print it out on a new line
+  cat("The square of", x, "is", x^2, "\n")
+}
+```
+
+**Note:** `cat()` is a very useful function which prints out a given value
+(or here, actually, multiple values!). If we append `"\n"` it will add an
+(invisible) "new line" character, equivalent of hitting ENTER on your keyboard
+when writing.
+
+**Let's say you want to automate the plotting of several numeric variables
+from your `penguins` data frame to a PDF using your custom-defined function
+`penguin_hist()` you created above. Fill in the necessary bits of code in
+the following template to do this!** This is a super common pattern that comes
+in handy very often in data science work.
+
+**Note:** You can see the `cat()` call in the body of the for loop (we call
+the insides of the `{ ... }` block the "body" of a loop). When you iterate
+over many things, it's very useful to print out this sort of "log" information,
+particularly if the for loop can take very long.
+
+```{r}
+# create an empty PDF file
+pdf("penguins_hist.pdf")
+
+# let's define our variables of interest (columns of a data frame)
+variables <- c("bill_len", "bill_dep", "flipper_len", "body_mass")
+
+# let's now "loop over" each of those variables
+for (var in variables) {
+  cat("Plotting variable", var, "...\n")
+  # ... here is where you should put your call to `penguin_hist()` like
+  #     you did above manually ...
+}
+
+dev.off() # this closes the PDF
+```
+
+**If everything works correctly, look at the `penguins_hist.pdf` file you
+just created!**
+
+**If you want, look up `?pdf` to see how you could modify the `width` and
+`height` of the figures that will be created.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+pdf("penguins_hist.pdf")
+
+variables <- c("bill_len", "bill_dep", "flipper_len", "body_mass")
+for (var in variables) {
+  penguin_hist(penguins, var, 100)  
+}
+
+dev.off()
+```
+
+```{r}
+#|echo: false
+unlink("penguins_hist.pdf")
+```
+
+:::
 
 
 
