@@ -845,13 +845,101 @@ l[["three"]]
 l[c("two", "five")]
 ```
 
-Spoiler alert: this is exactly what data frames are, under the hood (named lists!),
-as we'll see in the next section.
+
+--
+
+_Spoiler alert: this is exactly what data frames are, under the hood
+(named lists!), as we'll see in the next section._
+
+--
+
+Let's return (one last time, I promise!) to our nested list example, this
+time presenting it in a more convenient way.
+
+```{r}
+weird_list <- list(
+  1,
+  "two",
+  nested1 = list(
+    "three",
+    4,
+    nested2 = list(
+      5, "six",
+      nested3 = list("seven", 8)
+    )
+  )
+)
+```
+
+With a list like that, when we previously had to extract the element 8 like this:
+
+```{r}
+weird_list[[3]][[3]][[3]][[2]]
+```
+
+we can now do this:
+
+```{r}
+weird_list[["nested1"]][["nested2"]][["nested3"]][[2]]
+```
+
+Much more readable!
+
 
 
 
 
 ### Negative indexing
+
+
+Consider this vector again:
+
+```{r}
+v <- c("hi", "folks", "what's", "up", "folks")
+```
+
+**What happens when you index into `v` using the `[]` operator but give it
+a negative number between 1 and 5?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Negative indices remove elements!
+
+```{r}
+v[-1]
+```
+
+When we exclude all indices `1:5`, we remove everything, oops!
+
+```{r}
+v[-(1:5)]
+```
+
+:::
+
+A very useful function is `length()`, which gives the length of a given
+vector (or a list -- remember, lists are vectors!). **Use it to remove
+the last element of `v`. How would you remove both the first and last
+element of a vector or a list (assuming you don't know the length beforehand,
+i.e., you can't put a fixed number as the index of the last element)?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+v[-length(v)]
+```
+
+```{r}
+# this gives us the index of the first and last element
+c(1, length(v))
+
+# then we can prefix this with the minus sign to remove them
+v[-c(1, length(v))]
+```
+
+:::
 
 
 
