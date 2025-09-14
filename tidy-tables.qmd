@@ -69,7 +69,15 @@ their documentation to see the possibilities for options and additional features
 expect in that column?"_ -- `table()` for "discrete types", `summary()` for
 "numeric types", `min()`, `max()`, `which.min()`, `which.max()`
 
-## Exercise 1
+**Before we move on, note that when you type `df` into your R console,
+you will see a slightly different format of the output than when we worked
+with plain R data frames in the previous chapter. This format of data frame
+data is called a ["tibble"](https://tibble.tidyverse.org) and represents
+_tidyverse_'s more user friendly and modern take on data frames. For almost
+all practical purposes, from now on, we'll be talking about _tibbles_ as
+data frames.**
+
+## Exercise 1: Familiarization with new data
 
 **Inspect the `df` metadata using the functions above, and try to answer the
 following questions using the functions from the list above (you should decide
@@ -366,17 +374,292 @@ max(df$coverage, na.rm = TRUE)
 :::
 
 
+## Exercise 2: Selecting columns
+
+Often times we end up in a situation in which we don't want to have a large
+data frame with a huge number of columns. Not as much for the reasons of
+the data taking up too much memory, but for convenience. You can see that
+our `df` metadata table has `r ncol(df)` columns, which don't fit on the
+screen if we just print it out:
+
+```{r}
+df
+```
+
+We can select which columns to select with the function `select()`. It has
+the following general format:
+
+```{r}
+select(<data frame object or tibble>, <column 1>, <column 2>, ...)
+```
+
+This is how we would select columns using a normal base R subsetting/indexing
+operation:
+
+```{r}
+df[, c("sampleId", "region", "coverage", "ageAverage")]
+```
+
+This is the _tidyverse_ approach using `select()`:
+
+```{r}
+select(df, sampleId, region, coverage, ageAverage)
+```
+
+**Note:** The most important thing for you to note now is the absence of "double
+quotes". It might not look like much, but saving yourself from having to type double
+quotes for every data-frame operation (like with base R) is incredibly convenient.
+
+**Practice `select()` by creating three new data frame objects:**
+
+1. Data frame `df_ages` which contains all variables related to sample ages
+2. Data frame `df_geo` which contains all variables related to geography
+
+The first column of these data frames should always be `sampleId`
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df_ages <- select(df, sampleId, groupAge, age14C, ageHigh, ageLow, ageAverage, ageRaw)
+df_ages
+```
+
+```{r}
+df_geo <- select(df, site, country, region, latitude, longitude)
+df_geo
+```
+
+:::
+
+Note that `select()` allows us to see the contents of columns of interest much easier.
+In a situation in which we want to analyse the geographical location of samples,
+we don't want to see columns unrelated to that -- `select()` helps here.
+
+If your tables has many columns of interest, typing them all by hand can become
+tiresome real quick. **Here are a few helper functions which can be very useful
+in that situation:**
+
+- `starts_with("age")` -- matches columns starting with the string "age"
+- `ends_with("age")` -- matches columns ending with the string "age"
+- `contains("age")` -- matches columns containing the string "age"
+
+**Note:** You can use them in place of normal column names. If we would
+modify our `select()` "template" above, we could do this, for instance:
+
+```{r}
+select(<data frame object or tibble>, starts_with("text1"), ends_with("text2"))
+```
+
+**Check out the `?help` belonging to those functions. Note that they have
+`ignore.case = TRUE` set by default! It will become important soon!**
+
+**Create the `df_ages` table again, with the same criteria, but use the
+three helper functions listed above. How many different ways of using them
+can you come up with to arrive at the same result?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df_ages1 <- select(df, sampleId, groupAge, age14C, ageHigh, ageLow, ageAverage, ageRaw)
+
+df_ages2 <- select(df,
+                   sampleId,
+                   starts_with("age", ignore.case = FALSE),
+                   ends_with("Age", ignore.case = FALSE))
+
+```
+
+
+:::
+
+## Exercise 3: Filtering rows
+
+In the chapter on base R, we learned how to filter rows using the indexing
+operation along the row-based dimension of (two-dimensional) data frames.
+For instance, in order to find out which individuals in the metadata are archaic,
+we first created a `TRUE` / `FALSE` vector of the rows corresponding to those
+individuals like this:
+
+```{r}
+# get a vector of the indices belonging to archaic individuals
+which_archaic <- df$groupAge == "Archaic"
+
+# take a peek at the result to make sure we got TRUE / FALSE vector
+tail(which_archaic, 10)
+```
+
+And then we would use it to index into the data frame (in its first dimension,
+before the `,` comma):
+
+```{r}
+archaic_df <- df[which_archaic, ]
+archaic_df
+```
+
+However, what if we need to filter on multiple conditions? For instance, what
+if we want to find only archaic individuals older than 50000 years?
+
+One option would be to create multiple `TRUE` / `FALSE` vectors, each corresponding
+to one of those conditions, and then join them into a single logical vector
+by combining `&` and `|` logical operators. For example, we could do this:
+
+```{r}
+# who is archaic in our data?
+which_archaic <- df$groupAge == "Archaic"
+# who is older than 50000 years?
+which_old <- df$ageAverage > 50000
+
+# who is BOTH? note the AND logical operator!
+which_combined <- which_archaic & which_old
+```
+
+```{r}
+df[which_combined, ]
+```
+
+But this gets tiring very quickly, requires unnecessary amount of typing, and
+is very error prone. Imagine having to do this for many more conditions!
+The `filter()` function from _tidyverse_ fixes all of these problems.
+
+Again, we can rephrase the example situation with the archaics to use the new
+function like this:
+
+```{r}
+filter(df, groupAge == "Archaic", ageAverage > 50000)
+```
+
+A single command, very little typing, and immediately readable, almost like English!
+_"Filter data frame `df` for individuals in which column `groupAge` is "Archaic",
+and who are older than 50000 years"_. When you think about it, it's pretty much
+impossible to find a solution requiring less code.
+
+
+## Exercise 4: The pipe operator `%>%`
+
+The pipe operator, `%>%`, is the rockstar of the _tidyverse_ R ecosystem,
+and the primary reason what makes _tidy_ data approach so efficient, quick
+to type, and easy to read.
+
+First, a bit of a general introduction: whenever you see something like
+`something `%>%` f()`, you can read it as "take <something> and put it as the
+first argument of f()`".
+
+Why would you do this? Imagine some complex data processing operation like this:
+
+```{r}
+#| eval: false
+h(f(g(i(j(input_data)))))
+```
+
+I.e., take `input_data`, compute `j(input_data)`, then compute `i()` on _that_,
+so `i(j(input_data))`, then compute `g(i(j(input_data)))`, etc. Of course this
+is a ridiculous example but it is not that far off from what we often have to do.
+
+One way to make this easier to read would be perhaps this:
+
+```{r}
+tmp1 <- j(input_data)
+tmp2 <- i(tmp1)
+tmp3 <- g(tmp2)
+tmp4 <- f(tmp3)
+result <- f(tmp4)
+```
+
+But that's just too much typing, especially during exploratory phase of data
+analysis in which we want to get insights into our data as quickly as possible,
+and when we spend most of our time not writing scripts but playing with our
+data in the R console!
+
+The pipe approach of _tidyverse_ would make this infinitely easier to write
+and read (note that we are allowed to even drop the function call parentheses):
+
+```{r}
+input_data %>% j %>% i %>% g %>% f %>% h
+```
+
+This kind of "data transformation chain" is so frequent that RStudio even
+provides a built-in shortcut for it:
+
+- CMD + Shift + M on macOS
+- CTRL + Shift + M on Windows and Linux
+
+
+**Use your newly acquired `select()` and `filter()` skills, powered by the
+`%>%` piping operator to perform the following transformation chain (`filter`-ing
+and `select`-ing criteria):**
+
+1. filter for "Ancient" individuals (`groupAge`) who are older than 10000 years
+(`ageAverage`), are from Italy (`country`), and have `coverage` higher than 3
+2. select `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor` haplogoups
+
+**Be as silly as you can and want to by splitting a potentially very long
+`filter()` command into smaller individual `filter()` function calls, each doing a
+single thing (this is how interactive _tidyverse_ workflow often looks in practice,
+adding things one step at a time before we arrive at our answer).**
+
+**Hint:** What I mean by this is that you can do this, which produces the
+exact same result by taking this command:
+
+```{r}
+#| eval: FALSE
+new_df1 <- filter(df, col1 == "MatchString", col2 > 10000, col3 == TRUE) %>%
+  select(colX, colY, starts_with("ColNamePrefix"))
+```
+
+And doing this instead:
+
+```{r}
+#eval: FALSE
+new_df1 <- df %>%
+  filter(col1 == "MatchString") %>%
+  filter(col2 > 10000) %>%
+  filter(col3 == TRUE) %>%
+  select(colX, colY, starts_with("ColNamePrefix"))
+```
+
+_This works because "the thing on the left" (which is always a data frame)
+is placed by the `%>%` pipe operator as "the first argument of a function
+on the right" (which again expects always a data frame)!_
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>%
+  filter(groupAge == "Ancient") %>%
+  filter(ageAverage > 10000) %>%
+  filter(country == "Italy") %>%
+  filter(coverage > 3) %>%
+  select(sampleId, site, sex, hgMT, hgYMajor)
+```
+:::
+
+**Note:** It is always a good practice to split long chains of `%>%` piping
+commands into multiple lines, and indenting them neatly one after the other.
+Readability matters to avoid bugs in your code!
 
 
 
 
 
-## Part XYZ: Selecting columns
 
-## Part XYZ: Filtering rows
+## Exercise 5: Dropping columns
 
-**Base R indexing recap**
+This one will be easy. If you want to drop a column from a table, just
+prefix it with a minus sign (`-`). Yes, this also works with `starts_with()`
+and its friends above, just put `-` in front of them!
 
-## Part XYZ: Selecting columns
 
-## Part XYZ: Summarizing data
+
+
+## Exercise 6: Renaming columns
+
+## Exercise 7: Reorganizing columns
+
+## Exercise 8: Sorting tables
+
+## Exercise 9: Mutating tables
+
+## Exercise 11: Summarizing tables
