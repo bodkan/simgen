@@ -389,7 +389,7 @@ df
 We can select which columns to select with the function `select()`. It has
 the following general format:
 
-```{r}
+```
 select(<data frame object or tibble>, <column 1>, <column 2>, ...)
 ```
 
@@ -447,7 +447,7 @@ in that situation:**
 **Note:** You can use them in place of normal column names. If we would
 modify our `select()` "template" above, we could do this, for instance:
 
-```{r}
+```
 select(<data frame object or tibble>, starts_with("text1"), ends_with("text2"))
 ```
 
@@ -536,7 +536,7 @@ and who are older than 50000 years"_. When you think about it, it's pretty much
 impossible to find a solution requiring less code.
 
 
-## Exercise 4: The pipe operator `%>%`
+## Exercise 4: The pipe `%>%`
 
 The pipe operator, `%>%`, is the rockstar of the _tidyverse_ R ecosystem,
 and the primary reason what makes _tidy_ data approach so efficient, quick
@@ -560,6 +560,7 @@ is a ridiculous example but it is not that far off from what we often have to do
 One way to make this easier to read would be perhaps this:
 
 ```{r}
+#| eval: false
 tmp1 <- j(input_data)
 tmp2 <- i(tmp1)
 tmp3 <- g(tmp2)
@@ -576,6 +577,7 @@ The pipe approach of _tidyverse_ would make this infinitely easier to write
 and read (note that we are allowed to even drop the function call parentheses):
 
 ```{r}
+#| eval: false
 input_data %>% j %>% i %>% g %>% f %>% h
 ```
 
@@ -588,7 +590,7 @@ provides a built-in shortcut for it:
 
 **Use your newly acquired `select()` and `filter()` skills, powered by the
 `%>%` piping operator to perform the following transformation chain (`filter`-ing
-and `select`-ing criteria):**
+and `select`-ion operations using these criteria):**
 
 1. filter for "Ancient" individuals (`groupAge`) who are older than 10000 years
 (`ageAverage`), are from Italy (`country`), and have `coverage` higher than 3
@@ -611,7 +613,7 @@ new_df1 <- filter(df, col1 == "MatchString", col2 > 10000, col3 == TRUE) %>%
 And doing this instead:
 
 ```{r}
-#eval: FALSE
+#| eval: FALSE
 new_df1 <- df %>%
   filter(col1 == "MatchString") %>%
   filter(col2 > 10000) %>%
@@ -634,18 +636,64 @@ df %>%
   filter(coverage > 3) %>%
   select(sampleId, site, sex, hgMT, hgYMajor)
 ```
+
+We could also write the same thing more concisely (not the single `filter()` call):
+
+```{r}
+df %>%
+  filter(groupAge == "Ancient", ageAverage > 10000, country == "Italy", coverage > 1) %>%
+  select(sampleId, site, sex, hgMT, hgYMajor)
+```
+
 :::
 
 **Note:** It is always a good practice to split long chains of `%>%` piping
 commands into multiple lines, and indenting them neatly one after the other.
 Readability matters to avoid bugs in your code!
 
+## Exercise 5: More complex conditions
+
+You can interpret `,` in a `filter()` command as a logical `&`. In this case
+of the previous exercise, every single condition must apply to arrive at the
+individual `r df %>% filter(groupAge == "Ancient", ageAverage > 10000, country == "Italy", coverage > 1) %>% select(sampleId, site, sex, hgMT, hgYMajor) %>% pull(sampleId)`.
+
+Whenever you need to do a more complex operation, such as saying that a
+variable `columnX` should have a value `"ABC"` or `"ZXC"`, you can write
+`filter(df, columnX == "ABC" | column == "ZXC")`. Alternatively, you could
+write the the same thing using the `%in%` operator as 
+`filter(df, columnX %in% c("ABC", "ZXC"))`, which is very useful when you
+want to match multiple values than you'd be willing to type out by hand
+(but have them stored in a variable).
+
+Similarly, you can condition on numerical variables. For instance, if you
+want to condition on variable being `varX < 1` or `varX > 10`, you could
+write `filter(df, varX < 1 | var X > 10)`.
+
+**Practice combining multiple filtering conditions into a _tidyverse_ piping
+chain by filtering our metadata table to find individuals for which the
+following conditions hold:**
+
+- they are "Ancient" in `groupAge`
+- `country` is either "France" or "Canary Islands"
+- `coverage` either less than 0.1 or more than 3
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>%
+  filter(groupAge == "Ancient") %>%
+  filter(country == "France" | country == "Canary Islands") %>%
+  filter(coverage < 0.1 | coverage > 3)
+```
+
+:::
 
 
 
 
 
-## Exercise 5: Dropping columns
+## Exercise 6: Dropping columns
 
 This one will be easy. If you want to drop a column from a table, just
 prefix it with a minus sign (`-`). Yes, this also works with `starts_with()`
@@ -654,12 +702,12 @@ and its friends above, just put `-` in front of them!
 
 
 
-## Exercise 6: Renaming columns
+## Exercise 7: Renaming columns
 
-## Exercise 7: Reorganizing columns
+## Exercise 8: Reorganizing columns
 
-## Exercise 8: Sorting tables
+## Exercise 9: Sorting tables
 
-## Exercise 9: Mutating tables
+## Exercise 10: Mutating tables
 
-## Exercise 11: Summarizing tables
+## Exercise 12: Summarizing tables
