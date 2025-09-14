@@ -1,17 +1,19 @@
 # Manipulating tabular data
 
 Before we begin, let's introduce the two important parts of the _tidyverse_
-ecosystem, which we will be using here:
+ecosystem, which we will be using extensively during exercises in this chapter.
 
-1. _dplyr_ is a centerpiece of the entire R data science universe, providing
+1. [_dplyr_](https://dplyr.tidyverse.org) is a centerpiece of the entire R data science universe, providing
 important functions for data manipulation, data summarization, and filtering
 of tabular data;
 
-2. _tidyr_ is an R package which helps us morph untidy data into tidy data frames;
+2. [_tidyr_](https://tidyr.tidyverse.org) is an R package which helps us morph untidy data into tidy data frames;
 
-3. _readr_ is an R package which provides very convenient functions for reading
+3. [_readr_](https://readr.tidyverse.org) is an R package which provides very convenient functions for reading
 (and writing) tabular data. Think of it as a set of better alternatives to
-base R functions such as `read.table()`, etc.
+base R functions such as `read.table()`, etc. (Another very useful package
+is [_readxl_](https://readxl.tidyverse.org) which is useful for working with
+Excel data).
 
 Every single script you will be writing in this session will begin with these
 two lines of code.
@@ -24,18 +26,24 @@ library(readr)
 ```
 
 Let's also introduce a second star in this session, our example data set.
-This commands reads a metadata table from a recent huge aDNA paper on the
-history or the Holocene in West Eurasia, dubbed "MesoNeo" 
+The following command will read a metadata table with information about
+individuals published in a recent aDNA paper on the history or the Holocene in
+West Eurasia, dubbed "MesoNeo"
 ([reference](https://www.nature.com/articles/s41586-023-06865-0)).
-You can read it like this, which will save it to a variable `df`.
-_Everything_ in the section on tidyverse will revolve around this data.
+We use the `read_tsv()` function (from the above-mentioned _readr_ package)
+and store it in a variable `df`. Everything in the section on _tidyverse_ will
+revolve around working with this data because it represents an excellent
+example of this kind of metadata table you will find across the entirety of
+computational population genomics. (Yes, this function is quite magical -- it
+can read stuff from a file stored on the internet. If you're curious about
+the file itself, just paste the URL address in your browser.)
 
 ```{r}
 #| message: false
 df <- read_tsv("https://tinyurl.com/qwe-asd-zxc")
 ```
 
-## Part XYZ: Inspecting data
+## A selection of data-frame inspection functions
 
 Whenever you get a new source of data, like a table from a collaborator, data
 sheet downloaded from supplementary materials of a paper, you need to familiarize
@@ -52,22 +60,33 @@ their documentation to see the possibilities for options and additional features
 
 4. _"How can I take a quick look at a subset of the data?"_ -- `head()`, `tail()`
 
-5. _"For a specific variable column, what is the distribution of values I can expect?"_ -- `table()` for "discrete types", `summary()` for "numeric types"
+5. _"For a specific variable column, what is the distribution of values I can
+expect in that column?"_ -- `table()` for "discrete types", `summary()` for "numeric types"
+
+## Exercise 1
 
 **Inspect the `df` metadata using the functions above, and try to answer the
 following questions using the functions from the list above (you should decide
-which will be appropriate for which question)**:
+which will be appropriate for which question).**
+
+**Before you use one of these functions for the first time, take a moment to
+skim through its `?function_name`.**
 
 1. **How many individuals do we have metadata for?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Number of rows:
+
 ```{r}
-# number of rows of the table
 nrow(df)
-# number of unique sample IDs (this should ideally always give the same number,
-# but there's never enough sanity checks in data science)
+```
+
+Number of `unique()` sample IDs (this should ideally always give the same number,
+but there's never enough sanity checks in data science):
+
+```{r}
 length(unique(df$sampleId))
 ```
 :::
@@ -77,12 +96,20 @@ length(unique(df$sampleId))
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Column names function:
+
 ```{r}
 colnames(df)
 ```
+:::
 
-(I tend to use `str()` because I'm old and very used to it, but `glimpse()`
-is new and better.)
+3. **What data types (numbers, strings, logicals, etc.) are our variables of?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+I tend to use `str()` because I'm old and very used to it, but `glimpse()`
+is new and better.
 
 ```{r}
 str(df)
@@ -114,26 +141,138 @@ columns <- colnames(df)
 grep("^age.*|^.*Age$", columns, value = TRUE)
 ```
 
+```{r}
+mean(!is.na(df$age14C))
+mean(!is.na(df$ageHigh))
+mean(!is.na(df$ageLow))
+mean(!is.na(df$ageAverage))
+mean(!is.na(df$ageRaw))
+unique(df$groupAge)
+```
+
+Interesting, it looks like the `ageAverage` variable has the highest proportion
+of non-`NA` values at about `r 100 * round(mean(!is.na(df$ageAverage)), 4)`%.
+We also seem to have another column, `groupAge` which clusters individuals into
+three groups. We'll stick to these two variables whenever we have a question
+regarding a date of an individual.
+
 :::
 
-4. **How many present-day individuals do we have? How many aDNA individuals?**
+4. **How many ancient individuals do we have? How many "modern" (i.e., present-day
+humans) individuals?**
+
+**Hint:** Use the fact that for any vector (and `df$groupAge` is a vector,
+remember!), we can get the number of elements of that vector matching a certain
+value by applying the `sum()` function on a "conditional" expression, like
+`df$groupAge == "Ancient"` which, on its own, gives `TRUE` / `FALSE` vector.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-5. **Do we have geographical information? Countries or geographical coordinates or
+```{r}
+which_ancient <- df$groupAge == "Ancient"
+
+head(which_ancient)
+
+sum(which_ancient)
+```
+
+```{r}
+which_modern <- df$groupAge == "Modern"
+sum(which_modern)
+```
+
+```{r}
+which_archaic <- df$groupAge == "Archaic"
+sum(which_archaic)
+```
+:::
+
+5. **Who are the mysterious "Archaic" individuals (column `groupAge`)?**
+
+**Hint:** We need to _filter_ our table down to rows which have
+`groupAge == "Archaic"`. This is an indexing operation which you learned about
+in the R bootcamp session! Remember that data frames can be indexed into along
+two dimensions: rows and columns. You want to filter by the rows here.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Again, this gets us a logical vector which has `TRUE` for each element corresponding
+to an "Archaic" individual (whoever that might be):
+
+```{r}
+which_archaic <- df$groupAge == "Archaic"
+head(which_archaic)
+```
+
+And we can then use this vector as an index into our overall data frame, just
+like we learned in the bootcamp session:
+
+```{r}
+archaic_df <- df[which_archaic, ]
+archaic_df$sampleId
+```
+
+Our mysterious "Archaic" individuals are two Neanderthals and a Denisovan!
+:::
+
+
+6. **Do we have geographical information? Countries or geographical coordinates or
 both? Which countries do we have individuals from? (We'll talk about spatial
-data science later in detail.)**
+data science later in detail, so let's interpret whatever geographical
+variable columns we have in our data frame `df` as any other numerical or string
+column variable.)**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-6. **What is the source of the data? Does it look like it comes from a single study?**
+Looking at `colnames(df)` we have a number of columns which have something
+to do with geography: `country`, `region`, and also the traditional
+[`longitude` and `latitude` coordinates](https://en.wikipedia.org/wiki/Geographic_coordinate_system#Latitude_and_longitude).
+
+`table()` counts the number of elements in a vector (basically, a histogram
+without plotting it), `sort()` then sorts those elements for easier reading:
+
+```{r}
+sort(table(df$country), decreasing = TRUE)
+```
+
+```{r}
+sort(table(df$region), decreasing = TRUE)
+```
+
+We will ignore `longitude` and `latitude` for now, because they are most
+useful in truly geographical data analysis setting (which we will delve into
+a bit later).
+:::
+
+6. **What is the source of the sequences in our data set? Does it look like they
+all come from a single study?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-7. **What's the distribution of coverage of the samples? Do we have that information
+It looks like we have a `dataSource` column which, from the `glimpse()`
+result above is a character vector (a vector of "strings"). This suggests
+that it represents discrete categories, so let's use the `table()` & `sort()`
+ combo again:
+ 
+```{r}
+sort(table(df$dataSource), decreasing = TRUE)
+```
+
+OK, it looks like we have most individuals (2504) from the
+[1000 genomes project](http://www.internationalgenome.org), we have
+318 samples from ["this study" ](https://www.nature.com/articles/s41586-023-06865-0),
+and then a bunch of individuals from a wide range of other publications.
+This is great because it allows us to refer individual specific results
+we might obtain later to the respective publications!
+:::
+
+
+7. **What's the distribution of coverage of the samples? Do we have that information? Compute the `mean()` and other `summary()` statistics on
+the coverage information.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
