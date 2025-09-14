@@ -91,7 +91,7 @@ length(unique(df$sampleId))
 ```
 :::
 
-2. **What data types do the variables in our data carry?**
+2. **What data types do the variables in our data have?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -271,12 +271,96 @@ we might obtain later to the respective publications!
 :::
 
 
-7. **What's the distribution of coverage of the samples? Do we have that information? Compute the `mean()` and other `summary()` statistics on
-the coverage information.**
+7. **What's the distribution of coverage of the samples? Compute the `mean()`
+and other `summary()` statistics on the coverage information. Why doesn't
+the `mean()` function work when you run it on the vector of numbers in the
+`coverage` column (use `?mean` to find the solution). Which individuals
+have missing coverage? Finally, use the `hist()` function to visualize this
+information.**
+
+These are all basic questions which you will be asking yourself _every time_
+you read a new table into R. It might not be coverage, but you will have
+to do this to familiarize yourself with the data and understand its potential
+issues!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
-for every individual? Feel free to use the base R function `hist()` for this.**
+
+Mean gives us `NA`:
+
+```{r}
+mean(df$coverage)
+```
+
+This is because computing the mean from a vector containing `NA` values is not
+a sensible operation -- should we remove the `NA` values? It's impossible to say
+in general, because that would depend on the nature of our data. Sometimes,
+encountering `NA` indicates a problem, so we can't just ignore it. In situation
+when this is OK, there's a argument which changes the default behavior and
+removes the `NA` elements before computing the mean:
+
+```{r}
+mean(df$coverage, na.rm = TRUE)
+```
+
+Summary takes care of the issue by reporting the number of `NA` values explicitly:
+
+```{r}
+summary(df$coverage)
+```
+
+We can see that the coverage information is missing for `r sum(is.na(df$coverage))`
+individuals, which is the number of individuals in the (present-day) 1000 Genomes
+Project data. So it makes sense, we only have coverage for the lower-coverage
+aDNA samples, but for present-day individuals (who have imputed genomes), the
+coverage does not even make sense here.
+
+Let's plot the coverage values:
+
+```{r}
+hist(df$coverage, breaks = 100)
+```
+
+:::
+
+8. **Who is the oldest individuals in our data set? Who has the highest
+coverage? Who has the lowest coverage?**
+
+**Hint:** Use functions `min()`, `max()`, `which.min()`, `which.max()`. Look
+up their `?help` to understand what they do and how to use them in this context.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+`which.max()` reports the _index_ (in this case, the row number) of the
+maximum value in a vector (in this case, a column vector):
+
+```{r}
+which.max(df$ageAverage)
+```
+
+This means we can use this number to index into the data frame and find our answer:
+
+```{r}
+df[which.max(df$ageAverage), ]
+
+max(df$ageAverage, na.rm = TRUE)
+```
+
+Let's use the similar approach for coverage:
+
+```{r}
+df[which.min(df$coverage), ]
+min(df$coverage, na.rm = TRUE)
+
+df[which.max(df$coverage), ]
+max(df$coverage, na.rm = TRUE)
+```
+
+:::
+
+
+
 
 
 
