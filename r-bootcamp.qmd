@@ -502,7 +502,159 @@ just laying the groundwork for some very cool things later down the line.
 
 ## Exercise 4: Boolean expressions and conditionals
 
-TODO
+Let's recap some basic Boolean algebra in logic. The following basic rules
+apply (take a look at the
+[truth table](https://en.wikipedia.org/wiki/Boolean_algebra#Basic_operations)
+for a bit of a high school refresher) for the "and", "or", and "negation" operations:
+
+1. The AND operator (represented by `&` in R, or often `∧` in math):
+
+_Both conditions must be `TRUE` for the expression to be `TRUE`)._
+
+- `TRUE` & `TRUE` == `TRUE`
+- `TRUE` & `FALSE` == `FALSE`
+- `FALSE` & `TRUE` == `FALSE`
+- `FALSE` & `FALSE` == `FALSE`
+
+2. The OR operator (represented by `|` in R, or often `∨` in math):
+
+_At least one condition must be `TRUE` for the expression to be `TRUE`)._
+
+- `TRUE` | `TRUE` == `TRUE`
+- `TRUE` | `FALSE` == `TRUE`
+- `FALSE` | `TRUE` == `TRUE`
+- `FALSE` | `FALSE` == `FALSE`
+
+3. The NOT operator (represented by `!` in R, or often `¬` in math):
+
+_The opposite of the expression._
+
+- `!TRUE` == `FALSE`
+- `!FALSE` == `TRUE`
+
+4. Comparison operators `==` ("equal to"), `<` and `>` ("lesser or greater than"),
+and `<=` and `>=` ("lesser/greater or equal then"):
+
+_Comparing two things with either of these results in `TRUE` or `FALSE` result._
+
+**Note:** There are other operations and more complex rules, but we will
+be using these three exclusively (plus, the more complex rules can be
+derived using these basic operations anyway).
+
+**Create two logical vectors with three elements each using the `c()` function
+(pick random `TRUE` and `FALSE` values for each of them), and store them in
+variables named `A` and `B`. What happens when you do `A & B`, `A | B`, and `!A`
+or `!B`?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+It turns out that we can compare not just single values (scalars) but also
+multiple values like vectors. When we do this, R performs the given operation
+for every pair of elements at once!
+
+```{r}
+A <- c(TRUE, FALSE, TRUE)
+B <- c(FALSE, FALSE, TRUE)
+```
+
+```{r}
+A & B
+A | B
+!A
+!B
+```
+:::
+
+**What happens when you apply base R functions `all()` and `any()` on your
+`A` and `B` (or `!A` and `!B`) vectors? Remember those because they are very
+useful?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+These functions reduce a logical vector down to a single `TRUE` or `FALSE`
+value.
+
+```{r}
+A
+all(A)
+any(A)
+```
+:::
+
+If this all feels too technical and mathematical, you're kind of correct. That
+said, when you do data science, you will be using these logical expressions
+literally every single day. **Think about a table which has a column with
+some values, like sequencing `coverage`. Every time you filter for samples
+with, for instance, `coverage > 10`, you're performing this exact operation!
+You essentially ask, for each sample (each value in the column), which samples
+have `coverage > 10` (giving you `TRUE`) and which have less than 10 (giving
+you `FALSE`). Filtering data is, in essence, about applying logical operations
+on vectors of `TRUE` and `FALSE` values (which boils down to "logical indexing"
+introduced below), even though those logical values rarely feature as data
+in the tables we generally work with.** Keep this in mind!
+
+**Consider the following vectors of sample coverages and origins (let's imagine
+these are columns in a table you got from a bioinformatics lab) and copy them
+into your R script:**
+
+```{r}
+coverage <- c(15.09, 48.85, 36.5, 1.12, 16.65, 0.79, 16.9, 46.09, 12.76, 11.51)
+origin <- c("mod", "mod", "mod", "anc", "mod", "anc", "mod", "mod", "mod", "mod")
+```
+
+**Create a variable `is_high` which will contain a `TRUE` / `FALSE` vector
+indicating whether a given `coverage` value is higher than 5. Then create
+a variable `is_modern` which will contain another logical vector indicating
+whether a given sample is `"mod"` (i.e., "modern").**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+is_high <- coverage > 5
+is_high
+```
+
+```{r}
+is_modern <- origin == "modern"
+is_modern
+```
+:::
+
+**Use the AND operator `&` to test if every high coverage sample (`is_high`) is
+also a modern sample (`is_modern`).**
+
+**Hint:** Use the `==` operator in combination with the `all()` function.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+This tests whether individual high coverage samples are also modern:
+
+```{r}
+is_high == is_modern
+```
+
+And this tests whether _all_ high coverage samples are also modern:
+
+```{r}
+all(is_high == is_modern)
+```
+
+**Note:** You don't always create dedicated throwaway temporary variables
+like this. You could easily do the same much more concisely (although maybe
+less readably). Both approaches are useful.
+
+```{r}
+all(coverage > 5 & origin == "modern")
+```
+:::
+
+
+
+
 
 ## Exercise 5: Indexing into vectors and lists
 
