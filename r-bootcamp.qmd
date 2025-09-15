@@ -532,8 +532,8 @@ _The opposite of the expression._
 - `!TRUE` == `FALSE`
 - `!FALSE` == `TRUE`
 
-4. Comparison operators `==` ("equal to"), `<` and `>` ("lesser or greater than"),
-and `<=` and `>=` ("lesser/greater or equal then"):
+4. Comparison operators `==` ("equal to"), `!=` ("not equal to"), <` / `>`
+("lesser / greater than"), and `<=` / `>=` ("lesser/greater or equal than"):
 
 _Comparing two things with either of these results in `TRUE` or `FALSE` result._
 
@@ -651,7 +651,6 @@ less readably). Both approaches are useful.
 all(coverage > 5 & origin == "modern")
 ```
 :::
-
 
 
 
@@ -1950,8 +1949,72 @@ that it becomes completely trivial at the end.
 
 
 
+## Exercise 10: Conditional expressions
 
-## Exercise 10: Iteration and loops
+Oftentimes, especially when writing custom code, we need to make automated
+decisions whether something should or shouldn't happen given a certain value.
+We can do this using the `if` expression which has the following form:
+
+```{r}
+#| eval: false
+if (<condition resulting in TRUE or FALSE>) {
+  ... code which should be executed if condition is TRUE...
+}
+```
+
+An extension of this is the `if-else` expression, taking the following form:
+
+```{r}
+#| eval: false
+if (<condition resulting in TRUE or FALSE>) {
+  ... code which should be executed if condition is TRUE...
+} else {
+  ... code which should be executed if condition is FALSE...
+}
+```
+
+**Go back to your new `penguin_hist()` function and add an `if` expression
+which will make sure that `breaks` is greater than 0. In other words, if
+`breaks < 1` (the condition you will be testing against), execute the
+command `stop("Incorrect breaks argument given!")`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here is our new modified function:
+
+```{r}
+penguin_hist <- function(df, column, breaks) {
+  if (breaks < 1) {
+    stop("Incorrect breaks argument given!")
+  }
+
+  title <- paste("Histogram of the column", column)
+  hist(df[[column]], breaks = breaks, main = title)
+}
+```
+
+And here is how our new modification guards against incorrect use of
+our function:
+
+```{r}
+#| error: false
+penguin_hist(df, "bill_len", breaks = -123)
+```
+
+:::
+
+This was just a little sneak peak. As you get more comfortable with
+programming, `if` and `if-else` expressions like this will be very useful to
+make your code more robust. _Whenever you're coding, catching errors as soon
+as they happen is extremely important!_
+
+
+
+
+
+
+## Exercise 11: Iteration and loops
 
 Functions help us take pieces of code and _generalize_ them to reduce the amount
 of code needed to do similar things, repeatedly, multiple times, and avoid
