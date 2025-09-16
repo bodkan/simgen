@@ -43,10 +43,14 @@ the file itself, just paste the URL address in your browser.)
 df <- read_tsv("https://tinyurl.com/qwe-asd-zxc")
 ```
 
+---
+
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
 save it somewhere on your computer as `tidy-tables.R` (`File` -> `Save`). Put
 the `library()` calls and the `read_tsv()` command above in this script, and
 let's get started!**
+
+---
 
 ## A selection of data-frame inspection functions
 
@@ -69,6 +73,8 @@ their documentation to see the possibilities for options and additional features
 expect in that column?"_ -- `table()` for "discrete types", `summary()` for
 "numeric types", `min()`, `max()`, `which.min()`, `which.max()`
 
+---
+
 **Before we move on, note that when you type `df` into your R console,
 you will see a slightly different format of the output than when we worked
 with plain R data frames in the previous chapter. This format of data frame
@@ -77,14 +83,20 @@ _tidyverse_'s more user friendly and modern take on data frames. For almost
 all practical purposes, from now on, we'll be talking about _tibbles_ as
 data frames.**
 
+---
+
 ## Exercise 1: Exploring new data
 
 **Inspect the `df` metadata using the functions above, and try to answer the
 following questions using the functions from the list above (you should decide
 which will be appropriate for which question).**
 
+---
+
 **Before you use one of these functions for the first time, take a moment to
 skim through its `?function_name`.**
+
+---
 
 1. **How many individuals do we have metadata for?**
 
@@ -105,6 +117,8 @@ length(unique(df$sampleId))
 ```
 :::
 
+---
+
 2. **What data types do the variables in our data have?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -116,6 +130,8 @@ Column names function:
 colnames(df)
 ```
 :::
+
+---
 
 3. **What data types (numbers, strings, logicals, etc.) are our variables of?**
 
@@ -132,7 +148,9 @@ glimpse(df)
 ```
 :::
 
-3. **What is the distribution of dates of aDNA individuals? What are the variables
+---
+
+4. **What is the distribution of dates of aDNA individuals? What are the variables
 we have that describe the ages (maybe look at those which have "age" in their name)?
 Which one would you use to get information about the ages of most individuals?**
 
@@ -172,6 +190,8 @@ regarding a date of an individual.
 
 :::
 
+---
+
 4. **How many ancient individuals do we have? How many "modern" (i.e., present-day
 humans) individuals?**
 
@@ -202,6 +222,8 @@ sum(which_archaic)
 ```
 :::
 
+---
+
 5. **Who are the mysterious "Archaic" individuals (column `groupAge`)?**
 
 **Hint:** We need to _filter_ our table down to rows which have
@@ -231,6 +253,7 @@ archaic_df$sampleId
 Our mysterious "Archaic" individuals are two Neanderthals and a Denisovan!
 :::
 
+---
 
 6. **Do we have geographical information? Countries or geographical coordinates or
 both? Which countries do we have individuals from? (We'll talk about spatial
@@ -261,7 +284,9 @@ useful in truly geographical data analysis setting (which we will delve into
 a bit later).
 :::
 
-6. **What is the source of the sequences in our data set? Does it look like they
+---
+
+7. **What is the source of the sequences in our data set? Does it look like they
 all come from a single study?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -284,8 +309,9 @@ This is great because it allows us to refer individual specific results
 we might obtain later to the respective publications!
 :::
 
+---
 
-7. **What's the distribution of coverage of the samples? Compute the `mean()`
+8. **What's the distribution of coverage of the samples? Compute the `mean()`
 and other `summary()` statistics on the coverage information. Why doesn't
 the `mean()` function work when you run it on the vector of numbers in the
 `coverage` column (use `?mean` to find the solution). Which individuals
@@ -337,7 +363,9 @@ hist(df$coverage, breaks = 100)
 
 :::
 
-8. **Who is the oldest individuals in our data set? Who has the highest
+---
+
+9. **Who is the oldest individuals in our data set? Who has the highest
 coverage? Who has the lowest coverage?**
 
 **Hint:** Use functions `min()`, `max()`, `which.min()`, `which.max()`. Look
@@ -372,6 +400,8 @@ max(df$coverage, na.rm = TRUE)
 ```
 
 :::
+
+---
 
 
 ## Exercise 2: Selecting columns
@@ -410,6 +440,8 @@ select(df, sampleId, region, coverage, ageAverage)
 quotes". It might not look like much, but saving yourself from having to type double
 quotes for every data-frame operation (like with base R) is incredibly convenient.
 
+---
+
 **Practice `select()` by creating three new data frame objects:**
 
 1. Data frame `df_ages` which contains all variables related to sample ages
@@ -432,6 +464,8 @@ df_geo
 
 :::
 
+---
+
 Note that `select()` allows us to see the contents of columns of interest much easier.
 In a situation in which we want to analyse the geographical location of samples,
 we don't want to see columns unrelated to that -- `select()` helps here.
@@ -451,8 +485,12 @@ modify our `select()` "template" above, we could do this, for instance:
 select(<data frame object or tibble>, starts_with("text1"), ends_with("text2"))
 ```
 
+---
+
 **Check out the `?help` belonging to those functions. Note that they have
 `ignore.case = TRUE` set by default! It will become important soon!**
+
+---
 
 **Create the `df_ages` table again, with the same criteria, but use the
 three helper functions listed above. How many different ways of using them
@@ -471,8 +509,9 @@ df_ages2 <- select(df,
 
 ```
 
-
 :::
+
+---
 
 ## Exercise 3: Filtering rows
 
@@ -501,9 +540,10 @@ archaic_df
 However, what if we need to filter on multiple conditions? For instance, what
 if we want to find only archaic individuals older than 50000 years?
 
-One option would be to create multiple `TRUE` / `FALSE` vectors, each corresponding
-to one of those conditions, and then join them into a single logical vector
-by combining `&` and `|` logical operators. For example, we could do this:
+One option would be to create multiple `TRUE` / `FALSE` vectors, each
+corresponding to one of those conditions, and then join them into a single
+logical vector by combining `&` and `|` logical operators. For example, we
+could do this:
 
 ```{r}
 # who is archaic in our data?
@@ -523,17 +563,52 @@ But this gets tiring very quickly, requires unnecessary amount of typing, and
 is very error prone. Imagine having to do this for many more conditions!
 The `filter()` function from _tidyverse_ fixes all of these problems.
 
-Again, we can rephrase the example situation with the archaics to use the new
+We can rephrase the example situation with the archaics to use the new
 function like this:
 
 ```{r}
 filter(df, groupAge == "Archaic", ageAverage > 50000)
 ```
 
-A single command, very little typing, and immediately readable, almost like English!
-_"Filter data frame `df` for individuals in which column `groupAge` is "Archaic",
-and who are older than 50000 years"_. When you think about it, it's pretty much
-impossible to find a solution requiring less code.
+A single command, very little typing, and immediately readable, almost like 
+English: _"filter data frame `df` for individuals in which column `groupAge`
+is "Archaic", and who are older than 50000 years"_. When you think about it,
+it's pretty much impossible to find a solution requiring less code.
+
+---
+
+**Practice filtering with the `filter()` function by finding out
+which individual(s) in your `df` metadata table are from a `country`
+with the value `"CzechRepublic"`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+filter(df, country == "CzechRepublic")
+```
+:::
+
+---
+
+**Which one of these individuals have `coverage` higher than 1? Which
+individuals have `coverage` higher than 10?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+filter(df, country == "CzechRepublic", coverage > 1)
+```
+
+```{r}
+filter(df, country == "CzechRepublic", coverage > 10)
+```
+
+:::
+
+---
+
 
 
 ## Exercise 4: The pipe `%>%`
