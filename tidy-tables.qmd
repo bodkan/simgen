@@ -567,13 +567,19 @@ We can rephrase the example situation with the archaics to use the new
 function like this:
 
 ```{r}
+#| results: hide
 filter(df, groupAge == "Archaic", ageAverage > 50000)
 ```
 
-A single command, very little typing, and immediately readable, almost like 
-English: _"filter data frame `df` for individuals in which column `groupAge`
-is "Archaic", and who are older than 50000 years"_. When you think about it,
-it's pretty much impossible to find a solution requiring less code.
+I hope that, even if you never really programmed much before, you appreciate
+that this single command involves very little typing and is immediately
+readable, almost like this English sentence:
+
+> _"Filter the data frame `df` for individuals in which column `groupAge`
+is "Archaic", and who are older than 50000 years"_.
+
+Over time you will see that all of _tidyverse_ packages follow these
+ergonomic principles.
 
 ---
 
@@ -614,23 +620,25 @@ filter(df, country == "CzechRepublic", coverage > 10)
 ## Exercise 4: The pipe `%>%`
 
 The pipe operator, `%>%`, is the rockstar of the _tidyverse_ R ecosystem,
-and the primary reason what makes _tidy_ data approach so efficient, quick
-to type, and easy to read.
+and the primary reason what makes _tidy_ data workflow so efficient
+and easy to read.
 
-First, a bit of a general introduction: whenever you see something like
-`something `%>%` f()`, you can read it as "take <something> and put it as the
-first argument of f()`".
+First, what is "the pipe"?: whenever you see something like
+`something `%>%` f()`, you can read it as
 
-Why would you do this? Imagine some complex data processing operation like this:
+> _"take **something** and put it as the first argument of f()`".
+
+Why would you want to do this? Imagine some complex data processing operation like this:
 
 ```{r}
 #| eval: false
 h(f(g(i(j(input_data)))))
 ```
 
-I.e., take `input_data`, compute `j(input_data)`, then compute `i()` on _that_,
+This means take `input_data`, compute `j(input_data)`, then compute `i()` on _that_,
 so `i(j(input_data))`, then compute `g(i(j(input_data)))`, etc. Of course this
-is a ridiculous example but it is not that far off from what we often have to do.
+is an extreme example but is surprisingly not that far off from what we often
+have to do in data science.
 
 One way to make this easier to read would be perhaps this:
 
@@ -643,13 +651,11 @@ tmp4 <- f(tmp3)
 result <- f(tmp4)
 ```
 
-But that's just too much typing, especially during exploratory phase of data
-analysis in which we want to get insights into our data as quickly as possible,
-and when we spend most of our time not writing scripts but playing with our
-data in the R console!
+But that's too much typing when we want to get insights into our data as quickly
+as possible with as little work as possible.
 
-The pipe approach of _tidyverse_ would make this infinitely easier to write
-and read (note that we are allowed to even drop the function call parentheses):
+The pipe approach of _tidyverse_ would make the same thing easier to write
+and read like this:
 
 ```{r}
 #| eval: false
@@ -662,20 +668,29 @@ provides a built-in shortcut for it:
 - CMD + Shift + M on macOS
 - CTRL + Shift + M on Windows and Linux
 
+---
 
 **Use your newly acquired `select()` and `filter()` skills, powered by the
 `%>%` piping operator to perform the following transformation on the `df`
 metadata table (`filter`-ing and `select`-ion operations on the specified columns):**
 
-1. filter for "Ancient" individuals (`groupAge`) who are older than 10000 years
-(`ageAverage`), are from Italy (`country`), and have `coverage` higher than 3
-2. select `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor` haplogoups
+1. **Filter individuals for:**
+
+- **"Ancient" individuals (`groupAge`)**
+- **older than 10000 years (`ageAverage`)**
+- **from Italy (`country`)**
+- **with `coverage` higher than 3**
+
+2. **Select columns: `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor`
+(mt and Y haplogoups)**.
 
 **As a practice, try to be as silly as you can and write the entire command
 with as many uses of `filter()` and `select()` function calls in sequence
-as you can. Don't write the entire pipeline at once, start with one condition,
+as you can.**
+
+**Hint:** Don't write the entire pipeline at once, start with one condition,
 evaluate it, then another another one, etc.,
-inspecting the intermediate results as you're getting them.** This is the
+inspecting the intermediate results as you're getting them. This is the
 _tidyverse_ way of doing data science.
 
 **Hint:** What I mean by this is that the following two commands produce
@@ -728,31 +743,49 @@ df %>%
 commands into multiple lines, and indenting them neatly one after the other.
 Readability matters to avoid bugs in your code!
 
+---
+
 ## Exercise 5: More complex conditions
 
-You can interpret `,` in a `filter()` command as a logical `&`. In this case
-of the previous exercise, every single condition must apply to arrive at the
-individual `r df %>% filter(groupAge == "Ancient", ageAverage > 10000, country == "Italy", coverage > 1) %>% select(sampleId, site, sex, hgMT, hgYMajor) %>% pull(sampleId)`.
+Recall our exercises about logical conditional expression (`&`, `|`, `!`, etc.).
+You can interpret `,` in a `filter()` command as a logical `&`. In fact, you
+could also write the solution to the previous exercise:
+
+```{r}
+#| results: hide
+df %>%
+  filter(groupAge == "Ancient", ageAverage > 10000, country == "Italy", coverage > 1) %>%
+  select(sampleId, site, sex, hgMT, hgYMajor)
+```
+
+as this:
+
+```{r}
+#| results: hide
+df %>%
+  filter(groupAge == "Ancient" & ageAverage > 10000 & country == "Italy" & coverage > 1) %>%
+  select(sampleId, site, sex, hgMT, hgYMajor)
+```
+
 
 Whenever you need to do a more complex operation, such as saying that a
 variable `columnX` should have a value `"ABC"` or `"ZXC"`, you can write
-`filter(df, columnX == "ABC" | column == "ZXC")`. Alternatively, you could
-write the the same thing using the `%in%` operator as 
-`filter(df, columnX %in% c("ABC", "ZXC"))`, which is very useful when you
-want to match multiple values than you'd be willing to type out by hand
-(but have them stored in a variable).
+`filter(df, columnX == "ABC" | column == "ZXC")`.
 
-Similarly, you can condition on numerical variables. For instance, if you
-want to condition on variable being `varX < 1` or `varX > 10`, you could
+Similarly, you can condition on numerical variables, just as we did in the
+exercises on `TRUE` / `FALSE` expressions. For instance, if you
+want to condition on a column `varX` being `varX < 1` _or_ `varX > 10`, you could
 write `filter(df, varX < 1 | var X > 10)`.
+
+---
 
 **Practice combining multiple filtering conditions into a _tidyverse_ piping
 chain by filtering our metadata table to find individuals for which the
 following conditions hold:**
 
-- they are "Ancient" in `groupAge`
-- `country` is either "France" or "Canary Islands"
-- `coverage` either less than 0.1 or more than 3
+- **They are "Ancient" (`groupAge`).**
+- **The `country` is "France" _or_ "Canary Islands".**
+- **Their `coverage` less than 0.1 or more than 3.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -761,6 +794,16 @@ following conditions hold:**
 df %>%
   filter(groupAge == "Ancient") %>%
   filter(country == "France" | country == "Canary Islands") %>%
+  filter(coverage < 0.1 | coverage > 3)
+```
+
+Whenever you want to test whether a variable is of a set of multiple possible
+values, you can use the `%in%` operator:
+
+```{r}
+df %>%
+  filter(groupAge == "Ancient") %>%
+  filter(country %in% c("France", "Canary Islands")) %>%
   filter(coverage < 0.1 | coverage > 3)
 ```
 
@@ -776,6 +819,69 @@ This one will be easy. If you want to drop a column from a table, just
 prefix it with a minus sign (`-`). Yes, this also works with `starts_with()`
 and its friends above, just put `-` in front of them!
 
+Here's our `df` table again (just one row for brevity):
+
+```{r}
+df %>% head(1)
+```
+
+Observe what happens when we do this:
+
+```{r}
+df %>% select(-sampleId) %>% head(1)
+```
+
+And this:
+
+```{r}
+df %>% select(-sampleId, -site) %>% head(1)
+```
+
+And this:
+
+```{r}
+df %>% select(-sampleId, -site, -popId) %>% head(1)
+```
+
+The given columns are dropped from the resulting table!
+
+Rather than typing out a long list of columns to drop, we can also do this
+to specify the range of consecutive columns:
+
+```{r}
+df %>% select(-(sampleId:popId)) %>% head(1)
+```
+
+Alternatively, we can also use our well-known `c()` function, which is very useful
+whenever we want to drop a non-consecutive set of columns:
+
+```{r}
+df %>% select(-c(sampleId, site, popId)) %>% head(1)
+```
+
+
+**Note:** The same "range syntax" of using `:` and and listing columns with
+`c()` applies also to selecting which columns to choose, not just for dropping them.
+
+---
+
+**Use the `:` range in `select()` to drop every column after `country` (i.e.,
+all the way to the last column in your table).**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>% select(-(region:shape))
+```
+
+I was personally a bit surprised that this also works without the parentheses.
+R is smart!
+
+```{r}
+df %>% select(-region:-shape)
+```
+:::
 
 
 
