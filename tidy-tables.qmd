@@ -419,8 +419,9 @@ df
 We can select which columns to select with the function `select()`. It has
 the following general format:
 
-```
-select(<data frame object or tibble>, <column 1>, <column 2>, ...)
+```{r}
+#| eval: false
+select(<data frame>, <column 1>, <column 2>, ...)
 ```
 
 This is how we would select columns using a normal base R subsetting/indexing
@@ -900,7 +901,7 @@ the text in `<here>` with appropriate symbols):
 
 ```{r}
 #| eval: false
-rename(<data frame object>, <new_name> = <old name>)
+rename(<data frame>, <new name> = <old name>)
 ```
 
 ---
@@ -981,7 +982,7 @@ we want to retain them, we can add the call to `everything()`, like this:
 
 ```{r}
 #| eval: false
-select(df, <column 1>, <column 2>, ..., everything())
+select(<data frame>, <column 1>, <column 2>, ..., everything())
 ```
 
 Which effectively moves `<column 1>`, `<column 2>`, ... to the "front" of our
@@ -1019,8 +1020,90 @@ renamed some for more readability), but we still have all the other columns
 available!
 :::
 
-## Exercise 9: Sorting tables
+## Exercise 9: Sorting rows based on columns
+
+When you need to sort the rows of a data frame based on a value of one or
+multiple columns, you can use the function `arrange()`. Again, in the spirit
+of the consistency across the _tidyverse_ ecosystem, it follows exactly
+the same format of first giving the function a data frame to operate on,
+followed by a list of columns to sort by.
+
+```{r}
+#| eval: false
+arrange(<data frame>, <column 1>, <column 2>, ...)
+```
+
+**Note:** When you want to reverse the order of the sort, you can surround the
+column name in a helper function `desc()` (standing for "descending").**
+
+```{r}
+#| eval: false
+arrange(<data frame>, desc(<column 1>), desc(<column 2>), ...)
+```
+
+---
+
+**Who is the oldest individual in your data who is not an archaic individual?
+(Remember that you can `filter()` out rows corresponding to archaic individuals
+with the condition `group != "Ancient"` and then pipe the result into `arrange()`
+for sorting based on the renamed column `age`).**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>% filter(group != "Archaic") %>% arrange(desc(age))
+```
+
+:::
+
+---
+
+**Similarly, who is the youngest ancient individual in your data?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>% filter(group == "Ancient") %>% arrange(age)
+```
+
+:::
+
+---
+
+**Does the same approach work for sorting text? What do you get when you
+try sorting based on the `country` column?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Yes, this gives us standard alphabetical sort!
+
+```{r}
+df %>% arrange(country)
+```
+:::
+
+---
+
+**What do you get when you try sorting based on `country` and then `coverage`?
+What happens when you sort based on `coverage` and then `country`? Why is there
+a difference?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>% arrange(country, coverage)
+df %>% arrange(coverage, country)
+```
+
+:::
+
 
 ## Exercise 10: Mutating tables
 
 ## Exercise 12: Summarizing tables
+
+## Exercise 13: Writing tables
