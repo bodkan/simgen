@@ -916,7 +916,7 @@ rename(<data frame>, <new name> = <old name>)
 **Create a new data frame `df_subset`. First `select()` the columns `sampleId`,
 `popId`, `country`, `groupAge`, `ageAverage`, and `coverage`. Then use the
 `rename()` function to give them a shorter name: `sampleId` -> `sample`,
-`popId` -> `population`, `groupAge` -> `group`, `ageAverage` -> `age`. Leave
+`popId` -> `population`, `groupAge` -> `set`, `ageAverage` -> `age`. Leave
 the `country` and `coverage` columns as they are.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -926,7 +926,7 @@ the `country` and `coverage` columns as they are.**
 df_subset <-
   df %>%
   select(sampleId, popId, country, groupAge, ageAverage, coverage) %>%
-  rename(sample = sampleId, population = popId, group = groupAge, age = ageAverage)
+  rename(sample = sampleId, population = popId, set = groupAge, age = ageAverage)
 ```
 
 We now have a much cleaner table which is much easier to work with!
@@ -946,7 +946,7 @@ Create the `df_subset` data frame again, but this time using just `select()`.**
 df_subset <- df %>%
   select(sample = sampleId, population = popId,
          country,
-         group = groupAge, age = ageAverage,
+         set = groupAge, age = ageAverage,
          coverage)
 ```
 
@@ -1010,7 +1010,7 @@ head(df, 3)
 
 ```{r}
 df <- select(df,  sample = sampleId, population = popId, country,
-             group = groupAge, age = ageAverage, coverage,
+             set = groupAge, age = ageAverage, coverage,
              everything()
 )
 ```
@@ -1049,14 +1049,14 @@ arrange(<data frame>, desc(<column 1>), desc(<column 2>), ...)
 
 **Who is the oldest individual in your data who is not an archaic individual?
 (Remember that you can `filter()` out rows corresponding to archaic individuals
-with the condition `group != "Ancient"` and then pipe the result into `arrange()`
+with the condition `set != "Ancient"` and then pipe the result into `arrange()`
 for sorting based on the renamed column `age`).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-df %>% filter(group != "Archaic") %>% arrange(desc(age))
+df %>% filter(set != "Archaic") %>% arrange(desc(age))
 ```
 
 :::
@@ -1069,7 +1069,7 @@ df %>% filter(group != "Archaic") %>% arrange(desc(age))
 #### Click to see the solution
 
 ```{r}
-df %>% filter(group == "Ancient") %>% arrange(age)
+df %>% filter(set == "Ancient") %>% arrange(age)
 ```
 
 :::
@@ -1137,7 +1137,7 @@ columns from our data frame first. They were originally created by `mutate()`
 in the first place and this gives as a useful opportunity for practice:**
 
 ```{r}
-df <- select(df, -group)
+df <- select(df, -set)
 ```
 
 Don't worry, we'll be adding them back soon using our custom code.
@@ -1311,7 +1311,7 @@ df <- df %>% mutate(age = if_else(is.na(age), 0, age))
 
 `if_else()` does only work on binary `TRUE` or `FALSE` conditions. But what
 if we want to create a new column with values of multiple categories, not
-just two. Recall our original column `group`, which had values either "Archaic",
+just two. Recall our original column `set`, which had values either "Archaic",
 "Ancient", or "Modern".
 
 For this purpose, `case_when()` is perfect. It works in a very similar
@@ -1467,7 +1467,7 @@ table(df$region, df$continent)
 
 ---
 
-**Remember how we removed the `group` column, which originally contained
+**Remember how we removed the `set` column, which originally contained
 values "Modern", "Ancient", or "Archaic", depending on whether the individual
 was a present-day modern human, ancient modern human, or an archaic individual,
 respectively? Use what you learned in this exercise on `if_else()` or
@@ -1488,7 +1488,7 @@ archaics <- c("Vindija33.19", "AltaiNeandertal", "Denisova")
 
 df <-
   df %>%
-  mutate(group = case_when(
+  mutate(set = case_when(
     age == 0 ~ "Modern",
     sample %in% archaics ~ "Archaic",
     .default = "Ancient"
@@ -1561,10 +1561,10 @@ functions to work per group.
 Before we move on to computing summary statistics, let's also note that we
 can, of course, group based on multiple columns. For instance, in our data,
 we should probably not summarize based on continent but also on age, splitting
-individuals based on the broad age groups like this:
+individuals based on the broad age sets like this:
 
 ```{r}
-group_by(df, continent, group)
+group_by(df, continent, set)
 ```
 
 
@@ -1578,9 +1578,8 @@ groups by the coverage available:
 
 ```{r}
 df %>%
-  group_by(continent, group) %>%
-  summarize(mean_coverage = mean(coverage)) %>%
-  arrange(desc(mean_coverage))
+  group_by(continent, set) %>%
+  summarize(mean_coverage = mean(coverage))
 ```
 
 Notice that the result has only three columns, unlike the many columns in the
@@ -1607,6 +1606,98 @@ mean(c(NA, NA, NA))
 
 :::
 
+---
+
+`summarize()` is even more powerful than that because we can compute many
+different things at the same time, for each group! The next exercise is an
+example of that.
+
+---
+
+**As you know, the mean is computed as a sum of a set of values divided
+by their count. Use the `group_by()` and `summarize()` code we used above,
+but instead of computing the `mean()` directly, compute it manually by doing
+(in a `summarize()` call):**
+
+1. **`sum_coverage = sum(coverage)`** (the sum of coverages for each group),
+2. **`n = n()`** (the number of values in each group),
+3. **`mean_coverage = sum_coverage / n`** (using the two quantities just computed to calculate the mean)
+
+**To make things a little tidier, `arrange()` the results by the column
+`mean_coverage`.**
+
+**Once you have your results, save this new table in a variable called
+`df_summary`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df_summary <-
+  df %>%
+  group_by(continent, set) %>%
+  summarize(
+    sum_coverage = sum(coverage),
+    n = n(),
+    mean_coverage = sum_coverage / n
+  ) %>%
+  arrange(mean_coverage)
+
+df_summary
+```
+
+:::
+
+---
+
+**Look up the function `?ungroup`. Why is it useful?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Although grouping is very useful for computing summary statistics across
+groups of values, we often need to discard the grouping because we might
+want to continue working with the summarized table we obtained with
+other _tidyverse_ functions without working on the pre-defined groups.
+For instance, we might want to follow up a `summarize()` operation with
+a `mutate()` operation, without working with groups.
+
+:::
+
+---
+
+### `slice_` functions
+
+We have five "slicing" functions at our disposal, each of which extracts
+specific row(s) from each defined group. These functions are:
+
+- `slice_head(n = 1)` takes the first row,
+- `slice_tail(n = 1)` takes the last row,
+- `slice_min(<column>, n = 1)` takes the row with the smallest value of <column>,
+- `slice_max(<column>, n = 1)` takes the row with the largest value of <column>,
+- `slice_sample(<col> = 1)` takes one random row.
+
+---
+
+**What is the lowest coverage individual in each group? While you're doing
+this, `filter()` out the `set` of "Modern" individuals because they are not
+meaningful anyway (they have `NA` coverages). At the end of your `%>%`
+pipeline, pipe your results into `relocate(continent, set)` to make everything
+even tidier. Look up `?relocate` to find out what this function does, if you're
+not sure from the output.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>%
+  filter(set != "Modern") %>%
+  group_by(continent, set) %>%
+  slice_min(coverage, n = 1) %>%
+  relocate(continent, set)
+```
+
+:::
 
 ## Exercise 13: Writing (and reading) tables
 
