@@ -48,8 +48,8 @@ df <- read_tsv("https://tinyurl.com/qwer-asdf")
 #| echo: false
 # remove unnecessary columns from the original metadata
 # df <- df %>%
-#   # select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA, flag)) %>%
-#   filter(!is.na(sex), sex %in% c("XX", "XY")) %>%
+#   select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA, flag)) %>%
+#   filter(sampleId != "K1") %>% # 
 #   write_tsv("files/tidy/metadata.tsv")
 ```
 
@@ -1184,8 +1184,7 @@ This function is extremely useful whenever we need to generate values of a new
 column based on values of another column(s). The general pattern for using
 it inside a `mutate()` call is this:
 
-```{r}
-#| eval: false
+```
 df %>%
   mutate(<new_column> = if_else(<logical vector>, true_value, false_value))
 ```
@@ -1466,8 +1465,140 @@ table(df$region, df$continent)
 
 :::
 
+---
+
+**Remember how we removed the `group` column, which originally contained
+values "Modern", "Ancient", or "Archaic", depending on whether the individual
+was a present-day modern human, ancient modern human, or an archaic individual,
+respectively? Use what you learned in this exercise on `if_else()` or
+`case_when()` to reconstruct this column again based on information in the
+remaining columns.** (There is many possible solutions, so don't be afraid
+to think creatively!)
+
+**Hint:** Using information in `age` and the names of the three archaic
+individuals (combined with the `.default` argument of `case_when()`
+is probably the easiest solution).
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+# let's pick out individual names of the archaics
+archaics <- c("Vindija33.19", "AltaiNeandertal", "Denisova")
+
+df <-
+  df %>%
+  mutate(group = case_when(
+    age == 0 ~ "Modern",
+    sample %in% archaics ~ "Archaic",
+    .default = "Ancient"
+  ),
+  .after = coverage)
+```
+
+:::
+
+---
+
+**Note the use of `.after =` in my solution to the previous exercise. Look up
+the help of `mutate()` in `?mutate` to see what it does and why I used it.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Usually, when we add a new column using `mutate()` we don't want to add it to
+the very end of the table (where we cannot see it), which is what the function
+does by default. `.after` and `.before` are options which allow us to specify
+where among the already present columns in the data frame do we want to add
+the new column
+
+:::
+
+
 
 ## Exercise 12: Summarizing tables
+
+You have already learned how to operate on rows (`filter()`, `arrange()`),
+columns (`select()`, `rename()`), and both (`mutate()`). We have one remaining
+piece of the puzzle and that is operating on _groups of rows_. This takes
+the _tidyverse_ functionality to an entire whole level and allows you to do
+many more powerful things with tabular data and compute summary statistics.
+In this section, we will will cover the functions `group_by()`, `summarize()`,
+and various "slice functions".
+
+### `group_by()`
+
+**Take a look at the first couple of rows of our data again:**
+
+```{r}
+df
+```
+
+**Now run the following code in your R console and carefully inspect the
+output (and compare it to the result of the previous command):**
+
+```{r}
+group_by(df, continent)
+```
+
+You can probably see that the data hasn't changed at all (same number of
+columns, same number of rows, all remains the same), but you can notice
+a new piece of information in the output:
+
+```
+[...]
+# Groups:   continent [4]
+[...]
+```
+
+The output says that the data has been grouped by the column/variable continent.
+This means that any subsequent operation will be applied not to individual
+rows, like it was with our `mutate()` operations earlier, but they will
+now work "per continent". You can imagine this as the `group_by()` function
+adding a tiny bit of invisible annotation data which instructs downstream
+functions to work per group.
+
+Before we move on to computing summary statistics, let's also note that we
+can, of course, group based on multiple columns. For instance, in our data,
+we should probably not summarize based on continent but also on age, splitting
+individuals based on the broad age groups like this:
+
+```{r}
+group_by(df, continent, group)
+```
+
+
+### `summarize()`
+
+Why is grouping useful? The most simple use case is computing summary statistics
+on the data on a "per group" basis using the `summarize()` functions. This
+function works a little bit like `mutate()`. For instance, we could compute
+the mean coverage of each individual in a group like this, and arrange the
+groups by the coverage available:
+
+```{r}
+df %>%
+  group_by(continent, group) %>%
+  summarize(mean_coverage = mean(coverage, na.rm = TRUE)) %>%
+  arrange(desc(mean_coverage))
+```
+
+Notice that the result has only three columns, unlike the many columns in the
+original `df` table! We have a column for each variable we grouped over, and
+we have the new column with our summary statistic.
+
+---
+
+**What does the `NaN` value for "Modern" individuals in the output of the
+previous code chunk? Take a look at the original data `df` to answer this
+question.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+
+
+
 
 ## Exercise 13: Writing (and reading) tables
 
