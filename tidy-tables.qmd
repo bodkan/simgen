@@ -1579,7 +1579,7 @@ groups by the coverage available:
 ```{r}
 df %>%
   group_by(continent, group) %>%
-  summarize(mean_coverage = mean(coverage, na.rm = TRUE)) %>%
+  summarize(mean_coverage = mean(coverage)) %>%
   arrange(desc(mean_coverage))
 ```
 
@@ -1589,15 +1589,23 @@ we have the new column with our summary statistic.
 
 ---
 
-**What does the `NaN` value for "Modern" individuals in the output of the
+**What does the `NA` value for "Modern" individuals in the output of the
 previous code chunk? Take a look at the original data `df` to answer this
 question.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+The reason is simple -- the present-day individuals are high quality imputed
+genotypes, which is why the sequencing coverage column is full of `NA` (not
+available, i.e., missing data) values. Computing a mean of such values is,
+itself, an `NA` value too:
 
+```{r}
+mean(c(NA, NA, NA))
+```
 
+:::
 
 
 ## Exercise 13: Writing (and reading) tables
