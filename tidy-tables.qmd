@@ -40,7 +40,17 @@ the file itself, just paste the URL address in your browser.)
 
 ```{r}
 #| message: false
-df <- read_tsv("https://tinyurl.com/qwe-asd-zxc")
+df <- read_tsv("https://tinyurl.com/qwer-asdf")
+```
+
+```{r}
+#| eval: false
+#| echo: false
+# remove unnecessary columns from the original metadata
+# df <- df %>%
+#   # select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA, flag)) %>%
+#   filter(!is.na(sex), sex %in% c("XX", "XY")) %>%
+#   write_tsv("files/tidy/metadata.tsv")
 ```
 
 ---
@@ -697,16 +707,14 @@ _tidyverse_ way of doing data science.
 **Hint:** What I mean by this is that the following two commands produce
 the exact same result:
 
-```{r}
-#| eval: FALSE
+```
 new_df1 <- filter(df, col1 == "MatchString", col2 > 10000, col3 == TRUE) %>%
   select(colX, colY, starts_with("ColNamePrefix"))
 ```
 
 And doing this instead:
 
-```{r}
-#| eval: FALSE
+```
 new_df1 <- df %>%
   filter(col1 == "MatchString") %>%
   filter(col2 > 10000) %>%
@@ -873,14 +881,14 @@ all the way to the last column in your table).**
 #### Click to see the solution
 
 ```{r}
-df %>% select(-(region:shape))
+df %>% select(-(region:hgYMinor))
 ```
 
 I was personally a bit surprised that this also works without the parentheses.
 R is smart!
 
 ```{r}
-df %>% select(-region:-shape)
+df %>% select(-region:-hgYMinor)
 ```
 :::
 
@@ -899,8 +907,7 @@ After discussing `select()` and `filter()`, let's introduce another member of th
 The template for using it is again very easy (again, you would replace
 the text in `<here>` with appropriate symbols):
 
-```{r}
-#| eval: false
+```
 rename(<data frame>, <new name> = <old name>)
 ```
 
@@ -980,8 +987,7 @@ We already know that we can use `select()` to pick those columns of interest,
 but this removes the non-selected columns from the data frame we get. Whenever
 we want to retain them, we can add the call to `everything()`, like this:
 
-```{r}
-#| eval: false
+```
 select(<data frame>, <column 1>, <column 2>, ..., everything())
 ```
 
@@ -1028,16 +1034,14 @@ of the consistency across the _tidyverse_ ecosystem, it follows exactly
 the same format of first giving the function a data frame to operate on,
 followed by a list of columns to sort by.
 
-```{r}
-#| eval: false
+```
 arrange(<data frame>, <column 1>, <column 2>, ...)
 ```
 
 **Note:** When you want to reverse the order of the sort, you can surround the
 column name in a helper function `desc()` (standing for "descending").**
 
-```{r}
-#| eval: false
+```
 arrange(<data frame>, desc(<column 1>), desc(<column 2>), ...)
 ```
 
@@ -1108,6 +1112,359 @@ df %>% arrange(coverage, country)
 not? Think about the amount of work these functions have to do.**
 
 
+## Exercise 10: Mutating tables
+
+Mutating a table means adding a column for a new variable. Again, as with
+the previously introduced functions `select()`, `filter()`, and `rename()` and
+`arrange()`, it follows a consistent _tidyverse_pattern:
+
+```
+df %>% mutate(<new column name> = <vector of the required length>)
+```
+
+Not surprisingly, the new column is assigned a vector of the same length
+as the number of rows in a data frame. What we often do is this:
+
+```
+df %>% mutate(<new column name> = <expression involving other columns>)
+``` 
+
+because `mutate()` allows us to refer to other columns in the data frame
+already present.
+
+**To demonstrate this on a couple of exercises, let's actually _remove_ some
+columns from our data frame first. They were originally created by `mutate()`
+in the first place and this gives as a useful opportunity for practice:**
+
+```{r}
+df <- select(df, -group)
+```
+
+Don't worry, we'll be adding them back soon using our custom code.
+
+The important aspect of mutate is that it is a _vectorized_ operation. We can't
+create a column and give values to only some rows. Here are several ways how
+we could do this:
+
+### 1. `if_else()`
+
+`if_else()` accepts a logical vector (i.e., a vector of `TRUE` / `FALSE` values),
+and produces another vector which contains one value for each `TRUE`, and another
+value for each `FALSE`. Here is an example:
+
+```{r}
+v <- c(TRUE, TRUE, FALSE, TRUE, FALSE)
+
+if_else(v, 1, -1)
+```
+
+Notice that we get 1 for each `TRUE` and -1 for each `FALSE`.
+
+---
+
+**This can be a bit confusing, so spend a bit of time playing around with
+`if_else()`. For instance, create a different logical vector, and have
+the function produce values "hello" and "bye" depending on `TRUE` / `FALSE`
+state of each element. Just get familiar with this vectorized thinking.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+v <- c(FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE)
+
+if_else(v, "hello", "bye")
+```
+
+:::
+
+---
+
+This function is extremely useful whenever we need to generate values of a new
+column based on values of another column(s). The general pattern for using
+it inside a `mutate()` call is this:
+
+```{r}
+#| eval: false
+df %>%
+  mutate(<new_column> = if_else(<logical vector>, true_value, false_value))
+```
+
+---
+
+**You can see that the column `sex` contains chromosome sex determination of
+each individual as either `XY` or `XX`. Create a new column `sex_desc` which
+will contain a character vector of either "male" or "female" depending on the
+sex chromosome determination.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df <- mutate(df, sex_desc = if_else(sex == "XY", "male", "female"))
+```
+
+:::
+
+---
+
+**Run `table(df$sex, df$sex_value)` to make sure the assignment of sex
+description worked as expected. How do you interpret the results? Did
+we miss something? If we did, what is wrong?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+table(df$sex, df$sex_desc)
+```
+
+We could've noticed this in our exploratory phased, had we checked the
+range of possible values of the `sex` column like this:
+
+```{r}
+table(df$sex)
+unique(df$sex)
+```
+
+:::
+
+---
+
+It turns out there is an individual with a
+[Klinefelter syndrome](https://en.wikipedia.org/wiki/Klinefelter_syndrome). A
+male carrying an extra X chromosome. **Clearly the logic of our `if_else()`
+is incorrect because this individual was incorrectly assigned as "female".
+How would you fix the `mutate()` command to work correctly?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+There are a number of options. This is simplest, we can just flipe the condition:
+
+```{r}
+df <- mutate(df, sex_desc = if_else(sex == "XX", "female", "male"))
+```
+
+But it may be better to be more explicit?
+
+```{r}
+df <- mutate(df, sex_desc = if_else(sex %in% c("XY", "XXY"), "male", "female"))
+```
+
+We can verify that the assignment of sex description worked correctly now:
+
+```{r}
+table(df$sex, df$sex_desc)
+```
+
+:::
+
+Always remember to check assumptions in your data, even the ones you consider
+trivial. Functions such as `table()` and `unique()` are extremely useful for this.
+
+---
+
+**Let's practice `if_else()` a bit more. First, use `filter()` to look at
+the values of the `age` column for present-day individuals in the 1000 Genomes
+Project data (`dataSource == "1000g"). What ages do you see?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+The individuals have `NA` age. This could be annoying if we ever want to plot
+some population genetic statistics as functions of age:
+
+```{r}
+df %>% filter(dataSource == "1000g")
+```
+
+:::
+
+**You already know that you can get a logical vector indicating whether a certain
+element of another vector (here, the column `age`) is `NA` or not via the
+function `is.na()`. Use `is.na(age)` in the `if_else()` to set the `age`
+column with the `mutate()` function so that:**
+
+1. **Rows where `is.na(age)` is `TRUE` are set to 0, and**
+2. **Rows where `is.na(age)` is `FALSE` are set to `age` (because those values
+don't need to be replaced)**.
+
+**Note:** Using `mutate()` to replace values of an existing column (rather than
+creating a new column) is done very often in data science, particularly in 
+"clean up" operations like this one.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+The individuals have `NA` age. This could be annoying if we ever want to plot
+some population genetic statistics as functions of age:
+
+```{r}
+df <- df %>% mutate(age = if_else(is.na(age), 0, age))
+```
+
+:::
+
+
+
+### 2. `case_when()`
+
+`if_else()` does only work on binary `TRUE` or `FALSE` conditions. But what
+if we want to create a new column with values of multiple categories, not
+just two. Recall our original column `group`, which had values either "Archaic",
+"Ancient", or "Modern".
+
+For this purpose, `case_when()` is perfect. It works in a very similar
+manner to `if_else()`. Consider this vector of numbers between 1 and 30:
+
+```{r}
+v <- 1:20
+```
+
+If we wanted to assign a value "less_than_10" or "10_or_more" to each element,
+we could use the function `if_else()` like this:
+
+```{r}
+if_else(v < 10, "less than 10", "10 or more")
+```
+
+What if we want to introduce three or more categories? `case_when()` to the
+rescue!
+
+```{r}
+case_when(
+  v < 10  ~ "less than 5",
+  v == 10 ~ "exactly 10",
+  v > 10 ~ "more than 10"
+)
+```
+
+Remember how we had a slightly annoying time with doing vectorized conditional
+logical expressions on `TRUE` / `FALSE` vectors? Now it's all paying off!
+Every one of the three conditions actually result in a logical vector,
+and `case_when()` decides which value to produced for each element of that
+vector based on whichever results in `TRUE`
+
+The `case_when()` function has a very useful optional argument called `.default =`,
+which determines the value it should return whenever a particular location
+in the logical vector either results in all `FALSE` (so none of the conditions
+would apply), or whenever it produces a `NA` value (so none of the conditions
+can apply even in principle).
+
+**First, let's start simple and reimplement the `mutate()` operation to
+add the `sex_desc` column again, this time using `case_when()` and implementing
+the three conditions ("XX", "XY", "XXY") individually. Additionally, use the
+`.default =` argument of `case_when()` to assign "unknown" as a value of
+the `sex_desc` column.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df <-
+  df %>%
+  mutate(sex_desc = case_when(
+    sex == "XX" ~ "female",
+    sex == "XY" ~ "male",
+    sex == "XXY" ~ "male",
+    .default = "unknown"
+  ))
+```
+
+Let's check that this worked correctly:
+
+```{r}
+table(df$sex, df$sex_desc)
+```
+
+
+:::
+
+---
+
+**The `region` column contains the following values:**
+
+```{r}
+unique(df$region)
+```
+
+**Here are these vectors encoded as lists, one element of the list corresponding
+to a continent. Copy this in your code:**
+
+```{r}
+continents <- list(
+  Africa = c("WestAfrica", "EastAfrica", "SouthAfrica", "CentralAfrica", "NorthAfrica"),
+  Asia = c("SouthAsia", "SouthEastAsia", "EastAsia", "WesternAsia", "CentralAsia", "NorthAsia"),
+  America = c("NorthAmerica", "SouthAmerica"),
+  Europe = c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope"
+)
+)
+```
+
+**Use your knowledge of the `%in%` operator (introduced in the R bootcamp
+exercise on indexing using logical vectors) and the fact that you can
+get an element of a named list such as `continents$Africa`, to create
+a new column called `continent` using the `case_when()` function.**
+
+**Hint:** As a remined, this is how you can use the `%in%` operator to test
+whether any given element of a vector is a member of another vector (which
+can be used as a condition in `case_when()`, remember!). So, the general
+pattern of `case_when()` that you would use inside a `mutate()` call would
+be this:
+
+```
+case_when(
+  region %in% continents$"<continent name>") ~ "<continent name>",
+  ...
+)
+```
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+As a reminder, this is how we can get a `TRUE` / `FALSE` vector of whether
+a given element of the `region` column matches one of the continents in our
+named list (let's just look at five results to avoid listing thousands of items):
+
+```{r}
+head(df$region %in% continents$Africa, 5)
+```
+
+This is then how we can use this in a `case_when()` function:
+
+```{r}
+df <-
+  df %>%
+  mutate(continent = case_when(
+    region %in% continents$Africa ~ "Africa",
+    region %in% continents$Asia ~ "Asia",
+    region %in% continents$America ~ "America",
+    region %in% continents$Europe ~ "Europe",
+  ))
+```
+
+:::
+
+---
+
+**Use the `table()` function on the `region` and `continent` columns of `df` to
+make sure we didn't miss an item as we did with the `sex_desc` above.**
+
+**Note:** Always do these kinds of little sanity checks when doing transformations
+of your data. A little bug can always creep in and really break your analysis.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+No region has a zero in all continents, so each region is assigned to a continent:
+
+```{r}
+table(df$region, df$continent)
+```
+
+:::
 
 
 ## Exercise 12: Summarizing tables
