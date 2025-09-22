@@ -1,22 +1,24 @@
 # Working with tables
 
-Before we begin, let's introduce the two important parts of the _tidyverse_
+## Packages introduced in this session
+
+Before we begin, let's introduce the a couple of crucial parts of the _tidyverse_
 ecosystem, which we will be using extensively during exercises in this chapter.
 
 1. [_dplyr_](https://dplyr.tidyverse.org) is a centerpiece of the entire R data science universe, providing
 important functions for data manipulation, data summarization, and filtering
 of tabular data;
 
-2. [_tidyr_](https://tidyr.tidyverse.org) is an R package which helps us morph untidy data into tidy data frames;
+2. [_tidyr_](https://tidyr.tidyverse.org) helps us morph untidy data into tidy data frames;
 
-3. [_readr_](https://readr.tidyverse.org) is an R package which provides very convenient functions for reading
+3. [_readr_](https://readr.tidyverse.org) provides very functions for reading
 (and writing) tabular data. Think of it as a set of better alternatives to
 base R functions such as `read.table()`, etc. (Another very useful package
 is [_readxl_](https://readxl.tidyverse.org) which is useful for working with
 Excel data).
 
-Every single script you will be writing in this session will begin with these
-two lines of code.
+**Every single script you will be writing in this session will begin with these
+three lines of code.**
 
 ```{r}
 #| message: false
@@ -25,13 +27,18 @@ library(tidyr)
 library(readr)
 ```
 
+## Our example data set
+
 Let's also introduce a second star in this session, our example data set.
 The following command will read a metadata table with information about
 individuals published in a recent aDNA paper on the history or the Holocene in
 West Eurasia, dubbed "MesoNeo"
-([reference](https://www.nature.com/articles/s41586-023-06865-0)).
-We use the `read_tsv()` function (from the above-mentioned _readr_ package)
-and store it in a variable `df`. Everything in the section on _tidyverse_ will
+([reference](https://www.nature.com/articles/s41586-023-06865-0)). Feel free
+to skim the paper to get an idea. If you work with anything related to human
+history, you'll become closely familiar with this study.
+
+**We use the `read_tsv()` function (from the above-mentioned _readr_ package)
+and store it in a variable `df`.** Everything in these exercises will
 revolve around working with this data because it represents an excellent
 example of this kind of metadata table you will find across the entirety of
 computational population genomics. (Yes, this function is quite magical -- it
@@ -59,13 +66,13 @@ df <- read_tsv("https://tinyurl.com/qwer-asdf")
 **In addition to the brief overview from the slides for this exercise session
 and looking up documentation to functions via R's `?` help system,
 I highly encourage you to refer to [this](https://r4ds.hadley.nz/data-transform.html)
-chapter of the _R for Data Science_ text book. I keep this book at hand every
-time I work with R.**
+chapter of the _R for Data Science_ text book.** I keep this book at hand every
+time I work with R.
 
 ---
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
-save it somewhere on your computer as `tidy-tables.R` (`File` -> `Save`). Put
+save it somewhere on your computer as `tidy-tables.R` (`File` `->` `Save`). Put
 the `library()` calls and the `read_tsv()` command above in this script, and
 let's get started!**
 
@@ -74,22 +81,32 @@ let's get started!**
 ## A selection of data-frame inspection functions
 
 Whenever you get a new source of data, like a table from a collaborator, data
-sheet downloaded from supplementary materials of a paper, you need to familiarize
-yourself with it before you do anything else. Here is a list of functions that
-you will be using constantly when doing data science to answer basic questions:
-Use this list as a cheatsheet of sorts! **Also, use `?<function>` to look up
-their documentation to see the possibilities for options and additional features.**
+sheet downloaded from supplementary materials of a paper (our situation in
+this session!), you need to familiarize
+yourself with it before you do anything else.
+
+Here is a list of functions that
+you will be using constantly when doing data science to answer the following
+basic questions about your data.
+
+**Note:** Use this list as a cheatsheet of sorts! Also, **don't forget to use the
+`?function` command in the R console to look up the documentation to see
+the possibilities for options and additional features, or even just to
+refresh your memory. Every time I look up the `?` help for a function I've
+been using for decade, I always learn new tricks.** 
 
 1. _"How many observations (rows) and variables (columns) does my data have?"_ -- `nrow()`, `ncol()`
 
-2. _"What variable (column) names am I going to be working with?"_ -- `colnames()`
+2. _"What variable names (columns) am I going to be working with?"_ -- `colnames()`
 
 3. _"What data types (numbers, strings, logicals, etc.) does it contain?"_ -- `str()`, or better, `glimpse()`
 
-4. _"How can I take a quick look at a subset of the data?"_ -- `head()`, `tail()`
+4. _"How can I take a quick look at a subset of the data (first/last couple of
+rows)?"_ -- `head()`, `tail()`
 
 5. _"For a specific variable column, what is the distribution of values I can
-expect in that column?"_ -- `table()` for "discrete types", `summary()` for
+expect in that column?"_ -- `table()` for "categorical types" (types which take
+only a couple of discrete values), `summary()` for
 "numeric types", `min()`, `max()`, `which.min()`, `which.max()`
 
 ---
@@ -106,18 +123,12 @@ data frames.**
 
 ## Exercise 1: Exploring new data
 
-**Inspect the `df` metadata using the functions above, and try to answer the
-following questions using the functions from the list above (you should decide
-which will be appropriate for which question).**
-
----
-
-**Before you use one of these functions for the first time, take a moment to
+1. **Inspect the `df` metadata table using the functions above, and try to
+answer the following questions using the functions from the list above
+(you should decide which will be appropriate for which question). Before you use one of these functions for the first time, take a moment to
 skim through its `?function_name`.**
 
----
-
-1. **How many individuals do we have metadata for?**
+**How many individuals do we have metadata for?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -136,9 +147,7 @@ length(unique(df$sampleId))
 ```
 :::
 
----
-
-2. **What data types do the variables in our data have?**
+**What variables (i.e., columns) do we have in our data?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -150,15 +159,14 @@ colnames(df)
 ```
 :::
 
----
-
-3. **What data types (numbers, strings, logicals, etc.) are our variables of?**
+**What data types (numbers, strings, logicals, etc.) are our variables of?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 I tend to use `str()` because I'm old and very used to it, but `glimpse()`
-is new and better.
+is new and better. You can see the data types in the second column after `:`.
+("chr" -- character, "num" -- numeric, etc., "dbl" -- double).
 
 ```{r}
 str(df)
@@ -167,11 +175,10 @@ glimpse(df)
 ```
 :::
 
----
-
-4. **What is the distribution of dates of aDNA individuals? What are the variables
-we have that describe the ages (maybe look at those which have "age" in their name)?
-Which one would you use to get information about the ages of most individuals?**
+**What are the variables we have that describe the ages (maybe look at those
+which have "age" in their name)? Which one would you use to get information
+about the ages of most individuals and why? What is the distribution of dates
+of aDNA individuals?**
 
 **Hint:** Remember that for a column/vector `df$<variable>`, `is.na(df$<variable>)`
 gives you `TRUE` for each `NA` element in that column variable, and
@@ -186,11 +193,18 @@ todo with "age":
 
 ```{r}
 columns <- colnames(df)
+columns
+```
 
-# don't worry about this weird command, I'm using it to show you the relevant columns
-# -- ask me if you're interested! :)
+We can get those precisely using this trick (don't worry about this weird
+command, I'm using it to show you the relevant columns -- I'm happy to explain
+if you're interested!):
+
+```{r}
 grep("^age.*|^.*Age$", columns, value = TRUE)
 ```
+
+Now let's take a look at the values available in each of them:
 
 ```{r}
 mean(!is.na(df$age14C))
@@ -209,26 +223,45 @@ regarding a date of an individual.
 
 :::
 
----
-
-4. **How many ancient individuals do we have? How many "modern" (i.e., present-day
+**How many ancient individuals do we have? How many "modern" (i.e., present-day
 humans) individuals?**
 
 **Hint:** Use the fact that for any vector (and `df$groupAge` is a vector,
 remember!), we can get the number of elements of that vector matching a certain
 value by applying the `sum()` function on a "conditional" expression, like
-`df$groupAge == "Ancient"` which, on its own, gives `TRUE` / `FALSE` vector.
+`df$groupAge == "Ancient"` (which, on its own, gives `TRUE` / `FALSE` vector).
+In other words, in a `TRUE` / `FALSE` vector, each `TRUE` represents 1, and
+each `FALSE` represents 0. Obviously then, summing up such vector simply adds
+all the 1s together.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Get logical vector of which individual's `groupAge` value is equal to "Ancient":
+
 ```{r}
 which_ancient <- df$groupAge == "Ancient"
+```
 
+Indeed this gave us a logical vector:
+
+```{r}
 head(which_ancient)
+```
 
+Which is equivalent to 1 and 0 vector under the hood:
+
+```{r}
+head(as.integer(which_ancient))
+```
+
+And this means we can sum it like this:
+
+```{r}
 sum(which_ancient)
 ```
+
+We can do the same for "Modern" and "Archaic" individuals:
 
 ```{r}
 which_modern <- df$groupAge == "Modern"
@@ -241,14 +274,14 @@ sum(which_archaic)
 ```
 :::
 
----
-
-5. **Who are the mysterious "Archaic" individuals (column `groupAge`)?**
+**Who are the mysterious "Archaic" individuals? What are their names (`sampleId`)
+and which publications they come frome (`dataSource`)?**
 
 **Hint:** We need to _filter_ our table down to rows which have
 `groupAge == "Archaic"`. This is an indexing operation which you learned about
 in the R bootcamp session! Remember that data frames can be indexed into along
-two dimensions: rows and columns. You want to filter by the rows here.
+two dimensions: rows and columns. You want to filter by the rows here using
+a logical vector obtained by `df$groupAge == "Archaic"`.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -270,15 +303,20 @@ archaic_df$sampleId
 ```
 
 Our mysterious "Archaic" individuals are two Neanderthals and a Denisovan!
+
+Here are the publications:
+
+```{r}
+archaic_df$dataSource
+```
+
 :::
 
----
-
-6. **Do we have geographical information? Countries or geographical coordinates or
-both? Which countries do we have individuals from? (We'll talk about spatial
-data science later in detail, so let's interpret whatever geographical
-variable columns we have in our data frame `df` as any other numerical or string
-column variable.)**
+**Do we have geographical information in our metadata? Maybe countries or
+geographical coordinates (or even both)? Which countries do we have individuals
+from? (We'll talk about spatial data science later in detail, so let's
+interpret whatever geographical variable columns we have in our data frame
+`df` as any other numerical or string column variable.)**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -287,6 +325,7 @@ Looking at `colnames(df)` we have a number of columns which have something
 to do with geography: `country`, `region`, and also the traditional
 [`longitude` and `latitude` coordinates](https://en.wikipedia.org/wiki/Geographic_coordinate_system#Latitude_and_longitude).
 
+How can we get an idea about the distribution of countries?
 `table()` counts the number of elements in a vector (basically, a histogram
 without plotting it), `sort()` then sorts those elements for easier reading:
 
@@ -303,9 +342,7 @@ useful in truly geographical data analysis setting (which we will delve into
 a bit later).
 :::
 
----
-
-7. **What is the source of the sequences in our data set? Does it look like they
+**What is the source of the sequences in our data set? Does it look like they
 all come from a single study?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -328,19 +365,19 @@ This is great because it allows us to refer individual specific results
 we might obtain later to the respective publications!
 :::
 
----
-
-8. **What's the distribution of coverage of the samples? Compute the `mean()`
+**What's the distribution of coverage of the samples? Compute the `mean()`
 and other `summary()` statistics on the coverage information. Why doesn't
 the `mean()` function work when you run it on the vector of numbers in the
-`coverage` column (use `?mean` to find the solution). Which individuals
-have missing coverage? Finally, use the `hist()` function to visualize this
-information.**
+`coverage` column (i.e, `df$coverage`, use `?mean` to find the solution).
+Which individuals have missing coverage? Finally, use the `hist()` function
+to visualize this information to get a rough idea about the data.**
 
 These are all basic questions which you will be asking yourself _every time_
-you read a new table into R. It might not be coverage, but you will have
+you read a new table into R. It might not always be coverage, but you will have
 to do this to familiarize yourself with the data and understand its potential
-issues!
+issues! **Always keep an eye on strange outliers, missing data `NA`, anything
+suspicious. Never take any data for granted (that applies both to data from
+any third parties, but even to your own data sets!).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -382,12 +419,11 @@ hist(df$coverage, breaks = 100)
 
 :::
 
----
-
-9. **Who is the oldest individuals in our data set? Who has the highest
+**Who is the oldest individuals in our data set? Who has the highest
 coverage? Who has the lowest coverage?**
 
-**Hint:** Use functions `min()`, `max()`, `which.min()`, `which.max()`. Look
+**Hint:** Use functions `min()`, `max()` or `which.min()`, `which.max()`.
+When would you use each of the pair of functions? Look
 up their `?help` to understand what they do and how to use them in this context.
 
 ::: {.callout-note collapse="true" icon=false}
@@ -420,8 +456,6 @@ max(df$coverage, na.rm = TRUE)
 
 :::
 
----
-
 
 ## Exercise 2: Selecting columns
 
@@ -429,7 +463,7 @@ Often times we end up in a situation in which we don't want to have a large
 data frame with a huge number of columns. Not as much for the reasons of
 the data taking up too much memory, but for convenience. You can see that
 our `df` metadata table has `r ncol(df)` columns, which don't fit on the
-screen if we just print it out:
+screen if we just print it out (note the "13 more variables" in the output):
 
 ```{r}
 df
@@ -443,8 +477,8 @@ the following general format:
 select(<data frame>, <column 1>, <column 2>, ...)
 ```
 
-This is how we would select columns using a normal base R subsetting/indexing
-operation:
+As a reminder, this is how we would select columns using a normal base R
+subsetting/indexing operation:
 
 ```{r}
 df[, c("sampleId", "region", "coverage", "ageAverage")]
@@ -462,12 +496,16 @@ quotes for every data-frame operation (like with base R) is incredibly convenien
 
 ---
 
-**Practice `select()` by creating three new data frame objects:**
+**Practice `select()` by creating three new data frame objects (remember
+that you can assign a value to a variable using the `<-` operator):**
 
 1. Data frame `df_ages` which contains all variables related to sample ages
 2. Data frame `df_geo` which contains all variables related to geography
 
-The first column of these data frames should always be `sampleId`
+Additionally, the first column of these data frames should always be `sampleId`.
+
+**Check visually (or using the `ncol()` functions) that you indeed have a
+smaller number of columns in your new data frames.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -484,11 +522,12 @@ df_geo
 
 :::
 
----
+**Note:** `select()` allows us to see the contents of columns of interest much 
+easier. For instance, in a situation in which we want to analyse the
+geographical location of samples, we don't want to see columns unrelated to
+that -- `select()` helps here.
 
-Note that `select()` allows us to see the contents of columns of interest much easier.
-In a situation in which we want to analyse the geographical location of samples,
-we don't want to see columns unrelated to that -- `select()` helps here.
+---
 
 If your tables has many columns of interest, typing them all by hand can become
 tiresome real quick. **Here are a few helper functions which can be very useful
@@ -505,16 +544,10 @@ modify our `select()` "template" above, we could do this, for instance:
 select(<data frame object or tibble>, starts_with("text1"), ends_with("text2"))
 ```
 
----
-
-**Check out the `?help` belonging to those functions. Note that they have
-`ignore.case = TRUE` set by default! It will become important soon!**
-
----
-
-**Create the `df_ages` table again, with the same criteria, but use the
-three helper functions listed above. How many different ways of using them
-can you come up with to arrive at the same result?**
+**Check out the `?help` belonging to those functions (note that they have
+`ignore.case = TRUE` set by default!). Then create the `df_ages` table again,
+just like earlier, with the same criteria, but use the
+three helper functions listed above.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -531,13 +564,11 @@ df_ages2 <- select(df,
 
 :::
 
----
-
 ## Exercise 3: Filtering rows
 
 In the chapter on base R, we learned how to filter rows using the indexing
 operation along the row-based dimension of (two-dimensional) data frames.
-For instance, in order to find out which individuals in the metadata are archaic,
+For instance, in order to find out which individuals in the metadata are archaics,
 we first created a `TRUE` / `FALSE` vector of the rows corresponding to those
 individuals like this:
 
@@ -562,8 +593,8 @@ if we want to find only archaic individuals older than 50000 years?
 
 One option would be to create multiple `TRUE` / `FALSE` vectors, each
 corresponding to one of those conditions, and then join them into a single
-logical vector by combining `&` and `|` logical operators. For example, we
-could do this:
+logical vector by combining `&` and `|` logical operators like you did
+in the previous chapter on logical expressions. For example, we could do this:
 
 ```{r}
 # who is archaic in our data?
@@ -584,11 +615,11 @@ is very error prone. Imagine having to do this for many more conditions!
 The `filter()` function from _tidyverse_ fixes all of these problems.
 
 We can rephrase the example situation with the archaics to use the new
-function like this:
+function `filter()` like this:
 
 ```{r}
 #| results: hide
-filter(df, groupAge == "Archaic", ageAverage > 50000)
+filter(df, groupAge == "Archaic" & ageAverage > 50000)
 ```
 
 I hope that, even if you never really programmed much before, you appreciate
@@ -596,10 +627,17 @@ that this single command involves very little typing and is immediately
 readable, almost like this English sentence:
 
 > _"Filter the data frame `df` for individuals in which column `groupAge`
-is "Archaic", and who are older than 50000 years"_.
+is "Archaic" and who are older than 50000 years"_.
 
 Over time you will see that all of _tidyverse_ packages follow these
 ergonomic principles.
+
+**Here is the most crucial thing for you to remember! Notice that we refer
+to columns of our data frame `df` (like the columns `groupAge` or `ageAverage`
+right above) as if they were normal variables! In any _tidyverse_ function
+we don't write `"groupAge"`, but simply `groupAge`!** When you start, you'll
+probably make this kind of mistake quite often. So this is a reminder to
+keep an eye for this.
 
 ---
 
@@ -624,11 +662,11 @@ individuals have `coverage` higher than 10?**
 #### Click to see the solution
 
 ```{r}
-filter(df, country == "CzechRepublic", coverage > 1)
+filter(df, country == "CzechRepublic" & coverage > 1)
 ```
 
 ```{r}
-filter(df, country == "CzechRepublic", coverage > 10)
+filter(df, country == "CzechRepublic" & coverage > 10)
 ```
 
 :::
@@ -643,10 +681,13 @@ The pipe operator, `%>%`, is the rockstar of the _tidyverse_ R ecosystem,
 and the primary reason what makes _tidy_ data workflow so efficient
 and easy to read.
 
-First, what is "the pipe"?: whenever you see something like
-`something `%>%` f()`, you can read it as
+First, what is "the pipe"?: whenever you see code like this:
 
-> _"take **something** and put it as the first argument of f()`".
+> `something `%>%` f()`
+
+you can read it as:
+
+> _"take **something** and put it as the first argument of f()`"_.
 
 Why would you want to do this? Imagine some complex data processing operation like this:
 
@@ -691,17 +732,17 @@ provides a built-in shortcut for it:
 ---
 
 **Use your newly acquired `select()` and `filter()` skills, powered by the
-`%>%` piping operator to perform the following transformation on the `df`
+`%>%` piping operator, and perform the following transformation on the `df`
 metadata table (`filter`-ing and `select`-ion operations on the specified columns):**
 
-1. **Filter individuals for:**
+1. First filter individuals for:**
 
-- **"Ancient" individuals (`groupAge`)**
-- **older than 10000 years (`ageAverage`)**
-- **from Italy (`country`)**
-- **with `coverage` higher than 3**
+- "Ancient" individuals (`groupAge`)
+- older than 10000 years (`ageAverage`)
+- from Italy (`country`)
+- with `coverage` higher than 3
 
-2. **Select columns: `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor`
+2. **Then select columns: `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor`
 (mt and Y haplogoups)**.
 
 **As a practice, try to be as silly as you can and write the entire command
@@ -731,9 +772,9 @@ new_df1 <- df %>%
   select(colX, colY, starts_with("ColNamePrefix"))
 ```
 
-_This works because "the thing on the left" (which is always a data frame)
+This works because "the thing on the left" (which is always a data frame)
 is placed by the `%>%` pipe operator as "the first argument of a function
-on the right" (which again expects always a data frame)!_
+on the right" (which again expects always a data frame)!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -801,9 +842,9 @@ write `filter(df, varX < 1 | var X > 10)`.
 chain by filtering our metadata table to find individuals for which the
 following conditions hold:**
 
-- **They are "Ancient" (`groupAge`).**
-- **The `country` is "France" _or_ "Canary Islands".**
-- **Their `coverage` less than 0.1 or more than 3.**
+- They are "Ancient" (`groupAge`).
+- The `country` is "France" _or_ "Canary Islands".
+- Their `coverage` less than 0.1 or more than 3.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -834,8 +875,10 @@ df %>%
 ## Exercise 6: Dropping columns
 
 This one will be easy. If you want to drop a column from a table, just
-prefix it with a minus sign (`-`). Yes, this also works with `starts_with()`
-and its friends above, just put `-` in front of them!
+prefix its name with a minus sign (`-`).
+
+**Note:** Yes, this also works with `starts_with()` and its friends above,
+just put `-` in front of them!
 
 Here's our `df` table again (just one row for brevity):
 
@@ -861,7 +904,7 @@ And this:
 df %>% select(-sampleId, -site, -popId) %>% head(1)
 ```
 
-The given columns are dropped from the resulting table!
+The columns prefixed with `-` are dropped from the resulting table!
 
 Rather than typing out a long list of columns to drop, we can also do this
 to specify the range of consecutive columns:
@@ -905,7 +948,7 @@ df %>% select(-region:-hgYMinor)
 
 ## Exercise 7: Renaming columns
 
-This one is rather simple. Very often you read data frames in which columns
+Very often you read data frames in which columns
 have names which are either very long, containing characters which are not
 allowed, or generally inconvenient. Imagine a situation, in which you
 refer to a particular column very often in your workflow, but it takes too
@@ -922,11 +965,13 @@ rename(<data frame>, <new name> = <old name>)
 
 ---
 
-**Create a new data frame `df_subset`. First `select()` the columns `sampleId`,
-`popId`, `country`, `groupAge`, `ageAverage`, and `coverage`. Then use the
-`rename()` function to give them a shorter name: `sampleId` -> `sample`,
-`popId` -> `population`, `groupAge` -> `set`, `ageAverage` -> `age`. Leave
-the `country` and `coverage` columns as they are.**
+**Create a new data frame `df_subset` by doing the following:**
+
+1. First `select()` the columns `sampleId`, `popId`, `country`, `groupAge`,
+`ageAverage`, and `coverage`.
+
+2. Then use the `rename()` function to give them a shorter name:
+`sampleId` -> `sample`, `popId` -> `population`, `groupAge` -> `set`, `ageAverage` -> `age`. Leave the `country` and `coverage` columns as they are.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -936,6 +981,8 @@ df_subset <-
   df %>%
   select(sampleId, popId, country, groupAge, ageAverage, coverage) %>%
   rename(sample = sampleId, population = popId, set = groupAge, age = ageAverage)
+
+df_subset
 ```
 
 We now have a much cleaner table which is much easier to work with!
@@ -957,6 +1004,8 @@ df_subset <- df %>%
          country,
          set = groupAge, age = ageAverage,
          coverage)
+
+df_subset
 ```
 
 :::
@@ -1018,10 +1067,9 @@ head(df, 3)
 ```
 
 ```{r}
-df <- select(df,  sample = sampleId, population = popId, country,
+df <- select(df, sample = sampleId, population = popId, country,
              set = groupAge, age = ageAverage, coverage,
-             everything()
-)
+             everything())
 ```
 
 Our data frame after:
@@ -1048,7 +1096,7 @@ arrange(<data frame>, <column 1>, <column 2>, ...)
 ```
 
 **Note:** When you want to reverse the order of the sort, you can surround the
-column name in a helper function `desc()` (standing for "descending").**
+column name in a helper function `desc()` (standing for "descending").
 
 ```
 arrange(<data frame>, desc(<column 1>), desc(<column 2>), ...)
@@ -1072,7 +1120,8 @@ df %>% filter(set != "Archaic") %>% arrange(desc(age))
 
 ---
 
-**Similarly, who is the youngest ancient individual in your data?**
+**Similarly, who is the youngest ancient individual in your data in terms
+of its dating?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1174,7 +1223,10 @@ Notice that we get 1 for each `TRUE` and -1 for each `FALSE`.
 **This can be a bit confusing, so spend a bit of time playing around with
 `if_else()`. For instance, create a different logical vector, and have
 the function produce values "hello" and "bye" depending on `TRUE` / `FALSE`
-state of each element. Just get familiar with this vectorized thinking.**
+state of each element. Just get familiar with this vectorized thinking
+because whenever we do data science, it almost always happens in this
+vectorized fashion (such as operating on every single value in a column
+of a table at once).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1200,8 +1252,9 @@ df %>%
 
 ---
 
-**You can see that the column `sex` contains chromosome sex determination of
-each individual as either `XY` or `XX`. Create a new column `sex_desc` which
+**You can see that the column `df$sex` contains chromosome sex determination of
+each individual as either `XY` or `XX`. Use the `if_else()` function in a
+`mutate()` call to create a new column `sex_desc` which
 will contain a character vector of either "male" or "female" depending on the
 sex chromosome determination.**
 
@@ -1223,12 +1276,17 @@ we miss something? If we did, what is wrong?**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Oh, we can see that there's an "XXY" individual who -- because of our
+improperly specified `if_else()` condition (which assigns individuals
+as male only when they are "XY") -- got assigned in to the "female" category.
+
 ```{r}
 table(df$sex, df$sex_desc)
 ```
 
-We could've noticed this in our exploratory phased, had we checked the
-range of possible values of the `sex` column like this:
+We would've noticed this in our exploratory phased, had we checked the
+range of possible values of the `sex` column like this. This is why getting
+familiar with all data is so crucial the first time we look at it.
 
 ```{r}
 table(df$sex)
@@ -1248,7 +1306,7 @@ How would you fix the `mutate()` command to work correctly?**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-There are a number of options. This is simplest, we can just flipe the condition:
+There are a number of options. This is simplest, we can just flip the condition:
 
 ```{r}
 df <- mutate(df, sex_desc = if_else(sex == "XX", "female", "male"))
@@ -1275,7 +1333,7 @@ trivial. Functions such as `table()` and `unique()` are extremely useful for thi
 
 **Let's practice `if_else()` a bit more. First, use `filter()` to look at
 the values of the `age` column for present-day individuals in the 1000 Genomes
-Project data (`dataSource == "1000g"). What ages do you see?**
+Project data (`dataSource == "1000g"`). What ages do you see?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1287,6 +1345,12 @@ some population genetic statistics as functions of age:
 df %>% filter(dataSource == "1000g")
 ```
 
+Is there anyone in the 1000 GP data who has an age specified?
+
+```{r}
+df %>% filter(dataSource == "1000g") %>% filter(!is.na(age))
+```
+
 :::
 
 **You already know that you can get a logical vector indicating whether a certain
@@ -1294,9 +1358,9 @@ element of another vector (here, the column `age`) is `NA` or not via the
 function `is.na()`. Use `is.na(age)` in the `if_else()` to set the `age`
 column with the `mutate()` function so that:**
 
-1. **Rows where `is.na(age)` is `TRUE` are set to 0, and**
-2. **Rows where `is.na(age)` is `FALSE` are set to `age` (because those values
-don't need to be replaced)**.
+1. Rows where `is.na(age)` is `TRUE` are set to 0, and
+2. Rows where `is.na(age)` is `FALSE` are set to `age` (because those values
+don't need to be replaced).
 
 **Note:** Using `mutate()` to replace values of an existing column (rather than
 creating a new column) is done very often in data science, particularly in 
@@ -1360,6 +1424,8 @@ in the logical vector either results in all `FALSE` (so none of the conditions
 would apply), or whenever it produces a `NA` value (so none of the conditions
 can apply even in principle).
 
+---
+
 **First, let's start simple and reimplement the `mutate()` operation to
 add the `sex_desc` column again, this time using `case_when()` and implementing
 the three conditions ("XX", "XY", "XXY") individually. Additionally, use the
@@ -1391,14 +1457,69 @@ table(df$sex, df$sex_desc)
 
 ---
 
-**The `region` column contains the following values:**
+**In the exercise on conditional expressions, you learned about `&` and `|`
+operators which make it possible to combine multiple conditions into a single
+`TRUE` / `FALSE` vector. Of course, this means that the conditions inside
+the `case_when()` function can also utilize those operators.**
+
+**Create a new column `sex_set` which will contain the following values:**
+
+1. `sex == "XX" & age == 0" should produce `"female (present-day)"`,
+2. `(sex == "XY" | sex == "XXY") & age == 0" should produce `"male (present-day)"`,
+3. `sex == "XX" & age > 0" should produce `"female (ancient)"`,
+4. `(sex == "XY" | sex == "XXY") & age > 0" should produce `"male (ancient)"`,
+5. any other combination should default to "other"
+
+**I provided the logical conditions for you, you just have to put them
+in a `case_when()` call appropriately, modifying the solution to the previous
+exercise. Verify the outcome by doing `table(df$sex_set)` again.**
+
+**Why did I put parenthesis around the sub-clause involving the `|` OR operator? 
+What happens if we don't do this?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df <-
+  df %>%
+  mutate(sex_set = case_when(
+    sex == "XX" & age == 0                   ~ "female (present-day)",
+    sex == "XX" & age > 0                    ~ "female (ancient)",
+    (sex == "XY" | sex == "XXY") & age == 0  ~ "male (present-day)",
+    (sex == "XY" | sex == "XXY") & age > 0   ~ "male (ancient)",
+    .default = "other"
+  ))
+```
+
+Let's check that this worked correctly:
+
+```{r}
+table(df$sex_set)
+```
+
+
+:::
+
+
+
+---
+
+**Let's ramp up the difficulty a bit more.
+[Don't panic!](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic) I promise things in _tidyverse_ aren't going to
+get more complicated after this, as far as your day-to-day data science work
+will be concerned.**
+
+**First, let's consider the `region` column which contains the following
+values:**
 
 ```{r}
 unique(df$region)
 ```
 
 **Here are these vectors encoded as lists, one element of the list corresponding
-to a continent. Copy this in your code:**
+to a continent. Copy this in your code (I premade this for you to save you
+some typing):**
 
 ```{r}
 continents <- list(
@@ -1415,7 +1536,7 @@ exercise on indexing using logical vectors) and the fact that you can
 get an element of a named list such as `continents$Africa`, to create
 a new column called `continent` using the `case_when()` function.**
 
-**Hint:** As a remined, this is how you can use the `%in%` operator to test
+**Hint:** As a reminder, this is how you can use the `%in%` operator to test
 whether any given element of a vector is a member of another vector (which
 can be used as a condition in `case_when()`, remember!). So, the general
 pattern of `case_when()` that you would use inside a `mutate()` call would
@@ -1423,7 +1544,7 @@ be this:
 
 ```
 case_when(
-  region %in% continents$"<continent name>") ~ "<continent name>",
+  region %in% continents$"<a continent name>") ~ "<a continent name>",
   ...
 )
 ```
@@ -1431,6 +1552,8 @@ case_when(
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Let's take this step by step.
 
 As a reminder, this is how we can get a `TRUE` / `FALSE` vector of whether
 a given element of the `region` column matches one of the continents in our
@@ -1440,7 +1563,9 @@ named list (let's just look at five results to avoid listing thousands of items)
 head(df$region %in% continents$Africa, 5)
 ```
 
-This is then how we can use this in a `case_when()` function:
+We know that each element of `case_when()` expects a `TRUE` / `FALSE` vector.
+This is then how we can use the logical vector produced using the `%in%`
+operator in a `case_when()` function:
 
 ```{r}
 df <-
@@ -1498,9 +1623,9 @@ archaics <- c("Vindija33.19", "AltaiNeandertal", "Denisova")
 df <-
   df %>%
   mutate(set = case_when(
-    age == 0 ~ "Modern",
-    sample %in% archaics ~ "Archaic",
-    .default = "Ancient"
+    age == 0             ~ "Modern",  # whoever has sampling date 0 is "Modern"
+    sample %in% archaics ~ "Archaic", # whoever is among archaics is "Archaic"
+    .default             = "Ancient"  # and only the third category remains
   ),
   .after = coverage)
 ```
@@ -1533,9 +1658,9 @@ piece of the puzzle and that is operating on _groups of rows_. This takes
 the _tidyverse_ functionality to an entire whole level and allows you to do
 many more powerful things with tabular data and compute summary statistics.
 In this section, we will will cover the functions `group_by()`, `summarize()`,
-and various "slice functions".
+and various associated "slice functions".
 
-### `group_by()`
+### 1. `group_by()`
 
 **Take a look at the first couple of rows of our data again:**
 
@@ -1577,13 +1702,15 @@ group_by(df, continent, set)
 ```
 
 
-### `summarize()`
+### 2. `summarize()`
 
-Why is grouping useful? The most simple use case is computing summary statistics
-on the data on a "per group" basis using the `summarize()` functions. This
-function works a little bit like `mutate()`. For instance, we could compute
-the mean coverage of each individual in a group like this, and arrange the
-groups by the coverage available:
+Why is grouping introduced above even useful? The most simple use case is
+computing summary statistics on the data on a "per group" basis using the
+`summarize()` functions. This function works a little bit like `mutate()`,
+because it creates new columns, but it only creates one row for each group.
+
+For instance, we could compute the mean coverage of each individual in a
+group like this, and arrange the groups by the coverage available:
 
 ```{r}
 df %>%
@@ -1593,7 +1720,9 @@ df %>%
 
 Notice that the result has only three columns, unlike the many columns in the
 original `df` table! We have a column for each variable we grouped over, and
-we have the new column with our summary statistic.
+we have the new column with our summary statistic. Additionally, we only have
+`r group_by(df, continent, set) %>% summarize(mean(coverage)) %>% nrow`
+rows, one row for each combination of `continent` and `set`.
 
 ---
 
@@ -1621,16 +1750,15 @@ mean(c(NA, NA, NA))
 different things at the same time, for each group! The next exercise is an
 example of that.
 
----
-
-**As you know, the mean is computed as a sum of a set of values divided
-by their count. Use the `group_by()` and `summarize()` code we used above,
+**As you know, the mean (such as the `mean_coverage` we computed right above)
+is computed as a sum of a set of values divided
+by their count. Use the `group_by()` and `summarize()` code like we used above,
 but instead of computing the `mean()` directly, compute it manually by doing
 (in a `summarize()` call):**
 
-1. **`sum_coverage = sum(coverage)`** (the sum of coverages for each group),
-2. **`n = n()`** (the number of values in each group),
-3. **`mean_coverage = sum_coverage / n`** (using the two quantities just computed to calculate the mean)
+1. `sum_coverage = sum(coverage)` (the sum of coverages for each group),
+2. `n = n()` (the number of values in each group),
+3. `mean_coverage = sum_coverage / n` (using the two quantities just computed to calculate the mean)
 
 **To make things a little tidier, `arrange()` the results by the column
 `mean_coverage`.**
@@ -1641,16 +1769,19 @@ but instead of computing the `mean()` directly, compute it manually by doing
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Here's our entire pipeline to compute the mean coverage "manually" instead
+of the built-in function `mean()` like we did in the previous exercise:
+
 ```{r}
 df_summary <-
-  df %>%
-  group_by(continent, set) %>%
-  summarize(
-    sum_coverage = sum(coverage),
-    n = n(),
-    mean_coverage = sum_coverage / n
+  df %>%                               # take the data frame df...
+  group_by(continent, set) %>%         # ... group rows on continent and set...
+  summarize(                           # ... and compute for each group:
+    sum_coverage = sum(coverage),      #       1. the sum of all coverage
+    n = n(),                           #       2. the number of coverages
+    mean_coverage = sum_coverage / n   #       3. the mean using 1. and 2.above
   ) %>%
-  arrange(mean_coverage)
+  arrange(mean_coverage)               # ... then sort by average coverage
 
 df_summary
 ```
@@ -1708,6 +1839,23 @@ df %>%
 
 :::
 
+---
+
+**Who is the oldest individual we have available on each continent?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df %>%
+  filter(set != "Modern") %>%
+  group_by(continent) %>%
+  slice_max(age) %>%
+  relocate(continent, set, age)
+```
+
+:::
+
 ## Exercise 13: Writing (and reading) tables
 
 Now that we have our results stored in `df_summary`, let's try writing
@@ -1741,7 +1889,7 @@ unlink("~/Desktop/df_summary.tsv")
 ---
 
 **What are other means of writing files you found in `?write_tsv`? How
-would you read a CSV file into R? What about other file formats?
+would you read a CSV file into R? What about other file formats?**
 
 **Hint:** Look up `?read_csv`.
 
