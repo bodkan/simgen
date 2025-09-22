@@ -1,4 +1,4 @@
-# Data visualization
+# Advanced data science
 
 In this chapter, we will be delving into the data visualization R package
 called [_ggplot2_](https://ggplot2.tidyverse.org). Here is how the start of
@@ -14,13 +14,29 @@ library(ggplot2) # the star of the day!
 library(dplyr)
 library(tidyr)
 library(readr)
+```
 
-df <- read_tsv("https://tinyurl.com/simgen-ibd")
+Let us also read the data which we will be using in these exercises. These
+are coordinates of identity-by-descent segments between pairs of individuals
+in a [huge aDNA study](https://www.nature.com/articles/s41586-023-06865-0)
+we've already talked about.
+
+```{r}
+gz_file <- tempfile()
+download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb")
+ibd_all <- read_tsv(gz_file)
+```
+
+And we also need to read the corresponding metadata, with which you are already
+very closely familiar with:
+
+```{r}
+metadata <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
 save it somewhere on your computer as `tidy-viz.R` (`File` -> `Save`). Copy
-the chunk of code above into it and let's get started!**
+the two chunks of code above into it and let's get started!**
 
 ```{r}
 #| eval: false
@@ -31,3 +47,255 @@ the chunk of code above into it and let's get started!**
 # ibd <- dplyr::select(ibd, sample1, sample2, chrom = chromosome, start = posStart, end = posEnd)
 # readr::write_tsv(ibd, "files/tidy/ibd.tsv.gz")
 ```
+
+---
+
+**As a sanity check, do you have metadata information for every individual in
+the `sample1` and `sample2` columns of the IBD table? What about the other
+way around -- do all individuals in the metadata have some IBD relationship to
+another individual? If not, find out which individuals are these.**
+
+This is another sort of sanity checking you will be doing all the time. We can
+only analyze data for which we have metadata information (population assignment,
+geographical location, dating information), so let's make sure we have what we
+need.
+
+**Hint:** Another way to phrase this question is this: does every name that
+appears in either `sample1` or `sample2` column of `ibd` have a record in the
+`sampleId` column of `metadata`? Remember that you can use the function
+`unique()` to get all unique values in a given vector (as in, all unique
+values in vector `ibd$sample1` which has otherwise many duplicated entries).
+And remember the existence of `%in%` and `!` operators!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We can get unique values across a combination of vectors by first binding
+everything together using `c(ibd$sample1, ibd$sample2)` which gets us a single
+vector, then calling `unique()` on that:
+
+```{r}
+ibd_samples <- unique(c(ibd_all$sample1, ibd_all$sample2))
+
+metadata_samples <- metadata$sampleId
+```
+
+Then we can use our well-known operator `%in%` to check that every sample in
+the IBD data has a representative in the metadata:
+
+```{r}
+all(ibd_samples %in% metadata_samples)
+```
+
+Let's also look at the inverse test:
+
+```{r}
+all(metadata_samples %in% ibd_samples)
+```
+
+Interesting, some individuals don't have any IBD with anybody else. Who are they?
+
+```{r}
+metadata[!metadata_samples %in% ibd_samples, ]
+```
+
+Our individuals are primarily from West Eurasia, so the absence of Denisova-related
+IBDs are perhaps not that surprising. Why doesn't the ancient Danish person have
+any IBD with anyone is interesting, but perhaps not a red flag either.
+
+:::
+
+**`select()` a subset of `metadata` with the following columns and store it in a
+variable `metadata_subset`: `sampleId`, `popId`, `region``, `ageAverage`. Then
+`rename()` `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to `age`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+metadata_subset <- select(metadata, sample = sampleId, pop = popId, region, age = ageAverage)
+```
+
+:::
+
+---
+
+**Just as you did before, use the `mutate()` function and the `if_else()` function
+to replace the `age` column values with 0 whenever `is.na(age)` is `TRUE`.
+(Remember that the present-day 1000 Genomes Project samples have a missing age
+information).
+Save the result back to the `metadata_subset` variable.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+metadata_subset <- mutate(metadata_subset, age = if_else(is.na(age), 0, age))
+```
+
+
+
+```{r}
+metadata1 <- metadata_subset
+metadata2 <- metadata_subset
+```
+
+```{r}
+colnames(metadata1) <- paste0(colnames(metadata_subset), "1")
+colnames(metadata2) <- paste0(colnames(metadata_subset), "2")
+```
+
+
+:::
+
+```{r}
+ibd <- inner_join(ibd_all, metadata1)
+ibd <- inner_join(ibd, metadata2)
+```
+
+---
+
+**Add a new column using the `mutate()` function called `length`, which contains
+the length of each IBD segment in Megabases (`(end - start) / 1e6`). Then, drop
+the columns `start` and `end` because the length of an IBD is all that we will
+need here, and drop also the column `chrom`. When you add the new column
+`length`, add it after columns `sample1` and `sample2` (look up `?mutate` if
+you need a refresher of which argument to specify in order to do that).
+Save the result back to the `ibd` variable.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd <-
+  ibd %>%
+  mutate(length = (end - start) / 1e6, .after = sample2) %>%
+  select(-(chrom:end))
+
+ibd
+```
+
+
+---
+
+We can paste two vectors together using the function `paste()`. For instance,
+consider these two vectors and the result of joining them together:
+
+```{r}
+v1 <- c("Denmark", "Czech Republic", "Estonia")
+v2 <- c("Finland", "Italy", "Estonia")
+
+paste(v1, v2, sep = "-")
+```
+
+**Use the same principle to add a new column to your `ibd` table named `pair`,
+which will contain a vector of values created by joining of the columns
+`region1` and `region2``. Save the result back to the `ibd` variable.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd <- mutate(ibd, pair = paste(pop1, pop2, sep = "-"))
+```
+
+:::
+
+---
+
+**Generally speaking, very short IBD segments are not very trustworthy.
+Filter only to those segments which are longer than 1 Mb.
+Save the result back to the `ibd` variable.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd <- filter(ibd, length > 1)
+```
+
+
+
+---
+
+**What is the shorted IBD segment? What is the longest? How about mean and median?**
+
+**Note:** Don't forget the `summary()` function!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+summary(ibd$length)
+```
+
+
+:::
+
+---
+
+**Visualize the histogram of lengths of all IBD segments across your entire
+data set.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ggplot(ibd, aes(length)) + geom_histogram()
+```
+
+
+:::
+
+
+**Let's start simple and ignore the temporal dimension of IBD sharing for now,
+and focus only on present-day individuals. To do this, `filter()` only for IBD
+segments shared by two present-day individuals (i.e., individuals with `age1`
+or `age2` equal to 0). Similarly, `filter()` only on individuals from the
+following geographic regions, also based on the additional metadata `country1`
+and `country2` added to your IBD table earlier. Save your filtered IBD
+table to a variable `ibd_eur`.**
+
+```{r}
+europe <- c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope")
+```
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_eur <- filter(
+  ibd,
+  age1 == 0 & age2 == 0 &
+  region1 %in% europe & region2 %in% europe
+)
+```
+
+:::
+
+
+```{r}
+ibd_eur %>%
+ggplot() +
+  geom_jitter(aes(length, pair))
+```
+
+```{r}
+ibd_eur %>%
+group_by(pair) %>%
+summarize(mean_length = mean(length)) %>%
+ggplot() +
+geom_point(aes(mean_length, pair))
+```
+
+```{r}
+library(forcats)
+
+ibd_eur %>%
+group_by(pair) %>%
+summarize(mean_length = mean(length)) %>%
+ggplot() +
+geom_point(aes(mean_length, fct_reorder(pair, mean_length)))
+```
+
