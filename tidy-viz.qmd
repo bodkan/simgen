@@ -1,12 +1,17 @@
 # Advanced data science
 
 In this chapter, we will be delving into the data visualization R package
-called [_ggplot2_](https://ggplot2.tidyverse.org). Here is how the start of
-our solutions script for the day will look like. Note the addition of
-`library(ggplot2)` to the list of R packages used in the previous chapter.
-Although you could use _ggplot2_ without the rest, it ties so neatly with
-every other part of the _tidyverse_ ecosystem that you almost always end up
-using them together.
+called [_ggplot2_](https://ggplot2.tidyverse.org), which is possibly the
+most famous piece of the _tidyverse_ ecosystem. So much so that people who
+otherwise don't use any _tidyverse_ functions (or even who don't even use
+R for data analysis itself) still use _ggplot2_ for making figures. It really
+is that good.
+
+**Here is how the start of our solutions script for the day will look like.**
+Note the addition of `library(ggplot2)` to the list of R packages used in
+the previous chapter. Although you could use _ggplot2_ without the rest,
+it ties so neatly with every other part of the _tidyverse_ ecosystem that you
+almost always end up using them together.
 
 ```{r}
 #| message: false
@@ -16,10 +21,19 @@ library(tidyr)
 library(readr)
 ```
 
-Let us also read the data which we will be using in these exercises. These
-are coordinates of identity-by-descent segments between pairs of individuals
-in a [huge aDNA study](https://www.nature.com/articles/s41586-023-06865-0)
-we've already talked about.
+**Let us also read in data which we will be using in these exercises.** These
+are coordinates of identity-by-descent (IBD) segments between pairs of
+individuals in a
+[huge aDNA study](https://www.nature.com/articles/s41586-023-06865-0)
+we've already talked about. This data is huge and quite complex -- I've
+prefiltered it to contain only IBD segments for chromosome 21.
+
+::: {.aside}
+Why use IBD for these exercises? First, IBD data are increasingly
+popular across population genomics and evolutionary biology, so it's very likely
+you will encounter it in your own work. Second, it's an excellent data se on
+which you can practice and develop your data science skills.
+:::
 
 ```{r}
 gz_file <- tempfile()
@@ -27,8 +41,8 @@ download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb")
 ibd_all <- read_tsv(gz_file)
 ```
 
-And we also need to read the corresponding metadata, with which you are already
-very closely familiar with:
+And **we also need to read the corresponding metadata, with which you are already
+very closely familiar with**:
 
 ```{r}
 metadata <- read_tsv("https://tinyurl.com/simgen-metadata")
@@ -299,3 +313,23 @@ ggplot() +
 geom_point(aes(mean_length, fct_reorder(pair, mean_length)))
 ```
 
+## Further exercises
+
+I'm sure you have done some form of table munging and data visualization in your
+projects. If you're done with the exercises above, here are some ideas for you:
+
+1. If you haven't used R for processing of tabular data in your work -- maybe
+you have done similar table munging in Excel or Google Sheets in a manual
+(i.e., non-reproducible) way? -- write your processing steps as a self-contained
+R script:
+
+- If you used Excel, you can use the R package [_readxl_](https://readxl.tidyverse.org),
+- If you used Google Sheets, you can use the R package [_googlesheets4_](https://googlesheets4.tidyverse.org)
+
+2. If you used Excel or base R for plotting figures, use what you learned
+about _ggplot2_ to make beautiful, publication-ready plots as we did in our
+exercises.
+
+Yes, this will put you in an uncharted territory. This is scary and totally
+normal when doing research. I'm happy to help you out with questions
+and issues!
