@@ -50,14 +50,12 @@ the file itself, just paste the URL address in your browser.)
 df <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
 
-```{r}
-#| eval: false
-#| echo: false
-# remove unnecessary columns from the original metadata
-# df <- df %>%
-#   select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA, flag)) %>%
-#   write_tsv("files/tidy/metadata.tsv")
-```
+<!-- ```{r} -->
+<!-- # remove unnecessary columns from the original metadata -->
+<!-- # df <- df %>% -->
+<!-- #   select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA, flag)) %>% -->
+<!-- #   write_tsv("files/tidy/metadata.tsv") -->
+<!-- ``` -->
 
 
 ---
@@ -471,8 +469,7 @@ df
 We can select which columns to select with the function `select()`. It has
 the following general format:
 
-```{r}
-#| eval: false
+```
 select(<data frame>, <column 1>, <column 2>, ...)
 ```
 
@@ -909,7 +906,7 @@ Rather than typing out a long list of columns to drop, we can also do this
 to specify the range of consecutive columns:
 
 ```{r}
-df %>% select(-(sampleId:popId)) %>% head(1)
+df %>% select(-(sampleId:popId)) %>% head(1) %>%
 ```
 
 Alternatively, we can also use our well-known `c()` function, which is very useful
@@ -1892,4 +1889,97 @@ would you read a CSV file into R? What about other file formats?**
 
 **Hint:** Look up `?read_csv`.
 
-## Exercise 14: _tidyverse_-aware functions
+## Exercise 14: Some questions about the data
+
+**Which country has the highest number of aDNA samples (i.e., samples for
+which `set == "Ancient`"). How many samples from Estonia, Lithuania, or Latvia
+do we have?**
+
+**Hint:** Use the `group_by(country)` and `summarize()` combo again,
+together with the `n()` helper function.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+
+Count the number of samples from each country, and order them by this count:
+
+```{r}
+countries_df <-
+  df %>%
+  filter(set == "Ancient") %>%
+  group_by(country) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))
+
+countries_df
+```
+
+```{r}
+countries_df %>% filter(country %in% c("Estonia", "Lithuania", "Latvia"))
+```
+
+
+:::
+
+---
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+**Is there evidence of a potential bias in terms of how many samples
+do we have from a country and the geographical location of that country, such
+as the average longitude or latitude of samples from there?**
+
+**Hint:** Count the `n` count of samples from each country using `group_by()`
+and `sumarize()` again, like you did above, and compute also the `avg_lat`
+and `avg_lon` (average latitude and longitude) of samples in each country.**
+
+**Hint:** Look up the linear model function `?lm` or perhaps
+[this tutorial](https://www.geeksforgeeks.org/r-language/how-to-use-lm-function-in-r-to-fit-linear-models/) to see how you can build a linear regression
+between a response variable (like our count `n`) and an explanatory
+variable (such as average longitude or latitude of a country).
+
+```{r}
+countries_df <-
+  df %>%
+  filter(set == "Ancient") %>%
+  group_by(country) %>%
+  summarise(n = n(),
+            avg_lat = mean(latitude, na.rm = TRUE),
+            avg_lon = mean(longitude, na.rm = TRUE))
+
+countries_df
+```
+
+Compute the linear regression of `n` as a function of `avg_lon` -- there
+doesn't appear to be any significant relationship between the two variables:
+
+```{r}
+lm_res <- lm(n ~ avg_lon, data = geo_df)
+summary(lm_res)
+
+plot(geo_df$avg_lon, geo_df$n)
+abline(lm_res)
+```
+
+Compute the linear regression of `n` as a function of `avg_lat` -- it looks
+like there's a significant relationship between the number of samples from
+a country and geographical latitude? Is this a signal of aDNA surviving
+in more colder climates? :)
+
+```{r}
+lm_res <- lm(n ~ avg_lat, data = geo_df)
+summary(lm_res)
+
+plot(geo_df$avg_lat, geo_df$n)
+abline(lm_res)
+```
+
+:::
+
+
+
+## Exercise 15: _tidyverse_-aware functions
+
+TODO (maybe)
