@@ -167,7 +167,7 @@ table(ibd_all$chrom)
 :::
 
 
-## Exercise 2: Data processing
+## Exercise 2: IBD processing
 
 **Add a new column using the `mutate()` function called `length`, which contains
 the length of each IBD segment in centimorgans (`end - start`). Save the result
@@ -204,7 +204,7 @@ much more information than we need for now, so let's make the data a bit smaller
 and easier to look at at a glance.
 
 **`select()` a subset of the metadata with the following columns and store it in a
-variable `metadata_subset`: `sampleId`, `popId`, `region`, `ageAverage`, `flag`.
+variable `metadata_subset`: `sampleId`, `country`, `ageAverage`.
 Then `rename()` `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to
 `age` just to save ourself some typing.**
 
@@ -212,7 +212,7 @@ Then `rename()` `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to
 #### Click to see the solution
 
 ```{r}
-metadata <- select(metadata_all, sample = sampleId, pop = popId, region, age = ageAverage, set = groupAge)
+metadata <- select(metadata_all, sample = sampleId, country, age = ageAverage)
 ```
 
 :::
@@ -221,13 +221,14 @@ metadata <- select(metadata_all, sample = sampleId, pop = popId, region, age = a
 
 **Just as you did in the previous chapter, use `mutate()` and `if_else()` to
 make sure that the "Modern" individuals have the `age` set to 0, instead of
-`NA` (and everyone else's age stays the same).
+`NA` (and everyone else's age stays the same). In other words, replace the
+`NA` values of `age` with 0.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-metadata <- mutate(metadata, age = if_else(set == "Modern", 0, age))
+metadata <- mutate(metadata, age = if_else(is.na(age), 0, age))
 ```
 
 Let's make sure we haven't missed anything else:
@@ -242,13 +243,19 @@ any(!is.na(metadata$age))
 
 **Our analyses will exclusively focus on modern humans. Filter out the three
 archaics in the `metadata`, saving the results into the same `metadata`
-variable again.**
+variable again. As a reminder, these are individuals whose `sample` name
+is among `c("Vindija33.19", "AltaiNeandertal", "Denisova")` which you can
+test in a `filter()` command using the `%in%` operator.**
+
+**Hint:** Remember that you can do not only `column %in% c(... some values...)`
+but also do the opposite test as `!column %in% c(... some values...)` (notice
+the `!` operator in the second version).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-metadata <- filter(metadata, set != "Archaic")
+metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "Denisova"))
 ```
 
 :::
@@ -256,7 +263,7 @@ metadata <- filter(metadata, set != "Archaic")
 
 ---
 
-## Exercise 4: Metadata annotation
+## Exercise 4: Metadata processing
 
 We now have a cleaner IBD table looking like this:
 
@@ -272,34 +279,33 @@ head(metadata)
 
 Our `set` has only two values, "Modern" and "Ancient". Although useful, we
 might want to do some fancier analyses later down the line, looking at IBD
-as a time series. **Let's introduce an incredibly useful function called `cut()`.
+as a time series.
+
+**Let's introduce an incredibly useful function called `cut()`.
 Take a look at `?cut` help page and skim through it to figure out what it does.
-As a bit of a hint, we now want to add a new metadata columns which will indicate
+As a bit of a hint, we will want to add a new metadata column which will indicate
 in which age bin (maybe, split in steps of 5000 years) do our individuals
 belong to.**
 
-**Hint:** Here's a small example to help you get started. Think about what
-the `cut()` function does here based on the result it gives you here (and,
-again, don't forget to look at optional arguments you can read about in `?cut`).
+Here's a small example to help us get started. Think about what
+the `cut()` function does here based on the result it gives you.
 You can pretend for now that the `ages` variable corresponds to age of our
 samples in the huge `metadata` table:
 
 ```{r}
+# a toy example data frame mimicking the age column in our huge metadata table
 df <- data.frame(age = c(0, 0, 1000, 0, 5000, 10000, 7000, 13000, 18000, 21000, 27000, 30000))
-df$bin <- cut(df$age, breaks = seq(0, 50000, by = 5000))
+
+# let's first generate the breakpoints for our bins (check out `?seq` if
+# you're confused by this!)
+breakpoints <- seq(0, 50000, by = 5000)
+breakpoints
+
+# binning the age into groups using our breakpoints
+df$age_bin <- cut(df$age, breaks = breakpoints)
 
 df
 ```
-
-Or, in a _tidyverse_ context:
-
-```{r}
-df <- tibble(age = c(0, 0, 1000, 0, 5000, 10000, 7000, 13000, 18000, 21000, 27000, 30000))
-df <- mutate(df, bin = cut(age, breaks = seq(0, 50000, by = 5000)))
-
-df
-```
-
 
 **Note:** The function `cut()` is extremely useful whenever you want to discretize
 some continuous variable in bins (basically, a little similar to what
@@ -307,19 +313,12 @@ a histogram does in context of plotting). Doing statistics on this kind of
 binned data is something we do very often. So never forget that `cut()` is
 there to help you!
 
-**Hint:** Whenever you have many potential categories like here, `seq()` is
-very useful to generate custom breakpoints. We wouldn't want to write out
-the boundaries manually! Again, don't forget you can read `?seq` and experiment
-in R console with little bits of code before you commit to working on your full
-data! This makes things much more manageable -- figure out how things work on
-a small toy data is the best way to do anything.
-
 ---
 
 **In the example of the `cut()` function right above, what is the data type
-of the column `bin` created by the `cut()` function? Use `glimpse(df)` to see
+of the column `age_bin` created by the `cut()` function? Use `glimpse(df)` to see
 this data type, then skim through the documentation of `?factor`. Additionally,
-why is the `bin` value equal to `NA` for some of the values? (We will fix this
+why is the `age_bin` value equal to `NA` for some of the values? (We will fix this
 later, don't worry.)**
 
 As you're thinking about these questions, consider the two following vectors.
@@ -403,6 +402,39 @@ as.character(x2)
 
 ---
 
+**The scientific notation format of bin labels with all those `+` is very
+annoying to look at. How can you use the `dig.lab =` argument of the `cut()`
+functions to make this prettier? Experiment in the R console to figure this out,
+then modify the `df$age_bin <- cut(df$age, breaks = breakpoints)` command
+in your script accordingly.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Let's experiment first:
+
+```{r}
+cut(df$age, breaks = breakpoints)
+cut(df$age, breaks = breakpoints, dig.lab = 3)
+cut(df$age, breaks = breakpoints, dig.lab = 10)
+```
+
+Our solution to get rid of the ugly scientific notation in our labels:
+
+```{r}
+df$age_bin <- cut(df$age, breaks = breakpoints, dig.lab = 10)
+
+df
+```
+
+Much nicer to look at!
+
+:::
+
+
+
+---
+
 You have now learned that `cut()` has an optional argument called
 `include.lowest =`, which includes the lowest value of 0 (representing
 the "present-day" age of our samples) in the lowest bin [0, 5]. However, in the
@@ -420,13 +452,13 @@ df
 We can fix this by the following three-step process, described in the comments:
 
 ```{r}
-bin_levels <- levels(df$bin) # 1. extract bin labels (no "present-day" category yet)
+bin_levels <- levels(df$age_bin) # 1. extract labels (no "present-day" category yet)
 
 df <-
   df %>%
   mutate(
-    bin = as.character(bin),                      # 2. convert factors into strings
-    bin = if_else(is.na(bin), "present-day", bin) # 3. replace NA with "present-day"
+    age_bin = as.character(age_bin),                      # 2. convert factors into strings
+    age_bin = if_else(is.na(age_bin), "present-day", age_bin) # 3. replace NA with "present-day"
   )
 ```
 
@@ -445,29 +477,106 @@ df
 **Now that you're familiar with `cut()`, use the functions `mutate()` and
 `cut()` again to create a new column `age_bin` this time on the whole `metadata`
 table. The new column should carry a category age of each individual in steps of
-2000 years again. Use the example from above to do this.**
+2000 years again. Use the example from above to do this. Use `table(metadata$age_bin)
+to sanity check your final results.**
+
+
+**Hint:** As we did above, first assign the `age_bin` column using the `cut()`
+function, then modify the column accordingly with the `mutate()` snippet to
+set "present-day" in the `age_bin` for all present-day individuals.
 
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
+# we first bin samples according to their age:
+metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 5000), dig.lab = 10)
+
+table(metadata$age_bin)
+
+# then we modify the bins to include "present-day" labels:
 metadata <- metadata %>%
   mutate(
-    bin = as.character(bin),                      # 2. convert factors into strings
-    bin = if_else(is.na(bin), "present-day", bin) # 3. replace NA with "present-day"
+    age_bin = as.character(age_bin),
+    age_bin = if_else(is.na(age_bin), "present-day", age_bin)
   )
-
-metadata
 ```
 
----
+
+We can check the binning result to see that we've been successful!
+
+```{r}
+table(metadata$age_bin)
+```
 
 
+## Exercise 5: Merging metadata
+
+After filtering and clean up, we often need to annotate our popgen data with
+some metadata information. What does this mean? Consider the IBD data in its
+current state:
+
+```{r}
+head(ibd)
+```
+
+When we analyze things down the line, we might want to look at IBD patterns
+over space and time, look at some temporal changes, etc. However, our IBD
+data has none of the information in it, so even if we were to do run our
+friends `group_by()` and `summarize()` to get some summary statistics, we
+have no idea to correlate them to other variables. We only have names of
+individuals, and that's not enough.
+
+The annotation that we need is in the metadata table:
+
+```{r}
+head(metadata)
+```
+
+**What we need to do is join our IBD data with a selection of the most
+important variables in our metadata, which is what we're going to do now.**
+
+```{r}
+metadata1 <- metadata
+metadata2 <- metadata
+```
+
+```{r}
+colnames(metadata1) <- paste0(colnames(metadata1), "1")
+colnames(metadata2) <- paste0(colnames(metadata2), "2")
+```
 
 
+:::
 
-## Exercise 4: Investigating IBD data
+```{r}
+ibd <- inner_join(ibd, metadata1)
+ibd <- inner_join(ibd, metadata2)
+```
+
+
+## Exercise 6: Reproducibility check
+
+You have written a lot of code in this chapter, both for filtering and processing
+of the IBD data and the metadata. Your script is already very long. If you need
+to ever update or change something (which you always will during a project,
+usually many times over) it can be hard to figure out which line of your script
+should be modified. If you forget to update something somewhere in a long script,
+you're in big trouble (and sometimes you won't even find out where's the problem
+until its too late).
+
+Our session on reproducibility is in the following chapter, but let's work
+towards making your current workflow more reproducible even now.
+
+**Create a new script called `utils.R` in your RStudio and create the following
+functions. Then take bits and pieces from the exercises used above and add
+then to the bodies of these functions accordingly.**
+
+TODO
+
+
+## Exercise 7: Investigating IBD data
 
 **Can you use the IBD data to figure out which (if any) pairs of samples
 are either resulting from duplicates or from first degree relatives? In other
@@ -518,23 +627,7 @@ metadata_subset <- mutate(metadata_subset, age = if_else(is.na(age), 0, age))
 
 
 
-```{r}
-metadata1 <- metadata_subset
-metadata2 <- metadata_subset
-```
 
-```{r}
-colnames(metadata1) <- paste0(colnames(metadata_subset), "1")
-colnames(metadata2) <- paste0(colnames(metadata_subset), "2")
-```
-
-
-:::
-
-```{r}
-ibd <- inner_join(ibd_orig, metadata1)
-ibd <- inner_join(ibd, metadata2)
-```
 
 
 
