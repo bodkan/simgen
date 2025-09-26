@@ -53,8 +53,14 @@ join_metadata <- function(ibd, metadata) {
   # join based on sample2
   ibd <- inner_join(ibd, metadata2)
 
-  # annotate with a new column indicating a pair of countries
-  ibd <- mutate(ibd, pair = paste(country1, country2, sep = "-"), .before = chrom)
+  # annotate with new columns indicating a pair of countries or time bins
+  ibd <- mutate(ibd,
+                geo_pair = paste(country1, country2, sep = ":"),
+                time_pair = paste(age_bin1, age_bin2, sep = ":"),
+                .before = chrom)
+
+  # drop columns which are not needed anymore
+  ibd <- select(ibd, -starts_with("country"), -starts_with("age"))
 
   return(ibd)
 }
