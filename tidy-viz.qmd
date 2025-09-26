@@ -38,8 +38,8 @@ which you can practice and develop your data science skills.
 
 ```{r}
 gz_file <- tempfile()
-download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb")
-ibd_all <- read_tsv(gz_file)
+download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb", quiet = TRUE)
+ibd_all <- read_tsv(gz_file, show_col_types = FALSE)
 ```
 
 <!-- load("~/Desktop/neo.impute.1000g.ibd.filter.strict.RData") -->
@@ -60,7 +60,7 @@ And **we also need to read the corresponding metadata, with which you are alread
 very closely familiar with**:
 
 ```{r}
-metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
+metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata", show_col_types = FALSE)
 ```
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
@@ -206,13 +206,14 @@ and easier to look at at a glance.
 **`select()` a subset of the metadata with the following columns and store it in a
 variable `metadata_subset`: `sampleId`, `country`, `ageAverage`.
 Then `rename()` `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to
-`age` just to save ourself some typing.**
+`age` just to save ourselves some typing.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
 metadata <- select(metadata_all, sample = sampleId, country, age = ageAverage)
+metadata
 ```
 
 :::
@@ -222,7 +223,7 @@ metadata <- select(metadata_all, sample = sampleId, country, age = ageAverage)
 **Just as you did in the previous chapter, use `mutate()` and `if_else()` to
 make sure that the "Modern" individuals have the `age` set to 0, instead of
 `NA` (and everyone else's age stays the same). In other words, replace the
-`NA` values of `age` with 0.
+`NA` values of `age` with 0.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -234,7 +235,7 @@ metadata <- mutate(metadata, age = if_else(is.na(age), 0, age))
 Let's make sure we haven't missed anything else:
 
 ```{r}
-any(!is.na(metadata$age))
+all(!is.na(metadata$age))
 ```
 
 :::
@@ -259,9 +260,6 @@ metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "
 ```
 
 :::
-
-
----
 
 ## Exercise 4: Metadata processing
 
@@ -555,8 +553,42 @@ ibd <- inner_join(ibd, metadata1)
 ibd <- inner_join(ibd, metadata2)
 ```
 
+---
 
-## Exercise 6: Reproducibility check
+The `paste()` function (and also `paste0()`) are very useful whenver we
+need to join the elements of two (or more) character vectors together.
+The difference between then is that `paste0()` doesn't add a space between
+the individual values and `paste()` does (the latter also allows you to
+customize the string which should be used for joining instead of the space).
+For instance, consider these two vectors and the result of joining them together:
+
+```{r}
+v1 <- c("Denmark", "Czech Republic", "Estonia")
+v2 <- c("Finland", "Italy", "Estonia")
+
+paste(v1, v2, sep = "-")
+```
+
+**Use the same principle to add a new column to your `ibd` table named `pair`,
+which will contain a vector of values created by joining of the columns
+`country1` and `country2`. Add this column `.after` the `sample1` and `sample2`
+and `.before` the `chrom` columns for clearer visibility.
+Save the result back to the `ibd` variable.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd <- mutate(ibd, pair = paste(country1, country2, sep = "-"), .before = chrom)
+ibd
+```
+
+:::
+
+---
+
+
+## Exercise 6: Reproducibility intermezzo
 
 You have written a lot of code in this chapter, both for filtering and processing
 of the IBD data and the metadata. Your script is already very long. If you need
@@ -569,11 +601,71 @@ until its too late).
 Our session on reproducibility is in the following chapter, but let's work
 towards making your current workflow more reproducible even now.
 
-**Create a new script called `utils.R` in your RStudio and create the following
+**Create a new script called `ibd_utils.R` in your RStudio and create the following
 functions. Then take bits and pieces from the exercises used above and add
 then to the bodies of these functions accordingly.**
 
-TODO
+1. function `process_ibd()` which will (without accepting any arguments):
+
+- download the IBD data from the internet like you did above,
+- process it in the same way you did above,
+- return the processed `tibble` object with IBD segments
+
+2. function `process_metadata()`, which will (without accepting any arguments):
+
+- download the metadata from the internet like you did above,
+- process and filter it in the same way like above (replacing `NA` in
+`age` column, filtering out unwanted individuals, adding the `age_bin`
+column, etc.)
+- return the processed `tibble` object with metadata
+
+3. function `join_metadata()`, which will accept arguments `ibd` and `metadata`
+(produced by the two functions above) and then:
+
+- join the `ibd` table with the `metadata` table
+- add the `pair` column with `country1-country2` information
+- return the finalized `tibble` with all information
+
+**Do not write all the code at once! Start with the first function, test
+it by executing it in your R console, and check that your results make sense
+before you move on to the other function. Building up more complex pipelines
+from simple components is absolutely critical to minimize bugs!**
+
+**After you're done with this exercise, you should create a new script
+(you can name it something like `ibd_analysis.R`) and be able to add the
+following code:**
+
+```{r}
+#| eval: false
+source("ibd_utils.R")
+
+ibd <- process_ibd()
+metadata <- process_metadata()
+
+ibd <- join_metadata(ibd, metadata)
+```
+
+```{r}
+#| echo: false
+source(here::here("files/repro/ibd_utils.R"))
+
+ibd <- process_ibd()
+metadata <- process_metadata()
+
+ibd <- join_metadata(ibd, metadata)
+```
+
+
+**Hint:** If this looks overwhelming and scary, then remember that function
+is a block of code (optionally accepting arguments) which simply wraps in
+`{` and `}` the code already written by you above, and calls `return` on
+the result.
+
+**Hint:** An extremely useful shortcut when writing R functions is "Run
+function definition" under `Code` `->` `Run region`. Remember that keyboard
+shortcut! (On macOS it's `Option+CMD+F`).
+
+
 
 
 ## Exercise 7: Investigating IBD data
@@ -591,70 +683,26 @@ total_ibd <-
   arrange(desc(total))
 ```
 
-```{r}
-rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId
-rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .)
-rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1))
-```
+<!-- ```{r} -->
+<!-- rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId -->
+<!-- rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .) -->
+<!-- rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1)) -->
+<!-- ``` -->
 
-```{r}
-right_join(total_ibd, rels_df) %>% print(n=Inf)
-```
-
-
-44 VK110      VK230       85.9
-45 Vt779      Vt808       57.3
-46 RISE487    RISE489     50.1
-47 RISE486    RISE489     45.8
+<!-- ```{r} -->
+<!-- right_join(total_ibd, rels_df) %>% print(n=Inf) -->
+<!-- ``` -->
 
 
-
-
----
-
-**Just as you did before, use the `mutate()` function and the `if_else()` function
-to replace the `age` column values with 0 whenever `is.na(age)` is `TRUE`.
-(Remember that the present-day 1000 Genomes Project samples have a missing age
-information).
-Save the result back to the `metadata_subset` variable.
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-metadata_subset <- mutate(metadata_subset, age = if_else(is.na(age), 0, age))
-```
+<!-- 44 VK110      VK230       85.9 -->
+<!-- 45 Vt779      Vt808       57.3 -->
+<!-- 46 RISE487    RISE489     50.1 -->
+<!-- 47 RISE486    RISE489     45.8 -->
 
 
 
 
 
-
-
-We can paste two vectors together using the function `paste()`. For instance,
-consider these two vectors and the result of joining them together:
-
-```{r}
-v1 <- c("Denmark", "Czech Republic", "Estonia")
-v2 <- c("Finland", "Italy", "Estonia")
-
-paste(v1, v2, sep = "-")
-```
-
-**Use the same principle to add a new column to your `ibd` table named `pair`,
-which will contain a vector of values created by joining of the columns
-`region1` and `region2``. Save the result back to the `ibd` variable.**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd <- mutate(ibd, pair = paste(pop1, pop2, sep = "-"))
-```
-
-:::
-
----
 
 **Generally speaking, very short IBD segments are not very trustworthy.
 Filter only to those segments which are longer than 1 Mb.
