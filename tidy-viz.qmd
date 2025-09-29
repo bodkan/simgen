@@ -900,6 +900,7 @@ figure out what the problem is. The solution comes in the next part.**
 The solution on its own would be this:
 
 ```{r}
+#| error: true
 ggplot(metadata, aes(x = age_bin)) +
   geom_point() +
   labs(
@@ -1308,75 +1309,75 @@ ibd_indiv <-
 
 :::
 
----
-```{r}
-rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId
-rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .)
-rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1))
-```
+<!-- --- -->
+<!-- ```{r} -->
+<!-- rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId -->
+<!-- rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .) -->
+<!-- rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1)) -->
+<!-- ``` -->
 
-```{r}
-right_join(total_ibd, rels_df) %>% print(n=Inf)
-```
+<!-- ```{r} -->
+<!-- right_join(total_ibd, rels_df) %>% print(n=Inf) -->
+<!-- ``` -->
 
 
-44 VK110      VK230       85.9
-45 Vt779      Vt808       57.3
-46 RISE487    RISE489     50.1
-47 RISE486    RISE489     45.8
+<!-- 44 VK110      VK230       85.9 -->
+<!-- 45 Vt779      Vt808       57.3 -->
+<!-- 46 RISE487    RISE489     50.1 -->
+<!-- 47 RISE486    RISE489     45.8 -->
 
 
 
 
 
 
-Figure out which (if any) pairs of samples are either resulting from
-duplicates or from first degree relatives? In other words, whether some samples
-might, in reality, be the same person, or share an IBD spanning an entire
-chromosome 1?*
-**Generally speaking, very short IBD segments are not very trustworthy.
-Filter only to those segments which are longer than 1 Mb.
-Save the result back to the `ibd` variable.**
+<!-- Figure out which (if any) pairs of samples are either resulting from -->
+<!-- duplicates or from first degree relatives? In other words, whether some samples -->
+<!-- might, in reality, be the same person, or share an IBD spanning an entire -->
+<!-- chromosome 1?* -->
+<!-- **Generally speaking, very short IBD segments are not very trustworthy. -->
+<!-- Filter only to those segments which are longer than 1 Mb. -->
+<!-- Save the result back to the `ibd` variable.** -->
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- #### Click to see the solution -->
 
-```{r}
-ibd <- filter(ibd, length > 1)
-```
+<!-- ```{r} -->
+<!-- ibd <- filter(ibd, length > 1) -->
+<!-- ``` -->
 
 
 
----
+<!-- --- -->
 
-**What is the shorted IBD segment? What is the longest? How about mean and median?**
+<!-- **What is the shorted IBD segment? What is the longest? How about mean and median?** -->
 
-**Note:** Don't forget the `summary()` function!
+<!-- **Note:** Don't forget the `summary()` function! -->
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- #### Click to see the solution -->
 
-```{r}
-summary(ibd$length)
-```
+<!-- ```{r} -->
+<!-- summary(ibd$length) -->
+<!-- ``` -->
 
 
-:::
+<!-- ::: -->
 
----
+<!-- --- -->
 
-**Visualize the histogram of lengths of all IBD segments across your entire
-data set.**
+<!-- **Visualize the histogram of lengths of all IBD segments across your entire -->
+<!-- data set.** -->
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- #### Click to see the solution -->
 
-```{r}
-ggplot(ibd, aes(length)) + geom_histogram()
-```
+<!-- ```{r} -->
+<!-- ggplot(ibd, aes(length)) + geom_histogram() -->
+<!-- ``` -->
 
 
-:::
+<!-- ::: -->
 
 
 
@@ -1440,11 +1441,11 @@ ggplot(ibd, aes(length)) + geom_histogram()
 
 
 
----
+<!-- --- -->
 
-```{r}
+<!-- ```{r} -->
 
-```
+<!-- ``` -->
 
 
 
@@ -1478,140 +1479,140 @@ ggplot(ibd, aes(length)) + geom_histogram()
 
 
 
-**Let's start simple and ignore the temporal dimension of IBD sharing for now,
-and focus only on present-day individuals. To do this, `filter()` only for IBD
-segments shared by two present-day individuals (i.e., individuals with `age1`
-or `age2` equal to 0). Similarly, `filter()` only on individuals from the
-following geographic regions, also based on the additional metadata `country1`
-and `country2` added to your IBD table earlier. Save your filtered IBD
-table to a variable `ibd_eur`.**
+<!-- **Let's start simple and ignore the temporal dimension of IBD sharing for now, -->
+<!-- and focus only on present-day individuals. To do this, `filter()` only for IBD -->
+<!-- segments shared by two present-day individuals (i.e., individuals with `age1` -->
+<!-- or `age2` equal to 0). Similarly, `filter()` only on individuals from the -->
+<!-- following geographic regions, also based on the additional metadata `country1` -->
+<!-- and `country2` added to your IBD table earlier. Save your filtered IBD -->
+<!-- table to a variable `ibd_eur`.** -->
 
-```{r}
-europe <- c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope")
-```
+<!-- ```{r} -->
+<!-- europe <- c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope") -->
+<!-- ``` -->
 
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- #### Click to see the solution -->
 
-```{r}
-ibd_eur <- filter(
-  ibd,
-  age1 == 0 & age2 == 0 &
-  region1 %in% europe & region2 %in% europe
-)
-```
+<!-- ```{r} -->
+<!-- ibd_eur <- filter( -->
+<!--   ibd, -->
+<!--   age1 == 0 & age2 == 0 & -->
+<!--   region1 %in% europe & region2 %in% europe -->
+<!-- ) -->
+<!-- ``` -->
 
-:::
+<!-- ::: -->
 
 
-```{r}
-ibd_eur %>%
-ggplot() +
-  geom_jitter(aes(length, pair))
-```
+<!-- ```{r} -->
+<!-- ibd_eur %>% -->
+<!-- ggplot() + -->
+<!--   geom_jitter(aes(length, pair)) -->
+<!-- ``` -->
 
-```{r}
-summary_df <-
-  ibd_eur %>%
-  group_by(pair) %>%
-  summarize(mean_length = mean(length), total_length = sum(length))
-```
+<!-- ```{r} -->
+<!-- summary_df <- -->
+<!--   ibd_eur %>% -->
+<!--   group_by(pair) %>% -->
+<!--   summarize(mean_length = mean(length), total_length = sum(length)) -->
+<!-- ``` -->
 
-```{r}
-summary_df %>%
-  ggplot() +
-  geom_point(aes(mean_length, pair))
-```
+<!-- ```{r} -->
+<!-- summary_df %>% -->
+<!--   ggplot() + -->
+<!--   geom_point(aes(mean_length, pair)) -->
+<!-- ``` -->
 
-```{r}
-library(forcats)
+<!-- ```{r} -->
+<!-- library(forcats) -->
 
-ibd_eur %>%
-  group_by(pair) %>%
-  summarize(mean_length = mean(length)) %>%
-  ggplot() +
-  geom_point(aes(mean_length, fct_reorder(pair, mean_length)))
-```
+<!-- ibd_eur %>% -->
+<!--   group_by(pair) %>% -->
+<!--   summarize(mean_length = mean(length)) %>% -->
+<!--   ggplot() + -->
+<!--   geom_point(aes(mean_length, fct_reorder(pair, mean_length))) -->
+<!-- ``` -->
 
-```{r}
-summary_df <-
-  ibd_eur %>%
-  group_by(pair) %>%
-  summarize(mean_length = mean(length), total_length = sum(length)) %>%
-  pivot_longer(
-    cols = c(mean_length, total_length),
-    names_to = "statistic",
-    values_to = "value"
-  )
-```
+<!-- ```{r} -->
+<!-- summary_df <- -->
+<!--   ibd_eur %>% -->
+<!--   group_by(pair) %>% -->
+<!--   summarize(mean_length = mean(length), total_length = sum(length)) %>% -->
+<!--   pivot_longer( -->
+<!--     cols = c(mean_length, total_length), -->
+<!--     names_to = "statistic", -->
+<!--     values_to = "value" -->
+<!--   ) -->
+<!-- ``` -->
 
-```{r}
-ggplot(summary_df) +
-  geom_point(aes(value, pair)) +
-  facet_wrap(~ statistic)
-```
+<!-- ```{r} -->
+<!-- ggplot(summary_df) + -->
+<!--   geom_point(aes(value, pair)) + -->
+<!--   facet_wrap(~ statistic) -->
+<!-- ``` -->
 
-```{r}
-ggplot(summary_df) +
-  geom_point(aes(value, fct_reorder(pair, value))) +
-  facet_wrap(~ statistic, scales = "free_x")
-```
+<!-- ```{r} -->
+<!-- ggplot(summary_df) + -->
+<!--   geom_point(aes(value, fct_reorder(pair, value))) + -->
+<!--   facet_wrap(~ statistic, scales = "free_x") -->
+<!-- ``` -->
 
-```{r}
-library(tidytext)
+<!-- ```{r} -->
+<!-- library(tidytext) -->
 
-ggplot(summary_df) +
-  geom_point(aes(value, reorder_within(pair, value, within = statistic))) +
-  facet_wrap(~ statistic, scales = "free")
-```
+<!-- ggplot(summary_df) + -->
+<!--   geom_point(aes(value, reorder_within(pair, value, within = statistic))) + -->
+<!--   facet_wrap(~ statistic, scales = "free") -->
+<!-- ``` -->
 
-```{r}
-p_mean <-
-  filter(summary_df, statistic == "mean_length") %>%
-  ggplot +
-  geom_point(aes(value, fct_reorder(pair, value))) +
-  facet_wrap(~ statistic, scales = "free_x")
+<!-- ```{r} -->
+<!-- p_mean <- -->
+<!--   filter(summary_df, statistic == "mean_length") %>% -->
+<!--   ggplot + -->
+<!--   geom_point(aes(value, fct_reorder(pair, value))) + -->
+<!--   facet_wrap(~ statistic, scales = "free_x") -->
 
-p_mean
-```
+<!-- p_mean -->
+<!-- ``` -->
 
 
-```{r}
-p_sum <-
-  filter(summary_df, statistic == "total_length") %>%
-  ggplot +
-  geom_point(aes(value, fct_reorder(pair, value))) +
-  facet_wrap(~ statistic, scales = "free_x")
+<!-- ```{r} -->
+<!-- p_sum <- -->
+<!--   filter(summary_df, statistic == "total_length") %>% -->
+<!--   ggplot + -->
+<!--   geom_point(aes(value, fct_reorder(pair, value))) + -->
+<!--   facet_wrap(~ statistic, scales = "free_x") -->
 
-p_sum
-```
+<!-- p_sum -->
+<!-- ``` -->
 
-```{r}
-library(cowplot)
+<!-- ```{r} -->
+<!-- library(cowplot) -->
 
-plot_grid(p_mean, p_sum)
-```
+<!-- plot_grid(p_mean, p_sum) -->
+<!-- ``` -->
 
 
 
-## Further practice
+<!-- ## Further practice -->
 
-I'm sure you have done some form of table munging and data visualization in your
-projects. If you're done with the exercises above, here are some ideas for you:
+<!-- I'm sure you have done some form of table munging and data visualization in your -->
+<!-- projects. If you're done with the exercises above, here are some ideas for you: -->
 
-1. If you haven't used R for processing of tabular data in your work -- maybe
-you have done similar table munging in Excel or Google Sheets in a manual
-(i.e., non-reproducible) way? -- write your processing steps as a self-contained
-R script:
+<!-- 1. If you haven't used R for processing of tabular data in your work -- maybe -->
+<!-- you have done similar table munging in Excel or Google Sheets in a manual -->
+<!-- (i.e., non-reproducible) way? -- write your processing steps as a self-contained -->
+<!-- R script: -->
 
-- If you used Excel, you can use the R package [_readxl_](https://readxl.tidyverse.org),
-- If you used Google Sheets, you can use the R package [_googlesheets4_](https://googlesheets4.tidyverse.org)
+<!-- - If you used Excel, you can use the R package [_readxl_](https://readxl.tidyverse.org), -->
+<!-- - If you used Google Sheets, you can use the R package [_googlesheets4_](https://googlesheets4.tidyverse.org) -->
 
-2. If you used Excel or base R for plotting figures, use what you learned
-about _ggplot2_ to make beautiful, publication-ready plots as we did in our
-exercises.
+<!-- 2. If you used Excel or base R for plotting figures, use what you learned -->
+<!-- about _ggplot2_ to make beautiful, publication-ready plots as we did in our -->
+<!-- exercises. -->
 
-Yes, this will put you in an uncharted territory. This is scary and totally
-normal when doing research. I'm happy to help you out with questions
-and issues!
+<!-- Yes, this will put you in an uncharted territory. This is scary and totally -->
+<!-- normal when doing research. I'm happy to help you out with questions -->
+<!-- and issues! -->
