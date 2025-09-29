@@ -203,8 +203,8 @@ We have processed our IBD table a bit, so let's proceed with the metadata. There
 much more information than we need for now, so let's make the data a bit smaller
 and easier to look at at a glance.
 
-**`select()` a subset of the metadata with the following columns and store it in a
-variable `metadata_subset`: `sampleId`, `country`, `ageAverage`.
+**`select()` a subset of the metadata with the following columns and store it in
+the same variable `metadata`: `sampleId`, `country`, `ageAverage`.
 Then `rename()` `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to
 `age` just to save ourselves some typing.**
 
@@ -566,10 +566,10 @@ For instance, consider these two vectors and the result of joining them together
 v1 <- c("Denmark", "Czech Republic", "Estonia")
 v2 <- c("Finland", "Italy", "Estonia")
 
-paste(v1, v2, sep = "-")
+paste(v1, v2, sep = ":")
 ```
 
-**Use the same principle to add a new column to your `ibd` table named `pair`,
+**Use the same principle to add a new column to your `ibd` table named `geo_pair`,
 which will contain a vector of values created by joining of the columns
 `country1` and `country2`. Add this column `.after` the `sample1` and `sample2`
 and `.before` the `chrom` columns for clearer visibility.
@@ -579,13 +579,48 @@ Save the result back to the `ibd` variable.**
 #### Click to see the solution
 
 ```{r}
-ibd <- mutate(ibd, pair = paste(country1, country2, sep = "-"), .before = chrom)
+ibd <- mutate(ibd, geo_pair = paste(country1, country2, sep = ":"), .before = chrom)
 ibd
 ```
 
 :::
 
 ---
+
+
+**In addition to computing statistics across pairs of geographical regions,
+we will also probably want to look at temporal patterns. Create a new column
+`time_pair`, which will in this case contains a `paste()` combination
+of `age_bin1` and `age_bin2`, added `.after` the `geo_pair` column.
+Save the result back to the `ibd` variable.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd <- mutate(ibd, time_pair = paste(age_bin1, age_bin2, sep = ":"), .after = geo_pair)
+ibd
+```
+
+:::
+
+
+---
+
+As a final step, because we have all annotation available in our two
+`pair` columns, drop the individual `country`, `age`, and `age_bin` columns
+using the `select()` function (remember the `starts_with()` helper functions?),
+and save the result back into the `ibd` variable.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd <- select(ibd, -starts_with("country"), -starts_with("age"))
+ibd
+```
+
+:::
 
 
 ## Exercise 6: Reproducibility intermezzo
@@ -600,6 +635,8 @@ until its too late).
 
 Our session on reproducibility is in the following chapter, but let's work
 towards making your current workflow more reproducible even now.
+
+---
 
 **Create a new script called `ibd_utils.R` in your RStudio and create the following
 functions. Then take bits and pieces from the exercises used above and add
@@ -623,7 +660,7 @@ column, etc.)
 (produced by the two functions above) and then:
 
 - join the `ibd` table with the `metadata` table
-- add the `pair` column with `country1-country2` information
+- add the `geo_pair` column with `country1-country2` information
 - return the finalized `tibble` with all information
 
 **Do not write all the code at once! Start with the first function, test
@@ -631,9 +668,19 @@ it by executing it in your R console, and check that your results make sense
 before you move on to the other function. Building up more complex pipelines
 from simple components is absolutely critical to minimize bugs!**
 
+**Make sure to add comments to your code! Reproducibility is only half of
+the story -- you (and other people) need to be able to understand your code
+a long time after you wrote it.**
+
 **After you're done with this exercise, you should create a new script
 (you can name it something like `ibd_analysis.R`) and be able to add the
-following code:**
+following code.**
+
+**Note:** The `source()` command executes all the code in your
+utility script and therefore makes your custom-built functions available
+in your R session. This is an incredibly useful trick which you should use
+all the time whenever you modularize your code into reproducible functions
+in their own scripts.
 
 ```{r}
 #| eval: false
@@ -665,45 +712,628 @@ the result.
 function definition" under `Code` `->` `Run region`. Remember that keyboard
 shortcut! (On macOS it's `Option+CMD+F`).
 
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+You can find my solution
+[here](https://github.com/bodkan/simgen/blob/main/files/repro/ibd_utils.R).
+
+:::
+
+**It's worth pausing here and reflecting on what we've just done. Yes,
+we took (lots!) of code already written and basically "just moved it elsewhere".
+But consider how clean your new script `ibd_analysis.R` is and how easily
+readable it is. What we've done is sometimes called "abstraction" in software
+engineering. We took components of our pipeline, and "hidden" them away so
+that we no longer have to think in terms of `select()`, `filter()`, `group_by()`,
+etc. We now can think about steps called `process_ibd()`, `process_metadata()`,
+and `join_metadata()`. Much less code to look at and think about! Plus,
+if we do need to take a deep dive into details, we just have to look at the
+code of our functions!**
+
+---
+
+**Point your cursor somewhere inside the `process_ibd()` call in your
+new script `ibd_analysis.R` and press "CTRL+.". This is how easy it is
+to navigate code, even when we modularized it!
+
+---
+
+Having your processing and filtering code available in a self-contained
+modularized way will make a huge difference in later parts of our workshop.
 
 
+## Exercise 6: Data visualization with _ggplot2_
 
-## Exercise 7: Investigating IBD data
+### Distribution of categorical variable
 
-**Can you use the IBD data to figure out which (if any) pairs of samples
-are either resulting from duplicates or from first degree relatives? In other
-words, whether some samples might, in reality, be the same person, or share
-an IBD spanning an entire chromosome 1?**
+#### `geom_bar()`
 
 ```{r}
-total_ibd <-
+ggplot(metadata)
+```
+
+```{r}
+ggplot(metadata, aes(x = age_bin))
+```
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) + geom_bar()
+```
+
+**Let's add more layers! Use a `xlab()` function to add an x-axis label
+element using the `+` operator.**
+
+Just as we did with _tidyverse_ `%>%` data transformation pipelines, as a
+_ggplot2_ visualization pipeline gets more complex, it's a good idea to
+introduce indentation so that each visualization steps is on its own line.
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) +
+  geom_bar() +
+  xlab("Time period [years before present]")
+```
+
+---
+
+**Now continue adding y-axis label with the `ylab()` function.**
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) +
+  geom_bar() +
+  xlab("Time period [years before present]") +
+  ylab("Number of individuals")
+```
+
+---
+
+**Give your figure a proper main title using the function `ggtitle()`.**
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) +
+  geom_bar() +
+  xlab("Time period [years before present]") +
+  ylab("Number of individuals") +
+  ggtitle("Distribution of sample counts in each time period")
+```
+
+---
+
+**I don't know about you, but I don't like how the x-axis labels are overlapping.
+A solution to this is to use custom theming of plots, but for now, a good
+workaround is a function `coord_flip()`. Add it to your figure again using the
+`+` operator and observe what happens. Notice what this does to your x- and y-axis
+labels, and fix the problem!**
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) +
+  geom_bar() +
+  xlab("Time period [years before present]") +
+  ylab("Number of individuals") +
+  ggtitle("Distribution of sample counts in each time period") +
+  coord_flip()
+```
+
+---
+
+**Although individual functions `xlab()`, `ylab()`, `ggtitle()` are useful,
+oftentimes it's better to use a general function `labs()`. Look up its
+documentation under `?lab`, then rewrite the code for your figure to use
+only this function, replacing your uses of `xlab()`, `ylab()`, and `ggtitle()`
+just with `labs()`. Note that the function has other useful arguments -- go
+ahead and use as many of them as you want.**
+
+**Note:** Don't worry about making your figure cluttered, this is just for
+practice. In a real paper, you wouldn't use title or caption directly in a
+_ggplot2_ figure, but it's definitely useful for work-in-progress reports at
+meetings, etc.
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) +
+  geom_bar() +
+  labs(
+    y = "Number of individuals",
+    x = "Time period [years before present]",
+    title = "Distribution of sample counts in each time period",
+    subtitle = "Counts for individuals in 1000 Genomes Project and MesoNeo data",
+    caption = "Here is an optional caption for the figure, similarly to what
+      you might do in a real scientific article as a more detailed description of
+      of what is going on in the plot."
+  ) +
+  coord_flip()
+```
+
+---
+
+**Does the order of adding layers with the `+` operator matter? Do a little
+experiment to figure it out!**
+
+No it doesn't. This is another very useful feature of _ggplot2_. Remember
+that a huge important part of an R data science workflow is interactive
+communication with an R console. You can start with a little bit of code
+which produces a basic outline of your figure and continue adding useful bits
+and pieces to it, modifying the outcome as you go. Almost like an artist!
+
+---
+
+By the way, it's useful to keep in mind that you can always pipe a data frame
+into a `ggplot()` function using the `%>%` operator. I.e., instead of
+writing `ggplot(metadata, aes(...))`, you can also do
+`metadata %>% ggplot(aes(...))`. This allows you to transform or summarize data
+before plotting, which makes the combination of _tidyverse_ and _ggplot2_
+infinitely stronger.
+
+**Just for practice, `filter()` the metadata first for individuals who are
+10000 years or older, discarding the rest. Then pipe this `filter()` result
+into your `ggplot()` code, keeping the plotting part exactly the same.**
+
+```{r}
+metadata %>%
+filter(age > 10000) %>%
+ggplot(aes(x = age_bin)) +
+  geom_bar() +
+  labs(
+    y = "Number of individuals",
+    x = "Time period [years before present]",
+    title = "Distribution of sample counts in each time period",
+    subtitle = "Counts for individuals in 1000 Genomes Project and MesoNeo data",
+    caption = "Here is an optional caption for the figure, similarly to what
+      you might do in a real scientific article as a more detailed description of
+      of what is going on in the plot."
+  ) +
+  coord_flip()
+```
+
+Believe it or not, with this basic structure of _ggplot2_ visualization and
+combining this with any other type of _tidyverse_ manipulation, filtering, and
+(as we'll later see), summarization, you're ready to make any figure imaginable.
+Let's take this one step further.
+
+---
+
+**Let's show how flexible the _ggplot2_ "grammar of graphics" is. Modify
+the visuals of your figure by replacing `geom_bar()` with `geom_point()
+in the final version of your barplot figure. Why doesn't the code work?
+Carefully read the message you get from R when you do this, and try to
+figure out what the problem is. The solution comes in the next part.**
+
+The solution on its own would be this:
+
+```{r}
+ggplot(metadata, aes(x = age_bin)) +
+  geom_point() +
+  labs(
+    y = "Number of individuals",
+    x = "Time period [years before present]",
+    title = "Distribution of sample counts in each time period",
+    subtitle = "Counts for individuals in 1000 Genomes Project and MesoNeo data",
+    caption = "Here is an optional caption for the figure, similarly to what
+      you might do in a real scientific article as a more detailed description of
+      of what is going on in the plot."
+  ) +
+  coord_flip()
+```
+
+But it gives you an error! Don't panic!
+
+---
+
+The previous answer gives you an error stating: **
+
+> `geom_point()` requires the following missing aesthetics: y.
+
+You've already heard about "mapping aesthetics", and the error tells you
+that `geom_point()` need both `x` and `y` coordinates to plot the elements of
+a figure. `geom_bar()` counts the number of individuals in each age group
+automatically which is why `aes(x)` was enough. But `geom_point()` needs us
+to specify `aes(x, y)` explicitly.
+
+**You already know how to do it! As you learned in the previous chapter,
+use the `metadata %>% group_by(age_bin) %>% summarize(count = n())`
+pipeline to compute the `count` in each age bin, and then use that `count`
+as the `y = count` mapping!**
+
+**Hint:** This is a very similar technique to the one you used to only plot
+individuals older than 10000 years using `filter()` above.
+
+Note how our code is almost the same, we just needed to change a couple
+of things to get a different figure! This is why _tidyverse_ is so elegant
+and powerful (and even easy, once you get familiar with it)! We can use
+the same patterns and actions over and over and over again, and get new
+figures in infinite number of variations!
+
+```{r}
+metadata %>%                      # here is data processing / summarization part
+group_by(age_bin) %>%
+summarise(count = n()) %>% 
+ggplot(aes(x = age_bin, count)) + # and this is the plotting part
+  geom_point() +
+  labs(
+    y = "Number of individuals",
+    x = "Time period [years before present]",
+    title = "Distribution of sample counts in each time period",
+    subtitle = "Counts for individuals in 1000 Genomes Project and MesoNeo data",
+    caption = "Here is an optional caption for the figure, similarly to what
+      you might do in a real scientific article as a more detailed description of
+      of what is going on in the plot."
+  ) +
+  coord_flip()
+```
+
+---
+
+
+### Distribution of a numerical variable
+
+#### `geom_histogram()`
+
+In the previous exercise you visualized a distribution of a categorical
+variable, specifically the number of counts of samples in an age category.
+Now let's look at continuous variables and consider your `metadata` table again:
+
+```{r}
+head(metadata)
+```
+
+---
+
+**Let's visualize the distribution of `coverage` values across our individuals!**
+
+**You can visualize a density of values using the function `geom_histogram()`.
+For instance, your data has a column `coverage`. Visualize the density distribution
+of coverages across all individuals in your data set, starting from the (admittedly
+overly simplified -- for now!) pattern of `ggplot() + geom_histogram()`. Of course,
+you have to fill in the `aes()` accordingly. Try to use the knowledge you
+obtained in the previous exercise!**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+metadata %>%
+  ggplot(aes(coverage)) +
+  geom_histogram()
+```
+
+:::
+
+---
+
+**You got a warning that `r nrow(filter(metadata, age == 0))` rows have
+non-finite values. This is because present-day individuals in our metadata
+lack a `coverage` value. In the spirit of building composite _tidyverse_
+pipelines, `filter()` out present-day individuals before you plot the
+`coverage` distribution.**
+
+**Note:** Never ever ignore warnings, unless you know exactly where they
+come from and can be sure they are harmless! Imagine dropping a warning like
+this in a situation in which an important category would be completely missing
+values. Your results would be very skewed, leading you to the wrong conclusion!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage)) +
+  geom_histogram()
+```
+
+:::
+
+---
+
+The distribution of coverages across all individuals is not that informative.
+Maybe we can take a look at those distributions across different categories?
+
+We clearly have two sets of categories we might be interested in. One is
+perhaps the `country` of origin, the other the `age_bin`. **Let's introduce
+a new mapping of an aesthetic called `fill`. In your `aes()` call, in
+addition to `aes(x = age)`, write `aes(x = age, fill = age_bin)`. What happens
+when you do this?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram()
+```
+
+:::
+
+---
+
+**Staying with this exercise, what's the difference between setting the `fill`
+aesthetic with `aes(x = age, fill = age_bin)` and the `color` aesthetic
+with `aes(x = age, fill = age_bin)`? What if you do both?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+The `fill` mapping is useful for filling out geometries which involve "areas"
+of some kind (like a histogram or a barplot). The `color` mapping is more
+useful for outlines alone, like we'll see in a following exercise on plotting
+densities. **For now just remember that `fill` and `color` are useful
+parameters that you can set for basically every plotting function in _ggplot2_!**
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram()
+```
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, color = age_bin)) +
+  geom_histogram()
+```
+
+:::
+
+---
+
+**There are two ways in which you can adjust the binning of a _ggplot2_
+histogram. Check out `?geom_histogram` and experiment a little bit.**
+
+**Note:** The arguments you find which modify the visualization of a
+histogram are not mapping, so they don't belong in the `aes()` call, but
+either after it (in the `ggplot()` call) or you can put them directly
+inside the `geom_histogram(...)` call. _I always get this wrong, so
+whenever you have issues with this, take a look where you're specifying
+these optional arguments!_
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+1. We have the `bins` argument which changes the number of bins. This sets
+the number of histogram bars to a hardcoded value of 100:
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram(bins = 100)
+```
+
+2. And we have the `binwidth` argument which changes the width of each bin.
+This spaces each bar of the histogram at 1 point of coverage:
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram(binwidth = 1)
+```
+
+:::
+
+---
+
+In addition to `bins` and `binwidth`, the function `geom_histogram()` has two
+additional arguments:
+
+- `position` has the default value `"stack"`, but can also be set to
+`"identity"` or `"dodge"`,
+- `alpha`, which can have a value between 0 and 1 (1 being the default).
+
+**What happens when you set `position = "identity"` and `alpha = 0.5`? How
+is the result different from the default (which is either `geom_histogram()`
+alone or `geom_histogram(position = "stack")`)?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+1. Here is the default:
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram() # same as geom_histogram(position = "stack")
+```
+
+2. Here is the `"dodge"` variant:
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram(position = "dodge")
+```
+
+3. And here is the `"identity"` variant. Note that we should probably specify
+the `alpha` transparency too!
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram(position = "identity")
+```
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram(position = "identity", alpha = 0.6)
+```
+
+:::
+
+
+### Faceting intermezzo
+
+```{r}
+metadata %>%
+  filter(age > 0) %>%
+  ggplot(aes(coverage, fill = age_bin)) +
+  geom_histogram() +
+  facet_wrap(~ age_bin, scales = "free_y")
+```
+
+### Combining figures
+
+
+### Two numerical variables
+
+```{r}
+geo_df <-
+  metadata %>%
+  filter(age > 0) %>%
+  group_by(country) %>%
+  summarize(
+    count = n(),
+    avg_lat = mean(latitude, na.rm = TRUE),
+    avg_lon = mean(longitude, na.rm = TRUE),
+    avg_cov = mean(coverage, na.rm = TRUE)
+  )
+```
+
+```{r}
+p1 <-
+  ggplot(geo_df, aes(x = avg_lat, y = count)) +
+  geom_point() +
+  coord_cartesian(xlim = c(-90, 90))
+```
+
+```{r}
+p2 <-
+  ggplot(geo_df, aes(x = avg_lon, y = count)) +
+  geom_point() +
+  coord_cartesian(xlim = c(-90, 90))
+```
+
+```{r}
+library(cowplot)
+
+plot_grid(p1, p2)
+```
+
+```{r}
+p1 <- p1 + geom_smooth(method = "lm")
+```
+
+```{r}
+p2 <- p2 + geom_smooth(method = "lm")
+```
+
+```{r}
+plot_grid(p1, p2)
+```
+
+
+
+
+## Exercise 7: Summarizing IBD data
+
+OK, data munging (widely acknowledged to be the most annoying part of doing
+data science) is done. Time to do some data exploration and science!
+In this and later exercises you will get to practice your _tidyverse_ skills
+from the previous chapter on your new exciting IBD data.
+
+---
+
+```{r}
+ibd_today <- filter(ibd, time_pair == "present-day:present-day")
+ibd_today
+```
+
+---
+
+**Plot the distribution of lengths of IBD segments overall.**
+
+```{r}
+ibd_today %>%
+  ggplot() +
+  geom_density(aes(length))
+```
+
+```{r}
+ibd_today %>%
+  ggplot() +
+  geom_density(aes(length)) +
+  geom_vline(xintercept = 2) +
+  coord_cartesian(xlim = c(0, 10))
+```
+
+---
+
+**Use `group_by()` and `summarize()` to compute the total length of IBD sequence
+for each pair of `sample1` and `sample2` by summing it up into a new column
+`total`. Save the result into a variable `ibd_indiv`. Sort the result based on
+this computed `total` using the `arrange()` function.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_indiv <-
   ibd %>%
   group_by(sample1, sample2) %>%
   summarise(total = sum(length)) %>%
   arrange(desc(total))
 ```
 
-<!-- ```{r} -->
-<!-- rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId -->
-<!-- rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .) -->
-<!-- rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1)) -->
-<!-- ``` -->
+:::
 
-<!-- ```{r} -->
-<!-- right_join(total_ibd, rels_df) %>% print(n=Inf) -->
-<!-- ``` -->
+---
+
+**Although interesting, the previous result only shows the `total` for
+each combination of `sample1` and `sample2`, because `group_by()` lost other
+metadata (we only told it to group by the sample names). Modify your solution
+to the previous exercise by grouping not just based on samples, but also
+based on `geo_pair` and `time_pair`. This will allow us to investigate
+IBD patterns geographically and temporally.**
+
+**Hint:** Just as you did `group_by(sample1, sample2)` in the previous
+solution, add the additional pair columns you want to group over after
+`sample1, sample2`.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_indiv <-
+  ibd %>%
+  group_by(sample1, sample2, geo_pair, time_pair) %>%
+  summarise(total = sum(length)) %>%
+  arrange(desc(total))
+```
+
+:::
+
+---
+```{r}
+rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId
+rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .)
+rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1))
+```
+
+```{r}
+right_join(total_ibd, rels_df) %>% print(n=Inf)
+```
 
 
-<!-- 44 VK110      VK230       85.9 -->
-<!-- 45 Vt779      Vt808       57.3 -->
-<!-- 46 RISE487    RISE489     50.1 -->
-<!-- 47 RISE486    RISE489     45.8 -->
+44 VK110      VK230       85.9
+45 Vt779      Vt808       57.3
+46 RISE487    RISE489     50.1
+47 RISE486    RISE489     45.8
 
 
 
 
 
 
+Figure out which (if any) pairs of samples are either resulting from
+duplicates or from first degree relatives? In other words, whether some samples
+might, in reality, be the same person, or share an IBD spanning an entire
+chromosome 1?*
 **Generally speaking, very short IBD segments are not very trustworthy.
 Filter only to those segments which are longer than 1 Mb.
 Save the result back to the `ibd` variable.**
@@ -747,6 +1377,105 @@ ggplot(ibd, aes(length)) + geom_histogram()
 
 
 :::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 **Let's start simple and ignore the temporal dimension of IBD sharing for now,
