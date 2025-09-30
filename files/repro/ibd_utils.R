@@ -23,8 +23,8 @@ process_metadata <- function() {
 
   # select a subset of columns
   metadata <- metadata_all %>%
-    select(sampleId, popId, country, continent, ageAverage, coverage, longitude, latitude) %>%
-    rename(sample = sampleId, population = popId, age = ageAverage)
+    select(sampleId, country, continent, ageAverage, coverage) %>%
+    rename(sample = sampleId, age = ageAverage)
 
   # replace missing ages of present-day individuals with 0
   metadata <- mutate(metadata, age = if_else(is.na(age), 0, age))
@@ -32,7 +32,7 @@ process_metadata <- function() {
   metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "Denisova"))
 
   # bin individuals according to their age
-  metadata$age_bin <- cut(metadata$age, breaks = c(0, 10000, 20000, 30000, 40000, 50000), dig.lab = 10)
+  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 1000), dig.lab = 10)
   bin_levels <- levels(metadata$age_bin)
 
   metadata <- metadata %>%
@@ -62,12 +62,12 @@ join_metadata <- function(ibd, metadata) {
   # annotate with new columns indicating a pair of countries or time bins
   ibd <- mutate(ibd,
                 country_pair = paste(country1, country2, sep = ":"),
-                region_pair = paste(region1, region2, sep = ":"),
+                region_pair = paste(continent1, continent2, sep = ":"),
                 time_pair = paste(age_bin1, age_bin2, sep = ":"),
                 .before = chrom)
 
   # drop columns which are not needed anymore
-  ibd <- select(ibd, -c(country1, country2, continent1, continent2, age1, age2))
+  ibd <- select(ibd, -c(country1, country2, continent1, continent2, starts_with("age")))
 
   return(ibd)
 }
