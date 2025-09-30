@@ -23,7 +23,7 @@ process_metadata <- function() {
 
   # select a subset of columns
   metadata <- metadata_all %>%
-    select(sampleId, popId, country, ageAverage, coverage, longitude, latitude) %>%
+    select(sampleId, popId, country, continent, ageAverage, coverage, longitude, latitude) %>%
     rename(sample = sampleId, population = popId, age = ageAverage)
 
   # replace missing ages of present-day individuals with 0
@@ -61,12 +61,13 @@ join_metadata <- function(ibd, metadata) {
 
   # annotate with new columns indicating a pair of countries or time bins
   ibd <- mutate(ibd,
-                geo_pair = paste(country1, country2, sep = ":"),
+                country_pair = paste(country1, country2, sep = ":"),
+                region_pair = paste(region1, region2, sep = ":"),
                 time_pair = paste(age_bin1, age_bin2, sep = ":"),
                 .before = chrom)
 
   # drop columns which are not needed anymore
-  ibd <- select(ibd, -starts_with("country"), -starts_with("age"))
+  ibd <- select(ibd, -c(country1, country2, continent1, continent2, age1, age2))
 
   return(ibd)
 }

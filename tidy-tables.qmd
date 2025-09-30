@@ -50,11 +50,24 @@ the file itself, just paste the URL address in your browser.)
 df <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
 
-<!-- # remove unnecessary columns from the original metadata -->
+# remove unnecessary columns from the original metadata
 <!-- df <- read_tsv("../ibdmix-bonus/data/neo.impute.1000g.sampleInfo_clusterInfo.txt") -->
 <!-- df <- df %>% -->
 <!--   select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA)) %>% -->
-<!--   filter(sampleId != "K1") %>% -->
+<!--   filter(sampleId != "K1") -->
+<!-- continents <- list( -->
+<!--     Africa = c("WestAfrica", "EastAfrica", "SouthAfrica", "CentralAfrica", "NorthAfrica"), -->
+<!--     Asia = c("SouthAsia", "SouthEastAsia", "EastAsia", "WesternAsia", "CentralAsia", "NorthAsia"), -->
+<!--     America = c("NorthAmerica", "SouthAmerica"), -->
+<!--     Europe = c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope" -->
+<!--     ) -->
+<!-- ) -->
+<!-- df %>% mutate(continent = case_when( -->
+<!--     region %in% continents$Africa ~ "Africa", -->
+<!--     region %in% continents$Asia ~ "Asia", -->
+<!--     region %in% continents$America ~ "America", -->
+<!--     region %in% continents$Europe ~ "Europe", -->
+<!-- )) %>%  -->
 <!--   write_tsv("files/tidy/metadata.tsv") -->
 
 
@@ -1497,103 +1510,6 @@ table(df$sex_set)
 
 :::
 
-
-
----
-
-**Let's ramp up the difficulty a bit more.
-[Don't panic!](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Don't_Panic) I promise things in _tidyverse_ aren't going to
-get more complicated after this, as far as your day-to-day data science work
-will be concerned.**
-
-**First, let's consider the `region` column which contains the following
-values:**
-
-```{r}
-unique(df$region)
-```
-
-**Here are these vectors encoded as lists, one element of the list corresponding
-to a continent. Copy this in your code (I premade this for you to save you
-some typing):**
-
-```{r}
-continents <- list(
-  Africa = c("WestAfrica", "EastAfrica", "SouthAfrica", "CentralAfrica", "NorthAfrica"),
-  Asia = c("SouthAsia", "SouthEastAsia", "EastAsia", "WesternAsia", "CentralAsia", "NorthAsia"),
-  America = c("NorthAmerica", "SouthAmerica"),
-  Europe = c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope"
-)
-)
-```
-
-**Use your knowledge of the `%in%` operator (introduced in the R bootcamp
-exercise on indexing using logical vectors) and the fact that you can
-get an element of a named list such as `continents$Africa`, to create
-a new column called `continent` using the `case_when()` function.**
-
-**Hint:** As a reminder, this is how you can use the `%in%` operator to test
-whether any given element of a vector is a member of another vector (which
-can be used as a condition in `case_when()`, remember!). So, the general
-pattern of `case_when()` that you would use inside a `mutate()` call would
-be this:
-
-```
-case_when(
-  region %in% continents$"<a continent name>") ~ "<a continent name>",
-  ...
-)
-```
-
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-Let's take this step by step.
-
-As a reminder, this is how we can get a `TRUE` / `FALSE` vector of whether
-a given element of the `region` column matches one of the continents in our
-named list (let's just look at five results to avoid listing thousands of items):
-
-```{r}
-head(df$region %in% continents$Africa, 5)
-```
-
-We know that each element of `case_when()` expects a `TRUE` / `FALSE` vector.
-This is then how we can use the logical vector produced using the `%in%`
-operator in a `case_when()` function:
-
-```{r}
-df <-
-  df %>%
-  mutate(continent = case_when(
-    region %in% continents$Africa ~ "Africa",
-    region %in% continents$Asia ~ "Asia",
-    region %in% continents$America ~ "America",
-    region %in% continents$Europe ~ "Europe",
-  ))
-```
-
-:::
-
----
-
-**Use the `table()` function on the `region` and `continent` columns of `df` to
-make sure we didn't miss an item as we did with the `sex_desc` above.**
-
-**Note:** Always do these kinds of little sanity checks when doing transformations
-of your data. A little bug can always creep in and really break your analysis.
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-No region has a zero in all continents, so each region is assigned to a continent:
-
-```{r}
-table(df$region, df$continent)
-```
-
-:::
 
 ---
 
