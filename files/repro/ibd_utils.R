@@ -32,7 +32,7 @@ process_metadata <- function() {
   metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "Denisova"))
 
   # bin individuals according to their age
-  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 1000), dig.lab = 10)
+  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 10000), dig.lab = 10)
   bin_levels <- levels(metadata$age_bin)
 
   metadata <- metadata %>%
@@ -49,8 +49,8 @@ join_metadata <- function(ibd, metadata) {
   cat("Joining IBD data and metadata...\n")
 
   # prepare metadata for IBD annotation
-  metadata1 <- select(metadata, -population, -coverage)
-  metadata2 <- select(metadata, -population, -coverage)
+  metadata1 <- select(metadata, -coverage)
+  metadata2 <- select(metadata, -coverage)
   colnames(metadata1) <- paste0(colnames(metadata1), "1")
   colnames(metadata2) <- paste0(colnames(metadata2), "2")
 
@@ -65,9 +65,6 @@ join_metadata <- function(ibd, metadata) {
                 region_pair = paste(continent1, continent2, sep = ":"),
                 time_pair = paste(age_bin1, age_bin2, sep = ":"),
                 .before = chrom)
-
-  # drop columns which are not needed anymore
-  ibd <- select(ibd, -c(country1, country2, continent1, continent2, starts_with("age")))
 
   return(ibd)
 }
