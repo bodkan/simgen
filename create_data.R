@@ -103,14 +103,31 @@ ibd_all <- ibd_orig
 
 ibd_all <- join_metadata(ibd_all, metadata)
 
-ibd_sum <-
+# only long segments
+
+ibd_long <-
   ibd_all %>%
   filter(length > 10 & age_bin1 == age_bin2) %>%
   group_by(sample1, sample2, rel) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
-write_tsv(ibd_sum, here::here("files/tidy/ibd_sum.tsv"))
+write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))
 
-system("git add files/tidy/ibd_sum.tsv")
-system("git commit -m 'Add summarized IBD data'")
+system("git add files/tidy/ibd_long.tsv")
+system("git commit -m 'Add summarized long IBD data'")
+system("git push")
+
+
+# even short segments
+
+ibd_short <-
+  ibd_all %>%
+  filter(length > 3 & age_bin1 == age_bin2) %>%
+  group_by(sample1, sample2, rel) %>%
+  summarize(n_ibd = n(), total_ibd = sum(length))
+
+write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))
+
+system("git add files/tidy/ibd_long.tsv")
+system("git commit -m 'Add summarized long IBD data'")
 system("git push")
