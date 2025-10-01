@@ -107,7 +107,7 @@ ibd_segments <- join_metadata(ibd_segments, metadata)
 ibd_long <-
   ibd_segments %>%
   filter(length > 10 & age_bin1 == age_bin2) %>%
-  group_by(sample1, sample2, rel) %>%
+  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
 write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))

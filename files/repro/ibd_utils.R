@@ -8,7 +8,7 @@ process_ibd <- function() {
   cat("Downloading and processing IBD data...\n")
 
   gz_file <- tempfile()
-  download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb", quiet = TRUE)
+  download.file("https://tinyurl.com/simgen-ibd-segments", gz_file, mode = "wb", quiet = TRUE)
   ibd_all <- read_tsv(gz_file, show_col_types = FALSE)
 
   ibd <- ibd_all %>% mutate(length = end - start)

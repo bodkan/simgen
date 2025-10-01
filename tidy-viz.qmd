@@ -666,7 +666,7 @@ source("ibd_utils.R")
 metadata <- process_metadata()
 ibd_segments <- process_ibd()
 
-ibd_segments <- join_metadata(ibd_segments, metadata)
+ibd_all <- join_metadata(ibd_segments, metadata)
 ```
 
 ```{r}
@@ -676,7 +676,7 @@ source(here::here("files/repro/ibd_utils.R"))
 metadata <- process_metadata()
 ibd_segments <- process_ibd()
 
-ibd_segments <- join_metadata(ibd_segments, metadata)
+ibd_all <- join_metadata(ibd_segments, metadata)
 ```
 
 
@@ -927,7 +927,7 @@ Now let's look at continuous variables and this time consider our `ibd`
 table if IBD segments between pairs of individuals:
 
 ```{r}
-tail(ibd_segments)
+tail(ibd_all)
 ```
 
 The most interesting quantity we might want to analyse in the IBD context
@@ -960,7 +960,7 @@ anyone looking at your figure, either using `xlab()` or `labs(x = ...)`.**
 Here's a histogram:
 
 ```{r}
-ibd_segments %>%
+ibd_all %>%
   ggplot(aes(length)) +
   geom_histogram() +
   labs(x = "IBD length [centimorgans]")
@@ -969,7 +969,7 @@ ibd_segments %>%
 Here's a density plot:
 
 ```{r}
-ibd_segments %>%
+ibd_all %>%
   ggplot(aes(length)) +
   geom_density() +
   labs(x = "IBD length [centimorgans]")
@@ -996,12 +996,18 @@ This should be easy for you now as budding _tidyverse_ data munging experts!
 
 ```{r}
 ibd_eur <-
-  ibd_segments %>%
-  filter(region_pair == "Europe:Europe") %>%
-  filter(time_pair == "present-day:present-day")
+  ibd_all %>%
+  filter(
+    region_pair == "Europe:Europe" &
+    time_pair == "present-day:present-day"
+  )
 
 ibd_eur
 ```
+
+Note that I always like to indent individual steps of a data processing
+pipeline so that each component is on its separate line. It helps with
+readability a lot!
 
 ---
 
@@ -1051,9 +1057,10 @@ ibd_eur %>%
 
 :::
 
----
 
-We clearly have some individual pairs which share a huge amount of IBD.
+### Limiting axis scales
+
+Above, we clearly have some individual pairs which share a huge amount of IBD.
 We'll quantify how much a bit later, but for now, the x-axis appears in the
 density plot is too spread out. This happens often in visualizing numerical
 variables. **Use these two additional layers to improve the readability of
@@ -1136,7 +1143,7 @@ the same age bin),
 of individuals).
 
 **Save the result of your `%>%` pipeline implementing the steps 1.-3. above in
-a variable `ibd_sum`.**
+a variable `ibd_sum_long`.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1146,18 +1153,25 @@ implementing the pipeline is just a matter of sequencing them together as if
 you were building a LEGO set!
 
 ```{r}
-ibd_long <-
-  ibd_segments %>%
-  filter(length > 10 & age_bin1 == age_bin2) %>% 
+ibd_sum_long <
+  ibd_all %>%
+  filter(
+    length > 10 &          # only long IBD segments
+    age_bin1 == age_bin2   # only IBD pairs within the same time window
+  ) %>% 
   group_by(sample1, sample2, rel) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
-ibd_long
+ibd_sum_long
 ```
 
 I hope you're all appreciating the awesome data science powers you've already
 learned to do this! This would require a crazy amount of work with standard
 base R and might be very hard (or downright impossible) to do with Excel.
+
+Believe me that if you understand this particular chunk of code (even if
+you needed help putting it together) you know the majority of _tidyverse_
+work needed to answer complex data science questions.
 
 :::
 
@@ -1170,7 +1184,7 @@ just like you created it yourself, except based on all chromosomes in the
 entire genome. We'll be working on that from now on.**
 
 ```{r}
-ibd_long <- read_tsv("https://tinyurl.com/simgen-ibd-long", show_col_types = FALSE)
+ibd_sum_long <- read_tsv("https://tinyurl.com/simgen-ibd-long", show_col_types = FALSE)
 ```
 
 
@@ -1211,7 +1225,7 @@ IBD, around the whole 3 gigabases of sequence!
 We'll work on clarifying that below.
 
 ```{r}
-ibd_sum %>%
+ibd_sum_long %>%
   ggplot(aes(x = total_ibd, y = n_ibd)) +
   geom_point()
 ```
@@ -1225,7 +1239,8 @@ with modifying the `aes()` aesthetic of a geom layer using the `color`
 argument of `aes()`. Right now your dots are all black, which isn't super
 informative. Luckily, you're IBD table has a "mysterious" column called
 `rel`. What happens when you `color` points based on the values in this
-column?**
+column inside the `aes()` function (i.e., set `color = rel`)? Similarly,
+what happens when you set `shape = rel`?**
 
 **Look at a figure from [this huge](https://www.nature.com/articles/s41588-023-01582-w/figures/3)
 study of IBD patterns and their relationship to the degree of relatedness
@@ -1233,26 +1248,23 @@ between individuals? This is completely independent data set and independent
 analysis, but do you see similarities between this paper and your figure?**
 
 **Use the `+ labs()` layer function to properly annotate your axes, and give
-your figure a nice title too. Additionally, you can give your legend
-a nicer readable title too using the layer function
-`+ guides(color = guide_legend("relatedness")`**
+your figure a nice title too.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-ibd_sum %>%
+ibd_sum_long %>%
   ggplot(aes(x = total_ibd, y = n_ibd, color = rel)) +
   geom_point() +
   labs(x = "total IBD sequence", y = "number of IBD segments",
        title = "Total IBD sequence vs number of IBD segments",
-       subtitle = "Both quantities computed only on IBD segments 10 cM or longer") +
-  guides(color = guide_legend("relatedness"))
+       subtitle = "Both quantities computed only on IBD segments 10 cM or longer")
 ```
 
 :::
 
----
+### Multiple data sets in one plot
 
 So far we've always followed this pattern of _ggplot2_ usage, to borrow our
 very first `geom_histogram()` example:
@@ -1279,187 +1291,183 @@ with their own aesthetic parameters (colors, shapes, sizes). Let's work through
 an exercise to explain this better, step by step, to make our IBD scatter plot
 figure much more nicer to look at.
 
+---
+
+**Take your `ibd_sum_total` table and create two versions of it using `filter()`
+like this:**
+
+1. `ibd_unrel <- filter(ibd_sum, is.na(rel))`
+2. `ibd_rel <- filter(ibd_sum, !is.na(rel))`
+
+The first table contains only those pairs of individuals with missing information
+about relatedness, the second one contains only those rows with this information
+present.
+
+**Print out the `ibd_unrel` and `ibd_rel` tables to make sure they both
+contain the same columns, even though they have different rows.**
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
 ```{r}
-ibd_unrel <- filter(ibd_sum, is.na(rel))
-ibd_rel <- filter(ibd_sum, !is.na(rel))
+ibd_unrel <- filter(ibd_sum_long, is.na(rel))
+ibd_unrel
+```
+
+```{r}
+ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+ibd_rel
+```
+
+:::
+
+---
+
+**Then visualize the `ibd_unrel` (IBD summaries between unrelated individuals)
+table with the following "template".**
+
+**Note:** The `ggplot()` has no arguments! Everything is in the `geom_point()`
+call!
+
+```
+ggplot() +
+  geom_point(data = <DATA FRAME>, aes(<ADD WHAT IS NEEDED>), color = "lightgray")
+```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ggplot() +
+  geom_point(data = ibd_unrel, aes(x = n_ibd, y = total_ibd), color = "lightgray")
+```
+
+:::
+
+---
+
+**Now visualize the scatter plot of pairs of individuals which are known to be
+related, `ibd_rel`, so something looking like this:**
+
+```
+ggplot() +
+  geom_point(data = <DATA FRAME>, aes(<ADD WHAT IS NEEDED>, color = rel)) +
+```
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ggplot() +
+  geom_point(data = ibd_rel, aes(x = n_ibd, y = total_ibd, color = rel))
+```
+
+:::
+
+---
+
+**You have now plotted the two scatter plots separately, but here comes a very
+cool aspect of _ggplot2_ I wanted to show you. You can combine the two figures,
+each plotting a different data frame, into one! Do this now and to make the
+figure even nicer (and even publication ready!), add proper `x` and `y` labels,
+overall plot `title` as well as `subtitle` (all using the `labs()` layer
+functions) as well as adjust the legend title (just like you did with the
+`guides()` layer function above).**
+
+**As a bonus, and to learn another parameter of `aes()` useful for scatter plots,
+in addition to setting `color = rel` (which sets a color of each point based
+on the relatedness value), add also `shape = rel`! Observe what happens
+when you do this!**
+
+**I'm not personally fan of the default grey-filled background of ggplots.
+I like to add `+ theme_minimal()` at the end of my plotting code of many of
+my figures, particularly when I'm creating visualizations for my papers.
+Try it too!**
+
+**Hint:** If it still isn't clear, don't worry. Here's a bit of help of what
+your plotting code should look like:
+
+```
+ggplot() +
+  geom_point(<YOUR CODE PLOTTING UNRELATED IBD PAIRS>)
+  geom_point(<YOUR CODE PLOTTING RELATED IBD PAIRS>) +
+  labs(<x, y, title, and subtitle text>) +
+  guides(color = guide_legend("relatedness"), shape = guide_legend("relatedness)) +
+  theme_minimal()
+```
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's the complete solution to this exercise:
+
+
+```{r}
+ibd_unrel <- filter(ibd_sum_long, is.na(rel))
+ibd_rel <- filter(ibd_sum_long, !is.na(rel))
 
 ggplot() +
   geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
-  labs(x = "total IBD sequence [centimorgan]", y = "number of IBD segments")
+  labs(
+    x = "total IBD sequence",
+    y = "number of IBD segments",
+    title = "Total IBD sequence vs number of IBD segments",
+    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+  ) +
+  guides(
+    color = guide_legend(title = "relatedness"),
+    shape = guide_legend(title = "relatedness")
+  ) +
+  theme_minimal()
 ```
-
-
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd_sum %>%
-  filter(country1 == country2) %>%
-  ggplot(aes(y = time_pair, x = total_ibd)) +
-  geom_boxplot() +
-  theme(legend.position = "none")
-```
-
-:::
-
----
-
-**Sometimes when you deal with numerical variables like those in your
-histogram, a couple of outliers can make for a slightly hard-to-read figure.
-
-
-
-The distribution of coverage across all individuals is not that informative
-because it clumps together very different samples across very different
-ages and geographical regions. Maybe we can take a look at those distributions
-across different categories?
-
-We clearly have two sets of categories we might be interested in. One is
-perhaps the `country` of origin, the other the `age_bin`. **Let's introduce
-a new mapping of an aesthetic called `fill`. In your `aes()` call, in
-addition to `aes(x = age)`, write `aes(x = age, fill = age_bin)`. What happens
-when you do this?**
-
-**Note:** This effectively introduces the possibility of plotting two variables
-at once! One is `coverage` (the continuous variable along the x-axis), the
-other is `age_bin` (a categorical variable plotted as colors).
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd_eur %>%
-  ggplot(aes(total_ibd)) +
-  geom_histogram()
-```
-
-:::
-
----
-
-**Staying with this exercise, what's the difference between setting the `fill`
-aesthetic with `aes(x = age, fill = age_bin)` and the `color` aesthetic
-with `aes(x = age, fill = age_bin)`? What if you do both?**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-The `fill` mapping is useful for filling out geometries which involve "areas"
-of some kind (like a histogram or a barplot). The `color` mapping is more
-useful for outlines alone, like we'll see in a following exercise on plotting
-densities. **For now just remember that `fill` and `color` are useful
-parameters that you can set for basically every plotting function in _ggplot2_!**
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram()
-```
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, color = age_bin)) +
-  geom_histogram()
-```
-
-:::
-
----
-
-**There are two ways in which you can adjust the binning of a _ggplot2_
-histogram. Check out `?geom_histogram` and experiment a little bit.**
-
-**Note:** The arguments you find which modify the visualization of a
-histogram are not mapping, so they don't belong in the `aes()` call, but
-either after it (in the `ggplot()` call) or you can put them directly
-inside the `geom_histogram(...)` call. _I always get this wrong, so
-whenever you have issues with this, take a look where you're specifying
-these optional arguments!_
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-1. We have the `bins` argument which changes the number of bins. This sets
-the number of histogram bars to a hardcoded value of 100:
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram(bins = 100)
-```
-
-2. And we have the `binwidth` argument which changes the width of each bin.
-This spaces each bar of the histogram at 1 point of coverage:
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram(binwidth = 1)
-```
-
-:::
-
----
-
-In addition to `bins` and `binwidth`, the function `geom_histogram()` has two
-additional arguments:
-
-- `position` has the default value `"stack"`, but can also be set to
-`"identity"` or `"dodge"`,
-- `alpha`, which can have a value between 0 and 1 (1 being the default).
-
-**What happens when you set `position = "identity"` and `alpha = 0.5`? How
-is the result different from the default (which is either `geom_histogram()`
-alone or `geom_histogram(position = "stack")`)?**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-1. Here is the default which you already know:
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram() # same as geom_histogram(position = "stack")
-```
-
-2. Here is the `"dodge"` variant:
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram(position = "dodge")
-```
-
-3. And here is the `"identity"` variant. Note that we should probably specify
-the `alpha` transparency too!
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram(position = "identity")
-```
-
-```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram(position = "identity", alpha = 0.6)
-```
-
-:::
 
 
 ### Faceting intermezzo
+
+Let's talk about dimensionality (i.e., the number of variables) in our data
+sets and about the ways we can represent them. This topic boils down to the
+question of _"How many dimensions of our data can we represent in a single
+figure and be it as comprehensible as possible?"_
+
+So far we've managed to visualize a rather complex data set, which features,
+for pairs of two individuals:
+
+- the total amount of IBD sequence `total_ibd` (plotted on the **x axis**)
+- the number of IBD segments `n_ibd` (plotted on the **y axis**)
+- the degree of relatedness `rel` (plotted as **colors** and **shapes**)
+
+Just look at this figure again -- this could easily be a main figure in a
+final scientific publication and we only needed a few lines of nicely
+readable code!
+
+```{r}
+#| echo: false
+ibd_unrel <- filter(ibd_sum_long, is.na(rel))
+ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+
+ggplot() +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
+  labs(
+    x = "total IBD sequence",
+    y = "number of IBD segments",
+    title = "Total IBD sequence vs number of IBD segments",
+    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+  ) +
+  guides(
+    color = guide_legend(title = "relatedness"),
+    shape = guide_legend(title = "relatedness")
+  ) +
+  theme_minimal()
+```
+
+**Now looking at the data again, we see additional variables (data dimensions)
+but we have run out of possibilities of visualizing them using the means
+that we have available(`x` and `y` dimensions, `color` and `shape`). What
+if we want to visualize
 
 ```{r}
 metadata %>%
