@@ -67,20 +67,20 @@ rel_df <- bind_rows(rel_df, select(rel_df, y = x, x = y, rel))
 # IBD table ---------------------------------------------------------------
 
 load("~/Desktop/neo.impute.1000g.ibd.filter.strict.RData")
-ibd_orig <- dd
-ibd_orig <- dplyr::as_tibble(ibd_orig)
-ibd_orig <- dplyr::select(ibd_orig, sample1, sample2, chrom = chromosome, start = posCmStart, end = posCmEnd)
-ibd_orig <- dplyr::filter(
-  ibd_orig,
+ibd_segments <- dd
+ibd_segments <- dplyr::as_tibble(ibd_segments)
+ibd_segments <- dplyr::select(ibd_segments, sample1, sample2, chrom = chromosome, start = posCmStart, end = posCmEnd)
+ibd_segments <- dplyr::filter(
+  ibd_segments,
   sample1 != "K1" & sample2 != "K1" &  # individual without age
     sample1 != "Denisova" & sample2 != "Denisova" &
     sample1 != "Vindija33.19" & sample2 != "Vindija33.19" &
     sample1 != "AltaiNeandertal" & sample2 != "AltaiNeandertal"
 )
-ibd_orig <- left_join(ibd_orig, rel_df, by = c("sample1" = "x", "sample2" = "y"))
+ibd_segments <- left_join(ibd_segments, rel_df, by = c("sample1" = "x", "sample2" = "y"))
 
-filter(ibd_orig, chrom == 21) %>%
-  readr::write_tsv(here::here("files/tidy/ibd.tsv.gz"))
+filter(ibd_segments, chrom == 21) %>%
+  readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"))
 
 
 
@@ -93,20 +93,19 @@ system("git push")
 
 # big IBD summary table ---------------------------------------------------
 
-ibd_orig <- ibd_orig %>% mutate(length = end - start)
+ibd_segments <- ibd_segments %>% mutate(length = end - start)
 
 source(here::here("files/repro/ibd_utils.R"))
 
 metadata <- process_metadata()
-# ibd_all <- process_ibd()
-ibd_all <- ibd_orig
+# ibd_segments <- process_ibd()
 
-ibd_all <- join_metadata(ibd_all, metadata)
+ibd_segments <- join_metadata(ibd_segments, metadata)
 
 # only long segments
 
 ibd_long <-
-  ibd_all %>%
+  ibd_segments %>%
   filter(length > 10 & age_bin1 == age_bin2) %>%
   group_by(sample1, sample2, rel) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
@@ -121,13 +120,13 @@ system("git push")
 # even short segments
 
 ibd_short <-
-  ibd_all %>%
+  ibd_segments %>%
   filter(length > 3 & age_bin1 == age_bin2) %>%
   group_by(sample1, sample2, rel) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
-write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))
+write_tsv(ibd_short, here::here("files/tidy/ibd_short.tsv"))
 
-system("git add files/tidy/ibd_long.tsv")
-system("git commit -m 'Add summarized long IBD data'")
+system("git add files/tidy/ibd_short.tsv")
+system("git commit -m 'Add summarized short IBD data'")
 system("git push")
