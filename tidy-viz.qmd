@@ -42,20 +42,6 @@ download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb", quiet = TR
 ibd_orig <- read_tsv(gz_file, show_col_types = FALSE)
 ```
 
-<!-- load("~/Desktop/neo.impute.1000g.ibd.filter.strict.RData") -->
-<!-- ibd_all <- dd -->
-<!-- ibd_all <- dplyr::as_tibble(ibd_all) -->
-<!-- ibd_all <- dplyr::select(ibd_all, sample1, sample2, chrom = chromosome, start = posCmStart, end = posCmEnd) -->
-<!-- ibd_all <- dplyr::filter(ibd_all, chrom == 1) -->
-<!-- ibd_all <- dplyr::filter( -->
-<!--   ibd_all, -->
-<!--   sample1 != "K1" & sample2 != "K1" &  # individual without age -->
-<!--   sample1 != "Denisova" & sample2 != "Denisova" & -->
-<!--   sample1 != "Vindija33.19" & sample2 != "Vindija33.19" & -->
-<!--   sample1 != "AltaiNeandertal" & sample2 != "AltaiNeandertal" -->
-<!-- ) -->
-<!-- readr::write_tsv(ibd_all, "files/tidy/ibd.tsv.gz") -->
-
 And **we also need to read the corresponding metadata, with which you are already
 very closely familiar with**:
 
@@ -1149,8 +1135,7 @@ the same age bin),
 `country_pair`, and `time_pair`,
 
 5. `summarize()` to create two new quantities `n_ibd = n()` and `total_ibd = sum(length)` (total number of long IBD segments and their total sequence for each
-of individuals),
-6. `ungroup()` at the end to remove the grouping aspect.
+of individuals).
 
 **Save the result of your `%>%` pipeline implementing the steps 1.-3. above in
 a variable `ibd_sum`.**
@@ -1165,10 +1150,9 @@ you were building a LEGO set!
 ```{r}
 ibd_sum <-
   ibd_all %>%
-  filter(region_pair == "Europe:Europe" & length > 10 & age_bin1 == age_bin2) %>% 
-  group_by(sample1, sample2, country_pair, time_pair) %>%
-  summarize(n_ibd = n(), total_ibd = sum(length)) %>%
-  ungroup
+  filter(length > 10 & age_bin1 == age_bin2) %>% 
+  group_by(sample1, sample2, rel) %>%
+  summarize(n_ibd = n(), total_ibd = sum(length))
 
 ibd_sum
 ```
@@ -1213,8 +1197,38 @@ ibd_sum %>%
   geom_point()
 ```
 
+```{r}
+ibd_sum %>%
+  ggplot(aes(x = total_ibd, y = n_ibd, color = rel)) +
+  geom_point()
+```
+
 :::
 
+```{r}
+ibd_unrel <- filter(ibd_sum, is.na(rel))
+ibd_rel <- filter(ibd_sum, !is.na(rel))
+
+ggplot() +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
+  labs(x = "total IBD sequence [centimorgan]", y = "number of IBD segments")
+```
+
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_sum %>%
+  filter(country1 == country2) %>%
+  ggplot(aes(y = time_pair, x = total_ibd)) +
+  geom_boxplot() +
+  theme(legend.position = "none")
+```
+
+:::
 
 ---
 
