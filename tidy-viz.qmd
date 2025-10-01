@@ -37,16 +37,14 @@ which you can practice and develop your data science skills.
 :::
 
 ```{r}
-gz_file <- tempfile()
-download.file("https://tinyurl.com/simgen-ibd", gz_file, mode = "wb", quiet = TRUE)
-ibd_orig <- read_tsv(gz_file, show_col_types = FALSE)
+ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
 ```
 
 And **we also need to read the corresponding metadata, with which you are already
 very closely familiar with**:
 
 ```{r}
-metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata", show_col_types = FALSE)
+metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
@@ -93,7 +91,7 @@ everything together using `c(ibd$sample1, ibd$sample2)` which gets us a single
 vector, then calling `unique()` on that:
 
 ```{r}
-ibd_samples <- unique(c(ibd_orig$sample1, ibd_orig$sample2))
+ibd_samples <- unique(c(ibd_segments$sample1, ibd_segments$sample2))
 
 metadata_samples <- metadata_all$sampleId
 ```
@@ -135,19 +133,19 @@ data types? Do you have information for the entire genome?**
 #### Click to see the solution
 
 ```{r}
-head(ibd_orig)
+head(ibd_segments)
 ```
 
 
 ```{r}
-glimpse(ibd_orig)
+glimpse(ibd_segments)
 ```
 
 We have information just for chromosome 1 to make the data set a little
 smaller and easier for your laptops to handle.
 
 ```{r}
-table(ibd_orig$chrom)
+table(ibd_segments$chrom)
 ```
 
 :::
@@ -157,15 +155,15 @@ table(ibd_orig$chrom)
 
 **Add a new column using the `mutate()` function called `length`, which contains
 the length of each IBD segment in centimorgans (`end - start`). Save the result
-to a new variable `ibd_all`.**
+back to the variable `ibd_segments`.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-ibd_all <- ibd_orig %>% mutate(length = end - start)
+ibd_segments <- ibd_segments %>% mutate(length = end - start)
 
-ibd_all
+ibd_segments
 ```
 
 Note that you don't always use a _tidyverse_ approach. Sometimes doing a simple
@@ -173,11 +171,11 @@ thing using a simple method is just... simpler:
 
 ```{r}
 # we first make a copy of the original data
-ibd_all <- ibd_orig
+ibd_segments <- ibd_segments
 # and then add the new column
-ibd_all$length <- ibd_orig$end - ibd_orig$start
+ibd_segments$length <- ibd_segments$end - ibd_segments$start
 
-ibd_all
+ibd_segments
 ```
 
 :::
@@ -253,7 +251,7 @@ metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "
 We now have a cleaner IBD table looking like this:
 
 ```{r}
-head(ibd_all)
+head(ibd_segments)
 ```
 
 And here's our metadata information:
@@ -503,7 +501,7 @@ some metadata information. What does this mean? Consider the IBD data in its
 current state:
 
 ```{r}
-head(ibd_all)
+head(ibd_segments)
 ```
 
 When we analyze things down the line, we might want to look at IBD patterns
@@ -536,10 +534,10 @@ colnames(metadata2) <- paste0(colnames(metadata2), "2")
 :::
 
 ```{r}
-ibd_all <- inner_join(ibd_all, metadata1)
-ibd_all <- inner_join(ibd_all, metadata2)
+ibd_segments <- inner_join(ibd_segments, metadata1)
+ibd_segments <- inner_join(ibd_segments, metadata2)
 
-ibd_all
+ibd_segments
 ```
 
 ---
@@ -569,14 +567,14 @@ Save the result back to the `ibd` variable.**
 #### Click to see the solution
 
 ```{r}
-ibd_all <- mutate(
-  ibd_all,
+ibd_segments <- mutate(
+  ibd_segments,
   country_pair = paste(country1, country2, sep = ":"),
   region_pair = paste(continent1, continent2, sep = ":"),
   .before = chrom
 )
 
-ibd_all
+ibd_segments
 ```
 
 :::
@@ -594,9 +592,9 @@ Save the result back to the `ibd` variable.**
 #### Click to see the solution
 
 ```{r}
-ibd_all <- mutate(ibd_all, time_pair = paste(age_bin1, age_bin2, sep = ":"), .after = region_pair)
+ibd_segments <- mutate(ibd_segments, time_pair = paste(age_bin1, age_bin2, sep = ":"), .after = region_pair)
 
-ibd_all
+ibd_segments
 ```
 
 :::
@@ -666,9 +664,9 @@ in their own scripts.
 source("ibd_utils.R")
 
 metadata <- process_metadata()
-ibd_all <- process_ibd()
+ibd_segments <- process_ibd()
 
-ibd_all <- join_metadata(ibd_all, metadata)
+ibd_segments <- join_metadata(ibd_segments, metadata)
 ```
 
 ```{r}
@@ -676,9 +674,9 @@ ibd_all <- join_metadata(ibd_all, metadata)
 source(here::here("files/repro/ibd_utils.R"))
 
 metadata <- process_metadata()
-ibd_all <- process_ibd()
+ibd_segments <- process_ibd()
 
-ibd_all <- join_metadata(ibd_all, metadata)
+ibd_segments <- join_metadata(ibd_segments, metadata)
 ```
 
 
@@ -929,7 +927,7 @@ Now let's look at continuous variables and this time consider our `ibd`
 table if IBD segments between pairs of individuals:
 
 ```{r}
-tail(ibd_all)
+tail(ibd_segments)
 ```
 
 The most interesting quantity we might want to analyse in the IBD context
@@ -962,7 +960,7 @@ anyone looking at your figure, either using `xlab()` or `labs(x = ...)`.**
 Here's a histogram:
 
 ```{r}
-ibd_all %>%
+ibd_segments %>%
   ggplot(aes(length)) +
   geom_histogram() +
   labs(x = "IBD length [centimorgans]")
@@ -971,7 +969,7 @@ ibd_all %>%
 Here's a density plot:
 
 ```{r}
-ibd_all %>%
+ibd_segments %>%
   ggplot(aes(length)) +
   geom_density() +
   labs(x = "IBD length [centimorgans]")
@@ -998,7 +996,7 @@ This should be easy for you now as budding _tidyverse_ data munging experts!
 
 ```{r}
 ibd_eur <-
-  ibd_all %>%
+  ibd_segments %>%
   filter(region_pair == "Europe:Europe") %>%
   filter(time_pair == "present-day:present-day")
 
@@ -1119,9 +1117,9 @@ segments shared between a pair of individuals and the total number of IBD
 sequence between those pairs.
 
 **Practice your knowledge of `group_by()` and `summarize()` and apply them
-to our huge `ibd_all` table, to achieve the following:**
+to our huge `ibd_segments` table, to achieve the following:**
 
-0. Start with our original big IBD table `ibd_all` (not the smaller `ibd_eur`!)
+0. Start with our original big IBD table `ibd_segments` (not the smaller `ibd_eur`!)
 
 1. `filter()` for rows in which `region_pair == "Europe:Europe"` (only pairs
 within Europe, just as we did before),
@@ -1148,13 +1146,13 @@ implementing the pipeline is just a matter of sequencing them together as if
 you were building a LEGO set!
 
 ```{r}
-ibd_sum <-
-  ibd_all %>%
+ibd_long <-
+  ibd_segments %>%
   filter(length > 10 & age_bin1 == age_bin2) %>% 
   group_by(sample1, sample2, rel) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
-ibd_sum
+ibd_long
 ```
 
 I hope you're all appreciating the awesome data science powers you've already
@@ -1162,6 +1160,19 @@ learned to do this! This would require a crazy amount of work with standard
 base R and might be very hard (or downright impossible) to do with Excel.
 
 :::
+
+---
+
+**Your work so far has been based on a small subset of the overall IBD
+data, just for chromosome `r unique(ibd_segments$chrom)`. To move to more complex
+and interesting visualization, execute this command which reads the `ibd_long`
+just like you created it yourself, except based on all chromosomes in the
+entire genome. We'll be working on that from now on.**
+
+```{r}
+ibd_long <- read_tsv("https://tinyurl.com/simgen-ibd-long", show_col_types = FALSE)
+```
+
 
 ---
 
@@ -1176,20 +1187,28 @@ df %>%
   geom_FUNCTION()
 ```
 
-Obviously, because scatter plot is two-dimensional, we have to specify
+Because scatter plot is two-dimensional, we have to specify
 not only the `x` but also the `y` in the `aes()` aesthetic mapping... and with
-that, I think you already know how to do this! :) **Use the function
-`geom_point()` to visualize the scatter plot of `x = total_ibd` against
-`y = n_ibd`. In this educational exercise, we have of course IBD data for only
-a small portion of genome (due to memory restrictions). But still, do you
-see similarities to a figure from [this huge](https://www.nature.com/articles/s41588-023-01582-w/figures/3)
-study of IBD patterns and their relationship to the degree of relatedness
-between individuals? Which pairs of individuals (remember, each dot in your
-scatter plot is a pair of people) could be related, perhaps even first-degree
-relatives?**
+that bit of information, I think you already know how to do this based
+on your knowledge of basic _ggplot2_ techniques introduced above!
+
+**Use the function `geom_point()` to visualize the scatter plot of
+`x = total_ibd` against `y = n_ibd`. We know that related individuals share
+a large amounts of IBD sequence between each other. As a reminder, the entire
+human genome spans about 3000 centimorgans. Can you guess from your figure
+which pairs of individuals (a point on your figure representing one such pair)
+could be potentially closely related?**
+
+**Note:** Don't worry about this too much, just take a guess. Below we'll look
+at this question more closely.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+It looks like some pairs of individuals share almost their entire genome in
+IBD, around the whole 3 gigabases of sequence!
+
+We'll work on clarifying that below.
 
 ```{r}
 ibd_sum %>%
@@ -1197,13 +1216,68 @@ ibd_sum %>%
   geom_point()
 ```
 
+:::
+
+---
+
+**From the introduction of histograms and densities, you're already familiar
+with modifying the `aes()` aesthetic of a geom layer using the `color`
+argument of `aes()`. Right now your dots are all black, which isn't super
+informative. Luckily, you're IBD table has a "mysterious" column called
+`rel`. What happens when you `color` points based on the values in this
+column?**
+
+**Look at a figure from [this huge](https://www.nature.com/articles/s41588-023-01582-w/figures/3)
+study of IBD patterns and their relationship to the degree of relatedness
+between individuals? This is completely independent data set and independent
+analysis, but do you see similarities between this paper and your figure?**
+
+**Use the `+ labs()` layer function to properly annotate your axes, and give
+your figure a nice title too. Additionally, you can give your legend
+a nicer readable title too using the layer function
+`+ guides(color = guide_legend("relatedness")`**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
 ```{r}
 ibd_sum %>%
   ggplot(aes(x = total_ibd, y = n_ibd, color = rel)) +
-  geom_point()
+  geom_point() +
+  labs(x = "total IBD sequence", y = "number of IBD segments",
+       title = "Total IBD sequence vs number of IBD segments",
+       subtitle = "Both quantities computed only on IBD segments 10 cM or longer") +
+  guides(color = guide_legend("relatedness"))
 ```
 
 :::
+
+---
+
+So far we've always followed this pattern of _ggplot2_ usage, to borrow our
+very first `geom_histogram()` example:
+
+```{r}
+ggplot(ibd_segments, aes(length)) +
+  geom_histogram()
+```
+
+However, you can also do this and it will give the same result:
+
+```{r}
+ggplot() +
+  geom_histogram(data = ibd_segments, aes(length))
+```
+
+In other words, each `geom_<...>()` function accepts both `data` data frame
+and also its own `aes()` aesthetic and mapping function. You could think of
+this as each individual geom having a "self-contained" `ggplot()` function's
+ability.
+
+This can be very useful whenever we want to plot different aspects of the data
+with their own aesthetic parameters (colors, shapes, sizes). Let's work through
+an exercise to explain this better, step by step, to make our IBD scatter plot
+figure much more nicer to look at.
 
 ```{r}
 ibd_unrel <- filter(ibd_sum, is.na(rel))
