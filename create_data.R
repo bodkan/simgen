@@ -10,11 +10,17 @@ library(readr)
 
 df <- read_tsv("../ibdmix-bonus/data/neo.impute.1000g.sampleInfo_clusterInfo.txt")
 
+# get individuals to be removed from metadata and IBD data
+to_remove <- filter(
+  df,
+  sampleId == "K1",    # ancient sample with no date
+  country == "Europe"  # Europe is not a country, 1000GP
+)$sampleId
+
 # remove columns which are not useful, filter individuals who are not useful
 df <- df %>%
   select(-c(shape, starts_with("cluster"), color, callset, colorA, shapeA)) %>%
-  filter(sampleId != "K1",    # ancient sample with no date
-         country != "Europe") # Europe is not a country, 1000GP
+  filter(!sampleId %in% to_remove)
 
 # annotate with continent assigmnent
 continents <- list(
