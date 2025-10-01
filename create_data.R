@@ -13,7 +13,7 @@ df <- read_tsv("../ibdmix-bonus/data/neo.impute.1000g.sampleInfo_clusterInfo.txt
 # get individuals to be removed from metadata and IBD data
 to_remove <- filter(
   df,
-  sampleId == "K1",    # ancient sample with no date
+  sampleId == "K1"  |  # ancient sample with no date
   country == "Europe"  # Europe is not a country, 1000GP
 )$sampleId
 
@@ -72,7 +72,7 @@ ibd_segments <- dplyr::as_tibble(ibd_segments)
 ibd_segments <- dplyr::select(ibd_segments, sample1, sample2, chrom = chromosome, start = posCmStart, end = posCmEnd)
 ibd_segments <- dplyr::filter(
   ibd_segments,
-  sample1 != "K1" & sample2 != "K1" &  # individual without age
+    !sample1 %in% to_remove & !sample2 %in% to_remove &
     sample1 != "Denisova" & sample2 != "Denisova" &
     sample1 != "Vindija33.19" & sample2 != "Vindija33.19" &
     sample1 != "AltaiNeandertal" & sample2 != "AltaiNeandertal"
