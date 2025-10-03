@@ -7,16 +7,17 @@ library(readr)
 process_ibd <- function() {
   cat("Downloading and processing IBD data...\n")
 
-  gz_file <- tempfile()
-  download.file("https://tinyurl.com/simgen-ibd-segments", gz_file, mode = "wb", quiet = TRUE)
-  ibd_all <- read_tsv(gz_file, show_col_types = FALSE)
+  # gz_file <- tempfile()
+  # download.file("https://tinyurl.com/simgen-ibd-segments", gz_file, mode = "wb", quiet = TRUE)
+  # ibd_all <- read_tsv(gz_file, show_col_types = FALSE)
+  ibd_segments <- read_tsv("files/tidy/ibd_segments.tsv")
 
-  ibd <- ibd_all %>% mutate(length = end - start)
+  ibd <- ibd_segments %>% mutate(length = end - start)
 
   return(ibd)
 }
 
-process_metadata <- function() {
+process_metadata <- function(bin_step) {
   cat("Downloading and processing metadata...\n")
 
   metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata", show_col_types = FALSE)
@@ -32,7 +33,7 @@ process_metadata <- function() {
   metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "Denisova"))
 
   # bin individuals according to their age
-  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 10000), dig.lab = 10)
+  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = bin_step), dig.lab = 10)
   bin_levels <- levels(metadata$age_bin)
 
   metadata <- metadata %>%

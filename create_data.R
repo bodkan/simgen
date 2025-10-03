@@ -98,7 +98,7 @@ filter(ibd_segments, chrom == 21) %>%
 ibd_segments <- ibd_segments %>% mutate(length = end - start)
 
 # this is a replacement for `process_metadata()`
-process_metadata2 <- function() {
+process_metadata2 <- function(bin_step) {
   metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata", show_col_types = FALSE)
 
   # select a subset of columns
@@ -112,7 +112,7 @@ process_metadata2 <- function() {
   metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "Denisova"))
 
   # bin individuals according to their age
-  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 10000), dig.lab = 10)
+  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = bin_step), dig.lab = 10)
   bin_levels <- levels(metadata$age_bin)
 
   metadata <- metadata %>%
@@ -163,7 +163,7 @@ join_metadata2 <- function(ibd, metadata) {
   return(ibd)
 }
 
-metadata <- process_metadata2()
+metadata <- process_metadata2(bin_step = 2500)
 
 # annotate missing geography with country centroid (needed just for present-day
 # humans from 1000GP data)
