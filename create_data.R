@@ -4,6 +4,7 @@ library(dplyr)
 library(tidyr)
 library(readr)
 
+library(sf)
 
 
 # metadata table ----------------------------------------------------------
@@ -93,21 +94,99 @@ system("git push")
 
 # big IBD summary table ---------------------------------------------------
 
+# this is a replacement for `process_ibd()`
 ibd_segments <- ibd_segments %>% mutate(length = end - start)
 
-source(here::here("files/repro/ibd_utils.R"))
+# this is a replacement for `process_metadata()`
+process_metadata2 <- function() {
+  metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata", show_col_types = FALSE)
 
-metadata <- process_metadata()
-# ibd_segments <- process_ibd()
+  # select a subset of columns
+  metadata <- metadata_all %>%
+    select(sampleId, country, continent, ageAverage, coverage, longitude, latitude) %>%
+    rename(sample = sampleId, age = ageAverage, lon = longitude, lat = latitude, )
 
-ibd_segments <- join_metadata(ibd_segments, metadata)
+  # replace missing ages of present-day individuals with 0
+  metadata <- mutate(metadata, age = if_else(is.na(age), 0, age))
+  # ignore archaic individuals
+  metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "Denisova"))
+
+  # bin individuals according to their age
+  metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 10000), dig.lab = 10)
+  bin_levels <- levels(metadata$age_bin)
+
+  metadata <- metadata %>%
+    mutate(
+      age_bin = as.character(age_bin),
+      age_bin = if_else(is.na(age_bin), "present-day", age_bin),
+      age_bin = factor(age_bin, levels = c("present-day", bin_levels))
+    )
+
+  return(metadata)
+}
+# this is a replacement for `join_metadata()`
+join_metadata2 <- function(ibd, metadata) {
+  cat("Joining IBD data and metadata...\n")
+
+  # prepare metadata for IBD annotation
+  metadata1 <- select(metadata, -coverage)
+  metadata2 <- select(metadata, -coverage)
+  colnames(metadata1) <- paste0(colnames(metadata1), "1")
+  colnames(metadata2) <- paste0(colnames(metadata2), "2")
+
+  # join based on sample1
+  ibd <- inner_join(ibd, metadata1)
+  # join based on sample2
+  ibd <- inner_join(ibd, metadata2)
+
+  ibd_sp <- filter(ibd, !is.na(lon1), !is.na(lon2), !is.na(lat1), !is.na(lat2)) %>%
+    st_as_sf(coords = c("lon1", "lat1"), sf_column_name = "location1") %>%
+    as_tibble() %>%
+    st_as_sf(coords = c("lon2", "lat2"), sf_column_name = "location2") %>%
+    as_tibble() %>%
+    mutate(distance = as.numeric(st_distance(location1, location2, by_element = TRUE) / 1e3)) %>%
+    select(-c(location1, location2))
+
+  ibd_nonsp <- filter(ibd, is.na(lat1), is.na(lat2), is.na(lon1), is.na(lon2)) %>%
+    mutate(distance = NA_real_) %>%
+    select(-c(lat1, lat2, lon1, lon2))
+
+  ibd <- rbind(ibd_nonsp, ibd_sp)
+
+  # annotate with new columns indicating a pair of countries or time bins
+  ibd <- mutate(ibd,
+                country_pair = paste(country1, country2, sep = ":"),
+                region_pair = paste(continent1, continent2, sep = ":"),
+                time_pair = paste(age_bin1, age_bin2, sep = ":"),
+                .before = chrom)
+
+  return(ibd)
+}
+
+metadata <- process_metadata2()
+
+# annotate missing geography with country centroid (needed just for present-day
+# humans from 1000GP data)
+# library(sf)
+# library(rnaturalearth)
+#
+# country_names <- filter(metadata, continent == "Europe") %>% .$country %>% unique
+# sf_countries <- ne_countries() %>%
+#   filter(admin %in% country_names) %>%
+#   select(country = admin, geometry) %>%
+#   st_make_valid()
+# st_agr(sf_countries) <- "constant"
+# sf_centers <- st_centroid(sf_countries)
+# metadata <- inner_join(metadata, sf_centers, by = "country")
+
+ibd_segments <- join_metadata2(ibd_segments, metadata)
 
 # only long segments
 
 ibd_long <-
   ibd_segments %>%
   filter(length > 10 & age_bin1 == age_bin2) %>%
-  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair) %>%
+  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair, distance) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
 write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))
@@ -122,7 +201,7 @@ system("git push")
 ibd_short <-
   ibd_segments %>%
   filter(length > 3 & age_bin1 == age_bin2) %>%
-  group_by(sample1, sample2, rel) %>%
+  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair, distance) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
 write_tsv(ibd_short, here::here("files/tidy/ibd_short.tsv"))
