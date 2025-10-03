@@ -37,14 +37,16 @@ which you can practice and develop your data science skills.
 :::
 
 ```{r}
-ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
+# ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
+ibd_segments <- read_tsv("files/tidy/ibd_segments.tsv")
 ```
 
 And **we also need to read the corresponding metadata, with which you are already
 very closely familiar with**:
 
 ```{r}
-metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
+# metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
+metadata_all <- read_tsv("files/tidy/metadata.tsv")
 ```
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
@@ -459,8 +461,10 @@ set "present-day" in the `age_bin` for all present-day individuals.
 #### Click to see the solution
 
 ```{r}
+bin_step <- 10000
+
 # we first bin samples according to their age:
-metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = 10000), dig.lab = 10)
+metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = bin_step), dig.lab = 10)
 
 table(metadata$age_bin)
 
@@ -659,7 +663,7 @@ ibd_all <- join_metadata(ibd_segments, metadata)
 #| echo: false
 source(here::here("files/repro/ibd_utils.R"))
 
-metadata <- process_metadata()
+metadata <- process_metadata(bin_step = 10000)
 ibd_segments <- process_ibd()
 
 ibd_all <- join_metadata(ibd_segments, metadata)
@@ -1093,6 +1097,75 @@ be careful!
 
 :::
 
+---
+
+**Is there evidence of some countries sharing more IBD sequence
+_within themselves_. If that's the case, it could be a result of a stronger
+population bottleneck. The previous density plot is a little too busy to
+be able to see this, so filter your `ibd_eur` table for rows in which
+`country1` is the same as `country2`, and then %>% pipe it into the
+usual _ggplot2_ density command.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_eur %>%
+  filter(country1 == country2) %>%
+  ggplot(aes(length, color = country_pair)) +
+  geom_density() +
+  labs(x = "IBD segment length [centimorgans]") +
+  xlim(0, 10)
+```
+
+It looks like there are more IBD sequence shared within Finland, which is
+consistent with a
+[previously established hypothesis](https://en.wikipedia.org/wiki/Finnish_heritage_disease)
+that ancestors of present-day Finns experienced a strong popularion bottleneck.
+
+:::
+
+---
+
+**Let's introduce another useful geom for visualization of this type of
+numerical data, the boxplot! You can visualize boxplots with the function
+`geom_boxplot()`, and calling (in our case right here)
+`aes(x = country_pair, y = length, color = country)` within the `ggplot()`
+function. Adjust your previous density example according to these instructions
+to show boxplots instead!**
+
+**When you have your boxplots, swap out `geom_boxplot()` for `geom_violin()`.**
+
+**Note:**  Hopefully you can see now how super modular and customizable
+_ggplot2_ for making many different types of visualizations!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_eur %>%
+  filter(country1 == country2) %>%
+  ggplot(aes(x = country_pair, y = length, color = country_pair)) +
+  geom_boxplot() +
+  labs(y = "IBD segment length [centimorgans]") +
+  ylim(0, 10)
+```
+
+
+```{r}
+ibd_eur %>%
+  filter(country1 == country2) %>%
+  ggplot(aes(x = country_pair, y = length, color = country_pair)) +
+  geom_violin() +
+  labs(y = "IBD segment length [centimorgans]") +
+  ylim(0, 10)
+```
+
+
+:::
+
+
+
 ### Relationship between two variables
 
 #### `geom_point()`
@@ -1171,6 +1244,7 @@ entire genome. We'll be working on that from now on.**
 
 ```{r}
 ibd_sum_long <- read_tsv("https://tinyurl.com/simgen-ibd-long", show_col_types = FALSE)
+ibd_sum_long <- read_tsv("files/tidy/ibd_long.tsv", show_col_types = FALSE)
 ```
 
 
