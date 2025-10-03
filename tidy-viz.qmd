@@ -37,16 +37,14 @@ which you can practice and develop your data science skills.
 :::
 
 ```{r}
-# ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
-ibd_segments <- read_tsv("files/tidy/ibd_segments.tsv")
+ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
 ```
 
 And **we also need to read the corresponding metadata, with which you are already
 very closely familiar with**:
 
 ```{r}
-# metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
-metadata_all <- read_tsv("files/tidy/metadata.tsv")
+metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
@@ -1151,7 +1149,6 @@ ibd_eur %>%
   ylim(0, 10)
 ```
 
-
 ```{r}
 ibd_eur %>%
   filter(country1 == country2) %>%
@@ -1161,9 +1158,68 @@ ibd_eur %>%
   ylim(0, 10)
 ```
 
+:::
+
+
+I'm personally a much bigger fan of the violin plot for this kind of purpose,
+because I feel like boxplot hides too much about the distribution of the data.
+
+**On that note, another useful trick we haven't mentioned yet is that we can
+plot multiple geoms from the same data! You're already quite familiar with
+the _ggplot2_ concept of layering functions on top of each other using the `+`
+operator. What happens when you add `+ geom_jitter(size = 0.3, color = "darkgray")` after the
+line with `geom_violin()`? How do you read the resulting figure?**
+
+**Note:** We specified `color = "darkgray"`, which effectively overrides
+the `color = country_pair` assigned in the `ggplot()` call (and which normally
+sets the color for every single geom we would add to our figure).
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+`geom_jitter()` is extremely useful to really clearly see the true distribution
+of our data points (which is often otherwise hidden by the "summarizing geoms",
+such as boxplot above -- one reason why I'm not a fan of boxplots, as I 
+mentioned!):
+
+```{r}
+ibd_eur %>%
+  filter(country1 == country2) %>%
+  ggplot(aes(x = country_pair, y = length, color = country_pair)) +
+  geom_violin() +
+  geom_jitter(size = 0.3, color = "darkgray") +
+  labs(y = "IBD segment length [centimorgans]") +
+  ylim(0, 10)
+```
 
 :::
 
+---
+
+**What do you think happens when you exchange the order of `geom_violin()`
+and `geom_jitter(...)` in your previous solution? Why does the order matter?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+_ggplot2_ arranges elements on a canvas literally like a painter would,
+if an element is added and another element is added later, the latter can
+(partially) overlap the former:
+
+```{r}
+ibd_eur %>%
+  filter(country1 == country2) %>%
+  ggplot(aes(x = country_pair, y = length, color = country_pair)) +
+  geom_jitter(size = 0.3, color = "darkgray") + # we flipped the order
+  geom_violin() +                               # of these two geoms
+  labs(y = "IBD segment length [centimorgans]") +
+  ylim(0, 10)
+```
+
+Of course, this can also be intentional sometimes! It all depends on the
+aesthetic you're going for as a visualization artist. :)
+
+:::
 
 
 ### Relationship between two variables
@@ -1202,7 +1258,7 @@ the same age bin),
 of individuals).
 
 **Save the result of your `%>%` pipeline implementing the steps 1.-3. above in
-a variable `ibd_sum_long`.**
+a variable `ibd_sum`.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1212,7 +1268,7 @@ implementing the pipeline is just a matter of sequencing them together as if
 you were building a LEGO set!
 
 ```{r}
-ibd_sum_long <-
+ibd_sum <-
   ibd_all %>%
   filter(
     length > 10 &          # only long IBD segments
@@ -1221,7 +1277,7 @@ ibd_sum_long <-
   group_by(sample1, sample2, rel, country_pair, region_pair, time_pair) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
-ibd_sum_long
+ibd_sum
 ```
 
 I hope you're all appreciating the awesome data science powers you've already
@@ -1243,8 +1299,7 @@ just like you created it yourself, except based on all chromosomes in the
 entire genome. We'll be working on that from now on.**
 
 ```{r}
-ibd_sum_long <- read_tsv("https://tinyurl.com/simgen-ibd-long", show_col_types = FALSE)
-ibd_sum_long <- read_tsv("files/tidy/ibd_long.tsv", show_col_types = FALSE)
+ibd_sum <- read_tsv("http://tinyurl.com/simgen-ibd-sum", show_col_types = FALSE)
 ```
 
 
@@ -1285,7 +1340,7 @@ IBD, around the whole 3 gigabases of sequence!
 We'll work on clarifying that below.
 
 ```{r}
-ibd_sum_long %>%
+ibd_sum %>%
   ggplot(aes(x = total_ibd, y = n_ibd)) +
   geom_point()
 ```
@@ -1307,14 +1362,35 @@ study of IBD patterns and their relationship to the degree of relatedness
 between individuals? This is completely independent data set and independent
 analysis, but do you see similarities between this paper and your figure?**
 
-**Use the `+ labs()` layer function to properly annotate your axes, and give
-your figure a nice title too.**
+---
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-ibd_sum_long %>%
+ibd_sum %>%
+  ggplot(aes(x = total_ibd, y = n_ibd, color = rel)) +
+  geom_point()
+```
+
+:::
+
+I have to say I kind of hate that "none" (basically an baseline background)
+is given a striking purple. I woudln't want that in my paper, and we will
+show a potential solution to this soon! For now, let's keep going.
+
+---
+
+
+**We're approching something which isn't far from a publication quality
+figure. To get even closer, use the `+ labs()` layer function to properly
+annotate your `x` and `y` axes, and give your figure a nice `title` too.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_sum %>%
   ggplot(aes(x = total_ibd, y = n_ibd, color = rel)) +
   geom_point() +
   labs(x = "total IBD sequence", y = "number of IBD segments",
@@ -1371,12 +1447,12 @@ contain the same columns, even though they have different rows.**
 #### Click to see the solution
 
 ```{r}
-ibd_unrel <- filter(ibd_sum_long, is.na(rel))
+ibd_unrel <- filter(ibd_sum, is.na(rel))
 ibd_unrel
 ```
 
 ```{r}
-ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+ibd_rel <- filter(ibd_sum, !is.na(rel))
 ibd_rel
 ```
 
@@ -1465,8 +1541,8 @@ Here's the complete solution to this exercise:
 
 
 ```{r}
-ibd_unrel <- filter(ibd_sum_long, is.na(rel))
-ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+ibd_unrel <- filter(ibd_sum, is.na(rel))
+ibd_rel <- filter(ibd_sum, !is.na(rel))
 
 ggplot() +
   geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
@@ -1506,8 +1582,8 @@ readable code!
 
 ```{r}
 #| echo: false
-ibd_unrel <- filter(ibd_sum_long, is.na(rel))
-ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+ibd_unrel <- filter(ibd_sum, is.na(rel))
+ibd_rel <- filter(ibd_sum, !is.na(rel))
 
 ggplot() +
   geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
@@ -1532,7 +1608,7 @@ them using the means that we have available(`x` and `y` dimensions, `color`
 and `shape`). The answer can be _facetting_.
 
 ```{r}
-head(ibd_sum_long)
+head(ibd_sum)
 ```
 
 **Faceting is easier to demonstrate than explain, so just go ahead, take
@@ -1545,8 +1621,8 @@ result?**
 
 ```{r}
 #| echo: false
-ibd_unrel <- filter(ibd_sum_long, is.na(rel))
-ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+ibd_unrel <- filter(ibd_sum, is.na(rel))
+ibd_rel <- filter(ibd_sum, !is.na(rel))
 
 ggplot() +
   geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
@@ -1661,7 +1737,7 @@ plot_grid(
 (you already worked with this above):
 
 ```{r}
-ibd_sum_long <- read_tsv("https://tinyurl.com/simgen-ibd-long")
+ibd_sum <- read_tsv("https://tinyurl.com/simgen-ibd-long")
 ```
 
 2. Table of the same information, but based on IBD segments longer than 3 cM (so
@@ -1702,7 +1778,7 @@ plot_ibd <- function(ibd, x_limit = NULL, y_limit = NULL) {
 ```{r}
 plot_grid(
   plot_ibd(ibd_sum_short, y_limit = c(0, 250)),
-  plot_ibd(ibd_sum_long, y_limit = c(0, 250))
+  plot_ibd(ibd_sum, y_limit = c(0, 250))
 )
 ```
 
