@@ -36,7 +36,8 @@ df <- df %>% mutate(continent = case_when(
   region %in% continents$Asia ~ "Asia",
   region %in% continents$America ~ "America",
   region %in% continents$Europe ~ "Europe",
-), .after = region)
+), .after = region) %>%
+  filter(continent == "Europe")
 
 write_tsv(df, "files/tidy/metadata.tsv")
 
@@ -45,6 +46,8 @@ write_tsv(df, "files/tidy/metadata.tsv")
 # relatedness information -------------------------------------------------
 
 metadata_all <- read_tsv("files/tidy/metadata.tsv", show_col_types = FALSE)
+
+to_keep <- metadata_all$sampleId
 
 rel_df <-
   metadata_all %>%
@@ -189,6 +192,8 @@ ibd_long <-
   group_by(sample1, sample2, rel, country_pair, region_pair, time_pair, distance) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
+pryr::object_size(ibd_long)
+
 write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))
 
 system("git add files/tidy/ibd_long.tsv")
@@ -200,7 +205,7 @@ system("git push")
 
 ibd_short <-
   ibd_segments %>%
-  filter(length > 3 & age_bin1 == age_bin2) %>%
+  filter(age_bin1 == age_bin2) %>%
   group_by(sample1, sample2, rel, country_pair, region_pair, time_pair, distance) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
