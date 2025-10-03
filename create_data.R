@@ -36,18 +36,19 @@ df <- df %>% mutate(continent = case_when(
   region %in% continents$Asia ~ "Asia",
   region %in% continents$America ~ "America",
   region %in% continents$Europe ~ "Europe",
-), .after = region) %>%
-  filter(continent == "Europe")
+), .after = region)
 
 write_tsv(df, "files/tidy/metadata.tsv")
+
+system("git add files/tidy/metadata.tsv")
+system("git commit -m 'Update metadata'")
+system("git push")
 
 
 
 # relatedness information -------------------------------------------------
 
-metadata_all <- read_tsv("files/tidy/metadata.tsv", show_col_types = FALSE)
-
-to_keep <- metadata_all$sampleId
+metadata_all <- read_tsv("files/tidy/metadata.tsv")
 
 rel_df <-
   metadata_all %>%
@@ -70,29 +71,25 @@ rel_df <- bind_rows(rel_df, select(rel_df, y = x, x = y, rel))
 
 # IBD table ---------------------------------------------------------------
 
+to_keep <- metadata_all$sampleId
+
 load("~/Desktop/neo.impute.1000g.ibd.filter.strict.RData")
 ibd_segments <- dd
 ibd_segments <- dplyr::as_tibble(ibd_segments)
 ibd_segments <- dplyr::select(ibd_segments, sample1, sample2, chrom = chromosome, start = posCmStart, end = posCmEnd)
-ibd_segments <- dplyr::filter(
-  ibd_segments,
-    !sample1 %in% to_remove & !sample2 %in% to_remove &
-    sample1 != "Denisova" & sample2 != "Denisova" &
-    sample1 != "Vindija33.19" & sample2 != "Vindija33.19" &
-    sample1 != "AltaiNeandertal" & sample2 != "AltaiNeandertal"
-)
+ibd_segments <- dplyr::filter(ibd_segments, sample1 %in% to_keep & sample2 %in% to_keep)
 ibd_segments <- left_join(ibd_segments, rel_df, by = c("sample1" = "x", "sample2" = "y"))
 
 filter(ibd_segments, chrom == 21) %>%
-  readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"))
+  readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"), na = "none")
 
 
 
 # commit updates for downstream processing --------------------------------
 
-system("git add files/tidy/ibd.tsv.gz files/tidy/metadata.tsv")
-system("git commit -m 'Add metadata and subset IBD data'")
-system("git push")
+# system("git add files/tidy/ibd.tsv.gz files/tidy/metadata.tsv")
+# system("git commit -m 'Add metadata and subset IBD data'")
+# system("git push")
 
 
 # big IBD summary table ---------------------------------------------------
@@ -186,31 +183,17 @@ ibd_segments <- join_metadata2(ibd_segments, metadata)
 
 # only long segments
 
-ibd_long <-
+ibd_sum <-
   ibd_segments %>%
   filter(length > 10 & age_bin1 == age_bin2) %>%
   group_by(sample1, sample2, rel, country_pair, region_pair, time_pair, distance) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
-pryr::object_size(ibd_long)
+pryr::object_size(ibd_sum)
 
-write_tsv(ibd_long, here::here("files/tidy/ibd_long.tsv"))
+write_tsv(ibd_sum, here::here("files/tidy/ibd_sum.tsv"), na = "none")
 
-system("git add files/tidy/ibd_long.tsv")
-system("git commit -m 'Add summarized long IBD data'")
-system("git push")
+# system("git add files/tidy/ibd_long.tsv")
+# system("git commit -m 'Add summarized long IBD data'")
+# system("git push")
 
-
-# even short segments
-
-ibd_short <-
-  ibd_segments %>%
-  filter(age_bin1 == age_bin2) %>%
-  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair, distance) %>%
-  summarize(n_ibd = n(), total_ibd = sum(length))
-
-write_tsv(ibd_short, here::here("files/tidy/ibd_short.tsv"))
-
-system("git add files/tidy/ibd_short.tsv")
-system("git commit -m 'Add summarized short IBD data'")
-system("git push")
