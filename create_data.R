@@ -81,7 +81,7 @@ ibd_segments <- dplyr::filter(ibd_segments, sample1 %in% to_keep & sample2 %in% 
 ibd_segments <- left_join(ibd_segments, rel_df, by = c("sample1" = "x", "sample2" = "y"))
 
 filter(ibd_segments, chrom == 21) %>%
-  readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"))
+  readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"), na = "none")
 
 
 
@@ -191,7 +191,7 @@ ibd_sum <-
 
 pryr::object_size(ibd_sum)
 
-write_tsv(ibd_sum, here::here("files/tidy/ibd_sum.tsv"))
+write_tsv(ibd_sum, here::here("files/tidy/ibd_sum.tsv"), na = "none")
 
 # system("git add files/tidy/ibd_long.tsv")
 # system("git commit -m 'Add summarized long IBD data'")
