@@ -103,23 +103,9 @@ the IBD data has a representative in the metadata:
 all(ibd_samples %in% metadata_samples)
 ```
 
-Let's also look at the inverse test:
-
-```{r}
-all(metadata_samples %in% ibd_samples)
-```
-
-Interesting, some individuals don't have any IBD with anybody else. Who are they?
-
-```{r}
-metadata_all[!metadata_samples %in% ibd_samples, ]
-```
-
-Why doesn't that ancient Danish person have any IBD with anyone is interesting,
-but perhaps not a red flag we should be worrying about in our analyses. Same
-goes for the Archaic individuals -- even if they had some IBD shared with
-modern humans (which we would expect in principle), perhaps the author of the
-IBD data set filtered those IBD segments out.
+This is a good sign! We're not missing any information about anyone we have
+an IBD segment for! Otherwise, we would have trouble analyzing such person's
+IBD patterns across time, geography, populations, etc.
 
 :::
 
@@ -1137,7 +1123,7 @@ within Europe, just as we did before),
 the same age bin),
 
 4. `group_by()` to create groupings based on `sample1`, `sample2`,
-`country_pair`, and `time_pair`,
+`country_pair`, `region_pair`, and `time_pair`,
 
 5. `summarize()` to create two new quantities `n_ibd = n()` and `total_ibd = sum(length)` (total number of long IBD segments and their total sequence for each
 of individuals).
@@ -1153,13 +1139,13 @@ implementing the pipeline is just a matter of sequencing them together as if
 you were building a LEGO set!
 
 ```{r}
-ibd_sum_long <
+ibd_sum_long <-
   ibd_all %>%
   filter(
     length > 10 &          # only long IBD segments
     age_bin1 == age_bin2   # only IBD pairs within the same time window
   ) %>% 
-  group_by(sample1, sample2, rel) %>%
+  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair) %>%
   summarize(n_ibd = n(), total_ibd = sum(length))
 
 ibd_sum_long
@@ -1267,14 +1253,14 @@ ibd_sum_long %>%
 ### Multiple data sets in one plot
 
 So far we've always followed this pattern of _ggplot2_ usage, to borrow our
-very first `geom_histogram()` example:
+very first `geom_histogram()` example just for the sake of explanation:
 
 ```{r}
 ggplot(ibd_segments, aes(length)) +
   geom_histogram()
 ```
 
-However, you can also do this and it will give the same result:
+However, you can also do this and it will give the same result (**try it!**):
 
 ```{r}
 ggplot() +
@@ -1424,6 +1410,7 @@ ggplot() +
   theme_minimal()
 ```
 
+:::
 
 ### Faceting intermezzo
 
@@ -1464,434 +1451,192 @@ ggplot() +
   theme_minimal()
 ```
 
-**Now looking at the data again, we see additional variables (data dimensions)
-but we have run out of possibilities of visualizing them using the means
-that we have available(`x` and `y` dimensions, `color` and `shape`). What
-if we want to visualize
+Now looking at the data again, we see additional variables (data dimensions).
+What if we want to visualize the `time_pair` variable, and observe the patterns
+of IBD sharing across time? We have run out of possibilities of visualizing
+them using the means that we have available(`x` and `y` dimensions, `color`
+and `shape`). The answer can be _facetting_.
 
 ```{r}
-metadata %>%
-  filter(age > 0) %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram() +
-  facet_wrap(~ age_bin, scales = "free_y")
+head(ibd_sum_long)
 ```
+
+**Faceting is easier to demonstrate than explain, so just go ahead, take
+your publication-quality scatter plot figure and add `+ facet_wrap(~ time_pair)`
+at the end of your code chunk. What do you see? How do you interpret the
+result?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+#| echo: false
+ibd_unrel <- filter(ibd_sum_long, is.na(rel))
+ibd_rel <- filter(ibd_sum_long, !is.na(rel))
+
+ggplot() +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
+  labs(
+    x = "total IBD sequence",
+    y = "number of IBD segments",
+    title = "Total IBD sequence vs number of IBD segments",
+    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+  ) +
+  guides(
+    color = guide_legend(title = "relatedness"),
+    shape = guide_legend(title = "relatedness")
+  ) +
+  theme_minimal() +
+  facet_grid(~ time_pair)     # <-- THIS IS THE ONLY THING WE ADDED!
+```
+
+:::
+
 
 ### Combining figures
 
+So, here's an extremely cool revelation. Do you remember how we went through
+various data types and object classes in the R bootcamp? Numeric, logical,
+character types, etc?
 
-### Two numerical variables
+_ggplot() functions actually do return a (hidden) value, which is a normal
+object like any other R value!_ The fact that we immediately see a plot
+visualized is "just" a side effect that R provides for convenience! After
+all, when we write plotting code, we usually want to see the plot, right?
 
-```{r}
-geo_df <-
-  metadata %>%
-  filter(age > 0) %>%
-  group_by(country) %>%
-  summarize(
-    count = n(),
-    avg_lat = mean(latitude, na.rm = TRUE),
-    avg_lon = mean(longitude, na.rm = TRUE),
-    avg_cov = mean(coverage, na.rm = TRUE)
-  )
-```
+What does this mean? Well, first of all, consider this bit of code:
 
 ```{r}
-p1 <-
-  ggplot(geo_df, aes(x = avg_lat, y = count)) +
-  geom_point() +
-  coord_cartesian(xlim = c(-90, 90))
+p1 <- ggplot()
 ```
 
+Weird, huh? Why would you do that? **When you type `p1` in your R console
+you get the usual (empty) figure!**
+
 ```{r}
-p2 <-
-  ggplot(geo_df, aes(x = avg_lon, y = count)) +
-  geom_point() +
-  coord_cartesian(xlim = c(-90, 90))
+p1
 ```
+
+Of course, we can also create (and save in a variable) a full figure like this:
+
+```{r}
+p1 <- ggplot(ibd_segments, aes(length)) + geom_histogram()
+p1
+```
+
+We could also create and save another figure, this time a density:
+
+```{r}
+p2 <- ggplot(ibd_segments, aes(length)) + geom_density()
+p2
+```
+
+This is extremely useful for making composite figures built out of individual
+panels (like you often see in scientific figures as panels **A**, **B**, **C**,
+etc.). The way we can do this is using a helper R package _cowplot_ (don't
+ask me about its name, I have no idea! :)) and its function `plot_gri()`. **Check
+this out:**
 
 ```{r}
 library(cowplot)
 
-plot_grid(p1, p2)
+plot_grid(p1, p2, labels = c("A", "B"))
 ```
 
+This is an extremely useful pattern because it basically eliminates the need
+for manually pasting figures in a graphics editor (which defies the purpose
+of reproducibility!). The sky is actually a limit, because you can place
+other `plot_grid()` calls within another `plot_grid()`, composing figures
+of various levels of complexity. Check out
+[a figure from one of my papers](https://github.com/bodkan/archaic-ychr/blob/master/figures/fig1.pdf),
+each panel is an independently made _ggplot2_ figure, all pasted together
+with `plot_grid()`. 
+
+For instance, if we make `p3` like this:
+
 ```{r}
-p1 <- p1 + geom_smooth(method = "lm")
+# create a silly scatter plot of geographical coordinates of our samples
+# (do you see an outline of Europe? :))
+p3 <-
+  metadata_all %>%
+  filter(continent == "Europe") %>%
+  ggplot(aes(longitude, latitude)) +
+    geom_point()
+p3
 ```
 
-```{r}
-p2 <- p2 + geom_smooth(method = "lm")
-```
+**You could combine them like this** (this is just an example, don't read too
+much into the meaning of putting these particular plots together).
 
 ```{r}
-plot_grid(p1, p2)
-```
-
-
-
-
-## Exercise 7: Summarizing IBD data
-
-OK, data munging (widely acknowledged to be the most annoying part of doing
-data science) is done. Time to do some data exploration and science!
-In this and later exercises you will get to practice your _tidyverse_ skills
-from the previous chapter on your new exciting IBD data.
-
----
-
-```{r}
-ibd_today <- filter(ibd, time_pair == "present-day:present-day")
-ibd_today
-```
-
----
-
-**Plot the distribution of lengths of IBD segments overall.**
-
-```{r}
-ibd_today %>%
-  ggplot() +
-  geom_density(aes(length))
-```
-
-```{r}
-ibd_today %>%
-  ggplot() +
-  geom_density(aes(length)) +
-  geom_vline(xintercept = 2) +
-  coord_cartesian(xlim = c(0, 10))
-```
-
----
-
-**Use `group_by()` and `summarize()` to compute the total length of IBD sequence
-for each pair of `sample1` and `sample2` by summing it up into a new column
-`total`. Save the result into a variable `ibd_indiv`. Sort the result based on
-this computed `total` using the `arrange()` function.**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd_indiv <-
-  ibd %>%
-  group_by(sample1, sample2) %>%
-  summarise(total = sum(length)) %>%
-  arrange(desc(total))
-```
-
-:::
-
----
-
-**Although interesting, the previous result only shows the `total` for
-each combination of `sample1` and `sample2`, because `group_by()` lost other
-metadata (we only told it to group by the sample names). Modify your solution
-to the previous exercise by grouping not just based on samples, but also
-based on `geo_pair` and `time_pair`. This will allow us to investigate
-IBD patterns geographically and temporally.**
-
-**Hint:** Just as you did `group_by(sample1, sample2)` in the previous
-solution, add the additional pair columns you want to group over after
-`sample1, sample2`.
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd_indiv <-
-  ibd %>%
-  group_by(sample1, sample2, geo_pair, time_pair) %>%
-  summarise(total = sum(length)) %>%
-  arrange(desc(total))
-```
-
-:::
-
----
-```{r}
-rel1 <- filter(metadata, grepl("1d_rel_", flag)) %>% print(n=Inf) %>% .$sampleId
-rel2 <- filter(metadata, sampleId %in% rel1)$flag %>% gsub("1d_rel_", "", .) %>% gsub(";.*", "", .)
-rels_df <- tibble(sample1 = c(rel1, rel2), sample2 = c(rel2, rel1))
-```
-
-```{r}
-right_join(total_ibd, rels_df) %>% print(n=Inf)
-```
-
-
-44 VK110      VK230       85.9
-45 Vt779      Vt808       57.3
-46 RISE487    RISE489     50.1
-47 RISE486    RISE489     45.8
-
-
-
-
-
-
-Figure out which (if any) pairs of samples are either resulting from
-duplicates or from first degree relatives? In other words, whether some samples
-might, in reality, be the same person, or share an IBD spanning an entire
-chromosome 1?*
-**Generally speaking, very short IBD segments are not very trustworthy.
-Filter only to those segments which are longer than 1 Mb.
-Save the result back to the `ibd` variable.**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd <- filter(ibd, length > 1)
-```
-
-
-
----
-
-**What is the shorted IBD segment? What is the longest? How about mean and median?**
-
-**Note:** Don't forget the `summary()` function!
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-summary(ibd$length)
-```
-
-
-:::
-
----
-
-**Visualize the histogram of lengths of all IBD segments across your entire
-data set.**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ggplot(ibd, aes(length)) + geom_histogram()
-```
-
-
-:::
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
----
-
-```{r}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-**Let's start simple and ignore the temporal dimension of IBD sharing for now,
-and focus only on present-day individuals. To do this, `filter()` only for IBD
-segments shared by two present-day individuals (i.e., individuals with `age1`
-or `age2` equal to 0). Similarly, `filter()` only on individuals from the
-following geographic regions, also based on the additional metadata `country1`
-and `country2` added to your IBD table earlier. Save your filtered IBD
-table to a variable `ibd_eur`.**
-
-```{r}
-europe <- c("SouthernEurope", "WesternEurope", "NorthernEurope", "CentralEasternEurope")
-```
-
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-ibd_eur <- filter(
-  ibd,
-  age1 == 0 & age2 == 0 &
-  region1 %in% europe & region2 %in% europe
+plot_grid(
+  p3,
+  plot_grid(p1, p2, labels = c("B", "C")),
+  nrow = 2,
+  labels = "A"
 )
 ```
 
-:::
 
+---
+
+**It's time for our final exercise. I'd like you to read two tables:**
+
+1. Table of counts and total IBD lengths based on IBD segments longer than 10 cM
+(you already worked with this above):
 
 ```{r}
-ibd_eur %>%
-ggplot() +
-  geom_jitter(aes(length, pair))
+ibd_sum_long <- read_tsv("https://tinyurl.com/simgen-ibd-long")
 ```
 
-```{r}
-summary_df <-
-  ibd_eur %>%
-  group_by(pair) %>%
-  summarize(mean_length = mean(length), total_length = sum(length))
-```
+2. Table of the same information, but based on IBD segments longer than 3 cM (so
+summary statistics based on segments much shorter):
 
 ```{r}
-summary_df %>%
+ibd_sum_short <- read_tsv("https://tinyurl.com/simgen-ibd-short")
+```
+
+**Convince yourself that they contain the expected information using something
+like `head()`, to verify that both have the same columns.**
+
+
+```{r}
+#| echo: false
+plot_ibd <- function(ibd, x_limit = NULL, y_limit = NULL) {
+  ibd_unrel <- filter(ibd, is.na(rel))
+  ibd_rel <- filter(ibd, !is.na(rel))
+  
   ggplot() +
-  geom_point(aes(mean_length, pair))
+    geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+    geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
+    labs(
+      x = "total IBD sequence",
+      y = "number of IBD segments",
+      title = "Total IBD sequence vs number of IBD segments",
+      subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+    ) +
+    guides(
+      color = guide_legend(title = "relatedness"),
+      shape = guide_legend(title = "relatedness")
+    ) +
+    theme_minimal() +
+    coord_cartesian(xlim = x_limit, ylim = y_limit)
+}
 ```
 
 ```{r}
-library(forcats)
-
-ibd_eur %>%
-  group_by(pair) %>%
-  summarize(mean_length = mean(length)) %>%
-  ggplot() +
-  geom_point(aes(mean_length, fct_reorder(pair, mean_length)))
-```
-
-```{r}
-summary_df <-
-  ibd_eur %>%
-  group_by(pair) %>%
-  summarize(mean_length = mean(length), total_length = sum(length)) %>%
-  pivot_longer(
-    cols = c(mean_length, total_length),
-    names_to = "statistic",
-    values_to = "value"
-  )
-```
-
-```{r}
-ggplot(summary_df) +
-  geom_point(aes(value, pair)) +
-  facet_wrap(~ statistic)
-```
-
-```{r}
-ggplot(summary_df) +
-  geom_point(aes(value, fct_reorder(pair, value))) +
-  facet_wrap(~ statistic, scales = "free_x")
-```
-
-```{r}
-library(tidytext)
-
-ggplot(summary_df) +
-  geom_point(aes(value, reorder_within(pair, value, within = statistic))) +
-  facet_wrap(~ statistic, scales = "free")
-```
-
-```{r}
-p_mean <-
-  filter(summary_df, statistic == "mean_length") %>%
-  ggplot +
-  geom_point(aes(value, fct_reorder(pair, value))) +
-  facet_wrap(~ statistic, scales = "free_x")
-
-p_mean
+plot_grid(
+  plot_ibd(ibd_sum_short, y_limit = c(0, 250)),
+  plot_ibd(ibd_sum_long, y_limit = c(0, 250))
+)
 ```
 
 
-```{r}
-p_sum <-
-  filter(summary_df, statistic == "total_length") %>%
-  ggplot +
-  geom_point(aes(value, fct_reorder(pair, value))) +
-  facet_wrap(~ statistic, scales = "free_x")
 
-p_sum
-```
 
-```{r}
-library(cowplot)
+## Bonus exercises
 
-plot_grid(p_mean, p_sum)
-```
 
 
 
@@ -1915,3 +1660,88 @@ exercises.
 Yes, this will put you in an uncharted territory. This is scary and totally
 normal when doing research. I'm happy to help you out with questions
 and issues!
+
+### Star Wars bonus
+
+If you need a break from population genetics and biology and would still
+like to practice your _tidyverse_ and _ggplot2_ skills, here's a fun data
+set for you with various metadata about Star Wars characters, with a list
+of questions you can try answering. Every single question can be answered
+using the tools you've already encountered here!
+
+```{r}
+library(dplyr)
+
+starwars
+```
+
+1. What is the distribution of counts of sexes of the characters?
+2. What is the distribution of counts of genders of the characters?
+3. Who is the oldest character?
+4. Who is youngest?
+5. What's the most frequently featured homeworld planet?
+6. What is the weight of Jar Jar Binks?
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+This is way too many questions to provide solutions too with extensive comments.
+Luckily, you should be able to guess which code answers which question in which
+way, so just experiment!
+
+```{r}
+ggplot(starwars, aes(sex)) + geom_bar()
+```
+
+```{r}
+ggplot(starwars, aes(gender)) + geom_bar()
+```
+
+```{r}
+ggplot(starwars, aes(height)) + geom_histogram()
+```
+
+```{r}
+ggplot(starwars, aes(mass)) + geom_histogram()
+```
+
+There's a clear massive (literally) outlier. Is this a data-entry error, or
+could it possibly be [this guy](https://www.starwars.com/databank/jabba-the-hutt)?
+
+```{r}
+filter(starwars, mass > 1000)
+```
+
+Jabba ruins everything, so let's cap the mass scale so that we can see some
+patterns:
+
+```{r}
+starwars %>%
+filter(!is.na(gender)) %>%
+ggplot(aes(gender, mass, fill = gender)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter() +
+  coord_cartesian(ylim = c(0, 250))
+```
+
+```{r}
+starwars %>%
+filter(!is.na(sex)) %>%
+ggplot(aes(sex, mass, fill = sex)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter() +
+  coord_cartesian(ylim = c(0, 250))
+```
+
+
+```{r}
+ggplot(starwars, aes(mass, height)) + geom_point()
+```
+
+```{r}
+ggplot(starwars, aes(mass, height)) +
+  geom_point() +
+  geom_label((aes()))
+```
+
+:::
