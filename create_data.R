@@ -153,6 +153,20 @@ join_metadata2 <- function(ibd, metadata) {
 
   ibd <- rbind(ibd_nonsp, ibd_sp)
 
+  # swap countries to maintain order
+  ibd$order_country <- ibd$country1 > ibd$country2
+  ibd$xcountry1 <- ifelse(ibd$order_country, ibd$country2, ibd$country1)
+  ibd$xcountry2 <- ifelse(ibd$order_country, ibd$country1, ibd$country2)
+  ibd$country1 <- ibd$xcountry1; ibd$xcountry1 <- NULL
+  ibd$country2 <- ibd$xcountry2; ibd$xcountry2 <- NULL
+
+  # swap regions to maintain order
+  ibd$order_continent <- ibd$continent1 > ibd$continent2
+  ibd$xcontinent1 <- ifelse(ibd$order_continent, ibd$continent2, ibd$continent1)
+  ibd$xcontinent2 <- ifelse(ibd$order_continent, ibd$continent1, ibd$continent2)
+  ibd$continent1 <- ibd$xcontinent1; ibd$xcontinent1 <- NULL
+  ibd$continent2 <- ibd$xcontinent2; ibd$xcontinent2 <- NULL
+
   # annotate with new columns indicating a pair of countries or time bins
   ibd <- mutate(ibd,
                 country_pair = paste(country1, country2, sep = ":"),
