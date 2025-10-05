@@ -1438,8 +1438,8 @@ useful _ggplot2_ trick).
 **First, take your `ibd_sum_total` table and create two versions of it
 using `filter()` like this:**
 
-1. `ibd_unrel <- filter(ibd_sum, is.na(rel))`
-2. `ibd_rel <- filter(ibd_sum, !is.na(rel))`
+1. `ibd_unrel <- filter(ibd_sum, rel == "none")`
+2. `ibd_rel <- filter(ibd_sum, rel != "none")`
 
 The first table contains only those pairs of individuals with missing information
 about relatedness, the second one contains only those rows with this information
@@ -1453,12 +1453,12 @@ contain the same columns, even though they have different rows.**
 #### Click to see the solution
 
 ```{r}
-ibd_unrel <- filter(ibd_sum, is.na(rel))
+ibd_unrel <- filter(ibd_sum, rel == "none")
 ibd_unrel
 ```
 
 ```{r}
-ibd_rel <- filter(ibd_sum, !is.na(rel))
+ibd_rel <- filter(ibd_sum, rel != "none")
 ibd_rel
 ```
 
@@ -1522,6 +1522,9 @@ in addition to setting `color = rel` (which sets a color of each point based
 on the relatedness value), add also `shape = rel`! Observe what happens
 when you do this!**
 
+**Similarly, in the `geom_point()` command plotting unrelated individuals,
+in addition to setting `color = "lightgray"`, set also `size = 0.5`.**
+
 **I'm not personally fan of the default grey-filled background of ggplots.
 I like to add `+ theme_minimal()` at the end of my plotting code of many of
 my figures, particularly when I'm creating visualizations for my papers.
@@ -1547,11 +1550,11 @@ Here's the complete solution to this exercise:
 
 
 ```{r}
-ibd_unrel <- filter(ibd_sum, is.na(rel))
-ibd_rel <- filter(ibd_sum, !is.na(rel))
+ibd_unrel <- filter(ibd_sum, rel == "none")
+ibd_rel <- filter(ibd_sum, rel != "none")
 
 ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.5) +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
   labs(
     x = "total IBD sequence",
@@ -1588,11 +1591,11 @@ readable code!
 
 ```{r}
 #| echo: false
-ibd_unrel <- filter(ibd_sum, is.na(rel))
-ibd_rel <- filter(ibd_sum, !is.na(rel))
+ibd_unrel <- filter(ibd_sum, rel == "none")
+ibd_rel <- filter(ibd_sum, rel != "none")
 
 ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.5) +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
   labs(
     x = "total IBD sequence",
@@ -1627,11 +1630,11 @@ result?**
 
 ```{r}
 #| echo: false
-ibd_unrel <- filter(ibd_sum, is.na(rel))
-ibd_rel <- filter(ibd_sum, !is.na(rel))
+ibd_unrel <- filter(ibd_sum, rel == "none")
+ibd_rel <- filter(ibd_sum, rel != "none")
 
 ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.5) +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
   labs(
     x = "total IBD sequence",
@@ -1644,7 +1647,7 @@ ggplot() +
     shape = guide_legend(title = "relatedness")
   ) +
   theme_minimal() +
-  facet_grid(~ time_pair)     # <-- THIS IS THE ONLY THING WE ADDED!
+  facet_grid(~ region_pair)     # <-- THIS IS THE ONLY THING WE ADDED!
 ```
 
 :::
