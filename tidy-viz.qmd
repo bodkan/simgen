@@ -7,6 +7,19 @@ otherwise don't use any _tidyverse_ functions (or even who don't even use
 R for data analysis itself) still use _ggplot2_ for making figures. It really
 is that good.
 
+In this chapter we will demonstrate new (and previously introduced) _tidyverse_
+concepts in a real-world example, and build an example processing and filtering
+pipeline for a new IBD data set and metadata. We will proceed step by step,
+adding new components to the pipeline, before we learn how to wrap it up
+in a clean module (an R script) with functions which will be reusable in
+various ways in later parts of the workshop.
+
+This is a real world example! You will be retracing the steps I had to work
+through in my job in August 2025 where I got sent a completely unfamiliar
+new data set of IBD segments and asked to do some science with it. 😳
+
+---
+
 **Here is how the start of our solutions script for the day will look like.**
 Note the addition of `library(ggplot2)` to the list of R packages used in
 the previous chapter. Although you could use _ggplot2_ without the rest,
@@ -21,6 +34,36 @@ library(dplyr)
 library(tidyr)
 library(readr)
 ```
+
+---
+
+#### Tip 1
+
+**As always, if you're ever unsure about some function, don't forget you can
+use `?function_name` to get help on how it works, what are its optional 
+arguments, and (on the bottom of the help page) see copy-pasteable examples
+you can try to get intuition into how that function works in practice!**
+
+**I really do this every single day for every function I'm not sure about.
+It's incredibly helpful.**
+
+#### Tip 2
+
+**Never forget that you can solve every R problem by building a solution up
+one little step at a time. First work in the R console, try bits and pieces
+of code interactively, and only when you're sure you understand the problem
+(and solution) you can finalize it by writing it in your solution script
+(often saving the result in a variable for later use).**
+
+**This helps a huge deal to avoid feeling overwhelmed by what can initially
+seem like a problem that's too hard!**
+
+**Even testing things one line, one command at a time, helps a lot. So
+whenever I give you a chunk of R code, always write it out in your own
+scripts or R console and run it (or, if it's too long, just copy it...
+but typing it out manually engages your memory banks more efficiently).**
+
+---
 
 **Let us also read in data which we will be using in these exercises.** These
 are coordinates of identity-by-descent (IBD) segments between pairs of
@@ -40,12 +83,23 @@ which you can practice and develop your data science skills.
 ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
 ```
 
+---
+
 And **we also need to read the corresponding metadata, with which you are already
 very closely familiar with**:
 
 ```{r}
 metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
+
+---
+
+**Skim through the messages given by `read_tsv()` above. I personally
+find them annoying and often silence them in finished pipelines or reports
+(how can you silence them?) but it is good to keep an eye on them when
+you're starting because they give you an overview of data types!**
+
+---
 
 **Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
 save it somewhere on your computer as `tidy-viz.R` (`File` -> `Save`). Copy
@@ -76,8 +130,8 @@ geographical location, dating information), so let's make sure we have what we
 need.
 
 **Hint:** Another way to phrase this question is this: does every name that
-appears in either `sample1` or `sample2` column of `ibd` have a record in the
-`sampleId` column of `metadata` (i.e., is information in one vector of names
+appears in either `sample1` or `sample2` column of `ibd_segments` have a record in the
+`sampleId` column of `metadata_all` (i.e., is information in one vector of names
 a perfect subset of the second vector of names)? Remember that you can use the
 function `unique()` to get all unique values in a given vector (as in, all
 unique values in vector `ibd$sample1` which has otherwise many duplicated
@@ -107,6 +161,20 @@ This is a good sign! We're not missing any information about anyone we have
 an IBD segment for! Otherwise, we would have trouble analyzing such person's
 IBD patterns across time, geography, populations, etc.
 
+How about the other way around? Note that this is not the same operation,
+although it might look similar superficially:
+
+```{r}
+all(metadata_samples %in% ibd_samples)
+```
+
+There are some individuals in our metadata who are not participating in
+any pairwise IBD sharing. Who are these?
+
+```{r}
+metadata_all[!metadata_samples %in% ibd_samples, ]
+```
+
 :::
 
 ---
@@ -115,11 +183,19 @@ IBD patterns across time, geography, populations, etc.
 What ranges or distributions of values do you have available, and with what
 data types? Do you have information for the entire genome?**
 
+**Hint:** `head()`, `colnames()`, `glimpse()`, `str()`, `table()`, `summary()`
+which are either applicable to an entire data frame, or a specific column
+(columns being indexable with the `$` or `[[ ]]` operators, of course).
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
 head(ibd_segments)
+```
+
+```{r}
+colnames(ibd_segments)
 ```
 
 
@@ -139,9 +215,17 @@ table(ibd_segments$chrom)
 
 ## Exercise 2: IBD processing
 
-**Add a new column using the `mutate()` function called `length`, which contains
-the length of each IBD segment in centimorgans (`end - start`). Save the result
-back to the variable `ibd_segments`.**
+**Add a new column to the `ibd_segments` data frame using the `mutate()`
+function called `length`, which contains the length of each IBD segment
+in centimorgans (`end - start`). Save the data frame that `mutate()`
+returns back to the variable `ibd_segments`.**
+
+**Note:** Sometimes saving new things to already-defined variables leads to
+very messy code. In this instance, we're basically building up a processing
+_pipeline_ whose purpose is to filter / mutate / clean a data frame for
+downstream use. In fact, later we will add individual steps of this pipeline
+into its own function! In cases like this, it's OK to reuse the same variable 
+name in several subsequent steps.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -166,17 +250,28 @@ ibd_segments
 
 :::
 
+## Exercise 3: Metadata processing
 
----
+We have read our IBD table and added a new useful column to it, so let's
+proceed with the metadata. There will be another important IBD processing
+step below where we merge both data sets together, but for that we need
+to do a bit more processing of the `metadata_all` first.
 
-We have processed our IBD table a bit, so let's proceed with the metadata. There's
-much more information than we need for now, so let's make the data a bit smaller
-and easier to look at at a glance.
+First, there's much more information than we need for now, just take a look:
 
-**`select()` a subset of the metadata with the following columns and store it in
-the same variable `metadata`: `sampleId`, `country`, `continent`, `ageAverage`.
-Then `rename()` `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to
-`age` just to save ourselves some typing.**
+```{r}
+colnames(metadata_all)
+head(metadata_all)
+```
+
+**Let's make the data a bit smaller and easier to look at at a glance.**
+
+**Use `select()` a subset of the metadata with the following columns and
+store it in a new variable `metadata` (we don't want to overwrite the
+original big table `metadata_all` in case we need to refer to it a bit
+later): `sampleId`, `country`, `continent`, `ageAverage`. Then `rename()`
+`sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to `age` just
+to save ourselves some typing later.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -191,10 +286,13 @@ metadata
 
 ---
 
-**Just as you did in the previous chapter, use `mutate()` and `if_else()` to
-make sure that the "Modern" individuals have the `age` set to 0, instead of
-`NA` (and everyone else's age stays the same). In other words, replace the
-`NA` values of `age` with 0.**
+**Just as you did in the previous chapter, use `mutate()` and `if_else()`
+inside the `mutate()` call to make sure that the "modern" individuals have
+the `age` set to 0, instead of `NA` (and everyone else's age stays the same).
+In other words, for rows where `age` is `NA`, replace that `NA` with 0.**
+
+**Hint:** Remember the `is.na()` bit we used before! Try it on the `age`
+column vector if you need a reminder: `is.na(metadata$age)`.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -219,9 +317,11 @@ variable again. As a reminder, these are individuals whose `sample` name
 is among `c("Vindija33.19", "AltaiNeandertal", "Denisova")` which you can
 test in a `filter()` command using the `%in%` operator.**
 
-**Hint:** Remember that you can do not only `column %in% c(... some values...)`
-but also do the opposite test as `!column %in% c(... some values...)` (notice
-the `!` operator in the second version).
+**Hint:** Remember that you can get a `TRUE` / `FALSE` indexing vector
+(remember our R bootcamp session!) by not only `column %in% c(... some
+values...)` but you can also do the opposite test as
+`!column %in% c(... some values...)` (notice the `!` operator in the
+second version).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -232,7 +332,7 @@ metadata <- filter(metadata, !sample %in% c("Vindija33.19", "AltaiNeandertal", "
 
 :::
 
-## Exercise 4: Metadata processing
+### Status of our data so far
 
 We now have a cleaner IBD table looking like this:
 
@@ -246,9 +346,30 @@ And here's our metadata information:
 head(metadata)
 ```
 
-Our `set` has only two values, "Modern" and "Ancient". Although useful, we
-might want to do some fancier analyses later down the line, looking at IBD
-as a time series.
+---
+
+In our original `metadata_all` table we have the `groupAge` column with these
+values:
+
+```{r}
+table(metadata_all$groupAge)
+```
+
+Note that in the new `metadata` we removed it because it's not actually useful
+at all for most data analysis purposes because it has only three values. 
+
+For instance, later we might want to do some fancier analyses, looking at
+IBD as a time series, not just across basically two temporal categories,
+"young" and "old".
+
+**To this end, let's create more useful time-bin categories! This will
+require a bit more code than above solutions. Don't feel overwhelmed! I will
+first introduce a useful function using a couple of examples for you
+to play around with in your R console. Only then we will move on to an exercise
+in which you will try to implement this on the full `metadata` table! For
+now, keep on reading and experimenting in your R console!**
+
+---
 
 **Let's introduce an incredibly useful function called `cut()`.
 Take a look at `?cut` help page and skim through it to figure out what it does.
@@ -256,15 +377,23 @@ As a bit of a hint, we will want to add a new metadata column which will indicat
 in which age bin (maybe, split in steps of 5000 years) do our individuals
 belong to.**
 
-Here's a small example to help us get started. Think about what
-the `cut()` function does here based on the result it gives you.
-You can pretend for now that the `ages` variable corresponds to age of our
-samples in the huge `metadata` table:
+Here's a small example to help us get started.
+Imagine that `df` is a example representative of our full-blown metadata table:
 
 ```{r}
 # a toy example data frame mimicking the age column in our huge metadata table
-df <- data.frame(age = c(0, 0, 1000, 0, 5000, 10000, 7000, 13000, 18000, 21000, 27000, 30000))
+df <- data.frame(
+  sample = c("a", "b", "c", "d", "x", "y", "z", "q", "w", "e", "r", "t"),
+  age = c(0, 0, 1000, 0, 5000, 10000, 7000, 13000, 18000, 21000, 27000, 30000)
+)
+df
+```
 
+Think about what the `cut()` function does here based on the result it
+gives you on this little table. You can pretend for now that the
+`ages` variable corresponds to age of our samples in the huge `metadata` table:
+
+```{r}
 # let's first generate the breakpoints for our bins (check out `?seq` if
 # you're confused by this!)
 breakpoints <- seq(0, 50000, by = 5000)
@@ -280,30 +409,39 @@ df
 some continuous variable in bins (basically, a little similar to what
 a histogram does in context of plotting). Doing statistics on this kind of
 binned data is something we do very often. So never forget that `cut()` is
-there to help you!
+there to help you! For example, you could also use the same concept to
+partition samples into categories based on "low coverage", "medium coverage",
+"high coverage", etc.
 
 ---
 
 **In the example of the `cut()` function right above, what is the data type
 of the column `age_bin` created by the `cut()` function? Use `glimpse(df)` to see
-this data type, then skim through the documentation of `?factor`. Additionally,
-why is the `age_bin` value equal to `NA` for some of the values? (We will fix this
-later, don't worry.)**
+this data type, then skim through the documentation of `?factor`. What is a
+"factor" according to this documentation?**
 
-As you're thinking about these questions, consider the two following vectors.
-When you print them out in your R console (by typing `x1` and `x2`) you will
-get something that looks almost identical. **What happens when you apply the
+**Note:** This is a challenging topic. Please don't stress. I'll walk
+through everything myself, interactively, and will explain things in detail.
+Take this information on "factors" as something to be aware of and a concept
+to be introduced to, but _not_ something to necessarily be an expert on!
+
+---
+
+**Having learned about `?factor` above, consider the two following vectors
+and use them for experimentation when coming up with answers.
+What do you see when you print them out in your R console (by typing `x1`
+and `x2`)? And what happens when you apply the
 `typeof()` function on both of them? `x2` gives you a strange result -- why?
 What do you get when you run the following command `levels(x2)`? What do you
-get when you run `as.character(x2)`?
+get when you run `as.character(x2)`?**
 
 ```{r}
 x1 <- c("hello", "hello", "these", "are", "characters/strings")
 x2 <- factor(x1)
-
-x1
-x2
 ```
+
+**In applying `cut()` to the toy data frame `df`, why is the `age_bin`
+value equal to `NA` for some of the rows?**
 
 **Note:** The discussion of "factors" should've been technically part of our
 R bootcamp chapter, on the topic of "data types". However, that section was
@@ -312,6 +450,16 @@ because I think it makes more sense to explain it in a wider context.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+
+You can see that both vectors look the same, but the second has additional
+information about "levels":
+
+```{r}
+x1
+x2
+```
+
 
 The reason you get the `typeof(x1)` as "character" but `typeof(x2)` as "integer"
 although both are "basically strings" is because factors are a special data
@@ -371,9 +519,10 @@ as.character(x2)
 
 ---
 
-**The scientific notation format of bin labels with all those `+` is very
+**The scientific notation format of bin labels with `5+e3` etc. is very
 annoying to look at. How can you use the `dig.lab =` argument of the `cut()`
-functions to make this prettier? Experiment in the R console to figure this out,
+functions to make this prettier?
+Experiment in the R console to figure this out,
 then modify the `df$age_bin <- cut(df$age, breaks = breakpoints)` command
 in your script accordingly.**
 
@@ -383,12 +532,22 @@ in your script accordingly.**
 Let's experiment first:
 
 ```{r}
+# this is where we started
 cut(df$age, breaks = breakpoints)
+```
+
+```{r}
+# this doesn't do it
 cut(df$age, breaks = breakpoints, dig.lab = 3)
+```
+
+```{r}
+# but this does!
 cut(df$age, breaks = breakpoints, dig.lab = 10)
 ```
 
-Our solution to get rid of the ugly scientific notation in our labels:
+Our solution to get rid of the ugly scientific notation in our labels is
+therefore:
 
 ```{r}
 df$age_bin <- cut(df$age, breaks = breakpoints, dig.lab = 10)
@@ -396,7 +555,7 @@ df$age_bin <- cut(df$age, breaks = breakpoints, dig.lab = 10)
 df
 ```
 
-Much nicer to look at!
+Much nicer to look at and immediately readable!
 
 :::
 
@@ -410,7 +569,8 @@ the "present-day" age of our samples) in the lowest bin [0, 5]. However, in the
 case of our assignment of samples from present-day, this is not what we want.
 We want present-day individuals to have their own category called "present-day".
 
-Here's a useful bit of code I use often for this exact purpose. If we start
+Here's a useful bit of code I use often for this exact purpose, represented
+as a complete self-contained chunk of the time-binning code. If we start
 from the original toy example data frame (with the `NA` values assigned to
 present-day ages of 0):
 
@@ -418,16 +578,24 @@ present-day ages of 0):
 df
 ```
 
-We can fix this by the following three-step process, described in the comments:
+We can fix this by the following three-step process, described in the comments.
+_Don't stress about any of this!_ Just run this code on your own and try
+to match the `# text in comments` to the respective code. Every thing
+that's being done here are bits and pieces introduced above.
 
 ```{r}
-bin_levels <- levels(df$age_bin) # 1. extract labels (no "present-day" category yet)
+# 0. assign each row to a bin based on given breakpoints
+df$age_bin <- cut(df$age, breaks = breakpoints, dig.lab = 10)
+
+# 1. extract labels (no "present-day" category yet)
+bin_levels <- levels(df$age_bin)
 
 df <-
   df %>%
   mutate(
-    age_bin = as.character(age_bin),                      # 2. convert factors into strings
-    age_bin = if_else(is.na(age_bin), "present-day", age_bin) # 3. replace NA with "present-day"
+    age_bin = as.character(age_bin),  # 2. convert factors back to "plain strings"
+    age_bin = if_else(is.na(age_bin), "present-day", age_bin), # 3. replace NA with "present-day",
+    age_bin = factor(age_bin, levels = c("present-day", bin_levels)) # 4. convert to factor (to maintain order of levels)
   )
 ```
 
@@ -438,16 +606,17 @@ including the present-day samples with ages at 0:
 df
 ```
 
-**This is a very useful pattern which you will get to practice now on the full
-`metadata` table.**
+This is a very useful pattern which you will get to practice now on the full
+`metadata` table, by literally applying the same code on the big table.
 
 ---
 
 **Now that you're familiar with `cut()`, use the functions `mutate()` and
-`cut()` again to create a new column `age_bin` this time on the whole `metadata`
-table. The new column should carry a category age of each individual in steps of
-2000 years again. Use the example from above to do this. Use `table(metadata$age_bin)
-to sanity check your final results.**
+`cut()` again (in exactly the same way as we did on the `df` table in the
+code chunk above!) to create a new column `age_bin` this time on the whole
+`metadata` table. The new column should carry a category age of each
+individual in steps of 10000 years again. Use `table(metadata$age_bin) to
+sanity check your final results.**
 
 
 **Hint:** As we did above, first assign the `age_bin` column using the `cut()`
@@ -458,19 +627,23 @@ set "present-day" in the `age_bin` for all present-day individuals.
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-```{r}
-bin_step <- 10000
+You can match the step numbers to our example code applied on the smaller
+table `df` above. They do the same thing!
 
-# we first bin samples according to their age:
+```{r}
+# step 0. we first bin samples according to their age
+bin_step <- 10000
 metadata$age_bin <- cut(metadata$age, breaks = seq(0, 50000, by = bin_step), dig.lab = 10)
 
-table(metadata$age_bin)
+# step 1. get the assigned bin labels
+bin_levels <- levels(metadata$age_bin)
 
 # then we modify the bins to include "present-day" labels:
 metadata <- metadata %>%
   mutate(
-    age_bin = as.character(age_bin),
-    age_bin = if_else(is.na(age_bin), "present-day", age_bin)
+    age_bin = as.character(age_bin), # step 2.
+    age_bin = if_else(is.na(age_bin), "present-day", age_bin), # step 3.
+    age_bin = factor(age_bin, levels = c("present-day", bin_levels)) # step 4.
   )
 ```
 
@@ -481,12 +654,20 @@ We can check the binning result to see that we've been successful!
 table(metadata$age_bin)
 ```
 
+The reason we converted the `age_bin` back to factor in the end is that
+we want to maintain a temporal order of our labels (first "present-day",
+then all other subsequent time bins), regardless of how mixed our rows
+are.
 
-## Exercise 5: Merging metadata
+:::
 
-After filtering and clean up, we often need to annotate our popgen data with
-some metadata information. What does this mean? Consider the IBD data in its
-current state:
+
+## Exercise 4: Merging metadata
+
+After basic processing and filtering of the primary data (in our case, the
+coordinates of pairwise IBD segments), we often need to annotate our popgen
+data with some metadata information. What does this mean? Consider our IBD
+data in its current state:
 
 ```{r}
 head(ibd_segments)
@@ -588,7 +769,7 @@ ibd_segments
 :::
 
 
-## Exercise 6: Reproducibility intermezzo
+## Exercise 5: Reproducibility intermezzo
 
 You have written a lot of code in this chapter, both for filtering and processing
 of the IBD data and the metadata. Your script is already very long. If you need
@@ -1523,7 +1704,7 @@ on the relatedness value), add also `shape = rel`! Observe what happens
 when you do this!**
 
 **Similarly, in the `geom_point()` command plotting unrelated individuals,
-in addition to setting `color = "lightgray"`, set also `size = 0.5`.**
+in addition to setting `color = "lightgray"`, set also `size = 0.75`.**
 
 **I'm not personally fan of the default grey-filled background of ggplots.
 I like to add `+ theme_minimal()` at the end of my plotting code of many of
@@ -1554,7 +1735,7 @@ ibd_unrel <- filter(ibd_sum, rel == "none")
 ibd_rel <- filter(ibd_sum, rel != "none")
 
 ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.5) +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
   labs(
     x = "total IBD sequence",
@@ -1595,7 +1776,7 @@ ibd_unrel <- filter(ibd_sum, rel == "none")
 ibd_rel <- filter(ibd_sum, rel != "none")
 
 ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.5) +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
   labs(
     x = "total IBD sequence",
@@ -1634,7 +1815,7 @@ ibd_unrel <- filter(ibd_sum, rel == "none")
 ibd_rel <- filter(ibd_sum, rel != "none")
 
 ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.5) +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
   geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
   labs(
     x = "total IBD sequence",
@@ -1654,6 +1835,8 @@ ggplot() +
 
 
 ### Combining figures
+
+TODO: Logscale vs normal scale
 
 So, here's an extremely cool revelation. Do you remember how we went through
 various data types and object classes in the R bootcamp? Numeric, logical,
@@ -1738,57 +1921,13 @@ plot_grid(
 ```
 
 
----
-
-**It's time for our final exercise. I'd like you to read two tables:**
-
-1. Table of counts and total IBD lengths based on IBD segments longer than 10 cM
-(you already worked with this above):
 
 ```{r}
-ibd_sum <- read_tsv("https://tinyurl.com/simgen-ibd-long")
-```
-
-2. Table of the same information, but based on IBD segments longer than 3 cM (so
-summary statistics based on segments much shorter):
-
-```{r}
-ibd_sum_short <- read_tsv("https://tinyurl.com/simgen-ibd-short")
-```
-
-**Convince yourself that they contain the expected information using something
-like `head()`, to verify that both have the same columns.**
-
-
-```{r}
-#| echo: false
-plot_ibd <- function(ibd, x_limit = NULL, y_limit = NULL) {
-  ibd_unrel <- filter(ibd, is.na(rel))
-  ibd_rel <- filter(ibd, !is.na(rel))
-  
-  ggplot() +
-    geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray") +
-    geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
-    labs(
-      x = "total IBD sequence",
-      y = "number of IBD segments",
-      title = "Total IBD sequence vs number of IBD segments",
-      subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
-    ) +
-    guides(
-      color = guide_legend(title = "relatedness"),
-      shape = guide_legend(title = "relatedness")
-    ) +
-    theme_minimal() +
-    coord_cartesian(xlim = x_limit, ylim = y_limit)
-}
-```
-
-```{r}
-plot_grid(
-  plot_ibd(ibd_sum_short, y_limit = c(0, 250)),
-  plot_ibd(ibd_sum, y_limit = c(0, 250))
-)
+ibd_sum %>%
+  filter(region_pair == "Europe:Europe") %>% 
+  ggplot(aes(time_pair, total_ibd)) +
+  geom_violin() +
+  theme(axis.text.x = element_text(hjust = 1, angle = 45))
 ```
 
 
@@ -1900,7 +2039,22 @@ ggplot(starwars, aes(mass, height)) + geom_point()
 ```{r}
 ggplot(starwars, aes(mass, height)) +
   geom_point() +
-  geom_label((aes()))
+  coord_cartesian(xlim = c(0, 250))
+```
+
+```{r}
+ggplot(starwars, aes(mass, height)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  coord_cartesian(xlim = c(0, 250))
+```
+
+```{r}
+ggplot(starwars, aes(mass, height)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  xlim(c(0, 250))
+  # coord_cartesian(xlim = c(0, 250))
 ```
 
 :::
