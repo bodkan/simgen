@@ -7,10 +7,8 @@ library(readr)
 process_ibd <- function() {
   cat("Downloading and processing IBD data...\n")
 
-  # gz_file <- tempfile()
-  # download.file("https://tinyurl.com/simgen-ibd-segments", gz_file, mode = "wb", quiet = TRUE)
-  # ibd_all <- read_tsv(gz_file, show_col_types = FALSE)
-  ibd_segments <- read_tsv("files/tidy/ibd_segments.tsv")
+  ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments",
+                           show_col_types = FALSE)
 
   ibd <- ibd_segments %>% mutate(length = end - start)
 
@@ -24,7 +22,7 @@ process_metadata <- function(bin_step) {
 
   # select a subset of columns
   metadata <- metadata_all %>%
-    select(sampleId, country, continent, ageAverage, coverage) %>%
+    select(sampleId, country, continent, ageAverage, coverage, longitude, latitude) %>%
     rename(sample = sampleId, age = ageAverage)
 
   # replace missing ages of present-day individuals with 0
@@ -50,8 +48,8 @@ join_metadata <- function(ibd_segments, metadata) {
   cat("Joining IBD data and metadata...\n")
 
   # prepare metadata for IBD annotation
-  metadata1 <- select(metadata, -coverage)
-  metadata2 <- select(metadata, -coverage)
+  metadata1 <- select(metadata, -coverage, -longitude, -latitude)
+  metadata2 <- select(metadata, -coverage, -longitude, -latitude)
   colnames(metadata1) <- paste0(colnames(metadata1), "1")
   colnames(metadata2) <- paste0(colnames(metadata2), "2")
 
