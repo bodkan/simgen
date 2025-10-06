@@ -81,16 +81,14 @@ ibd_segments <- dplyr::filter(ibd_segments, sample1 %in% to_keep & sample2 %in% 
 ibd_segments <- left_join(ibd_segments, rel_df, by = c("sample1" = "x", "sample2" = "y"))
 
 filter(ibd_segments, chrom == 21) %>%
+  sample_frac %>%
   readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"), na = "none")
-
-
 
 # commit updates for downstream processing --------------------------------
 
-# system("git add files/tidy/ibd.tsv.gz files/tidy/metadata.tsv")
-# system("git commit -m 'Add metadata and subset IBD data'")
-# system("git push")
-
+system("git add files/tidy/ibd_segments.tsv.gz")
+system("git commit -m 'Add subset of IBD data'")
+system("git push")
 
 # big IBD summary table ---------------------------------------------------
 
@@ -207,7 +205,7 @@ pryr::object_size(ibd_sum)
 
 write_tsv(ibd_sum, here::here("files/tidy/ibd_sum.tsv"), na = "none")
 
-# system("git add files/tidy/ibd_long.tsv")
-# system("git commit -m 'Add summarized long IBD data'")
-# system("git push")
+system("git add files/tidy/ibd_long.tsv")
+system("git commit -m 'Add summarized long IBD data'")
+system("git push")
 
