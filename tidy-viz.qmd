@@ -20,6 +20,11 @@ new data set of IBD segments and asked to do some science with it. 😳
 
 ---
 
+**As always, text expressed _in bold_ represents tasks for you to do--code
+to run, things to think about!**
+
+---
+
 **Here is how the start of our solutions script for the day will look like.**
 Note the addition of `library(ggplot2)` to the list of R packages used in
 the previous chapter. Although you could use _ggplot2_ without the rest,
@@ -662,12 +667,12 @@ are.
 :::
 
 
-## Exercise 4: Merging metadata
+## Recipe for merging metadata
 
 After basic processing and filtering of the primary data (in our case, the
-coordinates of pairwise IBD segments), we often need to annotate our popgen
-data with some metadata information. What does this mean? Consider our IBD
-data in its current state:
+genomic coordinates of pairwise IBD segments), we often need to annotate this 
+data with some meta information. What does this mean? **Take a look at our IBD
+data in its current state again:**
 
 ```{r}
 head(ibd_segments)
@@ -675,48 +680,186 @@ head(ibd_segments)
 
 When we analyze things down the line, we might want to look at IBD patterns
 over space and time, look at some temporal changes, etc. However, our IBD
-data has none of the information in it, so even if we were to do run our
+data has none of the information in it! Besides names of individuals
+(from which population, at which time, which geographical location?) we
+have nothing, so even if we were to do run our
 friends `group_by()` and `summarize()` to get some summary statistics, we
-have no idea to correlate them to other variables. We only have names of
-individuals, and that's not enough.
+have no idea to correlate them to other variables... precisely because those
+variables are elsewhere in a completely different table we called `metadata`.
 
-The annotation that we need is in the metadata table:
+**We now need to put both sources of information into a single joint format.
+I call this "metadata merging", and it is something we always want to do
+regardless of what kinds of statistics or measures we work with.**
+
+Again, the annotation that we need is in the metadata table -- it has
+information about ages and geography:
 
 ```{r}
 head(metadata)
 ```
 
-**What we need to do is join our IBD data with a selection of the most
-important variables in our metadata, which is what we're going to do now.**
+What we need to do is join our IBD data with a selection of the most
+important variables in our metadata, which is what we're going to do now.
+
+**This bit might be a bit frustrating and repetitive if we made this into
+an exercise for you, so just inspect the following code, run it yourself
+(and put it into your own script) and try to make sense of it. Take this
+as a recipe that you can modify and reuse in your own projects later!**
+
+I'm happy to answer questions!**
+
+#### 1. For each IBD segment (a row in our table `ibd_segments`) we
+have two individuals on each row, `sample1` and `sample2`. Therefore, we
+will need to annotate each row of the `ibd_segments` table with metadata
+information for both individuals. **Let's start by making a copy of the
+metadata table, caling those copies `metadata1` and `metadata2`:**
 
 ```{r}
 metadata1 <- metadata
 metadata2 <- metadata
 ```
 
+#### 2. The columns of these metadata copies are the same, which you can verify by running this:
+
+```{r}
+colnames(metadata1)
+colnames(metadata2)
+```
+
+Obviously this doesn't work if we want to refer to a location of `sample1`
+or `sample2`, respectively. Here's another useful trick for this. Observe
+what `paste0()` function does in this situation:
+
+```{r}
+# original columns
+colnames(metadata1)
+
+# columns with a number added after
+paste0(colnames(metadata1), "1")
+```
+
+**We can use the same approach to _assign_ new columns to each of our
+metadata copies:**
+
+
 ```{r}
 colnames(metadata1) <- paste0(colnames(metadata1), "1")
 colnames(metadata2) <- paste0(colnames(metadata2), "2")
 ```
 
-
-:::
+**Now we have both metadata tables with columns renamed. Let's check this to
+make sure we did this correctly:**
 
 ```{r}
-ibd_segments <- inner_join(ibd_segments, metadata1)
-ibd_segments <- inner_join(ibd_segments, metadata2)
-
-ibd_segments
+colnames(metadata1)
+colnames(metadata2)
 ```
 
----
 
-The `paste()` function (and also `paste0()`) are very useful whenver we
-need to join the elements of two (or more) character vectors together.
-The difference between then is that `paste0()` doesn't add a space between
-the individual values and `paste()` does (the latter also allows you to
-customize the string which should be used for joining instead of the space).
-For instance, consider these two vectors and the result of joining them together:
+#### 3. We are ready to join the table of IBD segments
+
+The final piece of the puzzle is a
+[JOIN operation](https://en.wikipedia.org/wiki/Join_(SQL)) from the realm
+of computer databases. A rather complex topic, which can be interpreted
+very easily in our situation, which can be represented by the following
+diagram of a so-called "inner join": 
+
+![](https://learn.microsoft.com/en-us/power-query/media/merge-queries-inner/inner-join-operation.png)
+What this operation does is that it creates a "merged" table, consisting
+of the columns of both "left" and "right" tables, where the "merged" table
+rows consist of such rows from "left" and "right", where the two tables
+have a matching "key" column (here highlighted in green). **Just take a moment
+and try to trace the one row of the "merged" table to the row(s) of
+the "left" and "right" tables based on the value of the green key column in
+both of them.**
+
+Now, consider the columns of our three tables now:
+
+- `ibd_segments` columns:
+
+```{r}
+#| echo: FALSE
+colnames(ibd_segments)
+```
+
+- `metadata1` and `metadata2` columns:
+
+```{r}
+#| echo: FALSE
+colnames(metadata1)
+```
+
+```{r}
+#| echo: FALSE
+colnames(metadata2)
+```
+
+**Here's what happens when you perform an inner join like this (note that
+we specify `by` what column should we be merging, effectively saying which
+column is the key corresponding to the green column in the diagram above):**
+
+```{r}
+ibd_merged <- inner_join(ibd_segments, metadata1, by = "sample1")
+```
+
+Our IBD table now has added metadata information for individuals in column
+`sample1`, awesome! **We can verify this by listing all column names:**
+
+```{r}
+# original IBD table:
+colnames(ibd_segments)
+
+# IBD table with metadata1 merged in:
+colnames(ibd_merged)
+```
+
+**How do we add metadata for the second sample? We do it in the same way,
+except now we join in the second table (and we save the results to a new
+variable `ibd_merged`, to be able to compare the differences):**
+
+```{r}
+ibd_merged <- inner_join(ibd_merged, metadata2, by = "sample2")
+```
+
+**In fact, I do this so often for basically every computational biology
+project, that I like to use this concise bit of code to do it all in one go:**
+
+```{r}
+ibd_merged <-
+  ibd_segments %>%                          # 1. primary data without metadata
+  inner_join(metadata1, by = "sample1") %>% # 2. add metadata for sample1
+  inner_join(metadata2, by = "sample2")     # 3. add metadata for sample2
+```
+
+
+**Again, we can verify that our new table has metadata columns for both
+`sample1` and `sample2`:**
+
+```{r}
+colnames(ibd_segments)
+colnames(ibd_merged)
+```
+
+### Exercise 4. Final data processing
+
+You've already seen the super useful function `paste()` (and also `paste0()`)
+which useful whenver we need to join the elements of two (or more) character
+vectors together. The difference between then is that `paste0()` doesn't add
+a space between the individual values and `paste()` does (the latter also
+allows you to customize the string which should be used for joining instead
+of the space).
+
+**Take a look at your almost finalized table `ibd_merged`:**
+
+```{r}
+head(ibd_merged)
+```
+
+When we get to comparing IBD patterns between countries, time bins, etc.,
+it might be useful to have metadata columns specific for that purpose. What
+do I mean by this? For instance, consider these two vectors and the result
+of pasting them together. Having this combined pair information makes it
+very easy to cross-compare multiple sample categories together:
 
 ```{r}
 v1 <- c("Denmark", "Czech Republic", "Estonia")
@@ -725,25 +868,36 @@ v2 <- c("Finland", "Italy", "Estonia")
 paste(v1, v2, sep = ":")
 ```
 
-**Use the same principle to add a new column to your `ibd` table named `country_pair`,
-which will contain a vector of values created by joining of the columns
-`country1` and `country2`. Add this column `.after` the `sample1` and `sample2`
-and `.before` the `chrom` columns for clearer visibility. Do the same to create
-a `region`_pair` based on `continent1` and `continent2`.
-Save the result back to the `ibd` variable.**
+---
+
+**Let's create this information for `country`, `continent`, and `age_bin`
+columns (remember that you have those for `1` and `2` samples!).**
+
+**Specifically, use the same `paste()` trick to add a new column to your
+`ibd_merged` table named `country_pair`, which will contain a vector of
+values created by joining of the columns `country1` and `country2`. Add
+this column `.before` the `chrom` column for clearer visibility (check
+out `?mutate` if you need a refresher on how does its `.before =`
+argument work). Then do the same to create a `region_pair` based on
+`continent1` and `continent2`. Save the result back to the `ibd_merged`
+variable.**
+
+**Hint:** Note that you can create multiple new columns with `mutate()`,
+but you can also pipe `%>%` one `mutate()` into another `mutate()` into
+another `mutate()`, etc.!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-ibd_segments <- mutate(
-  ibd_segments,
+ibd_merged <- mutate(
+  ibd_merged,
   country_pair = paste(country1, country2, sep = ":"),
   region_pair = paste(continent1, continent2, sep = ":"),
   .before = chrom
 )
 
-ibd_segments
+ibd_merged
 ```
 
 :::
@@ -761,9 +915,12 @@ Save the result back to the `ibd` variable.**
 #### Click to see the solution
 
 ```{r}
-ibd_segments <- mutate(ibd_segments, time_pair = paste(age_bin1, age_bin2, sep = ":"), .after = region_pair)
+ibd_merged <- mutate(
+  ibd_merged,
+  time_pair = paste(age_bin1, age_bin2, sep = ":"), .after = region_pair
+)
 
-ibd_segments
+ibd_merged
 ```
 
 :::
@@ -771,56 +928,75 @@ ibd_segments
 
 ## Exercise 5: Reproducibility intermezzo
 
-You have written a lot of code in this chapter, both for filtering and processing
-of the IBD data and the metadata. Your script is already very long. If you need
-to ever update or change something (which you always will during a project,
-usually many times over) it can be hard to figure out which line of your script
-should be modified. If you forget to update something somewhere in a long script,
-you're in big trouble (and sometimes you won't even find out where's the problem
-until its too late).
+You have written a lot of code in this chapter, both for filtering and
+processing of the IBD data and the metadata. Your script is already very
+long. If you need to ever update or change something (which you always will
+during a project, usually many times over) it can be hard to figure out which
+line of your script should be modified. If you forget to update something
+somewhere in a long script, you're in big trouble (and sometimes you won't
+even find out where's the problem until its too late).
 
 Our session on reproducibility is in the following chapter, but let's work
 towards making your current workflow more reproducible even now.
 
 ---
 
-**Create a new script called `ibd_utils.R` in your RStudio and create the following
-functions. Then take bits and pieces from the exercises used above and add
-then to the bodies of these functions accordingly.**
+**Create a new script called `ibd_utils.R` in your RStudio and create the
+following functions. Then take bits and pieces from the exercises used
+above and add them to the bodies of these functions accordingly.**
+
+0. Don't forget to load all packages needed using `library()` calls at the
+top of the `ibd_utils.R` script.
 
 1. function `process_ibd()` which will (without accepting any arguments):
 
-- download the IBD data from the internet like you did above,
-- process it in the same way you did above,
-- return the processed `tibble` object with IBD segments
+- read the IBD data from the internet like you did above using `read_tsv()`
+- process it in the same way you did above, adding the length column
+- return the processed table with IBD segments in the same way like you
+produced the `ibd_segments` data frame
 
-2. function `process_metadata()`, which will (without accepting any arguments):
+2. function `process_metadata()`, which will (accepting a single `bin_step` argument!):
 
 - download the metadata from the internet like you did above,
 - process and filter it in the same way like above (replacing `NA` in
 `age` column, filtering out unwanted individuals, adding the `age_bin`
-column, etc.)
-- return the processed `tibble` object with metadata
+column by binning according to the `bin_step` function parameter, etc.)
+- return the processed table with this processed metadata in the same way
+like you produced the `metadata` data frame
 
-3. function `join_metadata()`, which will accept arguments `ibd` and `metadata`
+3. function `join_metadata()`, which will accept arguments `ibd_segments` and `metadata`
 (produced by the two functions above) and then:
 
-- join the `ibd` table with the `metadata` table
-- add the `geo_pair` column with `country1-country2` information
-- return the finalized `tibble` with all information
+- join the `ibd_segments` table with the `metadata` table
+- add the three `country_pair`, `region_pair`, and `time_pair` columns
+- return the finalized table with all information, just like you created your
+`ibd_merged` table above
 
 **Do not write all the code at once! Start with the first function, test
-it by executing it in your R console, and check that your results make sense
-before you move on to the other function. Building up more complex pipelines
-from simple components is absolutely critical to minimize bugs!**
+it by executing it in your R console independently, checking that your results
+make sense before you move on to the other function! Building up more complex
+pipelines from simple components is absolutely critical to minimize bugs!**
 
 **Make sure to add comments to your code! Reproducibility is only half of
 the story -- you (and other people) need to be able to understand your code
 a long time after you wrote it.**
 
-**After you're done with this exercise, you should create a new script
-(you can name it something like `ibd_analysis.R`) and be able to add the
-following code.**
+**Hint:** If this looks overwhelming and scary, then remember that function
+is a block of code (optionally accepting arguments) which simply wraps in
+`{` and `}` the code already written by you above, and calls `return` on
+the result.
+
+**Hint:** An extremely useful shortcut when writing R functions is "Run
+function definition" under `Code` `->` `Run region`. Remember that keyboard
+shortcut! (On macOS it's `Option+CMD+F`).
+
+---
+
+**After you're done with the previous exercise, and are confident that
+your functions do what they should, create a new script (you can name
+it something like `ibd_pipeline.R`) and be able to add the following code.
+As a final test, restart your R session (`Session` `->` `Restart R`) and
+run this script.**
 
 **Note:** The `source()` command executes all the code in your
 utility script and therefore makes your custom-built functions available
@@ -833,9 +1009,9 @@ in their own scripts.
 source("ibd_utils.R")
 
 metadata <- process_metadata()
-ibd_segments <- process_ibd()
+ibd_segments <- process_ibd(bin_step = 10000)
 
-ibd_all <- join_metadata(ibd_segments, metadata)
+ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
 ```{r}
@@ -845,18 +1021,9 @@ source(here::here("files/repro/ibd_utils.R"))
 metadata <- process_metadata(bin_step = 10000)
 ibd_segments <- process_ibd()
 
-ibd_all <- join_metadata(ibd_segments, metadata)
+ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
-
-**Hint:** If this looks overwhelming and scary, then remember that function
-is a block of code (optionally accepting arguments) which simply wraps in
-`{` and `}` the code already written by you above, and calls `return` on
-the result.
-
-**Hint:** An extremely useful shortcut when writing R functions is "Run
-function definition" under `Code` `->` `Run region`. Remember that keyboard
-shortcut! (On macOS it's `Option+CMD+F`).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -866,9 +1033,17 @@ You can find my solution
 
 :::
 
+<center><h3>Congratulations! You've just passed an important milestone
+of learning how to structure and modularize your code in a reproducible,
+efficient way!</h3></center>
+
+This is not a joke and I really, really mean it. Most scientists sadly
+never reach this point in their careers, ever. Over the next sessions you will
+see how much difference does (admittedly very annoying!) setup makes. Trust me!
+
 **It's worth pausing here and reflecting on what we've just done. Yes,
 we took (lots!) of code already written and basically "just moved it elsewhere".
-But consider how clean your new script `ibd_analysis.R` is and how easily
+But consider how clean your new script `ibd_pipeline.R` is and how easily
 readable it is. What we've done is sometimes called "abstraction" in software
 engineering. We took components of our pipeline, and "hidden" them away so
 that we no longer have to think in terms of `select()`, `filter()`, `group_by()`,
@@ -880,7 +1055,7 @@ code of our functions!**
 ---
 
 **Point your cursor somewhere inside the `process_ibd()` call in your
-new script `ibd_analysis.R` and press "CTRL+.". This is how easy it is
+new script `ibd_pipeline.R` and press "CTRL+.". This is how easy it is
 to navigate code, even when we modularized it!
 
 ---
@@ -1096,7 +1271,7 @@ Now let's look at continuous variables and this time consider our `ibd`
 table if IBD segments between pairs of individuals:
 
 ```{r}
-tail(ibd_all)
+tail(ibd_merged)
 ```
 
 The most interesting quantity we might want to analyse in the IBD context
@@ -1129,7 +1304,7 @@ anyone looking at your figure, either using `xlab()` or `labs(x = ...)`.**
 Here's a histogram:
 
 ```{r}
-ibd_all %>%
+ibd_merged %>%
   ggplot(aes(length)) +
   geom_histogram() +
   labs(x = "IBD length [centimorgans]")
@@ -1138,7 +1313,7 @@ ibd_all %>%
 Here's a density plot:
 
 ```{r}
-ibd_all %>%
+ibd_merged %>%
   ggplot(aes(length)) +
   geom_density() +
   labs(x = "IBD length [centimorgans]")
@@ -1165,7 +1340,7 @@ This should be easy for you now as budding _tidyverse_ data munging experts!
 
 ```{r}
 ibd_eur <-
-  ibd_all %>%
+  ibd_merged %>%
   filter(
     region_pair == "Europe:Europe" &
     time_pair == "present-day:present-day"
@@ -1450,7 +1625,7 @@ you were building a LEGO set!
 
 ```{r}
 ibd_sum <-
-  ibd_all %>%
+  ibd_merged %>%
   filter(
     length > 10 &          # only long IBD segments
     age_bin1 == age_bin2   # only IBD pairs within the same time window
