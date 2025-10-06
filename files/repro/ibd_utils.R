@@ -46,7 +46,7 @@ process_metadata <- function(bin_step) {
   return(metadata)
 }
 
-join_metadata <- function(ibd, metadata) {
+join_metadata <- function(ibd_segments, metadata) {
   cat("Joining IBD data and metadata...\n")
 
   # prepare metadata for IBD annotation
@@ -55,17 +55,20 @@ join_metadata <- function(ibd, metadata) {
   colnames(metadata1) <- paste0(colnames(metadata1), "1")
   colnames(metadata2) <- paste0(colnames(metadata2), "2")
 
-  # join based on sample1
-  ibd <- inner_join(ibd, metadata1)
-  # join based on sample2
-  ibd <- inner_join(ibd, metadata2)
+  # merge in metadata based on sample1 and sample2 columns
+  ibd_merged <-
+    ibd_segments %>%
+    inner_join(metadata1, by = "sample1") %>%
+    inner_join(metadata2, by = "sample2")
 
   # annotate with new columns indicating a pair of countries or time bins
-  ibd <- mutate(ibd,
-                country_pair = paste(country1, country2, sep = ":"),
-                region_pair = paste(continent1, continent2, sep = ":"),
-                time_pair = paste(age_bin1, age_bin2, sep = ":"),
-                .before = chrom)
+  ibd_merged <- mutate(
+    ibd_merged,
+    country_pair = paste(country1, country2, sep = ":"),
+    region_pair = paste(continent1, continent2, sep = ":"),
+    time_pair = paste(age_bin1, age_bin2, sep = ":"),
+    .before = chrom
+  )
 
-  return(ibd)
+  return(ibd_merged)
 }
