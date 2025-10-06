@@ -1,8 +1,10 @@
+suppressPackageStartupMessages({
 library(ggplot2) # the star of the day!
 
 library(dplyr)
 library(tidyr)
 library(readr)
+})
 
 process_ibd <- function() {
   cat("Downloading and processing IBD data...\n")
