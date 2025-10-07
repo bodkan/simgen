@@ -7,7 +7,7 @@ otherwise don't use any _tidyverse_ functions (or even who don't even use
 R for data analysis itself) still use _ggplot2_ for making figures. It really
 is that good.
 
----
+## Part 1: Continuing with our IBD data
 
 **First, let's start from a clean slate, and leverage our modularized
 pipeline we created for our IBD data. Create a new R script in RStudio
@@ -54,7 +54,7 @@ ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
 
-## Exercise 0: Concept of layers
+### Exercise 0: Concept of layers
 
 An important, powerful, and even elegant concept with building visualizations
 using _ggplot2_ is the idea of _layering_. Let's start to introduce this
@@ -120,7 +120,7 @@ I like to think about it this way:
 when you're implementing the exercises in practice!**
 
 
-## Exercise 1: Distribution of a categorical variable
+### Exercise 1: Distribution of a categorical variable
 
 Let's start very simply, and introduce the layering aspect of _ggplot2_
 visualization package step by step. **Our data frame has a column `age_bin`,
@@ -391,7 +391,7 @@ Let's take this one step further.
 
 ---
 
-## Exercise 2: Distribution of a numerical variable
+### Exercise 2: Distribution of a numerical variable
 
 In the previous exercise you visualized a distribution of a categorical
 variable, specifically the counts of samples in an age category.
@@ -532,7 +532,7 @@ ibd_eur %>%
 :::
 
 
-### Limiting axis scales
+### Exercise 3: Limiting axis scales
 
 Above, we clearly have some individual pairs which share a huge amount of IBD.
 We'll quantify how much a bit later, but for now, the x-axis appears in the
@@ -708,7 +708,7 @@ aesthetic you're going for as a visualization artist. :)
 :::
 
 
-## Exercise 3: Relationship between two variables
+### Exercise 4: Relationship between two variables
 
 #### `geom_point()`
 
@@ -886,7 +886,7 @@ ibd_sum %>%
 
 :::
 
-## Exercise 4: Multiple data sets in one plot
+### Exercise 5: Multiple data sets in one plot
 
 So far we've always followed this pattern of _ggplot2_ usage, to borrow our
 very first `geom_histogram()` example just for the sake of explanation:
@@ -896,7 +896,8 @@ ggplot(ibd_segments, aes(length)) +
   geom_histogram()
 ```
 
-However, you can also do this and it will give the same result (**try it!**):
+**However, you can also do this and it will give the same result (try it--
+it will come in handy many times in the future!)**:
 
 ```{r}
 ggplot() +
@@ -1057,7 +1058,7 @@ ggplot() +
 
 :::
 
-## Exercise 4: Categories in facets (panels)
+### Exercise 6: Categories in facets (panels)
 
 Let's talk about dimensionality (i.e., the number of variables) in our data
 sets and about the ways we can represent them. This topic boils down to the
@@ -1139,94 +1140,9 @@ ggplot() +
 :::
 
 
-### Combining figures
+## Part 2: Working with time-series data
 
-TODO: Logscale vs normal scale
-
-So, here's an extremely cool revelation. Do you remember how we went through
-various data types and object classes in the R bootcamp? Numeric, logical,
-character types, etc?
-
-_ggplot() functions actually do return a (hidden) value, which is a normal
-object like any other R value!_ The fact that we immediately see a plot
-visualized is "just" a side effect that R provides for convenience! After
-all, when we write plotting code, we usually want to see the plot, right?
-
-What does this mean? Well, first of all, consider this bit of code:
-
-```{r}
-p1 <- ggplot()
-```
-
-Weird, huh? Why would you do that? **When you type `p1` in your R console
-you get the usual (empty) figure!**
-
-```{r}
-p1
-```
-
-Of course, we can also create (and save in a variable) a full figure like this:
-
-```{r}
-p1 <- ggplot(ibd_segments, aes(length)) + geom_histogram()
-p1
-```
-
-We could also create and save another figure, this time a density:
-
-```{r}
-p2 <- ggplot(ibd_segments, aes(length)) + geom_density()
-p2
-```
-
-This is extremely useful for making composite figures built out of individual
-panels (like you often see in scientific figures as panels **A**, **B**, **C**,
-etc.). The way we can do this is using a helper R package _cowplot_ (don't
-ask me about its name, I have no idea! :)) and its function `plot_gri()`. **Check
-this out:**
-
-```{r}
-library(cowplot)
-
-plot_grid(p1, p2, labels = c("A", "B"))
-```
-
-This is an extremely useful pattern because it basically eliminates the need
-for manually pasting figures in a graphics editor (which defies the purpose
-of reproducibility!). The sky is actually a limit, because you can place
-other `plot_grid()` calls within another `plot_grid()`, composing figures
-of various levels of complexity. Check out
-[a figure from one of my papers](https://github.com/bodkan/archaic-ychr/blob/master/figures/fig1.pdf),
-each panel is an independently made _ggplot2_ figure, all pasted together
-with `plot_grid()`. 
-
-For instance, if we make `p3` like this:
-
-```{r}
-# create a silly scatter plot of geographical coordinates of our samples
-# (do you see an outline of Europe? :))
-p3 <-
-  metadata %>%
-  filter(continent == "Europe") %>%
-  ggplot(aes(longitude, latitude)) +
-    geom_point()
-p3
-```
-
-**You could combine them like this** (this is just an example, don't read too
-much into the meaning of putting these particular plots together).
-
-```{r}
-plot_grid(
-  p3,
-  plot_grid(p1, p2, labels = c("B", "C")),
-  nrow = 2,
-  labels = "A"
-)
-```
-
-
-## Exercise 5: Practicing on a new data set
+### Exercise 7: Using your knowledge on new data
 
 We've spent a lot of time looking at metadata and IBD data, demonstrating
 various useful bits of techniques from across _tidyverse_ and _ggplot2_.
@@ -1537,4 +1453,89 @@ step at a time (and each step being very tiny and easily understandable!),
 makes it possible to create beautiful informative visualizations of any
 kind of tabular data!**
 
----
+### Exercise 8: Combining figures
+
+TODO: Logscale vs normal scale
+
+So, here's an extremely cool revelation. Do you remember how we went through
+various data types and object classes in the R bootcamp? Numeric, logical,
+character types, etc?
+
+_ggplot() functions actually do return a (hidden) value, which is a normal
+object like any other R value!_ The fact that we immediately see a plot
+visualized is "just" a side effect that R provides for convenience! After
+all, when we write plotting code, we usually want to see the plot, right?
+
+What does this mean? Well, first of all, consider this bit of code:
+
+```{r}
+p1 <- ggplot()
+```
+
+Weird, huh? Why would you do that? **When you type `p1` in your R console
+you get the usual (empty) figure!**
+
+```{r}
+p1
+```
+
+Of course, we can also create (and save in a variable) a full figure like this:
+
+```{r}
+p1 <- ggplot(ibd_segments, aes(length)) + geom_histogram()
+p1
+```
+
+We could also create and save another figure, this time a density:
+
+```{r}
+p2 <- ggplot(ibd_segments, aes(length)) + geom_density()
+p2
+```
+
+This is extremely useful for making composite figures built out of individual
+panels (like you often see in scientific figures as panels **A**, **B**, **C**,
+etc.). The way we can do this is using a helper R package _cowplot_ (don't
+ask me about its name, I have no idea! :)) and its function `plot_gri()`. **Check
+this out:**
+
+```{r}
+library(cowplot)
+
+plot_grid(p1, p2, labels = c("A", "B"))
+```
+
+This is an extremely useful pattern because it basically eliminates the need
+for manually pasting figures in a graphics editor (which defies the purpose
+of reproducibility!). The sky is actually a limit, because you can place
+other `plot_grid()` calls within another `plot_grid()`, composing figures
+of various levels of complexity. Check out
+[a figure from one of my papers](https://github.com/bodkan/archaic-ychr/blob/master/figures/fig1.pdf),
+each panel is an independently made _ggplot2_ figure, all pasted together
+with `plot_grid()`. 
+
+For instance, if we make `p3` like this:
+
+```{r}
+# create a silly scatter plot of geographical coordinates of our samples
+# (do you see an outline of Europe? :))
+p3 <-
+  metadata %>%
+  filter(continent == "Europe") %>%
+  ggplot(aes(longitude, latitude)) +
+    geom_point()
+p3
+```
+
+**You could combine them like this** (this is just an example, don't read too
+much into the meaning of putting these particular plots together).
+
+```{r}
+plot_grid(
+  p3,
+  plot_grid(p1, p2, labels = c("B", "C")),
+  nrow = 2,
+  labels = "A"
+)
+```
+
