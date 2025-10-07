@@ -226,7 +226,8 @@ samples <- tibble(
 df_f4 <- rbind(direct_f4, indirect_f4) %>%
   select(-c(A, B, C, O)) %>%
   inner_join(samples, by = "X") %>%
-  rename(sample = X)
+  rename(sample = X) %>%
+  select(sample, time, statistic, proportion, rate_afr2afr, rate_eur2afr, replicate)
 
 write_tsv(df_f4, here::here("files/tidy/f4ratio.tsv"), na = "none")
 
