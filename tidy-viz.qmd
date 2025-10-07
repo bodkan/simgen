@@ -892,8 +892,7 @@ So far we've always followed this pattern of _ggplot2_ usage, to borrow our
 very first `geom_histogram()` example just for the sake of explanation:
 
 ```{r}
-ggplot(ibd_segments, aes(length)) +
-  geom_histogram()
+ggplot(ibd_segments, aes(length)) + geom_histogram()
 ```
 
 **However, you can also do this and it will give the same result (try it--
@@ -909,10 +908,10 @@ and also its own `aes()` aesthetic and mapping function. You could think of
 this as each individual geom having a "self-contained" `ggplot()` function's
 ability.
 
-This can be very useful whenever we want to plot different aspects of the data
-with their own aesthetic parameters (colors, shapes, sizes). Let's work through
-an exercise to explain this better, step by step, to make our IBD scatter plot
-figure much more nicer to look at.
+**This can be very useful whenever you want to plot different geoms
+with their own aesthetic parameters (colors, shapes, sizes)!** Let's
+work through an exercise to explain this better, step by step, to make our
+IBD scatter plot figure much more nicer to look at.
 
 ---
 
@@ -941,23 +940,25 @@ contain the same columns, even though they have different rows.**
 
 ```{r}
 ibd_unrel <- filter(ibd_sum, rel == "none")
-ibd_unrel
+head(ibd_unrel, 3)
 ```
 
 ```{r}
 ibd_rel <- filter(ibd_sum, rel != "none")
-ibd_rel
+head(ibd_rel, 3)
 ```
 
 :::
 
 ---
 
-**Then visualize the `ibd_unrel` (IBD summaries between unrelated individuals)
+**Then visualize the `ibd_unrel` (i.e., IBD summaries between unrelated individuals)
 table with the following "template".**
 
-**Note:** The `ggplot()` has no arguments! Everything is in the `geom_point()`
-call!
+**Note:** The `ggplot()` in this case has no arguments, just like we
+showed in the two versions of `geom_histogram()` above! Take a look at that
+example again if you need to. In our case here, similarly, everything is in
+the `geom_point()` call!
 
 ```
 ggplot() +
@@ -996,6 +997,12 @@ ggplot() +
 
 ---
 
+**Compare the two figures you just created, based on `ibd_rel` and `ibd_unrel`
+to the complete figure based on `ibd_sum` you created above. You can see
+that these to plots together are showing the same data.**
+
+---
+
 **You have now plotted the two scatter plots separately, but here comes a very
 cool aspect of _ggplot2_ I wanted to show you. You can combine the two figures,
 each plotting a different data frame, into one! Do this now and to make the
@@ -1004,18 +1011,8 @@ overall plot `title` as well as `subtitle` (all using the `labs()` layer
 functions) as well as adjust the legend title (just like you did with the
 `guides()` layer function above).**
 
-**As a bonus, and to learn another parameter of `aes()` useful for scatter plots,
-in addition to setting `color = rel` (which sets a color of each point based
-on the relatedness value), add also `shape = rel`! Observe what happens
-when you do this!**
-
-**Similarly, in the `geom_point()` command plotting unrelated individuals,
+**In the `geom_point()` command plotting unrelated individuals (`ibd_unrel`),
 in addition to setting `color = "lightgray"`, set also `size = 0.75`.**
-
-**I'm not personally fan of the default grey-filled background of ggplots.
-I like to add `+ theme_minimal()` at the end of my plotting code of many of
-my figures, particularly when I'm creating visualizations for my papers.
-Try it too!**
 
 **Hint:** If it still isn't clear, don't worry. Here's a bit of help of what
 your plotting code should look like:
@@ -1025,10 +1022,46 @@ ggplot() +
   geom_point(<YOUR CODE PLOTTING UNRELATED IBD PAIRS>)
   geom_point(<YOUR CODE PLOTTING RELATED IBD PAIRS>) +
   labs(<x, y, title, and subtitle text>) +
-  guides(color = guide_legend("relatedness"), shape = guide_legend("relatedness)) +
-  theme_minimal()
+  guides(color = guide_legend("relatedness"))
 ```
 
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's the complete solution to this exercise:
+
+
+```{r}
+ibd_unrel <- filter(ibd_sum, rel == "none")
+ibd_rel <- filter(ibd_sum, rel != "none")
+
+ggplot() +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
+  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel)) +
+  labs(
+    x = "total IBD sequence",
+    y = "number of IBD segments",
+    title = "Total IBD sequence vs number of IBD segments",
+    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+  ) +
+  guides(color = guide_legend(title = "relatedness"))
+```
+
+:::
+
+---
+
+
+**As a bonus, and to learn another parameter of `aes()` useful for scatter plots,
+in addition to setting `color = rel` (which sets a color of each point based
+on the relatedness value), add also `shape = rel`! Observe what happens
+when you do this!**
+
+**Finally, I'm not personally fan of the default grey-filled background of ggplots.
+I like to add `+ theme_minimal()` at the end of my plotting code of many of
+my figures, particularly when I'm creating visualizations for my papers.
+Try it too!**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1057,6 +1090,10 @@ ggplot() +
 ```
 
 :::
+
+---
+
+
 
 ### Exercise 6: Categories in facets (panels)
 
@@ -1539,3 +1576,5 @@ plot_grid(
 )
 ```
 
+
+## TODO: `fct_reorder()` example
