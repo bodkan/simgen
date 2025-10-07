@@ -1072,42 +1072,315 @@ plot_grid(
 ```
 
 
+## Exercise 5: Practicing on a new data set
+
+We've spent a lot of time looking at metadata and IBD data, demonstrating
+various useful bits of techniques from across _tidyverse_ and _ggplot2_.
+There are many more useful things to learn, but let's switch gears a little
+bit and look at a slightly different kind of data set, just to keep things
+interesting.
+
+**First, create a new script and save it as `f4ratio.R`.**
+
+**Then add the following couple of lines of setup code, which again loads
+the necessary libraries and also reads a new example data set:**
 
 ```{r}
-ibd_sum %>%
-  filter(region_pair == "Europe:Europe") %>% 
-  ggplot(aes(time_pair, total_ibd)) +
-  geom_violin() +
-  theme(axis.text.x = element_text(hjust = 1, angle = 45))
+library(dplyr)
+library(readr)
+library(ggplot2)
+
+f4ratio <- read_tsv("https://tinyurl.com/simgen-f4ratio")
 ```
 
+This data set contains results from a huge population genetics simulation
+study I recently did, and contains estimates of the proportion of Neanderthal
+ancestry in a set of European individuals spanning the past 50 thousand years.
 
+Here's a brief description of the contents of the columns:
 
+1 `individual`, `time` -- name and time (in years before present) of an individual
+2. `statistic` -- a variant of an estimator of Neanderthal ancestry
+3. `proportion` -- the proportion of Neanderthal ancestry estimated by `statistic`
+4. `rate_eur2afr` -- the amount of ancient migration (gene flow) from
+Europe to Africa in a given scenario
+5. `replicate` -- the replicate number of a simulation run (each scenario was
+run multiple times to capture the effect of stochasticity)
 
-## Bonus exercises
+```{r}
+head(f4ratio)
+```
 
+In other words, each row of this table contains the `proportion` of Neanderthal
+ancestry estimated for a given `individual` at a given `time` in some scenario
+specified by a given set of other parameters (`rate_afr2afr`, `rate_eur2afr`,
+`replicate`).
 
+**In this exercise, I will be asking you some questions, the answers to
+which you should be able to arrive to by the set of techniques from
+_tidyverse_ you've already learned, and visualize them using the _ggplot2_
+functions you already know. When a new function will be needed, I will be
+dropping hints for you along the way!**
 
+**This exercise is primarily intended for you to practice more _ggplot2_
+visualization, because I think this is the most crucial skill in doing
+any kind of data analysis. Why? The faster you can get from an idea to
+a visualization of that idea, the faster you'll be able to do research.**
 
-## Further practice
+Yes, we could do this on the MesoNeo metadata or the IBD data too, but
+I think it would be too boring to stay with the same set of tables for this
+long. :)
 
-### Option 1: Your own data
+Let's go!
 
-I'm sure you have done some form of table munging and data visualization in your
-projects. If you're done with the exercises above, here are some ideas for you:
+---
 
-1. If you haven't used R for processing of tabular data in your work -- maybe
-you have done similar table munging in Excel or Google Sheets in a manual
-(i.e., non-reproducible) way? -- write your processing steps as a self-contained
-R script:
+** Use `geom_point()` to plot the relationship between `time` (`x` axis`)
+and `propotion` of Neanderthal ancestry (`y` axis). Don't worry about any
+other variables just yet (colors, facet, etc.).**
 
-- If you used Excel, you can use the R package [_readxl_](https://readxl.tidyverse.org),
-- If you used Google Sheets, you can use the R package [_googlesheets4_](https://googlesheets4.tidyverse.org)
+**Note:** The `f4ratio` table is too huge to plot every single point.
+Before you `%>%` pipe it into `ggplot()`, _subsample_ the rows to just
+10% of it subset using this trick:
 
-2. If you used Excel or base R for plotting figures, use what you learned
-about _ggplot2_ to make beautiful, publication-ready plots as we did in our
-exercises.
+```
+f4ratio %>%
+  sample_frac(0.1) %>% # subsample 10% fraction of the data
+  ggplot(aes(...)) +
+    geom_point()
+```
 
-Yes, this will put you in an uncharted territory. This is scary and totally
-normal when doing research. I'm happy to help you out with questions
-and issues!
+**Hint:** Look at `?sample_frac` but also `?sample_n` and check out their
+parameters. They are incredible useful for any kind of data exploration!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+sample_frac(0.1) %>%
+ggplot(aes(time, proportion)) +
+  geom_point()
+```
+
+:::
+
+---
+
+**Your plot now mashes together `proportion` values from two different
+`statistic` estimators. Fix this by facetting the plot, which will visualize
+both statistics in two separate panels. For the time being, keep doing the
+10% subsampling step.**
+
+**Hint:** You can do this by adding `+ facet_wrap(~ statistic)` to your previous code.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+sample_frac(0.1) %>%
+ggplot(aes(time, proportion)) +
+  geom_point() +
+  facet_wrap(~ statistic)
+```
+
+:::
+
+---
+
+**Take a look at the values on the x-axis of your figures. Purely for
+aesthetics, it is customary to visualize time going from oldest (left) to
+present-day (right). But currently the time direction is reversed.
+Fix this by adding a new layer with `+ scale_x_reverse()`!**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+sample_frac(0.1) %>%
+ggplot(aes(time, proportion)) +
+  geom_point() +
+  facet_wrap(~ statistic) +
+  scale_x_reverse()
+```
+
+:::
+
+---
+
+**Whenever we visualize some biological statistics, we often want to compare
+their values to some kind of baseline (or a null hypothesis) value. In our
+case we have two:**
+
+1. baseline of "no Neanderthal ancestry" at y-axis value 0,
+2. baseline of "known proportion of Neanderthal ancestry" today, which is
+about 3% (so y-axis value of 0.03).
+
+**Add those two baselines to your figure using a new function
+`geom_hline()` (standing for "horizontal line"). Like this:**
+
+```{r}
+<YOUR TIDYVERSE AND GGPLOT2 CODE ABOVE> +
+  geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "black", linetype = "dotted")
+```
+
+**Note:** You can immediately see the possibilities for adjusting the visuals
+like colors or linetype. Feel free to experiment with this!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+sample_frac(0.1) %>%
+ggplot(aes(time, proportion)) +
+  geom_point() +
+  facet_wrap(~ statistic) +
+  scale_x_reverse() +
+  geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "blue", linetype = "dotted")
+```
+
+:::
+
+---
+
+There's clearly a huge amount of statistical noise, represented particularly
+in the "indirect f4-ratio" figure. And we're not even plotting all
+points because there's just too many of them!
+
+**Additionally, what I cared about in this particular case (during my PhD)
+were not values for each individual person, but about the _statistical trend_
+in my data. An extremely important function for this is `geom_smoot()`,
+which fits a line through the data, capturing this trend.**
+
+**In this next part, remove the subsampling done by `sample_frac()`, and
+also replace your `geom_point()` call in your figure with
+this: `+ geom_line(stat = "smooth", se = FALSE)`. What happens when you do
+this? Read `?geom_line` to figure out what `se = FALSE` means. Why do we want
+to do this?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+ggplot(aes(time, proportion)) +
+  geom_line(stat = "smooth", se = FALSE) +
+  facet_wrap(~ statistic) +
+  scale_x_reverse() +
+  geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "blue", linetype = "dotted")
+```
+
+:::
+
+---
+
+**Well, we removed a lot of noise but we also removed most of the interesting
+signal! This is because we are now basically "smoothing" (averaging) over
+a very important variable: the amount of migration from Europe to Africa
+(which was the
+[primary research interest for me at the time](https://www.pnas.org/doi/10.1073/pnas.1814338116)). Let's take a look
+at our table again:**
+
+```{r}
+head(f4ratio)
+```
+
+**What we want is to plot not just a single line across every single scenario,
+but we want to plot one line for each value of our variable of interest,
+`rate_eur2afr`.**
+
+**Let's add the variable into play by adding `color = rate_eur2afr` into your
+`aes()` call in the `ggplot()` function (i.e., in addition to the `x = time`
+and `y = proportion` you already got there).**
+
+**Note:** You'll get a warning which we will fix in the next step, don't worry!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+ggplot(aes(time, proportion, color = rate_eur2afr)) +
+  geom_line(stat = "smooth", se = FALSE) +
+  facet_wrap(~ statistic) +
+  scale_x_reverse() +
+  geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "blue", linetype = "dotted")
+```
+
+Don't worry about the warning, we'll fix this soon!
+
+:::
+
+---
+
+The reason we got a warning here is a slightly confusing behavior of the
+smoothing function `geom_smooth()`. Because `rate_eur2afr` is a numerical
+variable, the smoothing function cannot plot a single smoothed line for
+each of its values, because there could be infinite numnber of them.
+
+**Fix the problem by adding `group = rate_eur2afr` right after your
+`color = rate_eur2afr` you added in the previous exercise. This explicitly
+instructs `geom_smooth()` to treat individual values of `rate_eur2afr` as
+discrete categories.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+ggplot(aes(time, proportion, color = rate_eur2afr, group = rate_eur2afr)) +
+  geom_line(stat = "smooth", se = FALSE) +
+  facet_wrap(~ statistic) +
+  scale_x_reverse() +
+  geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "blue", linetype = "dotted")
+```
+
+:::
+
+---
+
+**Let's finalize our figure [for publication](https://www.pnas.org/doi/10.1073/pnas.1814338116#fig02)!
+Use `labs()` to add proper `x`, `y`, and `title` descriptions (something like
+"Neanderthal ancestry proportion", "years before present", and
+"Expected Neanderthal ancestry trajectories").**
+
+**Don't forget about the title of the legend too, which you can adjust by 
+`+ guides(color = guide_legend("EUR -> AFR\nmigration"))`.**
+
+**Finally, add my favourite `+ theme_minimal()` at the end.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+f4ratio %>%
+ggplot(aes(time, proportion, color = rate_eur2afr, group = rate_eur2afr)) +
+  geom_line(stat = "smooth", se = FALSE) +
+  facet_wrap(~ statistic) +
+  scale_x_reverse() +
+  geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
+  geom_hline(yintercept = 0, color = "blue", linetype = "dotted") +
+  labs(x = "Neanderthal ancestry proportion",
+       y = "years before present",
+       title = "Expected Neanderthal ancestry trajectories",
+       subtitle = "Results from a set of population genetic simulations") +
+  guides(color = guide_legend("EUR -> AFR\nmigration")) +
+  theme_minimal()
+```
+
+:::
+
+**I hope that you now appreciate how adding little bits and pieces, one
+step at a time (and each step being very tiny and easily understandable!),
+makes it possible to create beautiful informative visualizations of any
+kind of tabular data!**
+
+---
