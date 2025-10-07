@@ -209,3 +209,27 @@ system("git add files/tidy/ibd_long.tsv")
 system("git commit -m 'Add summarized long IBD data'")
 system("git push")
 
+
+# f4-ratio proportions data -----------------------------------------------
+
+f4 <- readRDS("../demografr/inst/examples/grid_data.rds") %>%
+  rename(replicate = rep, rate_afr2afr = rate_aa, rate_eur2afr = rate_ea)
+
+direct_f4 <- unnest(f4, direct) %>% select(-indirect) %>% rename(proportion = alpha) %>% mutate(statistic = "direct f4-ratio")
+indirect_f4 <- unnest(f4, indirect) %>% select(-direct) %>% rename(proportion = alpha) %>% mutate(statistic = "indirect f4-ratio", proportion = 1 - proportion)
+
+samples <- tibble(
+  X = paste0("eur_", 1:21),
+  time = seq(40000, 0, -2000)
+)
+
+df_f4 <- rbind(direct_f4, indirect_f4) %>%
+  select(-c(A, B, C, O)) %>%
+  inner_join(samples, by = "X") %>%
+  rename(sample = X)
+
+write_tsv(df_f4, here::here("files/tidy/f4ratio.tsv"), na = "none")
+
+system("git add files/tidy/f4ratio.tsv")
+system("git commit -m 'Add example f4-ratio data set'")
+system("git push")
