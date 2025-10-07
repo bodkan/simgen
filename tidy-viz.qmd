@@ -9,26 +9,42 @@ is that good.
 
 ---
 
-**First, let's start from a clean slate, and leverage our beautiful
-modularized pipeline. Create a new R script in RStudio, (`File` `->`
-`New file` `->` `R Script`) and save it somewhere on your computer as
-`tidy-viz.R` (`File` -> `Save`). Copy the following bit of code which
-will execute your IBD and metadata processing pipeline. The rest of this
-exercise will pick up with the analysis of your processed, filtered, and
-merged IBD data set.**
+**First, let's start from a clean slate, and leverage our modularized
+pipeline we created for our IBD data. Create a new R script in RStudio
+(`File` `->` `New file` `->` `R Script`), and save it somewhere on your
+computer as `tidy-viz.R` (`File` -> `Save`). Copy the following bit of code
+which will execute your IBD and metadata processing pipeline.**
+
+The following exercises will focus on basics of visualization of various
+types of statistical summaries, using your IBD data set as a representative
+of typical data we deal with when doing data science.
 
 ```{r}
 #| eval: false
+library(ggplot2) # the star of the day!
+
+library(dplyr)
+library(readr)
+
+# source our utility functions so that we have them available
 source("ibd_utils.R")
 
+# download and process the metadata and IBD data set
 metadata <- process_metadata()
 ibd_segments <- process_ibd(bin_step = 10000)
 
+# combine the IBD table with metadata information
 ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
 ```{r}
 #| echo: false
+#| output: false
+library(ggplot2) # the star of the day!
+
+library(dplyr)
+library(readr)
+
 source(here::here("files/repro/ibd_utils.R"))
 
 metadata <- process_metadata(bin_step = 10000)
@@ -38,10 +54,71 @@ ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
 
+## Exercise 0: Concept of layers
+
 An important, powerful, and even elegant concept with building visualizations
 using _ggplot2_ is the idea of _layering_. Let's start to introduce this
 from the simplest possible kind of visualization, which is plotting
 the counts of observations of a categorical (i.e. discrete) variable.
+
+First, **what happens when you call a function `ggplot()` on its own?
+How about when you call `ggplot(metadata)`, i.e. when we say we want
+to be plotting something from out `metadata` table?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We get an empty "canvas"! Almost as if we were artist starting to paint
+something. 
+
+```{r}
+ggplot()
+```
+
+
+Saying that we want to plot `metadata` doesn't change anything. We
+get the same empty canvas, with _ggplot2_ basically "waiting" for us to
+give it more instructions.
+
+```{r}
+ggplot(metadata)
+```
+
+:::
+
+As mentioned in my solution, calling `ggplot()` on its own basically only
+sets up an empty "canvas", as if we were about to start painting something.
+
+This might sound like a silly metaphor, but when it comes to
+_ggplot2_ plotting, this is actually remarkably accurate. This is exactly
+because of the _layering_ aspect of _ggplot2_.
+
+There are two important components of every _ggplot2_ figure:
+
+#### 1. **"Aesthetics"**
+
+Aesthetics are a specification of the _mapping_ of variables of a data frame
+(i.e., columns) to some kind of visual property of a plot (`x`, or `y`
+axis, `color`, `shape,` etc.). We specify these aesthetics with a function
+called `aes()` which you will see later many times.
+
+#### 2. **"Geoms"**
+
+Geoms are graphical elements to be plotted (histograms, points,
+lines, etc.). We specify those using functions such as `geom_bar()`, 
+`geom_histogram()`, `geom_point()`, etc., all of which you will practice
+now.
+
+#### How do "aesthetics" and "geoms" fit together?
+
+I like to think about it this way:
+
+- "geoms" specify what our data should be plotted as
+- "aesthetics" specify how those geoms should look like
+
+**This is all very abstract, but don't worry. Refer to this as a guideline
+when you're implementing the exercises in practice!**
+
 
 ## Exercise 1: Distribution of a categorical variable
 
@@ -50,22 +127,99 @@ visualization package step by step. **Our data frame has a column `age_bin`,
 which contains the assignment of each individual into a respective time
 period. Let's start by visualizing the count of individuals in each time bin.**
 
-#### `geom_bar()`
+**Run the following code in your R console. It specifies the aesthetic 
+mapping which will map our first variable of interest (column `age_bin` in
+our data frame) to the `x`-axis of our eventual figure. What do you get
+when you run it? How is the result different from just calling `ggplot(metadata)`
+without anything else, like you did above?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Let's take it step by step:
+
+1. plotting command only sets up canvas
+
+```{r}
+ggplot()
+```
+
+2. saying what data set we want to plot doesn't change anything (_ggplot2_
+doesn't know what to plot yet!):
 
 ```{r}
 ggplot(metadata)
 ```
 
+3. mapping an aesthetic still doesn't do anything, because we didn't instruct
+_ggplot2_ to plot anything even now:
+
 ```{r}
 ggplot(metadata, aes(x = age_bin))
 ```
+
+A-ha! We see a difference! _ggplot2_ now _mapped_ the `x` axis against
+values of the `age_bin` variable. Let's verify this by looking at all possible
+values of that variable:
+
+```{r}
+table(metadata$age_bin)
+```
+
+
+But even then, the plot still actually doesn't show anything!
+Remember, we only instruct _ggplot2_ to map a variable `age_bin` to an
+`x`-axis of a figure... but we didn't say _what_ we want to visualize
+(i.e. a "geom").
+
+To make a visualization, both aesthetic mapping and some kind of geom is needed! We will do this in the next step.
+
+:::
+
+
+#### `geom_bar()`
+
+You instructed `ggplot()` to work with the `metadata` table, you mapped
+a variable of interest `age_bin` to the x-axis (and therefore set up a
+"mapping aesthetic"). To make a complete figure, we need to add a layer with
+a "geom"! In ggplot, we add layers with the `+` operator, mimicking the
+"painter metaphor" of adding layers one by one, composing a more complex
+figure with each additional layer.
+
+**Add `+ geom_bar()` to you plotting command from the previous exercise.
+What happens then? How do you read the results? Compare then to what
+you get by running `table(metadata$age_bin).**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We get a full figure, yay!
 
 ```{r}
 ggplot(metadata, aes(x = age_bin)) + geom_bar()
 ```
 
-**Let's add more layers! Use a `xlab()` function to add an x-axis label
-element using the `+` operator.**
+This bar plot matches the counts in our data indeed:
+
+```{r}
+table(metadata$age_bin)
+```
+
+
+:::
+
+It might be hard to believe now but you now know almost everything about
+doing _ggplot2_ figures. :) Everything else, all the amazing complexity
+of [the possible _ggplot2_ figures](https://r-graph-gallery.com)
+(really, look at that website!) comes down from _combining these two
+simple elements: aesthetics and geoms.
+
+---
+
+**Let's demonstrate the layering aspect a little bit more by adding more
+layers to our figure! Use a `xlab()` function to add an x-axis label
+element using the `+` operator. Look at `?xlab` to see how to use this
+function in practice.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
