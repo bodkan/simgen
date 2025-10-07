@@ -80,6 +80,7 @@ ibd_segments <- dplyr::select(ibd_segments, sample1, sample2, chrom = chromosome
 ibd_segments <- dplyr::filter(ibd_segments, sample1 %in% to_keep & sample2 %in% to_keep)
 ibd_segments <- left_join(ibd_segments, rel_df, by = c("sample1" = "x", "sample2" = "y"))
 
+set.seed(123)
 filter(ibd_segments, chrom == 21) %>%
   sample_frac %>%
   readr::write_tsv(here::here("files/tidy/ibd_segments.tsv"), na = "none")
@@ -213,7 +214,8 @@ system("git push")
 # f4-ratio proportions data -----------------------------------------------
 
 f4 <- readRDS("../demografr/inst/examples/grid_data.rds") %>%
-  rename(replicate = rep, rate_afr2afr = rate_aa, rate_eur2afr = rate_ea)
+  rename(replicate = rep, rate_afr2afr = rate_aa, rate_eur2afr = rate_ea) %>%
+  filter(rate_afr2afr == 0.2)
 
 direct_f4 <- unnest(f4, direct) %>% select(-indirect) %>% rename(proportion = alpha) %>% mutate(statistic = "direct f4-ratio")
 indirect_f4 <- unnest(f4, indirect) %>% select(-direct) %>% rename(proportion = alpha) %>% mutate(statistic = "indirect f4-ratio", proportion = 1 - proportion)
@@ -226,8 +228,8 @@ samples <- tibble(
 df_f4 <- rbind(direct_f4, indirect_f4) %>%
   select(-c(A, B, C, O)) %>%
   inner_join(samples, by = "X") %>%
-  rename(sample = X) %>%
-  select(sample, time, statistic, proportion, rate_afr2afr, rate_eur2afr, replicate)
+  rename(individual = X) %>%
+  select(individual, time, statistic, proportion, -rate_afr2afr, rate_eur2afr, replicate)
 
 write_tsv(df_f4, here::here("files/tidy/f4ratio.tsv"), na = "none")
 
