@@ -1,3 +1,7 @@
+---
+eval: false
+---
+
 # Structuring R projects
 
 ## Introduction
@@ -22,7 +26,7 @@ new data (again), you will be practicing reproducibility concepts in one of the
 following two ways, **depending on the level of your confidence and comfort:**
 
 1. **You can take already established bits of code (currently scattered
-over multiple separate scripts and files or even nowhevere because you
+over multiple separate scripts and files or even nowhere because you
 experimented in the R console -- all these approaches were OK so far!), or**
 
 2. **you can take your own data, and your own scripts...**
@@ -36,21 +40,94 @@ pick up your projects at a later point.**
 your results in a 100% reproducible, reliable way, either in form of slides
 (such as for group meeting updates) or reports (as your research notebooks).**
 
-## Exercise 1: Creating an R project
+## Exercise 1: Creating a formal R project
 
 1. Click `File` `->` `New project...`
 2. In the new window, click on `New Directory` `->` `New Project`
-3. Under "Directory name" type in "simgen-project" (the name of our course,
+3. Under `"Directory name"` type in `"simgen-project"` (the name of our course,
 and the directory where all project files will be stored). Pick where you
 would like to save that directory (this doesn't matter, just put the project
-somewhere you can later find it :)). Check the "Open in new session", leave
-the other options ("git" and "renv") unchecked.
+somewhere you can later find it :)). Check the `"Open in new session"`, leave
+the other options related to "git" and "renv" unchecked.
 
 4. Then click on the "Create Project" button.
 
 **This will create a new RStudio window. Your original RStudio window
 (where you worked so far is still open). You task now is to convert the
-(probably disorganized) bits of code into a "proper reproducible R project".
+(probably disorganized) bits of code into a "proper reproducible R project".**
 
-## Exercise 2: Create "pipeline components"
+**Notice the new `simgen-project.Rproj` file that is currently the only file
+in your project directory! We will come back to it soon.**
+
+
+## Exercise 2: Seting up a project file structure
+
+What makes for a good computational project structure? There are endless
+possibilities but a **good guidelines are**:
+
+1. **Be consistent** -- put files that "belong together" in the same place. For
+example, an Excel table shouldn't be saved in a directory with scripts.
+
+2. **Be predictable** -- even a person unfamiliar with your project should be
+able to guess where is what just by looking at your folder. Remember, when
+you publish your paper or your thesis, you will have to provide all your
+data and scripts as supplementary materials, so others should be able to
+understand all of them!
+
+**Let's set up an example computational project structure for our IBD data,
+our ancient DNA metadata, and our $f_4$-ratio Neanderthal estimates data, just
+like you would do this for a real study.**
+
+**Note:** This is all just an example! Again, as long as you follow the guidelines
+numbered above, everything works!
+
+---
+
+**In the `Files` pane of RStudio, click on `"New Folder"` and create the
+following directories in the "root of your project directory
+`simgen-project/`":**
+
+1. `code/`
+2. `data/`, and within it create directories `raw/` and `processed/`
+3. `figures/`
+4. `reports/`
+
+**Note:** You can do all this manually, or you can play around with doing it
+using code with the incredibly useful function `?dir.create`! For instance, a
+single command to do all of the above could be the following.
+**Why is the `recursive = TRUE` needed sometimes? Look at help of `?dir.create`.**
+
+```{r}
+dir.create("code/")
+dir.create("data/raw", recursive = TRUE)
+dir.create("data/processed", recursive = TRUE)
+dir.create("figures/")
+dir.create("reports/")
+```
+
+**When you hit the `"Refresh file listing"` circular arrow button in the top-right
+of the `"Files"` pane, you should see all the directories you just created.**
+
+## Exercise 3: Building an example reproducible pipeline
+
+If there are million possible ways how to properly structure a computational
+projects, there are infinite ways how a "reproducible research pipeline" should
+be actually organized.
+
+Obviously, all research projects are different, they focus on different kinds
+of data (archaeological data, ancient DNA sequences, linguistic data, field
+observation data, etc.), so naturally they will require different code which
+will have to be structured in different ways.
+
+Still, there are some common workflows which practically every single computational
+scientific research study does:
+
+1. Data gathering -- in our IBD and metadata examples, this involved downloading
+data from the internet.
+
+2. Data processing -- in our case, this involved filtering the data, processing
+it to bin individuals based on their ages, joining IBD data with metadata, etc.
+
+3. Data analysis -- this involves computing summary statistics, creating figures,
+etc.
 
