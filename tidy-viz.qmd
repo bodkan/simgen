@@ -30,8 +30,8 @@ library(readr)
 source("ibd_utils.R")
 
 # download and process the metadata and IBD data set
-metadata <- process_metadata()
-ibd_segments <- process_ibd(bin_step = 10000)
+metadata <- process_metadata(bin_step = 10000)
+ibd_segments <- process_ibd()
 
 # combine the IBD table with metadata information
 ibd_merged <- join_metadata(ibd_segments, metadata)
@@ -1577,4 +1577,45 @@ plot_grid(
 ```
 
 
-## TODO: `fct_reorder()` example
+## Bonus exercises and topics
+
+::: {.callout-tip collapse="true" icon=false}
+## See bonus exercises and topics
+
+### Exercise 9: Ridgeline plots and factor reordering
+
+Take a look at [this vignette](https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html)
+which describes the functionality of a very interesting plotting R package
+_ggridges_.
+
+```{r}
+metadata %>%
+  filter(continent == "Europe", !is.na(latitude), !is.na(longitude)) %>%
+  ggplot(aes(latitude, color = country, fill = country)) +
+  geom_density(alpha = 0.75) +
+  theme_minimal()
+```
+
+```{r}
+library(ggridges)
+
+metadata %>%
+  filter(continent == "Europe", !is.na(latitude), !is.na(longitude)) %>%
+  ggplot(aes(x = latitude, y = country, color = country, fill = country)) +
+  geom_density_ridges(alpha = 0.75) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+```{r}
+library(ggridges)
+
+metadata %>%
+  filter(continent == "Europe", !is.na(latitude), !is.na(longitude)) %>%
+  ggplot(aes(x = latitude, y = forcats::fct_reorder(country, latitude), color = country, fill = country)) +
+  geom_density_ridges(alpha = 0.75) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+:::
