@@ -407,6 +407,7 @@ window.Quarto = {
   <li><a href="#data-processing" id="toc-data-processing" class="nav-link" data-scroll-target="#data-processing">2. Data processing</a></li>
   <li><a href="#data-analysis" id="toc-data-analysis" class="nav-link" data-scroll-target="#data-analysis">3. Data analysis</a></li>
   </ul></li>
+  <li><a href="#closing-remarks" id="toc-closing-remarks" class="nav-link" data-scroll-target="#closing-remarks">Closing remarks</a></li>
   </ul>
 </nav>
     </div>
@@ -437,18 +438,21 @@ window.Quarto = {
 <p>You’ve done a huge amount of programming already. Processing data, filtering data, annotating data, summarizing data, but also plotting data using the most powerful tool for scientific visualization <em>ggplot2</em>! I said it before but it’s worth repeating again—you have now learned 70% of all the tools you might need to do data science on a day-to-day basis using R. This is not an exaggeration.</p>
 <p>Sure, you might not remember everything, but remembering comes from repetition and practice. You’ve been exposed to the most important concepts, and you know where to come back for more information when needed later.</p>
 <hr>
-<p>In this session on reproducibility, we will take things a bit easier.</p>
+<p><strong>Text expressed <em>in bold</em> represents tasks for you to do—code to run, things to think about, questions to answer!</strong></p>
+<hr>
+<p>In this session on reproducibility, we will take things a bit easier than the earlier, programming-heavy session earlier.</p>
 <p><strong>Instead of focusing on specific programming techniques and R functions, we’ll go through guidelines on how to organize (and run) computational projects on a practical basis—taking <em>what</em> you’ve learned, and learning <em>how</em> to do it in practice.</strong></p>
-<p><strong>Specifically, depending on the level of your confidence and comfort (and whether you have your own data to work with), in this session you will either:</strong></p>
+<p><strong>Depending on the level of your confidence and comfort (or whether you have your own data to work with), in this session you will either:</strong></p>
 <ol type="1">
 <li><p><strong>take bits of code from previous exercises on IBD and other data (currently scattered over multiple separate scripts and files), or</strong></p></li>
-<li><p>*can take your own data, and your own scripts…**</p></li>
+<li><p><strong>can take your own data, and your own scripts…</strong></p></li>
 </ol>
 <p><strong>… and you will learn how to organize them in a structure suitable for maximizing reproducibility and effectiveness of doing computational research.</strong></p>
 </section>
 <section id="exercise-1-creating-a-formal-r-project" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-1-creating-a-formal-r-project">Exercise 1: Creating a formal R project</h2>
-<p>So far, you’ve worked in an “anonymous” RStudio session, with scripts saved somewhere on your filesystem, disconnected from the data, or with ad hoc interactive R console session. This is not how reproducible research should be done to be sustainable over weeks or months of working on a project. <strong>You need to set up a formal R project and proper project structure by following the following steps:</strong></p>
+<p><strong>So far, you’ve worked in an “anonymous” RStudio session, with scripts saved somewhere on your filesystem, disconnected from the data, or with ad hoc interactions with an R console.</strong> This is not how reproducible research should be done to be sustainable over weeks or months of working on a project.</p>
+<p><strong>To move forward, set up a formal R project and proper project structure by following the following steps:</strong></p>
 <ol type="1">
 <li><p>Click <code>File</code> <code>-&gt;</code> <code>New project...</code></p></li>
 <li><p>In the new window, click on <code>New Directory</code> <code>-&gt;</code> <code>New Project</code></p></li>
@@ -464,6 +468,7 @@ window.Quarto = {
 <ol type="1">
 <li><p><strong>Be consistent</strong> – put files that “belong together” in the same place (i.e., in the same directory). For example, an Excel table shouldn’t be saved in a directory with scripts, a PDF with a plot shouldn’t be in a directory with tables.</p></li>
 <li><p><strong>Be predictable</strong> – even a person unfamiliar with your project should be able to guess where is what just by looking at your folder. Remember, when you publish your paper or your thesis, you will have to provide all your data and scripts as supplementary materials, so others should be able to understand all of them!</p></li>
+<li><p><strong>Document everything</strong> – write a lot of <code># comments in code</code>, describing what different pieces of code do, and why you wrote things in a certain way. Your future self will thank you!</p></li>
 </ol>
 <hr>
 <p><strong>Now let’s set up an example computational project structure for our IBD data our ancient DNA metadata</strong> (we’ll leave the <span class="math inline">\(f_4\)</span>-ratio Neanderthal estimates for next chapter)<strong>, just like you would do this for a real study.</strong></p>
@@ -473,6 +478,7 @@ window.Quarto = {
 <li><code>code/</code></li>
 <li><code>data/</code>, and within it create directories <code>raw/</code> and <code>processed/</code></li>
 <li><code>figures/</code></li>
+<li><code>results</code>/`</li>
 <li><code>reports/</code></li>
 </ol>
 <p><strong>Note:</strong> You can do all this manually, or you can play around with doing it using code with the incredibly useful function <code>?dir.create</code>! For instance, a single command to do all of the above could be the following. (If you’re curious about the <code>recursive = TRUE</code>, look at help of <code>?dir.create</code>.)**</p>
@@ -480,8 +486,9 @@ window.Quarto = {
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"code/"</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data/raw"</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data/processed"</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"figures/"</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"reports/"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data/results"</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"figures/"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"reports/"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>When you hit the <code>"Refresh file listing"</code> circular arrow button in the top-right of the <code>"Files"</code> pane, you should see all the directories you just created. Make sure you see them, and not just the <code>simgen-project.Rproj</code> file like before!</strong></p>
 </section>
@@ -674,7 +681,7 @@ cat("All data successfully processed!\n")</code></pre>
 <section id="data-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="data-analysis">3. Data analysis</h3>
 <p>Hopefully you’re now starting to get an idea about what a well-organized, reproducible pipeline means. It’s about properly structuring the directory where your project lives, and about partitioning your code into scripts which represent logical components of your project — from downloading data (and saving it to a particular storage location), and processing it (and again saving it to a proper storage location), and, finally, to answering research questions based on this data.</p>
-<p>Your project structure should now look something like this, ready for science!</p>
+<p><strong>Your project structure should now look something like this:</strong></p>
 <pre><code>├── 01_download_data.R           # data fetching code
 ├── 02_process_data.R            # data processing code
 ├── code                         # directory for future custom functions
@@ -683,16 +690,72 @@ cat("All data successfully processed!\n")</code></pre>
 │   │   ├── ibd_segments.tsv
 │   │   ├── ibd_sum.tsv
 │   │   └── metadata.tsv
-│   └── raw                      # raw unprocessed data
-│       ├── ibd_segments.tsv
-│       └── metadata.tsv
+│   ├── raw                      # raw unprocessed data
+│   |   ├── ibd_segments.tsv
+│   |   └── metadata.tsv
+|   └── results                  # various other output data
 ├── figures                      # location for PDF figures
 ├── reports                      # location for slides and reports (next section!)
 └── simgen-project.Rproj</code></pre>
-<p><strong>This is where you’ll come in!</strong></p>
-
-
+<p>**You have implemented the first two steps of a data processing pipeline. Now it’s your job to implement additional components of the project pipeline, which will create some new data</p>
+<hr>
+<section id="generating-figures" class="level4">
+<h4 class="anchored" data-anchor-id="generating-figures">Generating figures</h4>
+<p><strong>Create an R script called <code>03_plot_metadata.R</code>, which will read the table in <code>data/processed/metadata.tsv</code> using <code>read_tsv()</code> function, and create the following figures using <em>ggplot2</em> package and the function <code>ggsave()</code> you’ve learned about earlier (and don’t forget to add necessary <code>library(...)</code> calls to load all packages at the start of your script!). Save the figure(s) in the <code>figures/</code> directory. Whether you save individual PDF for each figure, or put multiple figures into one PDF is up to you.</strong></p>
+<p><strong>Note:</strong> If you need help, we solved all of these in previous exercises.</p>
+<ol type="1">
+<li><p>Count of samples in each <code>age_bin</code> of <code>metadata</code> (use <code>geom_bar()</code>).</p></li>
+<li><p>A histogram of <code>coverage</code> across different <code>age_bin</code> categories, only for individuals with <code>age &gt; 0</code> (i.e., ancient individuals), with one facet showing one histogram from a given <code>age_bin</code> category (use <code>geom_histogram()</code> and <code>facet_wrap()</code>).</p></li>
+</ol>
+<p><strong>Note:</strong> Remember that you can use the function <code>ggsave()</code> to save <em>ggplot2</em> figures stored in normal R variables, or the <code>pdf()</code> &amp; <code>dev.off()</code> trick!**</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find my solution <a href="https://github.com/bodkan/simgen/blob/main/files/repro/03_plot_metadata.R">here</a>.</p>
+</div>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>I’m just showing the plotting code. You should be able to wrap it in a dedicated script which will read the data and save the figure(s) to a PDF.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ibd_eur <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(length, <span class="at">fill =</span> country_pair)) <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"IBD segment length [centimorgans]"</span>) <span class="sc">+</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>country_pair)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
 </section>
+</section>
+</section>
+<section id="closing-remarks" class="level2">
+<h2 class="anchored" data-anchor-id="closing-remarks">Closing remarks</h2>
+<p>Our workshop only focuses on the R programming language and various useful R packages. Of course, more complete computational projects often use other programs and scripts written in traditional shell (like BASH) or Python. However, the same ideas apply, regardless of the exact language. And yes, formatting your projects as <code>.Rproj</code> RStudio projects is helpful even in cases like this.</p>
+
+
 </section>
 
 </main> <!-- /main -->
