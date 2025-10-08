@@ -1,1 +1,100 @@
 # Spatial data science
+
+## Setup and data processing
+
+**Read spatial packages:**
+
+```{r}
+library(sf)
+library(rnaturalearth)
+```
+
+**Read other data analysis packages:**
+
+```{r}
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+
+**Source our utility functions so that we have them available:**
+
+```{r}
+#| eval: false
+source("scripts/ibd_utils.R")
+```
+
+```{r}
+#| echo: false
+source("files/repro/ibd_utils.R")
+```
+
+**Read and process our IBD and metadata using our utility functions:**
+
+```{r}
+# download and process the metadata and IBD data set
+metadata <- process_metadata(bin_step = 10000)
+ibd_segments <- process_ibd()
+
+# combine the IBD table with metadata information
+ibd_merged <- join_metadata(ibd_segments, metadata)
+```
+
+**Filter metadata to only individuals who have `longitude` and `latitude`
+values available (use `filter()`, `!is.na()` and the `&` operator):**
+
+```{r}
+metadata <- filter(metadata, !is.na(longitude) & !is.na(latitude))
+
+head(metadata)
+```
+
+**Use the function `class()` to check what kind of data type our metadata
+is (I know you know it's a data frame, but let's do this for practice):**
+
+```{r}
+class(metadata)
+```
+
+**Use function `st_as_sf()` to conver the (non-spatially aware) data frame
+object into one that can be interpreted as spatial data. Save the result
+as a `sf_metadata` variable. What do you see when you type `sf_metadata`
+to your R console and when you run `class()` on that variable? Compare this
+to the output you got for the original `metadata` object.**
+
+```{r}
+#| error: true
+sf_metadata <- st_as_sf(metadata)
+```
+
+**The above got you a rather cryptic error. Honestly, even I don't understand
+it. :) But, here's how you fix it: run
+`st_as_sf(metadata, coords = c("longitude", "latitude"))`. Why do you
+think this is needed? Think about a situation in which the spatial coordinate
+columns in your data frame were called something else than "longitude" and
+"latitude"?**
+
+**When you have created the `sf_metadata` successfully, go back to the previous
+exercise.**
+
+```{r}
+sf_metadata <- st_as_sf(metadata, coords = c("longitude", "latitude"))
+
+head(sf_metadata)
+```
+
+```{r}
+sf_metadata %>%
+ggplot(aes(color = coverage)) +
+  geom_sf()
+```
+
+```{r}
+sf_metadata %>%
+filter(continent == "Europe") %>%
+ggplot(aes(color = coverage)) +
+  geom_sf()
+```
+
+
+
