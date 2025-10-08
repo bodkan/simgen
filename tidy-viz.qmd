@@ -541,7 +541,104 @@ ibd_eur %>%
 :::
 
 
-### Exercise 3: Limiting axis scales
+### Exercise 3: Categories in facets (panels)
+
+Let's talk a little bit more about representing multiple dimensions of the
+data (i.e., the number of variables) and about the ways we can represent them.
+This topic boils down to the question of _"How many dimensions of our data
+can we represent in a single figure and be it as comprehensible as possible?"_
+which is more and more important the more complex (and interesting!)
+our questions become.
+
+Looking at the figures of IBD length distributions again (both histograms
+and densities), it's clear there's a lot of overlapping information that is
+a little hard to interpret. In situations like this, _facetting_ can be
+very helpful.
+
+**Faceting is easier to demonstrate than explain, so just go ahead, take
+your IBD segment length histogram plot created by `geom_histogram()`
+and add `+ facet_wrap(~ country_pair)` at the end. How do you interpret the
+result?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ibd_eur %>%
+  ggplot(aes(length, fill = country_pair)) +
+  geom_histogram() +
+  labs(x = "IBD segment length [centimorgans]") +
+  facet_wrap(~ country_pair)
+```
+
+:::
+
+---
+
+**What happens when you add these variations of the `facet_wrap()` call?
+When would you use one or the other?**
+
+1. `+ facet_wrap(~ country_pair)`
+2. `+ facet_wrap(~ country_pair, scales = "free_x")`
+3. `+ facet_wrap(~ country_pair, scales = "free_y")`
+4. `+ facet_wrap(~ country_pair, scales = "free")`
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+I'll use a little trick of storing a _ggplot2_ result in a variable... because
+we can add to contents of variables using the `+` operator thanks to the
+magic provided by _ggplot2_!
+
+```{r}
+p_histogram <- ggplot(ibd_eur, aes(length, fill = country_pair)) +
+  geom_histogram() +
+  labs(x = "IBD segment length [centimorgans]")
+```
+
+##### This is our base histogram (very hard to read)
+
+```{r}
+p_histogram
+```
+
+##### 1. option
+
+```{r}
+p_histogram + facet_wrap(~ country_pair)
+```
+
+##### 2. option -- each facet has its own x-axis scale
+
+```{r}
+p_histogram + facet_wrap(~ country_pair, scales = "free_x")
+```
+
+##### 3. option -- each facet has its own y-axis scale
+
+```{r}
+p_histogram + facet_wrap(~ country_pair, scales = "free_y")
+```
+
+##### 4. option -- each facets has its own x- and y-axis scales
+
+```{r}
+p_histogram + facet_wrap(~ country_pair, scales = "free")
+```
+
+All approaches have their benefits. In general, personally, I think that
+figures which show the same statistic across different categories should
+generally use the same scales on both x- and y-axes, because this makes
+each facet comparable to each other.
+
+But there are pros and cons to doing all of these in different situations!
+
+:::
+
+---
+
+### Exercise 4: Limiting axis scales
 
 Above, we clearly have some individual pairs which share a huge amount of IBD.
 We'll quantify how much a bit later, but for now, the x-axis appears in the
@@ -796,7 +893,7 @@ customization options, particularly on the sizes of the PDFs.
 Also, how would you create a PNG images with the figures? Use the help pages!
 
 
-### Exercise 4: Relationship between two variables
+### Exercise 5: Relationship between two variables
 
 #### `geom_point()`
 
@@ -974,7 +1071,7 @@ ibd_sum %>%
 
 :::
 
-### Exercise 5: Multiple data sets in one plot
+### Exercise 6: Multiple data sets in one plot
 
 So far we've always followed this pattern of _ggplot2_ usage, to borrow our
 very first `geom_histogram()` example just for the sake of explanation:
@@ -1182,87 +1279,6 @@ ggplot() +
 ---
 
 
-
-### Exercise 6: Categories in facets (panels)
-
-Let's talk about dimensionality (i.e., the number of variables) in our data
-sets and about the ways we can represent them. This topic boils down to the
-question of _"How many dimensions of our data can we represent in a single
-figure and be it as comprehensible as possible?"_
-
-So far we've managed to visualize a rather complex data set, which features,
-for pairs of two individuals:
-
-- the total amount of IBD sequence `total_ibd` (plotted on the **x axis**)
-- the number of IBD segments `n_ibd` (plotted on the **y axis**)
-- the degree of relatedness `rel` (plotted as **colors** and **shapes**)
-
-Just look at this figure again -- this could easily be a main figure in a
-final scientific publication and we only needed a few lines of nicely
-readable code!
-
-```{r}
-#| echo: false
-ibd_unrel <- filter(ibd_sum, rel == "none")
-ibd_rel <- filter(ibd_sum, rel != "none")
-
-ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
-  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
-  labs(
-    x = "total IBD sequence",
-    y = "number of IBD segments",
-    title = "Total IBD sequence vs number of IBD segments",
-    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
-  ) +
-  guides(
-    color = guide_legend(title = "relatedness"),
-    shape = guide_legend(title = "relatedness")
-  ) +
-  theme_minimal()
-```
-
-Now looking at the data again, we see additional variables (data dimensions).
-What if we want to visualize the `time_pair` variable, and observe the patterns
-of IBD sharing across time? We have run out of possibilities of visualizing
-them using the means that we have available(`x` and `y` dimensions, `color`
-and `shape`). The answer can be _facetting_.
-
-```{r}
-head(ibd_sum)
-```
-
-**Faceting is easier to demonstrate than explain, so just go ahead, take
-your publication-quality scatter plot figure and add `+ facet_wrap(~ time_pair)`
-at the end of your code chunk. What do you see? How do you interpret the
-result?**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-#| echo: false
-ibd_unrel <- filter(ibd_sum, rel == "none")
-ibd_rel <- filter(ibd_sum, rel != "none")
-
-ggplot() +
-  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
-  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
-  labs(
-    x = "total IBD sequence",
-    y = "number of IBD segments",
-    title = "Total IBD sequence vs number of IBD segments",
-    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
-  ) +
-  guides(
-    color = guide_legend(title = "relatedness"),
-    shape = guide_legend(title = "relatedness")
-  ) +
-  theme_minimal() +
-  facet_grid(~ region_pair)     # <-- THIS IS THE ONLY THING WE ADDED!
-```
-
-:::
 
 
 ## Part 2: Practicing visualization on time-series data
