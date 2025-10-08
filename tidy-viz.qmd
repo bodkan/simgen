@@ -1,11 +1,20 @@
 # Data visualization
 
+## Introduction
+
 In this chapter, we will be delving into the data visualization R package
 called [_ggplot2_](https://ggplot2.tidyverse.org), which is possibly the
 most famous piece of the _tidyverse_ ecosystem. So much so that people who
 otherwise don't use any _tidyverse_ functions (or even who don't even use
 R for data analysis itself) still use _ggplot2_ for making figures. It really
 is that good.
+
+---
+
+**Text expressed _in bold_ represents tasks for you to do---code
+to run, things to think about, questions to answer!**
+
+---
 
 ## Part 1: Visualizing patterns in our IBD data
 
@@ -706,6 +715,65 @@ Of course, this can also be intentional sometimes! It all depends on the
 aesthetic you're going for as a visualization artist. :)
 
 :::
+
+
+
+### Intermezzo: Saving _ggplot2_ figures to PDF
+
+Looking at figures in RStudio is useful for exploratory analysis, but when
+we want to use a figure in a paper or a presentation, we need to save it to
+disk. Doing this is very easy using the function `ggsave()`.
+
+There are generally two options:
+
+1. Simply running a _ggplot2_ command, and calling `ggsave()` right after.
+Something like this:
+
+```{r}
+#| eval: false
+# we first plot a figure by running this in the R console:
+ggplot(ibd_eur, aes(length, fill = country_pair)) +
+  geom_histogram() +
+  labs(x = "IBD segment length [centimorgans]")
+
+# this then saves the last figure to a given file
+ggsave("~/Desktop/ibd_length_histogram.pdf")
+```
+
+2. Or, sometimes in a larger script (like we'll see later), it's useful
+to actually save a ggplot to a variable (yes, you can do that!), and then
+give that variable to a `ggsave()`. This is useful when you want to first
+create multiple plots, store them in their own variables, then save them
+to files at once. Something like this:
+
+```{r}
+#| eval: false
+# we first create a histogram plot
+p_histogram <- ggplot(ibd_eur, aes(length, fill = country_pair)) +
+  geom_histogram() +
+  labs(x = "IBD segment length [centimorgans]")
+
+# then we create a density plot
+p_density <- ggplot(ibd_eur, aes(length, fill = country_pair)) +
+  geom_density(alpha = 0.7) +
+  labs(x = "IBD segment length [centimorgans]")
+
+# note that if you type the variable into your R console (try this please!),
+# you will get your figure visualized:
+p_histogram
+
+# we can save figures stored in variables like this
+ggsave("~/Desktop/ibd_length_histogram.pdf", p_histogram)
+ggsave("~/Desktop/ibd_length_density.pdf", p_density)
+```
+
+**I don't think it's very interesting to create a specific exercise for it.
+Just try running these two examples on your own, and see what happens!
+We'll be using `ggsave()` a lot in the next session!**
+
+**Note:** Take a peek at `?ggsave` help page to see customization options.
+Also, we're saving a PDF here. How would you create a PNG images
+with the figures?
 
 
 ### Exercise 4: Relationship between two variables
