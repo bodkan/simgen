@@ -881,19 +881,24 @@ understanding of basic data manipulation principles even more solid.
 
 ## Exercise 5: Indexing into vectors and lists
 
-To extract a specific element(s) of a vector or a list (or to assign its given
-position(s)), we use a so-called "indexing" operation. Generally speaking,
-we can do indexing in three ways:
+Vectors and lists are sequential collections of values.
 
-1. **numerical-based indexing** (by specifying a set of integer numbers),
+To extract a specific values(s) of a vector or a list (or to assign some
+value at its given position(s)), we use a so-called "indexing" operation.
+Generally speaking, we can do indexing in three ways:
 
-2. **logical-based indexing** (by specifying a vector of `TRUE` / `FALSE` values of the
-same length as the vector we're indexing into)
+1. **numerical-based indexing** (by specifying a set of integer numbers, each
+representing a position in the vector/list),
+
+2. **logical-based indexing** (by specifying a vector of `TRUE` / `FALSE` values
+of the same length as the vector/list we're indexing into, each representing
+whether or not -- `TRUE` or `FALSE` -- should a position be included in the
+indexing result)
 
 3. **name-based indexing** (by specifying names of elements to index)
 
-Let's practice those for vectors and lists separately. Later, when we introduce
-data frames, we will return to the topic of indexing again.
+**Let's now practice those for vectors and lists separately. Later, when we
+introduce data frames, we will return to the topic of indexing again.**
 
 ### Vectors
 
@@ -903,8 +908,8 @@ To extract an i-th element of a vector `xyz`, we can use the `[]` operator like
 this: `xyz[i]`. For instance, we can take the 13-th element of this vector
 as `xyz[13]`.
 
-**Familiarize yourselves with the `[]` operator by taking out some specific
-values from this vector, let's say its 5-th element.**
+**Familiarize yourselves with the `[]` operator by taking out a specific
+value from this vector, let's say its 5th element.**
 
 ```{r}
 v <- c("hi", "folks", "what's", "up", "folks")
@@ -920,11 +925,12 @@ v[5]
 
 ---
 
-The `[]` operator is "vectorized", meaning that it can actually accept multiple
-values given as a vector themselves (i.e, something like `v[c(1, 3, 4)]` will
-extract the first, third, and fourth element of the vector `v`.
+Like many operations in R, the `[]` operator is "vectorized", meaning that it
+can actually accept multiple values given as a vector themselves (i.e,
+something like `v[c(1, 3, 4)]` will extract the first, third, and fourth
+element of the vector `v`.
 
-**In this way, extract the first and fifth element of the vector `v`. What
+**Extract the first and fifth element of the vector `v`. What
 happens if you try to extract a tenth element from `v`?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -953,14 +959,35 @@ indexing vector must have the same length as our original vector!
 ---
 
 **Create variable containing a vector of five `TRUE` or `FALSE` values (i.e.,
-with something like `index <- c(TRUE, FALSE, ...)` but with five `TRUE` or `FALSE`
-values total, and use that `index` variable in a `v[index]` indexing operation.**
+with something like `index <- c(TRUE, FALSE, ...)`, the exact combination of
+logical values doesn't matter), and use that `index` variable in a
+`v[index]` indexing operation on the `v` vector you created above.**
+
+**Note:** As always, don't forget that you can experiment in your R Console, write
+bits of "throwaway" commands just to test things out. You don't have to "know"
+how to do something immediately in your head---I never do, at least. I always
+experiment in the R Console to build up understanding of some problem on
+some small example.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Here's our vector:
+
+```{r}
+v
+```
+
+This index variable specifies the first, third, and fourth position of a vector:
+
 ```{r}
 index <- c(TRUE, FALSE, TRUE, TRUE, FALSE)
+```
+
+And we can index using this indexing vector variable like this, picking
+only elements of interest:
+
+```{r}
 v[index]
 ```
 
@@ -970,9 +997,16 @@ v[index]
 
 Usually we never want to create this "indexing vector" manually (imagine doing
 this for a vector of million values -- impossible!). Instead, we create this
-indexing vector "programmatically", based on a certain condition, like this:
+indexing vector "programmatically", based on a certain expression which
+produces this `TRUE` / `FALSE` indexing vector as a result (or multiple
+such expressions combined with `&`, `|` and `!` operations), like this:
 
 ```{r}
+# v is our vector of values
+v
+
+# this is how we get the indexing vector to get only positions matching
+# some condition
 index <- v == "up"
 ```
 
@@ -983,8 +1017,11 @@ This checks which values of `v` are equal to "three", creating a logical `TRUE` 
 index
 ```
 
-**Use the same principle to extract the elements of the vector matching the
+**Use the same principle to extract the elements of the vector `v` matching the
 value "folks".**
+
+**Note:** As always, don't forget that you can experiment in your R Console, write
+bits of "throwaway" commands just to test things out.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -993,16 +1030,6 @@ value "folks".**
 index <- v == "folks"
 index
 ```
-
-A nice trick is that summing a logical vector using `sum()` gives you the
-number of `TRUE` matches:
-
-```{r}
-sum(index)
-```
-
-This is actually why we do this indexing operation on vectors in the first places, most
-of the time -- when we want to count how many data points match a certain criterion.
 
 Let's extract our matching values:
 
@@ -1013,10 +1040,26 @@ v[index]
 
 ---
 
-There's another very useful operator is `%in%` which tests, which
-elements of a vector is among the elements of another vector. This is
-an extremely useful operation which you will be doing all the time when
-doing data analysis. It's good for you to get familiar with it.
+**A nice trick is that summing a logical vector using `sum()` gives you the
+number of `TRUE` matches:**
+
+```{r}
+index
+```
+
+```{r}
+sum(index)
+```
+
+**This is actually why we do this indexing operation on vectors in the first
+place, most of the time -- when we want to count how many data points match a certain criterion.**
+
+---
+
+**There's another very useful operator is `%in%`.** It tests which
+elements of one vector are among the elements of another vector. **This is
+another extremely useful operation which you will be doing all the time when
+doing data analysis. It's good for you to get familiar with it.**
 
 For instance, if we take this vector again:
 
@@ -1025,8 +1068,8 @@ v <- c("hi", "folks", "what's", "up", "folks", "I", "hope", "you",
        "aren't", "(too)", "bored")
 ```
 
-We can then ask, for instance, "which elements of `v` are among a set
-of given values?":
+We can then ask, for instance, _"which elements of `v` are among a set
+of given values?"_:
 
 ```{r}
 v %in% c("folks", "up", "bored")
@@ -1036,14 +1079,16 @@ With our example vector `v`, it's very easy to glance this with our eyes,
 of course. But when working with real world data, we often operate on
 tables with thousands or even millions of columns.
 
+**Try the above example of using the `%in%` operator in your R Console
+to get familiar with.**
 
 ---
 
 **Let's imagine we don't need to test whether a given vector is a part
 of a set of pre-defined values, but we want to ask the opposite question:
-"are any of my values of interest in my data"? Let's say your values
+_"are any of my values of interest in my data"_? Let's say your values
 of interest are `values <- c("hope", "(too)", "blah blah")` and your
-whole data is again `v`. How would you use `%in%` to get a `TRUE` or
+whole data is again `v`. How would you use the `%in%` operator to get a `TRUE` /
 `FALSE` vector for each of your `values`?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -1075,11 +1120,12 @@ Indeed, the third element "`r values[3]`" is not among the elements of `v`.
 ### Lists
 
 This section will be a repetition on the previous exercises about vectors.
-**Don't forget -- lists are just vectors, except that they can contain
+**Don't forget --- lists are just vectors, except that they can contain
 values of heterogeneous types (numbers, characters, anything). As a result,
 everything that applies to vectors above applies also here.**
 
-But practice makes perfect, so let's go through a couple of examples anyway:
+But practice makes perfect, so let's go through a couple of examples anyway.
+**Run this code to create the following list variable:**
 
 ```{r}
 l <- list("hello", "folks", "!", 123, "wow a number follows again", 42)
@@ -1104,17 +1150,17 @@ l[c(2, 4)]
 
 #### 2. Logical-based indexing
 
-Similarly, you can do the same with `TRUE` / `FALSE` indexing vectors for lists
-as what we did with normal (single-type) vectors. Rather than go through the
+**Similarly, you can do the same with `TRUE` / `FALSE` indexing vectors for lists
+as what we did with normal vectors. Rather than go through the
 variation of the same exercises, let's introduce another very useful pattern
-related to logical-based indexing and that's removing invalid elements.
+related to logical-based indexing and that's removing invalid elements.**
 
-Consider this vector:
+**Consider this list (run this code in your R Console again):**
 
 ```{r}
-v <- c("hello", "folks", "!", NA, "wow another NAs are coming", NA, NA, "42")
+xyz <- list("hello", "folks", "!", NA, "wow another NAs are coming", NA, NA, "42")
 
-v
+xyz
 ```
 
 Notice the `NA` values. One operation we have to do very often
@@ -1125,38 +1171,42 @@ This function returns a `TRUE` / `FALSE` vector which, as you now already know,
 can be used for logical-based indexing!
 
 ```{r}
-is.na(v)
+is.na(xyz)
 ```
 
-A very useful trick in programming is _negation_ (using the `!` operator),
-which flips the `TRUE` / `FALSE` states. In other words, prefixing with `!`
-returns a vector saying which elements of the input vector _are not_ `NA`:
+As you've seen in the section on logical expressions, a very useful trick
+in programming is _negation_ (using the `!` operator), which flips the `TRUE`
+/ `FALSE` states. In other words, prefixing with `!` returns a vector saying
+which elements of the input vector _are not_ `NA`:
 
 ```{r}
-!is.na(v)
+!is.na(xyz)
 ```
 
 ---
 
-**Use `is.na(v)` and the negation operator `!` to remove the `NA` elements of
-the vector `v`!**
+**Use `is.na(xyz)` and the negation operator `!` to remove the `NA` elements of
+the list from the variable `xyz`!**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
-v[!is.na(v)]
+xyz[!is.na(xyz)]
 ```
 :::
 
+---
 
 
-#### `[]` vs `[[]]` operators
+#### `[]` vs `[[ ]]` operators
 
-Let's move to a more interesting topic. There's another operator useful for
+Let's move to a topic which can be quite puzzling for a lot of people.
+There's another operator useful for
 lists, and that's `[[ ]]` (not `[ ]`!). **Extract the third element of the list
 `l` using `l[4]` and `l[[4]]]`. What's the difference between the results?
-If you're unsure, use the `mode()` function on `l[3]` and `l[[3]]` to help you.**
+If you're unsure, use the already familiar `typeof()` function on `l[3]`
+and `l[[3]]` to help you.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1167,7 +1217,7 @@ we expect the result `123`?
 ```{r}
 l[4]
 
-mode(l[4])
+typeof(l[4])
 ```
 
 On the other hand, `l[[4]]` gives us just a number!
@@ -1175,14 +1225,19 @@ On the other hand, `l[[4]]` gives us just a number!
 ```{r}
 l[[4]]
 
-mode(l[[4]])
+typeof(l[[4]])
 ```
 
-I simply cannot not link to [this](https://r4ds.hadley.nz/diagrams/pepper.png)
-brilliant figure, which explains this result in a very fun way. The left
-picture shows our list `l`, the middle picture shows `l[4]`, the right picture
-shows `l[[4]]`. Spend some time experimenting with the behavior of `[ ]` and
-`[[ ]]` on our list `l`! This will come in handy many times in your R carreer!
+I simply cannot not link to this brilliant figure, which explains this result
+in a very fun way:
+
+![](https://r4ds.hadley.nz/diagrams/pepper.png)
+
+The left picture shows our list `l`, the middle picture shows `l[4]`, the
+right picture shows `l[[4]]`. Spend some time experimenting with the behavior
+of `[ ]` and `[[ ]]` on our list `l`! This will come in handy many times in
+your R carreer!
+
 :::
 
 ### Traversing nested lists
@@ -1217,13 +1272,13 @@ This takes out the first value of the list:
 weird_list[[1]]
 ```
 
-Note the `[[]]` operator. Here's what we would get with the `[]` operator
-(basically, a "sublist"):
+Note the `[[ ]]` operator. Here's what we would get with the `[ ]` operator
+(basically, a "sublist", i.e. a list again, just extracting the nested list):
 
 ```{r}
 weird_list[1]
 
-mode(weird_list[1])
+typeof(weird_list[1])
 ```
 
 This extracts the 3rd value, which is itself a list!
@@ -1243,17 +1298,18 @@ weird_list[[3]][[2]]
 
 ---
 
-**What's the sequence of this "chaining" of indexing operators to extract
-the number 8?**
+**What's the sequence of this "chaining" of indexing operators we need to
+do to extract the value 8 from the `weird_list`?**
 
-**Hint:** You can leverage the interactive nature of evaluating intermediate
+**Hint:** Again, you can leverage the interactive nature of evaluating intermediate
 results in the R console, adding things to the expression (i.e., a chunk
-of code) in sequence.
+of code) in sequence, one step at a time. This is the R way of doing things!
+Start small, build up to something bigger.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-Let's take it step by step, interactively:
+As advised by the **Hint**, let's take it step by step, interactively:
 
 1. We know that the nested list sits at the 3rd position of the whole list:
 
@@ -1284,7 +1340,10 @@ weird_list[[3]][[3]][[3]][[2]]
 ---
 
 _Whew!_ That last exercise was something, wasn't it. Kind of annoying, if you
-ask me.
+ask me. The main purpose of these exercises is to force you (sorry!) to learn
+how to relate abstract concepts in your head to how data is represented in the
+computer. This will be very useful once we move to real-world data, which
+often features thousands or millions of rows of data points.
 
 Luckily, you will not have to do these kind of complex shenanigans in R very
 often (maybe even never). Still, nested lists are sometimes used in capturing
@@ -1293,9 +1352,10 @@ nested lists capture tree-like structures). In any case, using _names_ instead
 of just _integers_ as indices makes the whole process much easier, as we will
 see below.
 
-In data you encounter in practice, the most extreme case of data indexing you
+**In data you encounter in practice, the most extreme case of data indexing you
 will have to do probably won't be more complex than two nested indexing
-operators in a row (i.e., the equivalent of doing `data[[2]][[3]])`.
+operators in a row (i.e., the equivalent of doing `data[[2]][[3]])`, so
+don't stress about the above exercises too much.**
 
 Particularly when we discuss some very convenient _tidyverse_ operations later,
 having an idea about what a nested list even is will be very useful, so bear
@@ -1314,7 +1374,7 @@ Here's a neat thing we can do with vectors and lists. They don't have to contain
 just values themselves (which can be then extracted using integer or logical
 indices as we've done above), but those values can be assigned names too.
 
-Consider this vector and list:
+**Consider this vector and list (create them in your R session console):**
 
 ```{r}
 v <- c(1, 2, 3, 4, 5)
@@ -1324,41 +1384,42 @@ l <- list(1, 2, 3, 4, 5)
 l
 ```
 
-As a recap, we can index into them in the usual manner like this:
+**As a recap, we can index into them in the usual manner like this:**
 
 ```{r}
+# extract the first, third, and fifth element
 v[c(1, 3, 5)]
 l[c(1, 3)]
 ```
 
-But we can also name the values like this (note that the names appear in the
-print out you get from R in the console):
+**But we can also name the values like this (note that the names appear in the
+print out you get from R in the console):**
 
 ```{r}
-v <- c(one = 1, two = 2, three = 3, four = 4, five = 5)
+v <- c(first = 1, second = 2, third = 3, fourth = 4, fifth = 5)
 v
 
-l <- list(one = 1, two = 2, three = 3, four = 4, five = 5)
+l <- list(first = 1, second = 2, third = 3, fourth = 4, fifth = 5)
 l
 ```
 
-When you have a named data structure like this, you can index into it using
-those names as well, which can be very convenient. Imagine having data described
-not by indices but actualy readable names (such as names of people, or excavation
-sites!):
+**When you have a named data structure like this, you can index into it using
+those names and not just integer numbers**, which can be very convenient.
+Imagine having data described not by indices but actually readable names
+(such as names of people, or excavation sites!). **Try this:**
 
 ```{r}
-l[["three"]]
+l[["third"]]
 
-l[c("two", "five")]
+l[c("second", "fifth")]
 ```
 
 
 **Note:** This is exactly what data frames are, under the hood
 (named lists!), as we'll see in the next section.
 
-Let's return (one last time, I promise!) to our nested list example, this
-time presenting it in a more convenient way.
+**Let's return (one last time, I promise!) to our nested list example, this
+time presenting it in a more convenient way, using names:**
 
 ```{r}
 weird_list <- list(
@@ -1395,8 +1456,10 @@ Much more readable!
 
 ### Negative indexing
 
+A final topic on indexing (I think you are quite convinced now how crucial
+role does indexing play in data science in R)---negative indices.
 
-Consider this vector again:
+**Consider this vector again:**
 
 ```{r}
 v <- c("hi", "folks", "what's", "up", "folks")
@@ -1424,11 +1487,16 @@ v[-(1:5)]
 
 ---
 
-A very useful function is `length()`, which gives the length of a given
-vector (or a list -- remember, lists are vectors!). **Use it to remove
-the last element of `v`. How would you remove both the first and last
+**In this context, a very useful function is `length()`, which gives the length
+of a given vector (or a list -- remember, lists are vectors!). Use `length()`
+to remove the last element of `v` using the idea of negative indexing.**
+
+**How would you remove both the first and last
 element of a vector or a list (assuming you don't know the length beforehand,
 i.e., you can't put a fixed number as the index of the last element)?**
+
+**Hint:** Remember that you can use a vector created using the `c()` function
+inside the `[ ]` indexing operator.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
