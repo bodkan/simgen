@@ -1527,10 +1527,12 @@ v[-c(1, length(v))]
 Every scientists works with tables of data, in one way or another. R provides
 first class support for working with tables, which are formally called
 "data frames". We will be spending most of our time of this workshop learning
-to manipulate, filter, modify, and plot data frames, often times with data
-that is too big to look at all at once. For simplicity, just to get started
+to manipulate, filter, modify, and plot data frames, usually using example
+data too big to look at all at once.
+
+**Therefore, for simplicity, and just to get started
 and to explain the basic fundamentals, let's begin with something trivially
-easy, like this little data frame here:
+easy, like this little data frame here (evaluate this in your R Console):**
 
 ```{r}
 df <- data.frame(
@@ -1544,33 +1546,33 @@ df <- data.frame(
 df
 ```
 
-First, here's the first killer bit of information: data frames are normal lists!
+**First, here's the first killer bit of information: data frames are normal lists 
+of vectors!**
 
 ```{r}
 is.list(df)
 ```
 
-How is this even possible? And why is this even the case?
+**How is this even possible? And why is this even the case?**
 Explaining this in full would be too much detail,
 even for a course which tries to go beyond "R only as a plotting tool" as I
 promised you in the introduction. Still, for now let's say that R objects
-can store so called "attributes", which -- in the case of data frame objects --
-makes them behave as "something more than just a list". These attributes are
-called "classes".
+can store so called "attributes" (normally hidden), which --- in the case of
+data frame objects --- makes them behave as "something more than just a list".
+These hidden attributes are called "classes". A list with this class attribute
+called "data frame" then behaves like a data frame, i.e. a table.
 
 ---
 
-**You can poke into these internals but "unclassing" an object. Call `unclass(df)`
-in your R console and observe what result you get (just to convince yourself
-that data frames really are lists under the hood).**
+**You can poke into these internals but "unclassing" an object, which removes
+that hidden "class" attribute. Call `unclass(df)`
+in your R console and observe what result you get..**
 
-::: {.aside}
-Honest admission -- you will never need this `unclass()` stuff in
-practice, ever. I'm really showing you to demonstrate what "data frame" actually
-is on a lower-level of R programming. If you're confused, don't worry. The fact
-that data frames are lists matters infinitely more than knowing exactly how
-is that accomplished inside R.
-:::
+**Note:** Honest admission on my part --- you will never need this `unclass()`
+stuff in practice, ever. I'm really showing you to demonstrate what "data frame"
+actually is on a lower-level of R programming. If you're confused, don't worry.
+The fact that data frames are lists matters infinitely more than knowing exactly 
+how is that accomplished inside R.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1581,22 +1583,24 @@ This is what a normal data frame looks like to us:
 df
 ```
 
-Here is how a data frame is represented under the hood:
+Here is how a data frame is represented under the hood, after we remove the
+class attribute:
 
 ```{r}
 unclass(df)
 ```
 
 It really is just a list!
+
 :::
 
 ---
 
 
-Remember how we talked about "named lists" in the previous section! Yes, data
+**Remember how we talked about "named lists" in the previous section? Yes, data
 frames really are just normal named lists with extra bit of behavior added
 to them (namely the fact that these lists are printed in a nice, readable, 
-tabular form).
+tabular form).**
 
 ### Selecting columns
 
@@ -1612,6 +1616,9 @@ it mean for wanting to extract a column from a data frame?
 from your data frame `df`. How do the results differ depending on the indexing
 method chosen? Is the indexing (and its result) different to indexing a
 plain list?**
+
+**Hint:** Create a variable with the list with the same vectors as are in the
+columns of the data frame `df` to answer the last question.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1662,28 +1669,32 @@ df_list[["v"]]
 
 In the chapter on _tidyverse_, we will learn much more powerful and easier
 tools to do these types of data-frame operations, particularly the `select()`
-function. That said, even when you use _tidyverse_ exclusively, you will
+function which selects specific columns of a table.
+That said, even when you use _tidyverse_ exclusively, you will
 still encounter code in the wild which uses this base R way of doing things.
 Additionally, for certain trivial actions, doing "the base R thing" is just
-quicker to types. This is why knowing the basics of `$`, `[]`, and `[[]]` will
-always be useful.
+quicker to types. This is why knowing the basics of `$`, `[ ]`, and `[[ ]]` will
+always be useful. I use them every day.
 
 ---
 
 ### Selecting rows ("filtering")
 
-Of course, we often need to refer not just to specific columns of data frames,
+Of course, we often need to refer not just to specific columns of data frames
+(which we do with the `$`, `[ ]`, and `[[ ]]` operators),
 but also to given rows. Let's consider our data frame again:
 
 ```{r}
 df
 ```
 
-In the section on indexing into vectors and lists above, we learned primarily
+**In the section on indexing into vectors and lists above, we learned primarily
 about two means of indexing into vectors. Let's revisit them in the context
-of data frames:
+of data frames:**
 
-1. **Integer-based indexing**
+#### 1. Integer-based indexing
+
+---
 
 **What happens when you use the `[1:3]` index into the `df` data frame, just
 as you would do by extracting the first three elements of a vector?**
@@ -1698,19 +1709,20 @@ df[1:3]
 ```
 :::
 
----
-
-When indexing into a data frame, you need to distinguish the _dimension_
-along which you're indexing: either a row, or a column dimension. Just like
+**When indexing into a data frame, you need to distinguish the _dimension_
+along which you're indexing: either a row, or a column dimension.** Just like
 in referring to a cell coordinate in Excel, for example.
 
-The way you do this for data frames in R is to separate the dimensions into
-which you're indexing with a comma in this way: `[row-index, column-name-or-index]`.
+**The way you do this for data frames in R is to separate the dimensions into
+which you're indexing with a comma in this way: `[row-index, 
+column-name-or-index]`.**
 
-**Try to extract the first three elements (`1:3`) of the data frame `df` by
-`df[1:3, ]`.** Note the empty space after the comma `,`! **Then
-select a subset of the `df` data frame to only show the row #1 and #4 for
-columns `"x"` and `"z"`.**
+---
+
+**Extract the first three elements (`1:3`) of the data frame `df` by
+`df[1:3, ]`.**
+
+**Note:** Notice the empty space after the comma `,` in the question!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1720,6 +1732,16 @@ Extract the first three rows of `df`:
 ```{r}
 df[1:3, ]
 ```
+
+:::
+
+---
+
+**Then select a subset of the `df` data frame to only show the row #1 and #4
+for columns `"x"` and `"z"`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 Extract the rows number 1 and 4 for columns "x" and "z":
 
@@ -1749,17 +1771,23 @@ df[row_indices, col_indices]
 
 :::
 
-2. **Logical-based indexing**
+#### 2. Logical-based indexing
 
-Similarly to indexing into vectors, you can also specify which rows should
-be extracted "at once", using a single logical vector (you can also do this
+**Similarly to indexing into vectors, you can also specify which rows should
+be extracted "at once", using a single logical vector** (you can also do this
 for columns but I honestly don't remember the last time I had to do this). 
 
 ---
 
-**The most frequent use for this is to select all rows of a data frame for
-which a given column (or multiple columns) carry a certain value. Select
-only those rows for which the column "y" has a value "hello"**:
+The most frequent use for this is to select all rows of a data frame for
+which a given column (or multiple columns) carry a certain value.
+
+**Select only those rows of `df` for which the column "y" has a value "hello"**:
+
+**Hint:** You can get the required `TRUE` / `FALSE` indexing vector with
+`df$y == "hello"`. Again, if you're confused, first evaluate this expression
+in your R console, then try to use it to filter the rows of the data frame `df`
+to get your answer.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1784,7 +1812,6 @@ df$y == "hello"
 row_indices <- df$y == "hello"
 row_indices
 ```
-:::
 
 Now we can use this vector as a row index into our data frame (don't forget
 the comma `,`, without which you'd be indexing into the column-dimension,
@@ -1801,12 +1828,18 @@ columns at the same time:
 ```{r}
 df[row_indices, c("v", "y", "z")]
 ```
+
 :::
 
 ---
 
-**Now instead of filtering rows where column `y` matches "hello", filter for rows
-where `w` column is less than 1000.**
+**Now, instead of filtering rows where column `y` matches "hello", filter for rows
+of the `df` data frame where `w` column is less than 1000.**
+
+**Hint:** Same idea as above --- first get the `TRUE` / `FALSE` vector
+indicating which rows of the data frame (alternatively speaking, which elements
+of the column/vector) pass the filtering criterion, then use that vector
+as a row index into the data frame.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1858,21 +1891,35 @@ df[!is.na(df$x), ]
 
 
 
-#### Creating (and deleting) columns
+#### Creating, modifying, and deleting columns
 
-The `$` and `[]` operators can be used to create new columns. For instance,
-the `paste()` function in R can be used to combine a pair of values into one.
-Try running `paste(df$v, df$y)` to see what the result of this operation is.
+The `$` and `[ ]` operators can be used to create, modify, and delete columns.
 
-The general pattern to do this is:
+##### Creating a column
+
+The general pattern to create a new column is this:
 
 ```{r}
 #| eval: false
-df$<name of the new column> <- <vector of values to assign to it>
+df$NAME_OF_THE_NEW_COLUMN <- VECTOR_OF_VALUES_TO_ASSIGN_AS_THE_NEW_COLUMN
 ```
 
-**Create a new column called `"new_col"` and assign to it the result of
-`paste(df$v, df$y)`.**
+or this:
+
+```{r}
+#| eval: false
+df["NAME_OF_THE_NEW_COLUMN"] <- VECTOR_OF_VALUES_TO_ASSIGN_AS_THE_NEW_COLUMN
+```
+
+---
+
+For instance, the `paste()` function in R can be used to combine a pair of
+values into one.
+**Try running `paste(df$v, df$y)` to see what the result of this operation is.**
+
+**Create a new column of `df` called `"new_col"` and assign to it the result of
+`paste(df$v, df$y)`. Try to guess what will be this column's values before
+you write and evaluate the code for your answer!**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1885,16 +1932,63 @@ df
 ```
 :::
 
+##### Modifying a column
+
+The above pattern doesn't only apply to creating new columns. You can also
+update and change values of existing columns using the same technique!
+
+Our data frame `df` has the following values in the column `z`:
+
+```{r}
+df$z
+```
+
+**Invert the logical values of this column using the `!` negation operator.
+In other words, the values of the modified column should be the result of
+`!df$z`.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+This is how we can invert the values of the logical vector:
+
+```{r}
+# original vector/column:
+df$z
+
+# inverted values:
+!df$z
+```
+
+Modifying an existing column is the same as creating a column of the same name:
+
+```{r}
+df$z <- !df$z
+
+# result after this modification
+df
+```
+
+:::
+
+##### Removing a column
+
 When we want to remove a column from a data frame (for instance, we only used
 it to store some temporary result in a script), we actually do the same thing,
 except we assign to it the value `NULL`.
 
----
-
-**Remove the column `new_col`**
+**Remove the column `new_col` using this technique.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Before:
+
+```{r}
+df
+```
+
+After:
 
 ```{r}
 df$new_col <- NULL
@@ -1924,10 +2018,10 @@ variable names, column names and (later) function names:
 
 Unfortunately, when you encounter data in the wild, especially in tables you
 get from other people or download as supplementary information from the internet,
-they are rarely this perfect. Here's a little example of such data frame:
+they are rarely this perfect. Here's a little example of such data frame
+(**evaluate this code to have it in your R session as `weird_df`**):
 
 ```{r}
-#| echo: false
 weird_df <- data.frame(
   `v with spaces` = c("one", "two", "three", "four", "five"),
   w = c(1.0, 2.72, 3.14, 1000.1, 1e6),
@@ -1941,13 +2035,14 @@ weird_df
 ```
 
 **If you look closely, you see that some columns have spaces `" "` and also strange
-characters `%` which are not allowed? Which of the `$`, `[]` and `[[]]` operators
-can you use to extract `v with spaces` and `y with % sign` columns as vectors?**
+characters `%` which are not allowed. Which of the `$`, `[ ]` and `[[ ]]` operators
+can you use to extract columns named `"v with spaces"` and `"y with % sign"`
+columns as vectors?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-`[]` and `[[]]` work just as before, because they accept a string by default
+`[ ]` and `[[ ]]` work just as before, because they accept a string by default
 anyway, so spaces and other characters are not a problem:
 
 ```{r}
@@ -1969,6 +2064,7 @@ especially if they prepared it in Excel. But you should never create data
 frames with these weird column names yourself. Always use names that would
 be appropriate as normal standard R identifiers on their own (just alphanumeric
 symbols or underscores).
+
 :::
 
 
@@ -1986,7 +2082,8 @@ in this section will be enough for you, even in the long run!
 
 ## Exercise 7: Inspecting column types
 
-Let's go back to our example data frame:
+Let's go back to our example data frame. **Create it in your R session as the
+variable `df1` by running this code:**
 
 ```{r}
 df1 <- data.frame(
@@ -2007,6 +2104,8 @@ columns in the table.**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+`str()` gives you a nice overview of the data types in each column:
+
 ```{r}
 str(df1)
 ```
@@ -2016,13 +2115,13 @@ str(df1)
 ---
 
 Sometimes (usually when we read data from disk, like from another software),
-a data point sneaks in which makes a column apparently non numeric. Consider
-this new table called `df2`:
+a data point sneaks in which makes a column apparently non numeric. **Consider
+this new table called `df2` (evaluate this in your R session too):**
 
 ```{r}
 df2 <- data.frame(
   w = c(1.0, 2.72, 3.14),
-  x = c(1, "13", 42),
+  x = c(1, "13", 42.13),
   y = c("hello", "folks", "!"),
   z = c(TRUE, FALSE, FALSE)
 )
@@ -2030,12 +2129,87 @@ df2 <- data.frame(
 df2
 ```
 
-Just by looking at this, the table looks the same as `df1` above. **Use `str()`
-again to see where the problem is.**
+**Just by looking at this, the table looks the same as `df1` above. In particular,
+the columns `w` and `x` contain numbers. But is it really true? You know that
+an R vector can be only of one type, and that if this isn't true, a coercion
+is applied to force heterogeneous types to be of one type. Take a look at the
+column `x` above. Use `str()` to verify where the problem is with the data
+frame `df2` with regards to what our expectation is.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+For some reason, the whole column `x` has a data type "character". There's
+one sneaky "number" encoded as "13" and because a vector can have values of
+only one type (and because data frame columns are vectors), the entire
+column `x` is forced to be a text data type "character":
 
 ```{r}
 str(df2)
 ```
+
+:::
+
+---
+
+A useful way of fixing these kinds of data type mismatch problems are conversion
+functions, primarily `as.numeric()`, `as.integer()`, and `as.character()`.
+
+**Which one of these conversion functions would you use to fix the issue with
+a (what we want to be a numeric) column `x` having incorrectly the data type
+"character"?**
+
+**Hint:** Remember that just like you can create a column with 
+`df["NEW_COLUMN"] <- VECTOR_OF_VALUES` or `df$NEW_COLUMN <- VECTOR_OF_VALUES`,
+you can also modify an existing column, like we did above!
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here are the types of our mis-specified data frame `df2`:
+
+```{r}
+str(df2)
+```
+
+We can fix the improper data types of the column `x` like this:
+
+```{r}
+df2$x <- as.numeric(df2$x)
+```
+
+Notice the data type of the column `x` after this modification:
+
+```{r}
+str(df2)
+```
+
+:::
+
+---
+
+**Create a new column of `df2` called `abc` which will contain a transformation
+of the `TRUE` / `FALSE` column `z` into integers 1 or 0. Use `as.integer()`
+to do this.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+df$abc <- as.integer(df$z)
+```
+
+And here's the table with the new column `abc`:
+
+```{r}
+df
+```
+
+:::
+
+
+
 
 
 
@@ -2043,12 +2217,15 @@ str(df2)
 
 As a final short section, it's worth pointing out some very basic base R plotting
 functions. We won't be getting into detail because _tidyverse_ provides a
-much more powerful and more convenient set of functionality for visualizing data.
+much more powerful and more convenient set of functionality for visualizing data
+implemented in the R package _ggplot2_ (a topic for the next day).
+
 Still, base R is often convenient for quick troubleshooting or quick plotting
 of data at least in the initial phases of data exploration.
 
 So far we've worked with a really oversimplified data frame. For more interesting
-demonstration, R bundles with a realistic data frame of penguin data:
+demonstration, R bundles with a realistic data frame of penguin data. **Use
+a helper function `head()` to take at the first couple of rows:**
 
 ```{r}
 head(penguins)
@@ -2061,8 +2238,18 @@ penguins <- penguins[!is.na(penguins$sex), ]
 
 ---
 
-**Use the function `hist()` to plot a histogram of the body mass of the entire
-penguins data set.**
+#### Base R histograms
+
+One of the most basic types of visualizations is a histogram. This is provided
+by a built-in function `hist()`, which simply accepts a numeric vector
+as its only parameter. 
+**You know you can get all values from a column of a data frame using the
+`$` or `[[ ]]` indexing operators. Use the function `hist()` to plot a
+histogram of the body mass of the entire penguins data set (take a look
+at the overview of the table above to get the column name).**
+
+**How can you adjust the number of bins of the histogram? Check out the
+`?hist` help page to find the answer.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -2080,25 +2267,40 @@ hist(penguins$body_mass, breaks = 50)
 
 ---
 
-The dataset also contains the measure of bill length. **Use the function `plot()`
-to visualize a scatter plot of two vectors: `penguins$flipper_len` against
-`penguins$body_mass`. Is there an indication of a relationship between the two
-metrics?**
+The dataset also contains the measure of flipper lengths. Is there a relationship
+between this measure and body mass? **Use the function `plot()` which plots
+a scatter plot of two numeric vectors (both given as `x` and `y` parameters
+of the function --- look at `?plot` again if needed!) to visualize the
+relationship between those two variables / columns: `penguins$flipper_len`
+against `penguins$body_mass`. Is there an indication of a relationship between
+the two metrics?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Here is the plain scatter plot --- there does seem to be a linear relationship
+indeed, which makes sense! The larger the penguin (body mass) the longer its
+flippers!
+
+```{r}
+plot(penguins$flipper_len, penguins$body_mass)
+```
+
+Just for fun, we can also overlay a linear fit (first computed with the
+`lm()` function, then visualized as a red dashed line using another built-in
+function `abline()`:
+
 ```{r}
 plot(penguins$flipper_len, penguins$body_mass)
 
-# we can also overlay a linear fit (first computed with the `lm()` function,
-# then visualized as a red dashed line)
 lm_fit <- lm(body_mass ~ flipper_len, data = penguins)
 abline(lm_fit, col = "red", lty = 2)
 ```
 
 We can also see that we have data for three different species of penguins.
-We can therefore partition the visualization for each species individually:
+We can therefore partition the visualization for each species individually
+(again, you can always find additional options and examples in help pages
+such as `?plot`):
 
 ```{r}
 plot(penguins$flipper_len, penguins$body_mass, col = penguins$species)
@@ -2107,17 +2309,20 @@ plot(penguins$flipper_len, penguins$body_mass, col = penguins$species)
 
 ---
 
-Base R plotting is very convenient for quick and dirty data summaries, particularly
+**Base R plotting is very convenient for quick and dirty data summaries, particularly
 immediately after reading unknown data. However, for anything more complex
-(and anything more pretty), ggplot2 is unbeatable. We will be looking at ggplot2
-visualization in the session on _tidyverse_ but as a sneakpeak, you can take
-a look at the beautiful figures you'll learn how to make later.
+(and anything more pretty), ggplot2 is unbeatable. For this reason, there's
+no point in digging into base R graphics any further.**
+
+We will be looking at ggplot2 visualization in the session on _tidyverse_ but
+as a sneakpeak, you can take a look at the beautiful figures you'll learn how
+to make later.
 
 ::: {.callout-note collapse="true" icon=false}
 #### See the sneakpeak
 
 Look how comparatively little code we need to make beautiful informative figures
-which immediately tell a clear story! Stay tuned for later! :)
+(much prettier than those made with base R functions like we did just above) which immediately tell a clear story! Stay tuned for later! :)
 
 ```{r}
 library(ggplot2)
