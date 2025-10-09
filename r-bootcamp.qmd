@@ -409,8 +409,9 @@ typeof(v6)
 ---
 
 **Out of all these data type explorations, this Exercise is probably the
-most crucial for any kind of data science work. Why is that? Think about what
-can happen when someone does manual data entry in Excel.**
+most crucial for any kind of data science work. Why do you think I say this?
+Think about what can happen when someone does incorrect manual data entry
+in Excel.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -423,15 +424,20 @@ when we get to data frames below.
 
 ---
 
-**You can create vector of consecutive values of certain forms using everal
-approaches. Try these options:**
+Although creating vectors manually `c("using", "an", "approach", "like", "this")`
+is often helpful, particularly when testing bits of code and experimenting
+in the R console, it is impossible to create dozens or more values like this
+by hand.
 
-1. **Create a sequence of values from `i` to `j` as `i:j`. Create a vector of
-numbers 1:20**
+**You can create vector of consecutive values using several useful approaches.
+Try and experiment these options:**
+
+1. **Create a sequence of values from `i` to `j` with a shortcut `i:j`.
+Create a vector of numbers 7:23 like this.**
 
 2. **Do the same using the function `seq()`. Read `?seq` to find out what
 parameters you should specify (and how) to get the same result as the `i:j`
-shortcut.
+shortcut above to get values `7-23`.**
 
 3. **Modify the arguments given to `seq()` so that you create a vector of
 numbers from 20 to 1.**
@@ -439,17 +445,17 @@ numbers from 20 to 1.**
 4. **Use the `by =` argument of `seq()` to create a vector of only odd
 values starting from 1.**
 
+**`seq()` is one of the most useful functions, so keep it in mind!**
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
 # 1
-1:20
-# another option is this ("give me sequence of the length N)
-seq_len(20)
+7:23
 
 # 2
-seq(from = 1, to = 20)
+seq(from = 7, to = 23)
 
 # 3
 seq(from = 20, to = 1)
@@ -490,7 +496,9 @@ using indices into that vector (or a list).
 Lists are a little similar to vectors but very different in a couple of important
 respects. Remember how we tested what happens when we put different types of
 values in a vector (reminder: vectors must be "homogeneous" in terms of the
-data types of their elements!)? **What happens when you create lists with
+data types of their elements!)?
+
+**What happens when you create lists with
 different types of values using the code in the following chunk? Use `typeof()`
 on the resulting objects and compare your results to those you got on "mixed
 value" vectors above.**
@@ -513,43 +521,73 @@ strings):
 y3
 ```
 
-**Calling `typeof()` will (disappointingly) not tell us much about the data types
-of each individual element. Why is that?**
+:::
+
+**Calling `typeof()` on the list in the R console will (disappointingly) not
+tell us much about the data types of each individual element. Why is that?
+Think about the mixed elements possible in a list.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
 typeof(y3)
 ```
+
+Well, if a list can have multiple different types of elements, there's no such
+a thing as a "type of a list", in a way we can say that there's a "numeric vector":
+
+```{r}
+typeof(c(1, 10, 135))
+```
+
+Or a logical vector:
+
+```{r}
+typeof(c(TRUE, FALSE, FALSE, TRUE))
+```
+
+More on this below!
+
 :::
 
 ---
 
-**Try also a different function called for `str()` (for "structure") and apply
-it on one of those lists. Is `typeof()` or `str()` more useful to inspect what
-kind of data is stored in a list (`str` will be very useful when we get to data
-frames for -- spoiler alert! -- exactly this reason). Why?**
+**Try also a different function called for `str()` ("str" standing for
+"structure") and apply it on one of those lists in your R console.
+Is `typeof()` or `str()` more useful to inspect what kind of data is stored in
+a list (`str` will be very useful when we get to data frames for -- spoiler
+alert! -- exactly this reason). Why?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+The structure function peeks into every element of the list:
 
 ```{r}
 str(y3)
 ```
-:::
+
+As we said above, `typeof()` can only test the variable itself, but that
+variable has (potentially) multiple types of values in it:
 
 ```{r}
-is.list(w3)
+typeof(w3)
 ```
+
+:::
 
 ---
 
-**Use `is.vector()` and `is.list()` on one of the lists above (like `w3` perhaps).
-Why do you get the result that you got? Then run both functions on one of the
-vectors you created above (like `w2`). What does this mean?**
+**Apply `is.vector()` and `is.list()` on one of the lists above (like `w3`
+perhaps). What result do you get? Why do you get that result? Then run
+both functions on one of the vectors you created above (like `w2`).
+What does this mean?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-- Let's take this list:
+- **Testing both functions on a list like `w3`:**
 
 ```{r}
 w3
@@ -567,7 +605,7 @@ Lists are lists (obviously!):
 is.list(w3)
 ```
 
-- Now let's take this vector:
+- **Testing both functions on a vector like `w2`:**
 
 ```{r}
 w2
@@ -579,12 +617,11 @@ Vectors are not lists!
 is.list(w2)
 ```
 
-So:
+**In conclusion:**
 
-1. Every list is also a vector.
-2. But vectors are not lists.
+1. Every list is (formally speaking) also a vector.
+2. But vectors are not lists (because lists can have values of multiple types).
 
-This makes sense because lists can (but don't have to) contain values
 :::
 
 ---
@@ -597,11 +634,12 @@ of lists of lists of... lists!
 
 **Try creating a `list()` which, in addition
 to a couple of normal values (numbers, strings, doesn't matter) also contains
-one or two other lists (we call them "nested"). Don't think about this too much,
-just create something arbitrary to get a bit of practice. Save this in a
-variable called `weird_list` and type it back in your R console, just to see
-how R presents such data back to you. In the next Exercise, we will learn how to
-explore this type of data better.**
+one or two other lists (we call these lists "nested lists" for this reason,
+or also "recursive lists"). Don't think about this too much,
+just create something arbitrary "nested lists" to get a bit of practice.
+Save this in a variable called `weird_list` and type it back in your R
+console, just to see how R presents such data back to you. In the next
+Exercise, we will learn how to explore this type of data better.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -634,9 +672,16 @@ weird_list
 in the later discussion of data frames and spatial data structures, it
 will become much clearer why putting lists into other lists allows a whole
 another level of data science work. Please bear with me for now! This is
-just laying the groundwork for some very cool things later down the line.
+just laying the groundwork for some very cool things later down the line...
+and, additionally, it's intended to bend your mind a little bit and get
+comfortable with how complex data can be represented in computer memory.
 
 ## Exercise 4: Boolean expressions and conditionals
+
+**This exercise is probably the most important thing you can learn to do
+complex data science work on data frames or matrices. It's not necessary
+to remember all of this, just keep in mind we did these exercise so that
+you can refer to this information on the following days!**
 
 Let's recap some basic Boolean algebra in logic. The following basic rules
 apply (take a look at the
@@ -645,7 +690,7 @@ for a bit of a high school refresher) for the "and", "or", and "negation" operat
 
 1. The AND operator (represented by `&` in R, or often `∧` in math):
 
-_Both conditions must be `TRUE` for the expression to be `TRUE`)._
+_Both conditions must be `TRUE` for the expression to be `TRUE`._
 
 - `TRUE` & `TRUE` == `TRUE`
 - `TRUE` & `FALSE` == `FALSE`
@@ -654,7 +699,7 @@ _Both conditions must be `TRUE` for the expression to be `TRUE`)._
 
 2. The OR operator (represented by `|` in R, or often `∨` in math):
 
-_At least one condition must be `TRUE` for the expression to be `TRUE`)._
+_At least one condition must be `TRUE` for the expression to be `TRUE`._
 
 - `TRUE` | `TRUE` == `TRUE`
 - `TRUE` | `FALSE` == `TRUE`
@@ -663,13 +708,13 @@ _At least one condition must be `TRUE` for the expression to be `TRUE`)._
 
 3. The NOT operator (represented by `!` in R, or often `¬` in math):
 
-_The opposite of the expression._
+_The negation operator turns a logical value to its opposite._
 
 - `!TRUE` == `FALSE`
 - `!FALSE` == `TRUE`
 
-4. Comparison operators `==` ("equal to"), `!=` ("not equal to"), <` / `>`
-("lesser / greater than"), and `<=` / `>=` ("lesser/greater or equal than"):
+4. Comparison operators `==` ("equal to"), `!=` ("not equal to"), <` or `>`
+("lesser / greater than"), and `<=` or `>=` ("lesser / greater or equal than"):
 
 _Comparing two things with either of these results in `TRUE` or `FALSE` result._
 
@@ -679,10 +724,20 @@ derived using these basic operations anyway).
 
 ---
 
+Let's practice working with logical conditions on some toy problems.
+
 **Create two logical vectors with three elements each using the `c()` function
 (pick random `TRUE` and `FALSE` values for each of them), and store them in
 variables named `A` and `B`. What happens when you do `A & B`, `A | B`, and `!A`
-or `!B`?**
+or `!B`? How do these logical operators work when you have multiple values?
+Can you deduce this from the results of these `&`, `|`| and `!` expressions
+on `A` and `B` vectors?**
+
+**For extra challenge, try to figure out the results of `A & B`, `A | B`, and `!A`
+in your head before you run the code in your R console!**
+
+**Hint:** Remember that a "single value" in R is a vector like any other
+(specifically vector of length one).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -707,8 +762,10 @@ A | B
 ---
 
 **What happens when you apply base R functions `all()` and `any()` on your
-`A` and `B` (or `!A` and `!B`) vectors? Remember those because they are very
-useful?**
+`A` and `B` (or `!A` and `!B`) vectors?**
+
+**Note:** Remember the existence of `all()` and `any()` because they are very
+useful in daily data science work!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -723,17 +780,24 @@ any(A)
 ```
 :::
 
-If this all feels too technical and mathematical, you're kind of correct. That
+---
+
+**If the above all feels too technical and mathematical, you're kind of right. That
 said, when you do data science, you will be using these logical expressions
-literally every single day. **Think about a table which has a column with
-some values, like sequencing `coverage`. Every time you filter for samples
-with, for instance, `coverage > 10`, you're performing this exact operation!
-You essentially ask, for each sample (each value in the column), which samples
-have `coverage > 10` (giving you `TRUE`) and which have less than 10 (giving
-you `FALSE`). Filtering data is, in essence, about applying logical operations
-on vectors of `TRUE` and `FALSE` values (which boils down to "logical indexing"
-introduced below), even though those logical values rarely feature as data
-in the tables we generally work with.** Keep this in mind!
+literally every single day. Why? Let's return from abstract programming
+concepts back to reality for a second.**
+
+**Think about a table which has a column with some values, like sequencing
+`coverage`. Every time you filter for samples
+with, for instance, `coverage > 10`, you're performing exactly this kind of
+logical operation. You essentially ask, for each sample (each value in the
+column), which samples have `coverage > 10` (giving you `TRUE`) and which have
+less than 10 (giving you `FALSE`).**
+
+Filtering data is about applying logical operations on vectors of `TRUE` and
+`FALSE` values (which boils down to "logical indexing" introduced below),
+even though those logical values rarely feature as data in the tables we
+generally work with. Keep this in mind!
 
 ---
 
@@ -746,12 +810,13 @@ coverage <- c(15.09, 48.85, 36.5, 1.12, 16.65, 0.79, 16.9, 46.09, 12.76, 11.51)
 origin <- c("mod", "mod", "mod", "anc", "mod", "anc", "mod", "mod", "mod", "mod")
 ```
 
----
-
-**Create a variable `is_high` which will contain a `TRUE` / `FALSE` vector
+**Then create a variable `is_high` which will contain a `TRUE` / `FALSE` vector
 indicating whether a given `coverage` value is higher than 5. Then create
 a variable `is_modern` which will contain another logical vector indicating
 whether a given sample is `"mod"` (i.e., "modern").**
+
+**Hint:** Remember that evaluating `coverage > 5` gives you a logical vector
+and that you can store that vector in a variable.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -772,7 +837,9 @@ is_modern
 **Use the AND operator `&` to test if every high coverage sample (`is_high`) is
 also a modern sample (`is_modern`).**
 
-**Hint:** Use the `==` operator in combination with the `all()` function.
+**Hint:** Apply the `all()` function to a logical expression you get by
+comparing both variables you just created with the `==` operator.
+
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -798,6 +865,17 @@ all(coverage > 5 & origin == "modern")
 ```
 :::
 
+---
+
+This was just a simple example of how you can use logical expressions to
+do filtering based on values of (potentially many) variables, all at once,
+in a so-called "vectorized" way (i.e., testing on many different values at
+once, getting a vector of `TRUE` / `FALSE` values as a result).
+
+You'll have
+much more opportunity to practice this in our sessions on _tidyverse_,
+but let's continue with other fundamentals first, which will make your
+understanding of basic data manipulation principles even more solid.
 
 
 
@@ -1891,9 +1969,124 @@ again to see where the problem is.**
 str(df2)
 ```
 
+
+
+## Exercise 8: Base R plotting
+
+As a final short section, it's worth pointing out some very basic base R plotting
+functions. We won't be getting into detail because _tidyverse_ provides a
+much more powerful and more convenient set of functionality for visualizing data.
+Still, base R is often convenient for quick troubleshooting or quick plotting
+of data at least in the initial phases of data exploration.
+
+So far we've worked with a really oversimplified data frame. For more interesting
+demonstration, R bundles with a realistic data frame of penguin data:
+
+```{r}
+head(penguins)
+```
+
+```{r}
+#| echo: false
+penguins <- penguins[!is.na(penguins$sex), ]
+```
+
 ---
 
-## Exercise 8: Functions
+**Use the function `hist()` to plot a histogram of the body mass of the entire
+penguins data set.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+hist(penguins$body_mass)
+```
+
+Sometimes it is convenient to adjust the bin width:
+
+```{r}
+hist(penguins$body_mass, breaks = 50)
+```
+:::
+
+---
+
+The dataset also contains the measure of bill length. **Use the function `plot()`
+to visualize a scatter plot of two vectors: `penguins$flipper_len` against
+`penguins$body_mass`. Is there an indication of a relationship between the two
+metrics?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+plot(penguins$flipper_len, penguins$body_mass)
+
+# we can also overlay a linear fit (first computed with the `lm()` function,
+# then visualized as a red dashed line)
+lm_fit <- lm(body_mass ~ flipper_len, data = penguins)
+abline(lm_fit, col = "red", lty = 2)
+```
+
+We can also see that we have data for three different species of penguins.
+We can therefore partition the visualization for each species individually:
+
+```{r}
+plot(penguins$flipper_len, penguins$body_mass, col = penguins$species)
+```
+:::
+
+---
+
+Base R plotting is very convenient for quick and dirty data summaries, particularly
+immediately after reading unknown data. However, for anything more complex
+(and anything more pretty), ggplot2 is unbeatable. We will be looking at ggplot2
+visualization in the session on _tidyverse_ but as a sneakpeak, you can take
+a look at the beautiful figures you'll learn how to make later.
+
+::: {.callout-note collapse="true" icon=false}
+#### See the sneakpeak
+
+Look how comparatively little code we need to make beautiful informative figures
+which immediately tell a clear story! Stay tuned for later! :)
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+```{r}
+ggplot(penguins) +
+  geom_histogram(aes(flipper_len, fill = species), alpha = 0.5) +
+  theme_minimal() +
+  ggtitle("Distribution of flipper lengths across species")
+```
+
+```{r}
+ggplot(penguins, aes(flipper_len, body_mass, shape = sex, color = species)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ species) +
+  theme_minimal() +
+  ggtitle("Body mass as a function of flipper length across penguin species")
+```
+:::
+
+
+
+## Bonus content
+
+Here are some more advanced materials. These are very useful to know (and
+actually critical for writing more complex programs), but are not completely
+necessary to be able to successfuly go through the later sessions on
+_tidyverse_ and _ggplot2_. Feel free to go through them for your own interest
+though! They are very useful!
+
+::: {.callout-tip collapse="true" icon=false}
+## Bonus exercises
+
+## Exercise 9: Functions
 
 The motivation for this Exercise could be summarized by an ancient motto of programming:
 [Don't repeat yourself (DRY)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
@@ -2034,119 +2227,9 @@ are computed, _we only have to make a single change in the function code
 instead of having to modify multiple copies of the code in multiple locations
 in our project.
 
-
-
-## Exercise 9: Base R plotting
-
-As a final short section, it's worth pointing out some very basic base R plotting
-functions. We won't be getting into detail because _tidyverse_ provides a
-much more powerful and more convenient set of functionality for visualizing data.
-Still, base R is often convenient for quick troubleshooting or quick plotting
-of data at least in the initial phases of data exploration.
-
-So far we've worked with a really oversimplified data frame. For more interesting
-demonstration, R bundles with a realistic data frame of penguin data:
-
-```{r}
-head(penguins)
-```
-
-```{r}
-#| echo: false
-penguins <- penguins[!is.na(penguins$sex), ]
-```
-
 ---
 
-**Use the function `hist()` to plot a histogram of the body mass of the entire
-penguins data set.**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-hist(penguins$body_mass)
-```
-
-Sometimes it is convenient to adjust the bin width:
-
-```{r}
-hist(penguins$body_mass, breaks = 50)
-```
-:::
-
----
-
-The dataset also contains the measure of bill length. **Use the function `plot()`
-to visualize a scatter plot of two vectors: `penguins$flipper_len` against
-`penguins$body_mass`. Is there an indication of a relationship between the two
-metrics?**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-```{r}
-plot(penguins$flipper_len, penguins$body_mass)
-
-# we can also overlay a linear fit (first computed with the `lm()` function,
-# then visualized as a red dashed line)
-lm_fit <- lm(body_mass ~ flipper_len, data = penguins)
-abline(lm_fit, col = "red", lty = 2)
-```
-
-We can also see that we have data for three different species of penguins.
-We can therefore partition the visualization for each species individually:
-
-```{r}
-plot(penguins$flipper_len, penguins$body_mass, col = penguins$species)
-```
-:::
-
----
-
-Base R plotting is very convenient for quick and dirty data summaries, particularly
-immediately after reading unknown data. However, for anything more complex
-(and anything more pretty), ggplot2 is unbeatable. We will be looking at ggplot2
-visualization in the session on _tidyverse_ but as a sneakpeak, you can take
-a look at the beautiful figures you'll learn how to make later.
-
-::: {.callout-note collapse="true" icon=false}
-#### See the sneakpeak
-
-Look how comparatively little code we need to make beautiful informative figures
-which immediately tell a clear story! Stay tuned for later! :)
-
-```{r}
-library(ggplot2)
-library(dplyr)
-```
-
-```{r}
-ggplot(penguins) +
-  geom_histogram(aes(flipper_len, fill = species), alpha = 0.5) +
-  theme_minimal() +
-  ggtitle("Distribution of flipper lengths across species")
-```
-
-```{r}
-ggplot(penguins, aes(flipper_len, body_mass, shape = sex, color = species)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  facet_wrap(~ species) +
-  theme_minimal() +
-  ggtitle("Body mass as a function of flipper length across penguin species")
-```
-:::
-
-
-Let's revisit the concept of a function introduced earlier and explore it in
-a much more practically useful setting -- defining customized plotting functions.
-This is, honestly, one of the most applications of custom functions in your own
-research.
-
----
-
-**In the example above, you used `hist(penguins$body_mass)` to plot a histogram
+**In the penguin section above, you used `hist(penguins$body_mass)` to plot a histogram
 of the penguins' body mass. Write a custom function `penguin_hist()` which will
 accept two arguments: 1. the name of the column in the `penguins` data frame,
 and 2. the number of histogram breakpoints to use as the `breaks =` arguments
@@ -2200,14 +2283,6 @@ penguin_hist(penguins, "flipper_len", breaks = 50)
 penguin_hist(penguins, "body_mass", breaks = 50)
 ```
 :::
-
----
-
-If this function stuff appears overwhelming, don't worry. In the remainder
-of this workshop you will get a lot of opportunities to practice coding so
-that it becomes completely trivial at the end.
-
-
 
 
 
@@ -2530,3 +2605,5 @@ through the material of each chapter and try to solve the exercises.**
 Pick whichever topic seems interesting to you. Don't try to ingest
 _everything_ -- even isolated little bits and details that stick with you
 will pay off in the long run!
+
+:::
