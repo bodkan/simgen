@@ -52,8 +52,33 @@ ibd_segments <-
   read_tsv("data/raw/ibd_segments.tsv", show_col_types = FALSE) %>%
   mutate(length = end - start)
 
-write_tsv(ibd_segments, "data/processed/ibd_segments.tsv")
 
+# merging IBD table with metadata -----------------------------------------
+
+cat("Joining IBD data and metadata...\n")
+
+# prepare metadata for IBD annotation
+metadata1 <- select(metadata, -coverage, -longitude, -latitude)
+metadata2 <- select(metadata, -coverage, -longitude, -latitude)
+colnames(metadata1) <- paste0(colnames(metadata1), "1")
+colnames(metadata2) <- paste0(colnames(metadata2), "2")
+
+# merge in metadata based on sample1 and sample2 columns
+ibd_merged <-
+  ibd_segments %>%
+  inner_join(metadata1, by = "sample1") %>%
+  inner_join(metadata2, by = "sample2")
+
+# annotate with new columns indicating a pair of countries or time bins
+ibd_merged <- mutate(
+  ibd_merged,
+  country_pair = paste(country1, country2, sep = ":"),
+  region_pair = paste(continent1, continent2, sep = ":"),
+  time_pair = paste(age_bin1, age_bin2, sep = ":"),
+  .before = chrom
+)
+
+write_tsv(ibd_merged, "data/processed/ibd_merged.tsv")
 
 
 # processing IBD summary data ---------------------------------------------
