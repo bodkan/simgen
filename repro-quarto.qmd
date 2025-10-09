@@ -84,12 +84,148 @@ slow things down for long-running analyses, but is very convenient otherwise.**
 
 ---
 
+**In a Quarto document (of any kind, reports, presentations, anything), this
+is a very document component. It's called a "code block":**
 
 
+``` {{r}}
+# here is your code
+```
+
+**Whenever a Quarto document is rendered, R executes code in these code blocks!
+It then includes a figure, prints the result, etc., which then becomes the
+part of the resulting document. I hope you can now appreciate how useful
+this is for:**
+
+1. **Making your reserach more reproducible** -- the code _and_ the results
+are part of a single document, which is ran top to bottom, automatically!
+
+2. **Making your research easier to do** -- this is effectively a lab notebook
+of your research activity for that particular project. You can write notes,
+comments, reminders, conclusions, etc.
+
+**This allows you to avoid hunting down for _"which bit of code and where
+created this particular figure?"_, which is very very stressful at times,
+especially close to deadlines.**
+
+---
+
+## Exercise 2: Completing your report
+
+Now that you've rendered the document, you can see that I left you guidelines
+and blanks to fill in in the Quarto template. **Using the set of exercises
+on the topic of Neanderthal proportion in a time-series of aDNA individuals
+from Europe
+[discussed here](https://bodkan.net/simgen/tidy-viz.html#part-2-practicing-visualization-on-time-series-data),
+fill in the blanks accordingly.**
+
+**Try to get in the mindset of using this document as your lab notebook!
+If you didn't manage to get through the exercises on analyzing and plotting
+Neanderthal ancestry proportions at the link above, use this opportunity
+to work on those exercises, this time using your Quarto document as a means
+to solve them.**
+
+**Hint:** Again, if you ever need help, here it is:
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the completed Quarto document
+
+You can find the complete script
+[here](https://github.com/bodkan/simgen/blob/main/files/repro/neand_ancestry_complete.qmd).
 
 
+:::
 
-## Exercise XYZ: Recording R session information
+## Exercise 4: Adjusting code chunk options
+
+You can see that the final report contains both the code and the results
+of this code. Sometimes you don't want that, particularly when you want to
+create not a document, but presentation slides like you will do in the
+next exercise.
+
+My favourites (and the only ones I personally remember) are these ones:
+
+- Show code, but hide it first (reader has to click)! This is my favourite,
+because sometimes your supervisor doesn't want to read code, they just want
+to see a figure. :)
+
+```{r}
+#| code-fold: true
+```
+
+``` {{r}}
+#| code-fold: true
+
+# here is your code which will not be shown in the report
+```
+
+- Don't show code, but show results:
+
+``` {{r}}
+#| echo: false
+
+# here is your code which will not be shown in the report
+```
+
+- Show code, but don't evaluate it (it produces no results):
+
+``` {{r}}
+#| eval: false
+
+# here is your code which will not be shown in the report
+```
+
+**Experiment with the above mentioned options in your report (or slides
+in the next exercise).
+Here's a [very useful summary](https://rpubs.com/drgregmartin/1266667)
+of many more options.**
+
+
+## Exercise 4: Creating slides
+
+Here's my favourite aspect of Quarto. You can not only create fully reproducible
+"lab notebooks", but you can also create automatically generated slides. This
+is extremely useful as a means to have realiable means to have up-to-date
+presentations for group meetings, etc.
+
+**Create a new Quarto Document (`File` `->` `New File` `->` `Quarto Presentation...` `->` `Create Empty Document.). Then copy the entire contents
+of your `reports`/neand_ancestry.qmd` into this new document, and save it
+as `reports/neand_ancestry_slides.qmd`.**
+
+**Then change this one single line in the header at the top of your file,
+changing `format: html` to `format: revealjs`.**
+
+**Then click the `"Render"` button again! Observe the magic happen!**
+
+---
+
+It's pretty obvious to you now that slides have different requirements
+than documents. For one, including lots of code (or maybe any code)
+isn't that useful. Additionally, showing `library(...)` calls in a presentation
+doesn't make any sense either plus, slightly different formatting might
+be needed.
+
+**Take a look at [this](https://quarto.org/docs/presentations/revealjs/) overview
+of the Quarto slides functionality. Then edit your slides (remove unnecessary
+headings/slide titles, etc.) to make them more suitable for presentation
+in a meeting.**
+
+**Hint:** Remove slides which are not useful, show only code which is
+important (like the `lm` model?), focus on figures and statistical `summary()`
+on the linear regression results.
+
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the see my attempt at cleaner slides
+
+You can find the complete script
+[here](https://github.com/bodkan/simgen/blob/main/files/repro/neand_ancestry_complete_slides.qmd).
+
+
+:::
+
+
+## Exercise 5: Recording R session information
 
 **The following command should be included at the end of your "Quarto reports".
 When you run it, how would you read and interpret the information it provides?
@@ -100,29 +236,5 @@ case you need to pick up someone else's project or script?**
 sessionInfo()
 ```
 
-
-
-
-
-## Further practice
-
-### Option 1: Your own data
-
-I'm sure you have done some form of table munging and data visualization in your
-projects. If you're done with the exercises above, here are some ideas for you:
-
-1. If you haven't used R for processing of tabular data in your work -- maybe
-you have done similar table munging in Excel or Google Sheets in a manual
-(i.e., non-reproducible) way? -- write your processing steps as a self-contained
-R script:
-
-- If you used Excel, you can use the R package [_readxl_](https://readxl.tidyverse.org),
-- If you used Google Sheets, you can use the R package [_googlesheets4_](https://googlesheets4.tidyverse.org)
-
-2. If you used Excel or base R for plotting figures, use what you learned
-about _ggplot2_ to make beautiful, publication-ready plots as we did in our
-exercises.
-
-Yes, this will put you in an uncharted territory. This is scary and totally
-normal when doing research. I'm happy to help you out with questions
-and issues!
+**Create a new chunk at the end of your document and add this command
+to this chunk to be included every time it is rendered.**

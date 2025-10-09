@@ -1,24 +1,24 @@
 ---
 title: "Neanderthal ancestry through time"
-author: "WRITE YOUR NAME HERE :)"
+author: "Author of the Slides"
 date: now
-format: html
+format: revealjs
 self-contained: true
 ---
 
-# Basic processing
+## Getting and processing the data
 
-## Load required packages
+<!-- Quarto wouldn't show the code by default because it doesn't produce any -->
+<!-- results, but let's show it to our audience for completeness -->
+<!-- (These are HTML comments by the way, and can be sometimes helpful.) -->
 
 ```{r}
+#| echo: true
+#| code-line-numbers: false
 library(dplyr)
 library(readr)
 library(ggplot2)
-```
 
-## Read in data from the internet
-
-```{r}
 f4ratio <- read_tsv("https://tinyurl.com/simgen-f4ratio")
 ```
 
@@ -27,6 +27,8 @@ f4ratio <- read_tsv("https://tinyurl.com/simgen-f4ratio")
 ```{r}
 head(f4ratio)
 ```
+
+## Take a glance at the first couple of values
 
 ```{r}
 glimpse(f4ratio)
@@ -37,6 +39,7 @@ glimpse(f4ratio)
 ## Visualize the 10% of the data points
 
 ```{r}
+#| code-fold: true
 f4ratio %>%
 sample_frac(0.1) %>%
 ggplot(aes(time, proportion)) +
@@ -48,6 +51,7 @@ ggplot(aes(time, proportion)) +
 ## Fit a smoothed out line through all parameter combinations
 
 ```{r}
+#| code-fold: true
 f4ratio %>%
 ggplot(aes(time, proportion, color = rate_eur2afr, group = rate_eur2afr)) +
   geom_line(stat = "smooth", se = FALSE) +
@@ -72,6 +76,7 @@ extract statistics for "direct" and "indirect" $f_4$-ratio statistics,
 saving them in data frames `df_direct` and `df_indirect`:
 
 ```{r}
+#| echo: true
 df_direct <- filter(f4ratio, rate_eur2afr == 0.2, statistic == "direct f4-ratio")
 df_indirect <- filter(f4ratio, rate_eur2afr == 0.2, statistic == "indirect f4-ratio")
 ```
@@ -83,25 +88,29 @@ Run a linear model using the `lm()` function (help can be found under
 of "direct" and "indirect" $f_4$-ratio estimates:
 
 ```{r}
-# computing a linear regresion on df_direct and df_indirect data
+#| echo: true
 lm_direct <- lm(proportion ~ time, data = df_direct)
 lm_indirect <- lm(proportion ~ time, data = df_indirect)
 ```
 
+## Summary of the statistical fits
+
 Run `summary()` on both objects to get a p-value. Which statistic gives
 a statistically significant decline of Neanderthal ancestry over time?
 
+## Summary of the fit of the direct $f_4$-ratio statistic
+
 ```{r}
-# summary of the lm fit of the direct f4-ratio
+#| echo: true
 summary(lm_direct)
 ```
 
+## Summary of the fit of the indirect $f_4$-ratio statistic
+
 ```{r}
-# summary of the lm fit of the indirect f4-ratio
+#| echo: true
 summary(lm_indirect)
 ```
-
-# Conclusions
 
 # Conclusions
 
