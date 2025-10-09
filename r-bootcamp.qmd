@@ -1,33 +1,39 @@
 # R bootcamp
 
-In this chapter, we will be exploring the basics of the R language. We will
-focus on topics which are normally taken for granted and never explained in
-basic data science courses, which generally immediately jump to data manipulation
-and plotting. I strongly believe that getting familiar with the fundamentals of
-R as a complete programming language from this "lower-level" perspective,
+**In this first chapter, you will be exploring the basics of the R language.
+We will focus on topics which are normally taken for granted and never
+explained in basic data science courses, which generally immediately jump to
+data manipulation and plotting.**
+
+I strongly believe that **getting familiar with the fundamentals of
+R as a complete programming language from a "lower-level" perspective,
 although it might seem a little overwhelming at the beginning, will pay
-dividends over and over your scientific career.
+dividends over and over your scientific career**.
 
-When we get to data science work in later chapters, you will see that many
-things which otherwise remain quite obscure and magical boil down to a set
-of very simple principles and components.
+**The alternative is relying on magical black box thinking, which might work
+when everything works smoothly... except things rarely work smoothly in
+anything related to computing. Bugs appear, programs crash, incorrect results
+are produced---only by understanding the fundamentals can you troubleshoot
+problems.**
 
-This knowledge will make you much more confident in the results of your work,
-and much easier to debug issues and problems.
+**We call this chapter a "bootcamp" on purpose -- we only have a limited
+amount of time to go through all of these topics, and we have to rush
+things through a bit.** After all, the primary reason for the existence of this workshop
+is to make you competent researchers in computational population genomics, so
+the emphasis will still be on practical applications and solving concrete
+data science issues.
 
-Finally, we call this chapter a "bootcamp" on purpose -- we only have a limited
-amount of time to go through all of these topics. After all, the primary
-reason for the existence of this course is to make you competent researchers
-in computational population genomics, so the emphasis will be on practical
-applications and solving concrete data science issues. That said, if you ever
-want more information, I encourage you to take a look at relevant chapter of
-the [_Advanced R_](https://adv-r.hadley.nz) textbook.
+**Still, when we get to data science work in the following chapters, you will
+see that many things which otherwise remain quite obscure and magical boil down
+to a set of very simple principles and components. The purpose of this
+chapter is to introduce you to these fundamentals.**
 
-**And now, open RStudio, create a new R script (`File` `->` `New file`
-`->` `R Script`), save it somewhere on your computer as `r-bootcamp.R`
-(`File` -> `Save`) and let's get started!**
+**This knowledge will make you much more confident in the results of your work,
+and much easier to debug issues and problems in your own projects, but also
+track down problems in other people's code. The later happens much more often
+than you might think!**
 
-## Exercise 0: Getting help
+## Getting help
 
 **Before we even get started, there's one thing you should remember: R (and
 R packages) have an absolutely stellar documentation and help system.** What's
@@ -51,18 +57,46 @@ Whenever you're lost or can't remember some detail about some piece of R
 functionality, looking up `?` documentation is always very helpful.
 
 **As a practice and to build a habit, whenever we introduce a new function
-in this course, use `?<name of the function>` to open its documentation.**
+like `new_function()` in this course, use `?new_function` to open
+its documentation and skim through it.** I do this many times a day to refresh
+my memory on how something works.
+
+---
+
+## Exercise 0: Creating an R Script and general workflow
+
+**Let's start easy. Open RStudio, create a new R script
+(`File` `->` `New file` `->` `R Script`), save it somewhere on your computer
+as `r-bootcamp.R` (`File` -> `Save`, doesn't really matter where you save it).**
+
+**Every time you encounter a new bit of code, looking like this:**
+
+```{r}
+#| collapse: true
+#| results: hide
+# here
+# is
+# some
+123
+# R
+"code"
+```
+
+**please copy it into your script. You can then put your cursor at the beginning
+of that code chunk, and hit `CTRL + Enter` (on Windows/Linux) or `CMD + Enter`
+(on macOS) to execute it. Alternatively, you can also type it out to the R
+Console directly, and evaluate it by hitting `Enter`.**
+
+**It will sound very annoying, but try to limit copy-pasting code only
+to very long commands. Typing things out by hand forces you to think about
+every line of code and that is very important! At least at the beginning.**
 
 ## Exercise 1: Basic data types
 
 **Create the following variables in your R script and then evaluate this code
-in your R console:**
-
-**Hint:** I suggest you always write your code in a script in RStudio (click
-File -> New file -> R script). You can execute the line (or block) of code
-under cursor in the script window by pressing CTRL+Enter (on Windows or Linux)
-or CMD+Enter (on a Mac). For quick tests, feel free to type directly in the
-R console.
+in your R console by `CTRL / CMD + Enter`.** (Note that hitting this shortcut
+will move the cursor to the next line, allowing you to step by step evaluate
+longer bits of code.)
 
 ```{r}
 w1 <- 3.14
@@ -71,8 +105,11 @@ y1 <- "hello"
 z1 <- TRUE
 ```
 
-The `<-` operator can be read as "assign the value". I.e., "assign the value 3.14
-to a variable `w1`.
+The `w1 <- 3.14` operation can be read as _"assign the value"_. I.e.,
+_"assign the value 3.14 to a variable `w1`"_
+
+**When you type the variable names in your R console, you'll get them printed
+back, of course:**
 
 ```{r}
 w1
@@ -83,18 +120,57 @@ z1
 
 ---
 
+Programming involves assigning values (or generally some objects in computer
+memory in general) to variables. In our code, variables change values, so we
+often need to check what is a type of some variable---are we working with
+a number, or some text, etc.? `typeof()` is one of the functions that are
+useful for this.
+
 **What are the data "types" you get when you apply function `typeof()` on each of
-these variables?**
+these variables, i.e. when you type and evaluate a command like `typeof(w1)`?
+Compare the result to the values you saved in those variables---what do you
+get?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+A "floating point" number is of a so-called type "double":
+
 ```{r}
 typeof(w1)
+```
+
+Interestingly, "integer number" written like 42 is also represented as "double",
+even though we don't see a decimal point:
+
+```{r}
 typeof(x1)
+```
+
+In order to force a variable to be "really integer", this is possible (note
+that strange `L` letter). But you can regard this as a quirk of R. It's almost
+never a distinction that's necessary. For 99.99% of my coding needs, a "number"
+is just a number, and "double" is OK even for integers:
+
+```{r}
+x1 <- 42L
+typeof(x1)
+```
+
+Generally speaking, "text" is represented by the data type "character" and is
+always defined by surrounding something in `" double quotes "`:
+
+```{r}
 typeof(y1)
+```
+
+And the last important data type is "logical", indicating whether something
+is `TRUE` or `FALSE`:
+
+```{r}
 typeof(z1)
 ```
+
 :::
 
 ---
@@ -103,26 +179,31 @@ You can test whether or not a specific variable is of a specific type using
 functions such as `is.numeric()`, `is.integer()`, `is.character()`, `is.logical()`. **See what results you get when you apply these functions on these
 four variables `w1`, `x1`, `y1`, `z1`. Pay close attention to the difference
 (or lack thereof?) between applying `is.numeric()` and `is.integer()` on
-variables containing "numbers".**
+variables containing "values which look like numbers" (42, 3.14, etc.).**
 
-**Note:** This might seem incredibly boring and useless but trust me. In your
-real data, you will be see, in data frames (discussed below) with thousands of
-rows, sometimes millions. Being able to make sure that the values you get
-in your data-frame columns are of the expected type is something you will be
-doing often.
+**Note:** This might seem incredibly boring and useless but trust me. **In your
+real data, such as in data frames (discussed below), you will encounter
+variables with thousands of rows, sometimes millions. Being able to make sure
+that the values you get in your data-frame columns are of the expected type
+is something you will be doing very very often, especially when troubleshooting!
+So this is a good habit to get into.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
+w1
 is.numeric(w1)
 is.integer(w1)
 
+x1
 is.numeric(x1)
 is.integer(x1)
 
+y1
 is.character(y1)
 
+z1
 is.logical(z1)
 is.numeric(z1)
 is.integer(z1)
@@ -144,8 +225,8 @@ types of data, most importantly:
 them in detail here, but they will be relevant later. For the time being, just
 remember that there are also:**
 
+- missing values represented by `NA`---you will see this very often in data!
 - undefined values represented by `NULL`
-- missing values represented by `NA`
 
 ---
 
@@ -161,7 +242,10 @@ calling the `c()` function (the "c" stands for "concatenate", or "joining
 together").
 
 **Create the following variables containing these vectors. Then inspect their
-data types using `typeof()` again.**
+data types using `typeof()` again, just like you did for "single-value
+variables" above.** Again, copy-paste this into your script and evaluate
+using `CTRL / CMD + Enter` or paste it directly into your R Console and hit
+`Enter`:
 
 ```{r}
 w2 <- c(1.0, 2.72, 3.14)
@@ -248,17 +332,21 @@ mixed_vector
 ```{r}
 typeof(mixed_vector)
 ```
+
+Notice that your values were all converted to text!
+
 :::
 
 ---
 
-If vectors are not create with values of the same type, they are converted by
-a cascade of so-called "coercions". A vector defined with a mixture of different values (i.e., the four atomic types we discussed in the first Exercise) will
-be _coreced_ to be only one of those types, given certain rules.
+**If vectors are not create with values of the same type, they are converted by
+a cascade of so-called "coercions".** A vector defined with a mixture of different values (i.e., the four "atomic types" we discussed in Exercise 1, doubles,
+integers, characters, and logicals) will be _coreced_ to be only one of
+those types, given certain rules.
 
-**Try to figure out some of these coercion rules. Make a couple of vectors
-with mixed values of different types using the function `c()`, and observe
-what type of vector you get in return.**
+**Do a little detective work and try to figure out some of these coercion rules.
+Make a couple of vectors with mixed values of different types using the
+function `c()`, and observe what type of vector you get in return.**
 
 **Hint:** Try creating a vector which has integers and strings, integers and
 floats, integers and logicals, floats and logicals, floats and strings, and
@@ -267,27 +355,51 @@ build your intuition by calling `typeof()` on each vector object to verify this.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+- Numbers mixed with characters are forced to become characters:
+
 ```{r}
 v1 <- c(1, "42", "hello")
 v1
 typeof(v1)
+```
 
+- Integers and decimals are considered all doubles (this is what you saw above
+as R basically not distinguishing both that much, most of the time, for
+most practical reasons):
+
+```{r}
 v2 <- c(1, 42.13, 123)
 v2
 typeof(v2)
+```
 
-v3 <- c(1, 42, TRUE)
+- A logical mixed with numbers is forced into a number! `TRUE` is 1 and `FALSE`
+is 0. This is used extremely often, so remember this rule!
+
+```{r}
+v3 <- c(1, 42, TRUE, FALSE)
 v3
 typeof(v3)
+```
 
+```{r}
 v4 <- c(1.12, 42.13, FALSE)
 v4
 typeof(v4)
+```
 
+- Number is again mixed with text, giving type character again:
+
+```{r}
 v5 <- c(42.13, "hello")
 v5
 typeof(v5)
+```
 
+- Logical is also forced into a character:
+
+```{r}
 v6 <- c(TRUE, "hello")
 v6
 typeof(v6)
