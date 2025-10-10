@@ -608,13 +608,14 @@ archaic_df <- df[which_archaic, ]
 archaic_df
 ```
 
-However, what if we need to filter on multiple conditions? For instance, what
-if we want to find only archaic individuals older than 50000 years?
+**However, what if we need to filter on multiple conditions? For instance, what
+if we want to find all archaic individuals older than 50000 years?**
 
 One option would be to create multiple `TRUE` / `FALSE` vectors, each
 corresponding to one of those conditions, and then join them into a single
 logical vector by combining `&` and `|` logical operators like you did
-in the previous chapter on logical expressions. For example, we could do this:
+in the previous chapter on logical expressions. For example, we could do this
+(**try this code yourself to make sure you understand what's going on**):
 
 ```{r}
 # who is archaic in our data?
@@ -630,9 +631,9 @@ which_combined <- which_archaic & which_old
 df[which_combined, ]
 ```
 
-But this gets tiring very quickly, requires unnecessary amount of typing, and
+**But this gets tiring very quickly, requires unnecessary amount of typing, and
 is very error prone. Imagine having to do this for many more conditions!
-The `filter()` function from _tidyverse_ fixes all of these problems.
+The `filter()` function from _tidyverse_ again fixes all of these problems.**
 
 We can rephrase the example situation with the archaics to use the new
 function `filter()` like this:
@@ -654,10 +655,10 @@ ergonomic principles.
 
 **Here is the most crucial thing for you to remember! Notice that we refer
 to columns of our data frame `df` (like the columns `groupAge` or `ageAverage`
-right above) as if they were normal variables! In any _tidyverse_ function
-we don't write `"groupAge"`, but simply `groupAge`!** When you start, you'll
-probably make this kind of mistake quite often. So this is a reminder to
-keep an eye for this.
+right above) as if they were normal variables! Just like we did in `select()`
+above. In any _tidyverse_ function we don't write `"groupAge"`, but simply
+`groupAge`!** When you start, you'll probably make this kind of mistake quite
+often. So this is a reminder to keep an eye for this.
 
 ---
 
@@ -687,6 +688,29 @@ filter(df, country == "CzechRepublic" & coverage > 1)
 
 ```{r}
 filter(df, country == "CzechRepublic" & coverage > 10)
+```
+
+:::
+
+---
+
+**Now practice more complex conditionals: which individuals are from Germany at 
+coverage higher than 10 _OR_ individuals who are from Estonia
+with coverage less or equal than 1. Save your result to `df_subset` variable
+and print everything in this table by executing `print(df_subset, n = Inf).**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We can of course compose (infinitely) complex combinations of `&` and `|`
+and `!`:
+
+```{r}
+df_subset <- filter(df,
+                    (country == "Germany" & coverage > 3) |
+                    (country == "Estonia" & coverage < 1))
+
+print(df_subset, n = Inf)
 ```
 
 :::
