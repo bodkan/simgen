@@ -1,6 +1,4 @@
 suppressPackageStartupMessages({
-library(ggplot2) # the star of the day!
-
 library(dplyr)
 library(tidyr)
 library(readr)
