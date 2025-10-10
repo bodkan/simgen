@@ -419,6 +419,12 @@ window.Quarto = {
   </ul></li>
   <li><a href="#exercise-7-inspecting-column-types" id="toc-exercise-7-inspecting-column-types" class="nav-link" data-scroll-target="#exercise-7-inspecting-column-types">Exercise 7: Inspecting column types</a></li>
   <li><a href="#exercise-8-base-r-plotting" id="toc-exercise-8-base-r-plotting" class="nav-link" data-scroll-target="#exercise-8-base-r-plotting">Exercise 8: Base R plotting</a></li>
+  <li><a href="#exercise-9-working-with-directories-and-files" id="toc-exercise-9-working-with-directories-and-files" class="nav-link" data-scroll-target="#exercise-9-working-with-directories-and-files">Exercise 9: Working with directories and files</a>
+  <ul class="collapse">
+  <li><a href="#creating-a-directory" id="toc-creating-a-directory" class="nav-link" data-scroll-target="#creating-a-directory">Creating a directory</a></li>
+  <li><a href="#listing-files" id="toc-listing-files" class="nav-link" data-scroll-target="#listing-files">Listing files</a></li>
+  <li><a href="#testing-the-existence-of-a-directory-or-a-file" id="toc-testing-the-existence-of-a-directory-or-a-file" class="nav-link" data-scroll-target="#testing-the-existence-of-a-directory-or-a-file">Testing the existence of a directory or a file</a></li>
+  </ul></li>
   <li><a href="#bonus-content" id="toc-bonus-content" class="nav-link" data-scroll-target="#bonus-content">Bonus content</a></li>
   </ul>
 </nav>
@@ -3256,66 +3262,21 @@ Attaching package: 'dplyr'</code></pre>
 </div>
 </section>
 </section>
-<section id="bonus-content" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="bonus-content">Bonus content</h2>
-<p>Here are some more advanced materials. These are very useful to know (and actually critical for writing more complex programs), but are not completely necessary to be able to successfuly go through the later sessions on <em>tidyverse</em> and <em>ggplot2</em>. Feel free to go through them for your own interest though! They are very useful!</p>
-<div class="callout callout-style-default callout-tip no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-58-contents" aria-controls="callout-58" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Bonus exercises
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-58" class="callout-58-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<section id="exercise-9-functions" class="level2">
-<h2 class="anchored" data-anchor-id="exercise-9-functions">Exercise 9: Functions</h2>
-<p>The motivation for this Exercise could be summarized by an ancient motto of programming: <a href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">Don’t repeat yourself (DRY)</a>: <em>“[…] a modification of any single element of a system does not require a change in other logically unrelated elements.”</em>.</p>
-<p>Let’s demonstrate this idea in practice.</p>
-<p>Let’s say you have the following numeric vector (these could be base qualities, genotype qualities, <span class="math inline">\(f\)</span>-statistics, sequencing coverage, anything):</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb371"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb371-1"><a href="#cb371-1" aria-hidden="true" tabindex="-1"></a>vec <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.32</span>, <span class="fl">0.78</span>, <span class="fl">0.68</span>, <span class="fl">0.28</span>, <span class="fl">1.96</span>, <span class="fl">0.21</span>, <span class="fl">0.07</span>, <span class="fl">1.01</span>, <span class="fl">0.06</span>, <span class="fl">0.74</span>,</span>
-<span id="cb371-2"><a href="#cb371-2" aria-hidden="true" tabindex="-1"></a>         <span class="fl">0.37</span>, <span class="fl">0.6</span>, <span class="fl">0.08</span>, <span class="fl">1.81</span>, <span class="fl">0.65</span>, <span class="fl">1.23</span>, <span class="fl">1.28</span>, <span class="fl">0.11</span>, <span class="fl">1.74</span>,  <span class="fl">1.68</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>With numeric vectors, we often need to compute some summary statistics (mean, median, quartile, minimum, maximum, etc.). What’s more, in a given project, we often have to do this computation multiple times in a number of places.</p>
-
-<p>Here is how we can compute those summary statistics individually:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb372"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb372-1"><a href="#cb372-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.06</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb374"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb374-1"><a href="#cb374-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first quartile (a value which is higher than the bottom 25% of the data)</span></span>
-<span id="cb374-2"><a href="#cb374-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   25% 
-0.2625 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb376"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb376-1"><a href="#cb376-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.665</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb378"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb378-1"><a href="#cb378-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.783</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb380"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb380-1"><a href="#cb380-1" aria-hidden="true" tabindex="-1"></a><span class="co"># third quartile (a value which is higher than the bottom 75% of the data)</span></span>
-<span id="cb380-2"><a href="#cb380-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   75% 
-1.2425 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb382"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb382-1"><a href="#cb382-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1.96</code></pre>
-</div>
-</div>
-<p>Now, you can imagine that you have many more of such vectors (results for different sequenced samples, different computed population genetic metrics, etc.). Having to type out all of these commands for every single one of those vectors would very quickly get extremely tiresome. Worse still, when we would do this, we would certainly resort to copy-pasting, which is guaranteed to lead to errors.</p>
+<section id="exercise-9-working-with-directories-and-files" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-9-working-with-directories-and-files">Exercise 9: Working with directories and files</h2>
+<p>When we move on to the reproducibility session and begin discussing the benefits of writing self-contained, single-purpose R scripts as components of reproducible pipelines, it will come in handy for our scripts to do more than just munge on tables and create plots. Sometimes our scripts will create files. And those files need directories to be put in.</p>
+<p>Yes, we can always do this manually in a file explorer of some sorts, but that is not automated and, as a result, it’s not reprodubile.</p>
+<section id="creating-a-directory" class="level3">
+<h3 class="anchored" data-anchor-id="creating-a-directory">Creating a directory</h3>
+<p><strong>You can create a directory using a function <code>dir.create()</code>. Try it by creating a directory somewhere on your file system, named “testing-directory”. Look up <code>?dir.create</code> help page to see useful options.</strong></p>
 <hr>
-<p><strong>Write a custom function called <code>my_summary</code>, which will accept a single input named <code>values</code>, and returns a list which binds all the six summary statistics together. Name the elements of that list as <code>"min"</code>, <code>"quartile_1"</code>, <code>"median"</code>, <code>"mean"</code>, <code>"quartile_3"</code>, and <code>"max"</code>.</strong></p>
+<p><strong>What happens when you call a <code>dir.create("testing-directory")</code> twice? Do you get an error or a warning? Is that warning necessarily a problem, or is it more that it’s annoying? (Imagine having a script which does this repeatedly, perhaps because it can be run repeatedly in a loop). How would you silence this problem? Again, look up the help under <code>?dir.create</code>.</strong></p>
+</section>
+<section id="listing-files" class="level3">
+<h3 class="anchored" data-anchor-id="listing-files">Listing files</h3>
+<p>Often you have many different tables stored across multiple files. You then need to read all those tables, but calling a function like <code>read_tsv()</code> (which reads a data frame from disk — we’ll use it a lot in later sections!) a hundred times, manually, is impossible.</p>
+<p>A useful trick is to get a listing of files in a particular directory, using the function <code>list.files()</code>.</p>
+<p><strong>Use <code>list.files()</code> to list all files in your <code>~/Documents</code> directory. Again, look up help for <code>?list.files</code> to see how you should run this function. Experiment in your R console! Do you get full paths to each file? Or just filenames? How would you get full paths?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-51-contents" aria-controls="callout-51" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3328,48 +3289,97 @@ Click to see the solution
 </div>
 <div id="callout-51" class="callout-51-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Here is how we could write the function:</p>
+<p>This gives only filenames:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb384"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb384-1"><a href="#cb384-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
-<span id="cb384-2"><a href="#cb384-2" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">min</span>(vec)</span>
-<span id="cb384-3"><a href="#cb384-3" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span>
-<span id="cb384-4"><a href="#cb384-4" aria-hidden="true" tabindex="-1"></a>  c <span class="ot">&lt;-</span> <span class="fu">median</span>(vec)</span>
-<span id="cb384-5"><a href="#cb384-5" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">mean</span>(vec)</span>
-<span id="cb384-6"><a href="#cb384-6" aria-hidden="true" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span>
-<span id="cb384-7"><a href="#cb384-7" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> <span class="fu">max</span>(vec)</span>
-<span id="cb384-8"><a href="#cb384-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb384-9"><a href="#cb384-9" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">min =</span> a, <span class="at">quartile_1 =</span> b, <span class="at">median =</span> c, <span class="at">mean =</span> d, <span class="at">quartile_3 =</span> e, <span class="at">max =</span> f)</span>
-<span id="cb384-10"><a href="#cb384-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb384-11"><a href="#cb384-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb384-12"><a href="#cb384-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb371"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb371-1"><a href="#cb371-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(<span class="at">path =</span> <span class="st">"~/Documents"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "archive"    "games"      "Garageband" "latexCV"    "postdoc"   
+[6] "Renoise"    "slides"     "talks"      "WeAreKU"   </code></pre>
 </div>
-<p>Although I would probably prefer to write it a bit more tersely like this:</p>
+</div>
+<p>For reading from a script from any location, <code>full.names = TRUE</code> is important:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb385"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb385-1"><a href="#cb385-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
-<span id="cb385-2"><a href="#cb385-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb385-3"><a href="#cb385-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(vec),</span>
-<span id="cb385-4"><a href="#cb385-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_1 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
-<span id="cb385-5"><a href="#cb385-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(vec),</span>
-<span id="cb385-6"><a href="#cb385-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(vec),</span>
-<span id="cb385-7"><a href="#cb385-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_3 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>),</span>
-<span id="cb385-8"><a href="#cb385-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(vec)</span>
-<span id="cb385-9"><a href="#cb385-9" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb385-10"><a href="#cb385-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb385-11"><a href="#cb385-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
-<span id="cb385-12"><a href="#cb385-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb373"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb373-1"><a href="#cb373-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(<span class="at">path =</span> <span class="st">"~/Documents"</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "/Users/mp/Documents/archive"    "/Users/mp/Documents/games"     
+[3] "/Users/mp/Documents/Garageband" "/Users/mp/Documents/latexCV"   
+[5] "/Users/mp/Documents/postdoc"    "/Users/mp/Documents/Renoise"   
+[7] "/Users/mp/Documents/slides"     "/Users/mp/Documents/talks"     
+[9] "/Users/mp/Documents/WeAreKU"   </code></pre>
 </div>
 </div>
 </div>
 </div>
+</div>
+<p>Using <code>list.files()</code> is particularly helpful in conjunction with the concept of <em>looping</em> introduced in one of the “Bonus exercises” towards the end of this Bootcamp session.</p>
+</section>
+<section id="testing-the-existence-of-a-directory-or-a-file" class="level3">
+<h3 class="anchored" data-anchor-id="testing-the-existence-of-a-directory-or-a-file">Testing the existence of a directory or a file</h3>
+<p>In other setting, we need our script to test whether a particular directory (or, more often, a file) already exists. This can be done with the functions <code>dir.exists()</code> or <code>file.exists()</code>.</p>
+<p><strong>Pick an arbitrary file you got in your <code>~/Documents</code> listing. Then try <code>file.exists()</code> on that file. Then add a random string to that path to your file and run <code>file.exists()</code> again.</strong></p>
+<p><strong>These functions are also super useful for building more comprehensive pipelines! Imagine a situation in which an output file with your results already exists, and you don’t want to overwrite it (but you want to run your script as a whole anyway).</strong></p>
+</section>
+</section>
+<section id="bonus-content" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="bonus-content">Bonus content</h2>
+<p>Here are some more advanced materials. These are very useful to know (and actually critical for writing more complex programs), but are not completely necessary to be able to successfuly go through the later sessions on <em>tidyverse</em> and <em>ggplot2</em>. Feel free to go through them for your own interest though! They are very useful!</p>
+<div class="callout callout-style-default callout-tip no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-59-contents" aria-controls="callout-59" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Bonus exercises
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-59" class="callout-59-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<section id="exercise-9-functions" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-9-functions">Exercise 9: Functions</h2>
+<p>The motivation for this Exercise could be summarized by an ancient motto of programming: <a href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">Don’t repeat yourself (DRY)</a>: <em>“[…] a modification of any single element of a system does not require a change in other logically unrelated elements.”</em>.</p>
+<p>Let’s demonstrate this idea in practice.</p>
+<p>Let’s say you have the following numeric vector (these could be base qualities, genotype qualities, <span class="math inline">\(f\)</span>-statistics, sequencing coverage, anything):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb375"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb375-1"><a href="#cb375-1" aria-hidden="true" tabindex="-1"></a>vec <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.32</span>, <span class="fl">0.78</span>, <span class="fl">0.68</span>, <span class="fl">0.28</span>, <span class="fl">1.96</span>, <span class="fl">0.21</span>, <span class="fl">0.07</span>, <span class="fl">1.01</span>, <span class="fl">0.06</span>, <span class="fl">0.74</span>,</span>
+<span id="cb375-2"><a href="#cb375-2" aria-hidden="true" tabindex="-1"></a>         <span class="fl">0.37</span>, <span class="fl">0.6</span>, <span class="fl">0.08</span>, <span class="fl">1.81</span>, <span class="fl">0.65</span>, <span class="fl">1.23</span>, <span class="fl">1.28</span>, <span class="fl">0.11</span>, <span class="fl">1.74</span>,  <span class="fl">1.68</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>With numeric vectors, we often need to compute some summary statistics (mean, median, quartile, minimum, maximum, etc.). What’s more, in a given project, we often have to do this computation multiple times in a number of places.</p>
+
+<p>Here is how we can compute those summary statistics individually:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb376"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb376-1"><a href="#cb376-1" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.06</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb378"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb378-1"><a href="#cb378-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first quartile (a value which is higher than the bottom 25% of the data)</span></span>
+<span id="cb378-2"><a href="#cb378-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   25% 
+0.2625 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb380"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb380-1"><a href="#cb380-1" aria-hidden="true" tabindex="-1"></a><span class="fu">median</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.665</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb382"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb382-1"><a href="#cb382-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.783</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb384"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb384-1"><a href="#cb384-1" aria-hidden="true" tabindex="-1"></a><span class="co"># third quartile (a value which is higher than the bottom 75% of the data)</span></span>
+<span id="cb384-2"><a href="#cb384-2" aria-hidden="true" tabindex="-1"></a><span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   75% 
+1.2425 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb386"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb386-1"><a href="#cb386-1" aria-hidden="true" tabindex="-1"></a><span class="fu">max</span>(vec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.96</code></pre>
+</div>
+</div>
+<p>Now, you can imagine that you have many more of such vectors (results for different sequenced samples, different computed population genetic metrics, etc.). Having to type out all of these commands for every single one of those vectors would very quickly get extremely tiresome. Worse still, when we would do this, we would certainly resort to copy-pasting, which is guaranteed to lead to errors.</p>
 <hr>
-<p>Yes, we had to write the code anyway, we even had to do the extra work of wrapping it inside other code (the <code>function</code> body, name the one input argument <code>values</code>, which could be multiple arguments for more complex function). So, one could argue that we didn’t actually save any time. However, that code is now “encapsulated” in a fully self-contained form and can be called repeatably, without any copy-pasting.</p>
-<p>In other words, if you now <strong>create these three vectors of numeric values</strong>:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb386"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb386-1"><a href="#cb386-1" aria-hidden="true" tabindex="-1"></a>vec1 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
-<span id="cb386-2"><a href="#cb386-2" aria-hidden="true" tabindex="-1"></a>vec2 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
-<span id="cb386-3"><a href="#cb386-3" aria-hidden="true" tabindex="-1"></a>vec3 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>You can now <strong>compute our summary statistics by calling our function <code>my_summary()</code> on these vectors, without any code repetition</strong>:</p>
+<p><strong>Write a custom function called <code>my_summary</code>, which will accept a single input named <code>values</code>, and returns a list which binds all the six summary statistics together. Name the elements of that list as <code>"min"</code>, <code>"quartile_1"</code>, <code>"median"</code>, <code>"mean"</code>, <code>"quartile_3"</code>, and <code>"max"</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-52-contents" aria-controls="callout-52" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3382,8 +3392,62 @@ Click to see the solution
 </div>
 <div id="callout-52" class="callout-52-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Here is how we could write the function:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb387"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb387-1"><a href="#cb387-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb388"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb388-1"><a href="#cb388-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
+<span id="cb388-2"><a href="#cb388-2" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">min</span>(vec)</span>
+<span id="cb388-3"><a href="#cb388-3" aria-hidden="true" tabindex="-1"></a>  b <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>)</span>
+<span id="cb388-4"><a href="#cb388-4" aria-hidden="true" tabindex="-1"></a>  c <span class="ot">&lt;-</span> <span class="fu">median</span>(vec)</span>
+<span id="cb388-5"><a href="#cb388-5" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">mean</span>(vec)</span>
+<span id="cb388-6"><a href="#cb388-6" aria-hidden="true" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>)</span>
+<span id="cb388-7"><a href="#cb388-7" aria-hidden="true" tabindex="-1"></a>  f <span class="ot">&lt;-</span> <span class="fu">max</span>(vec)</span>
+<span id="cb388-8"><a href="#cb388-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb388-9"><a href="#cb388-9" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">min =</span> a, <span class="at">quartile_1 =</span> b, <span class="at">median =</span> c, <span class="at">mean =</span> d, <span class="at">quartile_3 =</span> e, <span class="at">max =</span> f)</span>
+<span id="cb388-10"><a href="#cb388-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb388-11"><a href="#cb388-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb388-12"><a href="#cb388-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Although I would probably prefer to write it a bit more tersely like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb389"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb389-1"><a href="#cb389-1" aria-hidden="true" tabindex="-1"></a>my_summary <span class="ot">&lt;-</span> <span class="cf">function</span>(values) {</span>
+<span id="cb389-2"><a href="#cb389-2" aria-hidden="true" tabindex="-1"></a>  result <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb389-3"><a href="#cb389-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(vec),</span>
+<span id="cb389-4"><a href="#cb389-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_1 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
+<span id="cb389-5"><a href="#cb389-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(vec),</span>
+<span id="cb389-6"><a href="#cb389-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean =</span> <span class="fu">mean</span>(vec),</span>
+<span id="cb389-7"><a href="#cb389-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">quartile_3 =</span> <span class="fu">quantile</span>(vec, <span class="at">probs =</span> <span class="fl">0.75</span>),</span>
+<span id="cb389-8"><a href="#cb389-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(vec)</span>
+<span id="cb389-9"><a href="#cb389-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb389-10"><a href="#cb389-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb389-11"><a href="#cb389-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result)</span>
+<span id="cb389-12"><a href="#cb389-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p>Yes, we had to write the code anyway, we even had to do the extra work of wrapping it inside other code (the <code>function</code> body, name the one input argument <code>values</code>, which could be multiple arguments for more complex function). So, one could argue that we didn’t actually save any time. However, that code is now “encapsulated” in a fully self-contained form and can be called repeatably, without any copy-pasting.</p>
+<p>In other words, if you now <strong>create these three vectors of numeric values</strong>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb390"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb390-1"><a href="#cb390-1" aria-hidden="true" tabindex="-1"></a>vec1 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
+<span id="cb390-2"><a href="#cb390-2" aria-hidden="true" tabindex="-1"></a>vec2 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span>
+<span id="cb390-3"><a href="#cb390-3" aria-hidden="true" tabindex="-1"></a>vec3 <span class="ot">&lt;-</span> <span class="fu">runif</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>You can now <strong>compute our summary statistics by calling our function <code>my_summary()</code> on these vectors, without any code repetition</strong>:</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-53-contents" aria-controls="callout-53" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-53" class="callout-53-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb391"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb391-1"><a href="#cb391-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$min
 [1] 0.06
@@ -3405,7 +3469,7 @@ $quartile_3
 $max
 [1] 1.96</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb389"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb389-1"><a href="#cb389-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb393"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb393-1"><a href="#cb393-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$min
 [1] 0.06
@@ -3427,7 +3491,7 @@ $quartile_3
 $max
 [1] 1.96</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb391"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb391-1"><a href="#cb391-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb395"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb395-1"><a href="#cb395-1" aria-hidden="true" tabindex="-1"></a><span class="fu">my_summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$min
 [1] 0.06
@@ -3452,20 +3516,20 @@ $max
 </div>
 <p>And, surprise! This is what the incredibly useful built-in function <code>summary()</code> provided with every R installation does!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb393"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb393-1"><a href="#cb393-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb397"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb397-1"><a href="#cb397-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.2359  0.4333  0.6250  0.6299  0.8947  0.9722 </code></pre>
+ 0.1472  0.2902  0.3790  0.4428  0.6143  0.8907 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb395"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb395-1"><a href="#cb395-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.1053  0.2252  0.7611  0.5731  0.8409  0.9154 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb397"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb397-1"><a href="#cb397-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb399"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb399-1"><a href="#cb399-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
-0.004629 0.085848 0.208664 0.329766 0.630859 0.811745 </code></pre>
+0.006982 0.212111 0.675501 0.509176 0.733203 0.948446 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb401"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb401-1"><a href="#cb401-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(vec3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1357  0.3468  0.5841  0.5490  0.7012  0.9638 </code></pre>
 </div>
 </div>
 </div>
@@ -3479,92 +3543,10 @@ $max
 <p><strong>Hint:</strong> A useful new argument of the <code>hist()</code> function is <code>main =</code>. You can specify this as a string and the contents of this argument will be plotted as the figure’s title.</p>
 <p>If you need further help, feel free to use this template and fill the insides of the function body with your code:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb399"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb399-1"><a href="#cb399-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
-<span id="cb399-2"><a href="#cb399-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... put your hist() code here</span></span>
-<span id="cb399-3"><a href="#cb399-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb403"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb403-1"><a href="#cb403-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
+<span id="cb403-2"><a href="#cb403-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... put your hist() code here</span></span>
+<span id="cb403-3"><a href="#cb403-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-53-contents" aria-controls="callout-53" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Click to see the solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-53" class="callout-53-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>We can extract a column <code>column</code> of any data frame <code>df</code> with <code>df[[column]]</code>, therefore, we only need to do this:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb400"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb400-1"><a href="#cb400-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
-<span id="cb400-2"><a href="#cb400-2" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Histogram of the column"</span>, column)</span>
-<span id="cb400-3"><a href="#cb400-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hist</span>(df[[column]], <span class="at">breaks =</span> breaks, <span class="at">main =</span> title)</span>
-<span id="cb400-4"><a href="#cb400-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>We can then use our fancy new function like this:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb401"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb401-1"><a href="#cb401-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"bill_len"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-160-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb402"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb402-1"><a href="#cb402-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"bill_dep"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-161-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb403"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb403-1"><a href="#cb403-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"flipper_len"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-162-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb404"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb404-1"><a href="#cb404-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"body_mass"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-163-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
-<section id="exercise-10-conditional-expressions" class="level2">
-<h2 class="anchored" data-anchor-id="exercise-10-conditional-expressions">Exercise 10: Conditional expressions</h2>
-<p>Oftentimes, especially when writing custom code, we need to make automated decisions whether something should or shouldn’t happen given a certain value. We can do this using the <code>if</code> expression which has the following form:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb405"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb405-1"><a href="#cb405-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">&lt;</span>condition resulting <span class="cf">in</span> <span class="cn">TRUE</span> or <span class="cn">FALSE</span><span class="sc">&gt;</span>) {</span>
-<span id="cb405-2"><a href="#cb405-2" aria-hidden="true" tabindex="-1"></a>  ... code which should be executed <span class="cf">if</span> condition is TRUE...</span>
-<span id="cb405-3"><a href="#cb405-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>An extension of this is the <code>if-else</code> expression, taking the following form:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb406"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb406-1"><a href="#cb406-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">&lt;</span>condition resulting <span class="cf">in</span> <span class="cn">TRUE</span> or <span class="cn">FALSE</span><span class="sc">&gt;</span>) {</span>
-<span id="cb406-2"><a href="#cb406-2" aria-hidden="true" tabindex="-1"></a>  ... code which should be executed <span class="cf">if</span> condition is TRUE...</span>
-<span id="cb406-3"><a href="#cb406-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb406-4"><a href="#cb406-4" aria-hidden="true" tabindex="-1"></a>  ... code which should be executed <span class="cf">if</span> condition is FALSE...</span>
-<span id="cb406-5"><a href="#cb406-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<hr>
-<p><strong>Go back to your new <code>penguin_hist()</code> function and add an <code>if</code> expression which will make sure that <code>breaks</code> is greater than 0. In other words, if <code>breaks &lt; 1</code> (the condition you will be testing against), execute the command <code>stop("Incorrect breaks argument given!")</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-54-contents" aria-controls="callout-54" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3577,20 +3559,102 @@ Click to see the solution
 </div>
 <div id="callout-54" class="callout-54-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>We can extract a column <code>column</code> of any data frame <code>df</code> with <code>df[[column]]</code>, therefore, we only need to do this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb404"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb404-1"><a href="#cb404-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
+<span id="cb404-2"><a href="#cb404-2" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Histogram of the column"</span>, column)</span>
+<span id="cb404-3"><a href="#cb404-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hist</span>(df[[column]], <span class="at">breaks =</span> breaks, <span class="at">main =</span> title)</span>
+<span id="cb404-4"><a href="#cb404-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can then use our fancy new function like this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb405"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb405-1"><a href="#cb405-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"bill_len"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-162-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb406"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb406-1"><a href="#cb406-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"bill_dep"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-163-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb407"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb407-1"><a href="#cb407-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"flipper_len"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-164-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb408"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb408-1"><a href="#cb408-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(penguins, <span class="st">"body_mass"</span>, <span class="at">breaks =</span> <span class="dv">50</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="r-bootcamp_files/figure-html/unnamed-chunk-165-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-10-conditional-expressions" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-10-conditional-expressions">Exercise 10: Conditional expressions</h2>
+<p>Oftentimes, especially when writing custom code, we need to make automated decisions whether something should or shouldn’t happen given a certain value. We can do this using the <code>if</code> expression which has the following form:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb409"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb409-1"><a href="#cb409-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">&lt;</span>condition resulting <span class="cf">in</span> <span class="cn">TRUE</span> or <span class="cn">FALSE</span><span class="sc">&gt;</span>) {</span>
+<span id="cb409-2"><a href="#cb409-2" aria-hidden="true" tabindex="-1"></a>  ... code which should be executed <span class="cf">if</span> condition is TRUE...</span>
+<span id="cb409-3"><a href="#cb409-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>An extension of this is the <code>if-else</code> expression, taking the following form:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb410"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb410-1"><a href="#cb410-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">&lt;</span>condition resulting <span class="cf">in</span> <span class="cn">TRUE</span> or <span class="cn">FALSE</span><span class="sc">&gt;</span>) {</span>
+<span id="cb410-2"><a href="#cb410-2" aria-hidden="true" tabindex="-1"></a>  ... code which should be executed <span class="cf">if</span> condition is TRUE...</span>
+<span id="cb410-3"><a href="#cb410-3" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb410-4"><a href="#cb410-4" aria-hidden="true" tabindex="-1"></a>  ... code which should be executed <span class="cf">if</span> condition is FALSE...</span>
+<span id="cb410-5"><a href="#cb410-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+<p><strong>Go back to your new <code>penguin_hist()</code> function and add an <code>if</code> expression which will make sure that <code>breaks</code> is greater than 0. In other words, if <code>breaks &lt; 1</code> (the condition you will be testing against), execute the command <code>stop("Incorrect breaks argument given!")</code>.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-55-contents" aria-controls="callout-55" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-55" class="callout-55-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p>Here is our new modified function:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb407"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb407-1"><a href="#cb407-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
-<span id="cb407-2"><a href="#cb407-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (breaks <span class="sc">&lt;</span> <span class="dv">1</span>) {</span>
-<span id="cb407-3"><a href="#cb407-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Incorrect breaks argument given!"</span>, <span class="at">call. =</span> <span class="cn">FALSE</span>) <span class="co"># call. = FALSE makes errors less verbose</span></span>
-<span id="cb407-4"><a href="#cb407-4" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb407-5"><a href="#cb407-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb407-6"><a href="#cb407-6" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Histogram of the column"</span>, column)</span>
-<span id="cb407-7"><a href="#cb407-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hist</span>(df[[column]], <span class="at">breaks =</span> breaks, <span class="at">main =</span> title)</span>
-<span id="cb407-8"><a href="#cb407-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb411"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb411-1"><a href="#cb411-1" aria-hidden="true" tabindex="-1"></a>penguin_hist <span class="ot">&lt;-</span> <span class="cf">function</span>(df, column, breaks) {</span>
+<span id="cb411-2"><a href="#cb411-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (breaks <span class="sc">&lt;</span> <span class="dv">1</span>) {</span>
+<span id="cb411-3"><a href="#cb411-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">"Incorrect breaks argument given!"</span>, <span class="at">call. =</span> <span class="cn">FALSE</span>) <span class="co"># call. = FALSE makes errors less verbose</span></span>
+<span id="cb411-4"><a href="#cb411-4" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb411-5"><a href="#cb411-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb411-6"><a href="#cb411-6" aria-hidden="true" tabindex="-1"></a>  title <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Histogram of the column"</span>, column)</span>
+<span id="cb411-7"><a href="#cb411-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hist</span>(df[[column]], <span class="at">breaks =</span> breaks, <span class="at">main =</span> title)</span>
+<span id="cb411-8"><a href="#cb411-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>And here is how our new modification guards against incorrect use of our function:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb408"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb408-1"><a href="#cb408-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(df, <span class="st">"bill_len"</span>, <span class="at">breaks =</span> <span class="sc">-</span><span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb412"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb412-1"><a href="#cb412-1" aria-hidden="true" tabindex="-1"></a><span class="fu">penguin_hist</span>(df, <span class="st">"bill_len"</span>, <span class="at">breaks =</span> <span class="sc">-</span><span class="dv">123</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
 <pre><code>Error: Incorrect breaks argument given!</code></pre>
 </div>
@@ -3609,16 +3673,16 @@ Click to see the solution
 <h3 class="anchored" data-anchor-id="loops-producing-a-value-for-each-iteration">1. Loops producing a value for each iteration</h3>
 <p>The loops in this category which we are going to encounter most often are those of the <code>apply</code> family, like <code>lapply()</code> or <code>sapply()</code>. The general pattern like this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb410"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb410-1"><a href="#cb410-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="sc">&lt;</span>vector<span class="sc">/</span>list of values<span class="sc">&gt;</span>, <span class="sc">&lt;</span><span class="cf">function</span><span class="sc">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb414"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb414-1"><a href="#cb414-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">lapply</span>(<span class="sc">&lt;</span>vector<span class="sc">/</span>list of values<span class="sc">&gt;</span>, <span class="sc">&lt;</span><span class="cf">function</span><span class="sc">&gt;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The <code>lapply</code> and <code>sapply</code> functions take, at minimum, a vector or a list as their first argument, and then a function which takes a single argument. Then they apply the given function to each element of the vector/list, and return either a list (if we use the <code>lapply()</code> function) or a vector (if we use the <code>sapply()</code> function).</p>
 <p>Let’s consider this more concrete example:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb411"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb411-1"><a href="#cb411-1" aria-hidden="true" tabindex="-1"></a>input_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"hello"</span>, <span class="st">"this"</span>, <span class="dv">123</span>, <span class="st">"is"</span>, <span class="st">"a mixed"</span>, <span class="dv">42</span>, <span class="st">"list"</span>)</span>
-<span id="cb411-2"><a href="#cb411-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb411-3"><a href="#cb411-3" aria-hidden="true" tabindex="-1"></a>result_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(input_list, is.numeric)</span>
-<span id="cb411-4"><a href="#cb411-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb411-5"><a href="#cb411-5" aria-hidden="true" tabindex="-1"></a>result_list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb415"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb415-1"><a href="#cb415-1" aria-hidden="true" tabindex="-1"></a>input_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">"hello"</span>, <span class="st">"this"</span>, <span class="dv">123</span>, <span class="st">"is"</span>, <span class="st">"a mixed"</span>, <span class="dv">42</span>, <span class="st">"list"</span>)</span>
+<span id="cb415-2"><a href="#cb415-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb415-3"><a href="#cb415-3" aria-hidden="true" tabindex="-1"></a>result_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(input_list, is.numeric)</span>
+<span id="cb415-4"><a href="#cb415-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb415-5"><a href="#cb415-5" aria-hidden="true" tabindex="-1"></a>result_list</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
 [1] FALSE
@@ -3646,57 +3710,12 @@ Click to see the solution
 <hr>
 <p><strong>Create the following function which, for a given number, returns <code>TRUE</code> if this number is even and <code>FALSE</code> if the number is odd. Then use <code>sapply()</code> to test which of the following numbers in the <code>input_vector</code> is odd or even.</strong> Notice that we can do thousands or even millions of operations like this (for very very long input vectors) with a single <code>sapply()</code> command!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb413"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb413-1"><a href="#cb413-1" aria-hidden="true" tabindex="-1"></a>input_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">23</span>, <span class="dv">11</span>, <span class="dv">8</span>, <span class="dv">36</span>, <span class="dv">47</span>, <span class="dv">6</span>, <span class="dv">66</span>, <span class="dv">94</span>, <span class="dv">20</span>, <span class="dv">2</span>)</span>
-<span id="cb413-2"><a href="#cb413-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb413-3"><a href="#cb413-3" aria-hidden="true" tabindex="-1"></a>is_even <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb413-4"><a href="#cb413-4" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span> <span class="co"># this answers the question "does x divided by 2 give 0?")</span></span>
-<span id="cb413-5"><a href="#cb413-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb417"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb417-1"><a href="#cb417-1" aria-hidden="true" tabindex="-1"></a>input_vector <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">23</span>, <span class="dv">11</span>, <span class="dv">8</span>, <span class="dv">36</span>, <span class="dv">47</span>, <span class="dv">6</span>, <span class="dv">66</span>, <span class="dv">94</span>, <span class="dv">20</span>, <span class="dv">2</span>)</span>
+<span id="cb417-2"><a href="#cb417-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb417-3"><a href="#cb417-3" aria-hidden="true" tabindex="-1"></a>is_even <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb417-4"><a href="#cb417-4" aria-hidden="true" tabindex="-1"></a>  x <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">==</span> <span class="dv">0</span> <span class="co"># this answers the question "does x divided by 2 give 0?")</span></span>
+<span id="cb417-5"><a href="#cb417-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-55-contents" aria-controls="callout-55" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Click to see the solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-55" class="callout-55-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>Let’s first test our custom-made function on a couple of examples. This is always a good idea when we want to do iteration using <code>lapply()</code> / <code>sapply()</code>.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb414"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb414-1"><a href="#cb414-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb416"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb416-1"><a href="#cb416-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] FALSE</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb418"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb418-1"><a href="#cb418-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] TRUE</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb420"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb420-1"><a href="#cb420-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">11</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] FALSE</code></pre>
-</div>
-</div>
-<p>Now we <em>apply</em> <code>is_even</code> to every element of our <code>input_vector</code>:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb422"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb422-1"><a href="#cb422-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">sapply</span>(input_vector, is_even)</span>
-<span id="cb422-2"><a href="#cb422-2" aria-hidden="true" tabindex="-1"></a>result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] FALSE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE</code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<hr>
-<p><strong>As a practice of indexing, use the result of the <code>sapply()</code> you just got to filter the <code>input_vector</code> values to only odd numbers.</strong></p>
-<p><strong>Hint:</strong> Remember that you can negate any <code>TRUE</code> / <code>FALSE</code> value (even vector) using the <code>!</code> operator.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-56-contents" aria-controls="callout-56" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3709,25 +3728,70 @@ Click to see the solution
 </div>
 <div id="callout-56" class="callout-56-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Let’s first test our custom-made function on a couple of examples. This is always a good idea when we want to do iteration using <code>lapply()</code> / <code>sapply()</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb418"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb418-1"><a href="#cb418-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb420"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb420-1"><a href="#cb420-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb422"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb422-1"><a href="#cb422-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb424"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb424-1"><a href="#cb424-1" aria-hidden="true" tabindex="-1"></a><span class="fu">is_even</span>(<span class="dv">11</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] FALSE</code></pre>
+</div>
+</div>
+<p>Now we <em>apply</em> <code>is_even</code> to every element of our <code>input_vector</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb426"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb426-1"><a href="#cb426-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">sapply</span>(input_vector, is_even)</span>
+<span id="cb426-2"><a href="#cb426-2" aria-hidden="true" tabindex="-1"></a>result</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] FALSE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>As a practice of indexing, use the result of the <code>sapply()</code> you just got to filter the <code>input_vector</code> values to only odd numbers.</strong></p>
+<p><strong>Hint:</strong> Remember that you can negate any <code>TRUE</code> / <code>FALSE</code> value (even vector) using the <code>!</code> operator.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-57-contents" aria-controls="callout-57" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-57" class="callout-57-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p>Again, this is how we detected which numbers are even:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb424"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb424-1"><a href="#cb424-1" aria-hidden="true" tabindex="-1"></a>even_numbers <span class="ot">&lt;-</span> <span class="fu">sapply</span>(input_vector, is_even)</span>
-<span id="cb424-2"><a href="#cb424-2" aria-hidden="true" tabindex="-1"></a>even_numbers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb428"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb428-1"><a href="#cb428-1" aria-hidden="true" tabindex="-1"></a>even_numbers <span class="ot">&lt;-</span> <span class="fu">sapply</span>(input_vector, is_even)</span>
+<span id="cb428-2"><a href="#cb428-2" aria-hidden="true" tabindex="-1"></a>even_numbers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] FALSE FALSE  TRUE  TRUE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE</code></pre>
 </div>
 </div>
 <p>This is how we can flip this vector to get odd number indices:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb426"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb426-1"><a href="#cb426-1" aria-hidden="true" tabindex="-1"></a>odd_numbers <span class="ot">&lt;-</span> <span class="sc">!</span>even_numbers</span>
-<span id="cb426-2"><a href="#cb426-2" aria-hidden="true" tabindex="-1"></a>odd_numbers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb430"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb430-1"><a href="#cb430-1" aria-hidden="true" tabindex="-1"></a>odd_numbers <span class="ot">&lt;-</span> <span class="sc">!</span>even_numbers</span>
+<span id="cb430-2"><a href="#cb430-2" aria-hidden="true" tabindex="-1"></a>odd_numbers</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1]  TRUE  TRUE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE</code></pre>
 </div>
 </div>
 <p>And finally, this is how we can filter the original vector to only numbers that are odd:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb428"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb428-1"><a href="#cb428-1" aria-hidden="true" tabindex="-1"></a>input_vector[odd_numbers]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb432"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb432-1"><a href="#cb432-1" aria-hidden="true" tabindex="-1"></a>input_vector[odd_numbers]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 23 11 47</code></pre>
 </div>
@@ -3735,14 +3799,14 @@ Click to see the solution
 <p>Here’s a secret: there’s a much quicker way to do this, even without looping, utilizing the fact that many operations can be performed on vectors in a “vectorized” way (for every element at the same time):</p>
 <p>This gives us even numbers right away:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb430"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb430-1"><a href="#cb430-1" aria-hidden="true" tabindex="-1"></a>input_vector <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">!=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb434"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb434-1"><a href="#cb434-1" aria-hidden="true" tabindex="-1"></a>input_vector <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">!=</span> <span class="dv">0</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1]  TRUE  TRUE FALSE FALSE  TRUE FALSE FALSE FALSE FALSE FALSE</code></pre>
 </div>
 </div>
 <p>This is how we can do the filtering in one go:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb432"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb432-1"><a href="#cb432-1" aria-hidden="true" tabindex="-1"></a>input_vector[input_vector <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">!=</span> <span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb436"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb436-1"><a href="#cb436-1" aria-hidden="true" tabindex="-1"></a>input_vector[input_vector <span class="sc">%%</span> <span class="dv">2</span> <span class="sc">!=</span> <span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 23 11 47</code></pre>
 </div>
@@ -3757,20 +3821,20 @@ Click to see the solution
 <h4 class="anchored" data-anchor-id="loops-which-dont-necessarily-return-a-value">2. Loops which don’t necessarily return a value</h4>
 <p>This category of loops most often takes form of a <code>for</code> loop, which generally have the following shape:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb434"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb434-1"><a href="#cb434-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (<span class="sc">&lt;</span>item<span class="sc">&gt;</span> <span class="cf">in</span> <span class="sc">&lt;</span>vector or list<span class="sc">&gt;</span>) {</span>
-<span id="cb434-2"><a href="#cb434-2" aria-hidden="true" tabindex="-1"></a>  ... some commands ...</span>
-<span id="cb434-3"><a href="#cb434-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb438"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb438-1"><a href="#cb438-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (<span class="sc">&lt;</span>item<span class="sc">&gt;</span> <span class="cf">in</span> <span class="sc">&lt;</span>vector or list<span class="sc">&gt;</span>) {</span>
+<span id="cb438-2"><a href="#cb438-2" aria-hidden="true" tabindex="-1"></a>  ... some commands ...</span>
+<span id="cb438-3"><a href="#cb438-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The most trivial runnable example I could think of is this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb435"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb435-1"><a href="#cb435-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "input" vector of x values</span></span>
-<span id="cb435-2"><a href="#cb435-2" aria-hidden="true" tabindex="-1"></a>xs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>)</span>
-<span id="cb435-3"><a href="#cb435-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb435-4"><a href="#cb435-4" aria-hidden="true" tabindex="-1"></a><span class="co"># take each x out of all given xs in sequence...</span></span>
-<span id="cb435-5"><a href="#cb435-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (x <span class="cf">in</span> xs) {</span>
-<span id="cb435-6"><a href="#cb435-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... and print it out on a new line</span></span>
-<span id="cb435-7"><a href="#cb435-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"The square of"</span>, x, <span class="st">"is"</span>, x<span class="sc">^</span><span class="dv">2</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb435-8"><a href="#cb435-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb439"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb439-1"><a href="#cb439-1" aria-hidden="true" tabindex="-1"></a><span class="co"># "input" vector of x values</span></span>
+<span id="cb439-2"><a href="#cb439-2" aria-hidden="true" tabindex="-1"></a>xs <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">5</span>, <span class="dv">6</span>, <span class="dv">7</span>, <span class="dv">8</span>, <span class="dv">9</span>, <span class="dv">10</span>)</span>
+<span id="cb439-3"><a href="#cb439-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb439-4"><a href="#cb439-4" aria-hidden="true" tabindex="-1"></a><span class="co"># take each x out of all given xs in sequence...</span></span>
+<span id="cb439-5"><a href="#cb439-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (x <span class="cf">in</span> xs) {</span>
+<span id="cb439-6"><a href="#cb439-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... and print it out on a new line</span></span>
+<span id="cb439-7"><a href="#cb439-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"The square of"</span>, x, <span class="st">"is"</span>, x<span class="sc">^</span><span class="dv">2</span>, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb439-8"><a href="#cb439-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>The square of 1 is 1 
 The square of 2 is 4 
@@ -3789,25 +3853,25 @@ The square of 10 is 100 </code></pre>
 <p><strong>Let’s say you want to automate the plotting of several numeric variables from your <code>penguins</code> data frame to a PDF using your custom-defined function <code>penguin_hist()</code> you created above. Fill in the necessary bits of code in the following template to do this!</strong> This is a super common pattern that comes in handy very often in data science work.</p>
 <p><strong>Note:</strong> You can see the <code>cat()</code> call in the body of the for loop (we call the insides of the <code>{ ... }</code> block the “body” of a loop). When you iterate over many things, it’s very useful to print out this sort of “log” information, particularly if the for loop can take very long.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb437"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb437-1"><a href="#cb437-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create an empty PDF file</span></span>
-<span id="cb437-2"><a href="#cb437-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pdf</span>(<span class="st">"penguins_hist.pdf"</span>)</span>
-<span id="cb437-3"><a href="#cb437-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb437-4"><a href="#cb437-4" aria-hidden="true" tabindex="-1"></a><span class="co"># let's define our variables of interest (columns of a data frame)</span></span>
-<span id="cb437-5"><a href="#cb437-5" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"bill_len"</span>, <span class="st">"bill_dep"</span>, <span class="st">"flipper_len"</span>, <span class="st">"body_mass"</span>)</span>
-<span id="cb437-6"><a href="#cb437-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb437-7"><a href="#cb437-7" aria-hidden="true" tabindex="-1"></a><span class="co"># let's now "loop over" each of those variables</span></span>
-<span id="cb437-8"><a href="#cb437-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> variables) {</span>
-<span id="cb437-9"><a href="#cb437-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Plotting variable"</span>, var, <span class="st">"...</span><span class="sc">\n</span><span class="st">"</span>)</span>
-<span id="cb437-10"><a href="#cb437-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... here is where you should put your call to `penguin_hist()` like</span></span>
-<span id="cb437-11"><a href="#cb437-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     you did above manually ...</span></span>
-<span id="cb437-12"><a href="#cb437-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb441"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb441-1"><a href="#cb441-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create an empty PDF file</span></span>
+<span id="cb441-2"><a href="#cb441-2" aria-hidden="true" tabindex="-1"></a><span class="fu">pdf</span>(<span class="st">"penguins_hist.pdf"</span>)</span>
+<span id="cb441-3"><a href="#cb441-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb441-4"><a href="#cb441-4" aria-hidden="true" tabindex="-1"></a><span class="co"># let's define our variables of interest (columns of a data frame)</span></span>
+<span id="cb441-5"><a href="#cb441-5" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"bill_len"</span>, <span class="st">"bill_dep"</span>, <span class="st">"flipper_len"</span>, <span class="st">"body_mass"</span>)</span>
+<span id="cb441-6"><a href="#cb441-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb441-7"><a href="#cb441-7" aria-hidden="true" tabindex="-1"></a><span class="co"># let's now "loop over" each of those variables</span></span>
+<span id="cb441-8"><a href="#cb441-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> variables) {</span>
+<span id="cb441-9"><a href="#cb441-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="st">"Plotting variable"</span>, var, <span class="st">"...</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb441-10"><a href="#cb441-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... here is where you should put your call to `penguin_hist()` like</span></span>
+<span id="cb441-11"><a href="#cb441-11" aria-hidden="true" tabindex="-1"></a>  <span class="co">#     you did above manually ...</span></span>
+<span id="cb441-12"><a href="#cb441-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Plotting variable bill_len ...
 Plotting variable bill_dep ...
 Plotting variable flipper_len ...
 Plotting variable body_mass ...</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb439"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb439-1"><a href="#cb439-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>() <span class="co"># this closes the PDF</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb443"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb443-1"><a href="#cb443-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>() <span class="co"># this closes the PDF</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>quartz_off_screen 
                 2 </code></pre>
@@ -3818,7 +3882,7 @@ Plotting variable body_mass ...</code></pre>
 <hr>
 <p><strong>If you want, look up <code>?pdf</code> to see how you could modify the <code>width</code> and <code>height</code> of the figures that will be created.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-57-contents" aria-controls="callout-57" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-58-contents" aria-controls="callout-58" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -3827,25 +3891,25 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-57" class="callout-57-contents callout-collapse collapse">
+<div id="callout-58" class="callout-58-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb441"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb441-1"><a href="#cb441-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pdf</span>(<span class="st">"penguins_hist.pdf"</span>)</span>
-<span id="cb441-2"><a href="#cb441-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb441-3"><a href="#cb441-3" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"bill_len"</span>, <span class="st">"bill_dep"</span>, <span class="st">"flipper_len"</span>, <span class="st">"body_mass"</span>)</span>
-<span id="cb441-4"><a href="#cb441-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> variables) {</span>
-<span id="cb441-5"><a href="#cb441-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">penguin_hist</span>(penguins, var, <span class="dv">100</span>)  </span>
-<span id="cb441-6"><a href="#cb441-6" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb441-7"><a href="#cb441-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb441-8"><a href="#cb441-8" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb445"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb445-1"><a href="#cb445-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pdf</span>(<span class="st">"penguins_hist.pdf"</span>)</span>
+<span id="cb445-2"><a href="#cb445-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb445-3"><a href="#cb445-3" aria-hidden="true" tabindex="-1"></a>variables <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"bill_len"</span>, <span class="st">"bill_dep"</span>, <span class="st">"flipper_len"</span>, <span class="st">"body_mass"</span>)</span>
+<span id="cb445-4"><a href="#cb445-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> variables) {</span>
+<span id="cb445-5"><a href="#cb445-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">penguin_hist</span>(penguins, var, <span class="dv">100</span>)  </span>
+<span id="cb445-6"><a href="#cb445-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb445-7"><a href="#cb445-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb445-8"><a href="#cb445-8" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>quartz_off_screen 
                 2 </code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb443"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb443-1"><a href="#cb443-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
-<span id="cb443-2"><a href="#cb443-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(<span class="st">"penguins_hist.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb447"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb447-1"><a href="#cb447-1" aria-hidden="true" tabindex="-1"></a><span class="co">#|echo: false</span></span>
+<span id="cb447-2"><a href="#cb447-2" aria-hidden="true" tabindex="-1"></a><span class="fu">unlink</span>(<span class="st">"penguins_hist.pdf"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
 </div>
@@ -3870,7 +3934,7 @@ Click to see the solution
 </div>
 
 
-<div class="no-row-height column-margin column-container"><div class="margin-aside callout-58-contents callout-collapse collapse callout-margin-content">
+<div class="no-row-height column-margin column-container"><div class="margin-aside callout-59-contents callout-collapse collapse callout-margin-content">
 <p>In R, we have a very useful built-in function <code>summary()</code>, which does exactly that. But let’s ignore this for the moment, for learning purposes.</p>
 </div></div></section>
 
