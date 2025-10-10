@@ -57,7 +57,8 @@ on more mundane ways to look at the information we're dealing with.**
 
 ```{r}
 #| message: false
-df <- read_tsv("https://tinyurl.com/simgen-metadata")
+# df <- read_tsv("https://tinyurl.com/simgen-metadata")
+df <- read_tsv("files/tidy/metadata.tsv")
 ```
 
 ---
@@ -692,30 +693,6 @@ filter(df, country == "CzechRepublic" & coverage > 10)
 
 :::
 
----
-
-**Now practice more complex conditionals: which individuals are from Germany at 
-coverage higher than 10 _OR_ individuals who are from Estonia
-with coverage less or equal than 1. Save your result to `df_subset` variable
-and print everything in this table by executing `print(df_subset, n = Inf).**
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-We can of course compose (infinitely) complex combinations of `&` and `|`
-and `!`:
-
-```{r}
-df_subset <- filter(df,
-                    (country == "Germany" & coverage > 3) |
-                    (country == "Estonia" & coverage < 1))
-
-print(df_subset, n = Inf)
-```
-
-:::
-
----
 
 
 
@@ -773,30 +750,37 @@ provides a built-in shortcut for it:
 - CMD + Shift + M on macOS
 - CTRL + Shift + M on Windows and Linux
 
+**Wheneevr you will pipe something like this in your solutions, always get
+in the habit of using these shortcuts. Eventually this will allow you to
+write code as quickly as you can think, trust me!**
+
 ---
 
 **Use your newly acquired `select()` and `filter()` skills, powered by the
 `%>%` piping operator, and perform the following transformation on the `df`
 metadata table (`filter`-ing and `select`-ion operations on the specified columns):**
 
-1. First filter individuals for:**
+1. **First `filter()` the `df` metadata to get only those rows / individuals who are:**
 
-- "Ancient" individuals (`groupAge`)
-- older than 10000 years (`ageAverage`)
-- from Italy (`country`)
-- with `coverage` higher than 3
+- "Ancient" individuals (column `groupAge`)
+- older than 10000 years (column `ageAverage`)
+- from Italy (column `country`)
+- with `coverage` column higher than 3
 
-2. **Then select columns: `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor`
-(mt and Y haplogoups)**.
+2. **Then pipe the result of the `filter()`-ing above to `select()` columns: `sampleId`, `site`, `sex`, and `hgMT` and `hgYMajor`
+(mt and Y haplogroups)**.
 
 **As a practice, try to be as silly as you can and write the entire command
 with as many uses of `filter()` and `select()` function calls in sequence
 as you can.**
 
-**Hint:** Don't write the entire pipeline at once, start with one condition,
-evaluate it, then another another one, etc.,
-inspecting the intermediate results as you're getting them. This is the
-_tidyverse_ way of doing data science.
+**Hint:** Don't write the entire pipeline at once! For `filter()`, start with
+one condition, evaluate it, then add another one, etc.,
+inspecting the intermediate results as you're seeing them in the R console
+after every evaluation from your script (`CTRL / CMD + Enter`). Alternatively,
+first build up everything in the console one step at a time, then paste the
+result into your script to save the command on disk. This is the _tidyverse_
+way of doing data science!
 
 **Hint:** What I mean by this is that the following two commands produce
 the exact same result:
@@ -806,7 +790,7 @@ new_df1 <- filter(df, col1 == "MatchString", col2 > 10000, col3 == TRUE) %>%
   select(colX, colY, starts_with("ColNamePrefix"))
 ```
 
-And doing this instead:
+like doing this instead:
 
 ```
 new_df1 <- df %>%
@@ -819,6 +803,10 @@ new_df1 <- df %>%
 This works because "the thing on the left" (which is always a data frame)
 is placed by the `%>%` pipe operator as "the first argument of a function
 on the right" (which again expects always a data frame)!
+
+**Hopefully you now see what this idea of _"build a more complex `%>%`
+pipeline one step a time"_ can mean in practice. Now apply these ideas
+to solve the exercise in this section.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -914,6 +902,37 @@ df %>%
 
 ---
 
+**Select individuals who are from
+Germany and have coverage higher than 10 _OR_ individuals who are from Estonia
+with coverage less or equal than 1. Save your result to `df_subset` variable
+and print everything in this table by executing `print(df_subset, n = Inf)`.**
+
+**Why do we need to `print()` the result like this? What happens when you
+just type `df_subset` into your R console (or executed it from your
+script using `CTRL / CMD + Enter` on its own?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We can of course compose (infinitely) complex combinations of `&` and `|`
+and `!`:
+
+```{r}
+df_subset <- filter(df,
+                    (country == "Germany" & coverage > 3) |
+                    (country == "Estonia" & coverage < 1))
+
+print(df_subset, n = Inf)
+```
+
+:::
+
+---
+
+**How is "chaining" several `filter()` command one after another different
+from using a single `filter()` command with multiple conditional expressions
+joined by `&`? How about the difference from joining them with `|`?**
+
 
 
 ## Exercise 6: Dropping columns
@@ -989,7 +1008,6 @@ df %>% select(-region:-hgYMinor)
 :::
 
 
-
 ## Exercise 7: Renaming columns
 
 Very often you read data frames in which columns
@@ -998,7 +1016,8 @@ allowed, or generally inconvenient. Imagine a situation, in which you
 refer to a particular column very often in your workflow, but it takes too
 much time to type it out.
 
-After discussing `select()` and `filter()`, let's introduce another member of the _tidyverse_ -- the function `rename()`.
+After discussing `select()`, `filter()`, and `relocate()`, let's introduce
+another member of the _tidyverse_ -- the function `rename()`.
 
 The template for using it is again very easy (again, you would replace
 the text in `<here>` with appropriate symbols):
@@ -1015,7 +1034,7 @@ rename(<data frame>, <new name> = <old name>)
 `groupAge`, `ageAverage`, and `coverage`.
 
 2. Then use the `rename()` function to give them a shorter name:
-`sampleId` -> `sample`, `popId` -> `population`, `groupAge` -> `set`, `ageAverage` -> `age`. Leave the `country` and `coverage` columns as they are.**
+`sampleId` -> `sample`, `popId` -> `population`, `groupAge` -> `set`, `ageAverage` -> `age`. Leave the `country` and `coverage` columns as they are.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1063,7 +1082,8 @@ df_subset
 #### Click to see the solution
 
 Answer: `select()` always drops the columns which are not explicitly listed.
-`rename()` only renames the columns which are listed, but retains everything().
+`rename()` only renames the columns which are listed, but retains all other
+columns even though they are not listed.
 
 :::
 
@@ -1084,7 +1104,7 @@ head(df, 3)
 
 Oftentimes when doing data analysis, we often work interactively in the
 console, focusing on a specific subset of columns, and need to immediately
-see the values of our columns of interest -- how can we do this?
+see the values of our columns of interest --- how can we do this?
 
 We already know that we can use `select()` to pick those columns of interest,
 but this removes the non-selected columns from the data frame we get. Whenever
@@ -1128,10 +1148,49 @@ renamed some for more readability), but we still have all the other columns
 available!
 :::
 
-## Exercise 9: Sorting rows based on columns
+---
+
+**Experiment with the function `relocate()`. Try it with our `df` table and
+with giving it a names of a couple of columns, similarly to what you did
+with `select()` above. What result do you get?**
+
+**What happens when you do the same with `select()` (just use `select()`
+instead of `relocate()`), and when you add `everything()` after the last column
+whose name you specify, inside the `select()` function call?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+relocate(df, flag, ageLow, continent)
+```
+
+```{r}
+select(df, flag, ageLow, continent, everything())
+```
+
+`everything()` is another useful helper function for `select()` operations,
+like `starts_with()` _et al._ above.
+
+:::
+
+---
+
+**Is the `select()` & `everything()` combination needed, when we have `relocate()`?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+I don't think so --- I only learned about `relocate()` two days ago, after
+using R for ten years professionally. :)
+
+:::
+
+
+## Exercise 10: Sorting rows based on column values
 
 When you need to sort the rows of a data frame based on a value of one or
-multiple columns, you can use the function `arrange()`. Again, in the spirit
+multiple columns, you will need to use the function `arrange()`. Again, in the spirit
 of the consistency across the _tidyverse_ ecosystem, it follows exactly
 the same format of first giving the function a data frame to operate on,
 followed by a list of columns to sort by.
@@ -1149,10 +1208,11 @@ arrange(<data frame>, desc(<column 1>), desc(<column 2>), ...)
 
 ---
 
-**Who is the oldest individual in your data who is not an archaic individual?
-(Remember that you can `filter()` out rows corresponding to archaic individuals
-with the condition `set != "Ancient"` and then pipe the result into `arrange()`
-for sorting based on the renamed column `age`).**
+**Who is the oldest individual in your data who is not an archaic individual?**
+
+**Hint:** Remember that you can `filter()` out rows corresponding to archaic
+individuals with the condition `set != "Ancient"` and then pipe the result
+into `arrange()` for sorting based on the renamed column `age`).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1212,14 +1272,15 @@ df %>% arrange(coverage, country)
 
 **Does it matter what order you use `filter()` (on some column) and `arrange()`
 (on another column) if you're using both functions? If yes, why? If not, why
-not? Think about the amount of work these functions have to do.**
+not? Think about the amount of work these functions have to do in either of
+those two scenarios.**
 
 
-## Exercise 10: Mutating tables
+## Exercise 11: Mutating tables
 
 Mutating a table means adding a column for a new variable. Again, as with
 the previously introduced functions `select()`, `filter()`, and `rename()` and
-`arrange()`, it follows a consistent _tidyverse_pattern:
+`arrange()`, it follows a consistent _tidyverse_ pattern:
 
 ```
 df %>% mutate(<new column name> = <vector of the required length>)
@@ -1234,6 +1295,8 @@ df %>% mutate(<new column name> = <expression involving other columns>)
 
 because `mutate()` allows us to refer to other columns in the data frame
 already present.
+
+---
 
 **To demonstrate this on a couple of exercises, let's actually _remove_ some
 columns from our data frame first. They were originally created by `mutate()`
@@ -1266,7 +1329,8 @@ Notice that we get 1 for each `TRUE` and -1 for each `FALSE`.
 ---
 
 **This can be a bit confusing, so spend a bit of time playing around with
-`if_else()`. For instance, create a different logical vector, and have
+`if_else()`. For instance, create a different logical vector (with an arbitrary
+`TRUE` or `FALSE` values, up to you), and have
 the function produce values "hello" and "bye" depending on `TRUE` / `FALSE`
 state of each element. Just get familiar with this vectorized thinking
 because whenever we do data science, it almost always happens in this
@@ -1292,7 +1356,7 @@ it inside a `mutate()` call is this:
 
 ```
 df %>%
-  mutate(<new_column> = if_else(<logical vector>, true_value, false_value))
+  mutate(<new_column> = if_else(<logical vector>, value_for_true, value_for_false))
 ```
 
 ---
@@ -1329,9 +1393,10 @@ as male only when they are "XY") -- got assigned in to the "female" category.
 table(df$sex, df$sex_desc)
 ```
 
-We would've noticed this in our exploratory phased, had we checked the
+We would've noticed this in our exploratory phase, had we checked the
 range of possible values of the `sex` column like this. This is why getting
-familiar with all data is so crucial the first time we look at it.
+familiar with all data is so crucial the first time we look at it. We
+could've (and should've) ran this at the beginning:
 
 ```{r}
 table(df$sex)
@@ -1346,7 +1411,7 @@ It turns out there is an individual with a
 [Klinefelter syndrome](https://en.wikipedia.org/wiki/Klinefelter_syndrome). A
 male carrying an extra X chromosome. **Clearly the logic of our `if_else()`
 is incorrect because this individual was incorrectly assigned as "female".
-How would you fix the `mutate()` command to work correctly?**
+How would you fix the `mutate()` (or rather the `if_else()`) command to work correctly and correctly assign the XXY individual as "male"?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1371,8 +1436,12 @@ table(df$sex, df$sex_desc)
 
 :::
 
-Always remember to check assumptions in your data, even the ones you consider
-trivial. Functions such as `table()` and `unique()` are extremely useful for this.
+This is a lesson to always remember to check assumptions in your data,
+even the ones you consider trivial. Functions such as `table()` and `unique()`
+are extremely useful for this.
+
+**Note:** I got this originally wrong when I was preparing these materials.
+
 
 ---
 
@@ -1403,13 +1472,16 @@ element of another vector (here, the column `age`) is `NA` or not via the
 function `is.na()`. Use `is.na(age)` in the `if_else()` to set the `age`
 column with the `mutate()` function so that:**
 
-1. Rows where `is.na(age)` is `TRUE` are set to 0, and
-2. Rows where `is.na(age)` is `FALSE` are set to `age` (because those values
+1. Rows where `is.na(age)` is `TRUE` will be set to 0, and
+2. Rows where `is.na(age)` is `FALSE` will be set to `age` (because those values
 don't need to be replaced).
 
 **Note:** Using `mutate()` to replace values of an existing column (rather than
 creating a new column) is done very often in data science, particularly in 
-"clean up" operations like this one.
+"clean up" operations like this one. Your data will never be "perfect" (especially
+if you get it from some other source) and you will need to do a lot of so-called
+"table munging" to prepare it for analysis and plotting, just like we're doing 
+here.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1447,7 +1519,7 @@ if_else(v < 10, "less than 10", "10 or more")
 ```
 
 What if we want to introduce three or more categories? `case_when()` to the
-rescue!
+rescue! **Try running this yourself on the vector `v` created above.**
 
 ```{r}
 case_when(
@@ -1457,8 +1529,10 @@ case_when(
 )
 ```
 
-Remember how we had a slightly annoying time with doing vectorized conditional
-logical expressions on `TRUE` / `FALSE` vectors? Now it's all paying off!
+**Remember how we had a slightly annoying time with doing vectorized conditional
+logical expressions on `TRUE` / `FALSE` vectors in our Bootcamp session?
+Now it's all paying off!**
+
 Every one of the three conditions actually result in a logical vector,
 and `case_when()` decides which value to produced for each element of that
 vector based on whichever results in `TRUE`
@@ -1509,10 +1583,10 @@ the `case_when()` function can also utilize those operators.**
 
 **Create a new column `sex_set` which will contain the following values:**
 
-1. `sex == "XX" & age == 0" should produce `"female (present-day)"`,
-2. `(sex == "XY" | sex == "XXY") & age == 0" should produce `"male (present-day)"`,
-3. `sex == "XX" & age > 0" should produce `"female (ancient)"`,
-4. `(sex == "XY" | sex == "XXY") & age > 0" should produce `"male (ancient)"`,
+1. `sex == "XX" & age == 0"` should produce `"female (present-day)"`,
+2. `(sex == "XY" | sex == "XXY") & age == 0` should produce `"male (present-day)"`,
+3. `sex == "XX" & age > 0` should produce `"female (ancient)"`,
+4. `(sex == "XY" | sex == "XXY") & age > 0` should produce `"male (ancient)"`,
 5. any other combination should default to "other"
 
 **I provided the logical conditions for you, you just have to put them
@@ -1545,6 +1619,12 @@ table(df$sex_set)
 
 
 :::
+
+**Note:** Again, admittedly this might seem arbitrary to you --- why would we
+need something like this for data analysis and statistics? But this kind of
+"arbitrary categorization" is extremely useful to generate factor categories
+for plotting, especially for plotting with _ggplot2_ later. So keep this in mind
+for the time being.
 
 
 ---
@@ -1601,8 +1681,8 @@ the new column
 ## Exercise 12: Summarizing tables
 
 You have already learned how to operate on rows (`filter()`, `arrange()`),
-columns (`select()`, `rename()`), and both (`mutate()`). We have one remaining
-piece of the puzzle and that is operating on _groups of rows_. This takes
+columns (`select()`, `rename()`), and both rows and columns (`mutate()`).
+We have one remaining piece of the puzzle and that is operating on _groups of rows_. This takes
 the _tidyverse_ functionality to an entire whole level and allows you to do
 many more powerful things with tabular data and compute summary statistics.
 In this section, we will will cover the functions `group_by()`, `summarize()`,
@@ -1610,7 +1690,7 @@ and various associated "slice functions".
 
 ### 1. `group_by()`
 
-**Take a look at the first couple of rows of our data again:**
+**Take a look at the first couple of rows of our metadata table again:**
 
 ```{r}
 df
@@ -1633,10 +1713,10 @@ a new piece of information in the output:
 [...]
 ```
 
-The output says that the data has been grouped by the column/variable continent.
+**The output says that the data has been grouped by the column/variable continent.
 This means that any subsequent operation will be applied not to individual
 rows, like it was with our `mutate()` operations earlier, but they will
-now work "per continent". You can imagine this as the `group_by()` function
+now work "per continent".** You can imagine this as the `group_by()` function
 adding a tiny bit of invisible annotation data which instructs downstream
 functions to work per group.
 
@@ -1650,11 +1730,13 @@ group_by(df, continent, set)
 ```
 
 
+Grouping is just the first step though, and doesn't do anything on its own...
+
 ### 2. `summarize()`
 
 Why is grouping introduced above even useful? The most simple use case is
 computing summary statistics on the data on a "per group" basis using the
-`summarize()` functions. This function works a little bit like `mutate()`,
+`summarize()` function. This function works a little bit like `mutate()`,
 because it creates new columns, but it only creates one row for each group.
 
 For instance, we could compute the mean coverage of each individual in a
@@ -1662,15 +1744,17 @@ group like this, and arrange the groups by the coverage available:
 
 ```{r}
 df %>%
-  group_by(continent, set) %>%
-  summarize(mean_coverage = mean(coverage))
+  group_by(continent, set) %>%                   # first create groups
+  summarize(mean_coverage = mean(coverage)) %>%  # then create summaries for each group
+  arrange(desc(mean_coverage))
 ```
 
-Notice that the result has only three columns, unlike the many columns in the
+**Notice that the result has only three columns, unlike the many columns in the
 original `df` table! We have a column for each variable we grouped over, and
 we have the new column with our summary statistic. Additionally, we only have
 `r group_by(df, continent, set) %>% summarize(mean(coverage)) %>% nrow`
-rows, one row for each combination of `continent` and `set`.
+rows, one row for each combination of `continent` and `set`. So, this is
+kind of similar to `mutate()` (it creates new variables/columns), but different.**
 
 ---
 
@@ -1754,9 +1838,25 @@ a `mutate()` operation, without working with groups.
 
 ---
 
+**How would you compute 95% confidence interval for the mean coverage using the
+`group_by()` and `summarize()`? Remember that you will need standard deviation
+(R function `sd()`) and also the number of observations (function `n()`).
+Look up confidence interval equation on Wikipedia.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+If you're here this means that you needed extra challenge, so I'm sure you
+figured it out. :P Reach out to me if you want to discuss the solution!
+
+:::
+
+---
+
 ### `slice_` functions
 
-We have five "slicing" functions at our disposal, each of which extracts
+Finally, in addition to computing various summaries on groups using `summarize()`,
+we have five "slicing" functions at our disposal, each of which extracts
 specific row(s) from each defined group. These functions are:
 
 - `slice_head(n = 1)` takes the first row,
@@ -1769,10 +1869,12 @@ specific row(s) from each defined group. These functions are:
 
 **What is the lowest coverage individual in each group? While you're doing
 this, `filter()` out the `set` of "Modern" individuals because they are not
-meaningful anyway (they have `NA` coverages). At the end of your `%>%`
+meaningful anyway (they have `NA` coverages), composing the entire command
+as a series of steps in a `%>%` pipeline.**
+
+*At the end of your `%>%`
 pipeline, pipe your results into `relocate(continent, set)` to make everything
-even tidier. Look up `?relocate` to find out what this function does, if you're
-not sure from the output.**
+even tidier..**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1841,7 +1943,14 @@ would you read a CSV file into R? What about other file formats?**
 
 **Hint:** Look up `?read_csv`.
 
-## Exercise 14: Some questions about the data
+---
+
+**A very useful R package is _readxl_, for reading and writing Excel files.
+Google this package, and install it with `install.packages("readxl")`. If
+you want and have some Excel file on your computer, try reading it into
+R with `library(readxl); read_excel("path/to/your/excel/file")`.**
+
+## Exercise 14: Some more exploratory practice questions about the data
 
 **Which country has the highest number of aDNA samples (i.e., samples for
 which `set == "Ancient`"). How many samples from Estonia, Lithuania, or Latvia
@@ -1876,13 +1985,15 @@ countries_df %>% filter(country %in% c("Estonia", "Lithuania", "Latvia"))
 
 ---
 
-**Is there evidence of a potential bias in terms of how many samples
+**Is there any evidence (real or not --- just out of curiousity!) of a
+potential bias in terms of how many `set == "Ancient"` samples
 do we have from a country and the geographical location of that country, such
-as the average longitude or latitude of samples from there?**
-
-**Hint:** Count the `n` count of samples from each country using `group_by()`
-and `sumarize()` again, like you did above, and compute also the `avg_lat`
-and `avg_lon` (average latitude and longitude) of samples in each country.**
+as the average longitude or latitude of samples from there? Compute a linear
+model using the `lm` function of the count the `n` count of samples from
+each country as a function of `avg_lat`
+or `avg_lon` (average latitude and longitude) of samples in each country (all
+of these quantities computed with `group_by()` and `summarize()` like you did
+above).
 
 **Hint:** Look up the linear model function `?lm` or perhaps
 [this tutorial](https://www.geeksforgeeks.org/r-language/how-to-use-lm-function-in-r-to-fit-linear-models/) to see how you can build a linear regression
@@ -1891,6 +2002,8 @@ variable (such as average longitude or latitude of a country).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Let's first compute our summary statistics:
 
 ```{r}
 countries_df <-
@@ -1928,4 +2041,23 @@ plot(countries_df$avg_lat, countries_df$n)
 abline(lm_res)
 ```
 
+Does it mean anything? Hard to tell, but it does make for a fun exercise. :)
 :::
+
+## Closing remarks
+
+Hopefully you're now learning that really integrating these couple of _tidyverse_
+"verbs" gives you an entirely new natural way of not just working and modifying
+and filtering data, but _"thinking in data"_ (as pretentious and hippy this must
+seem to you right now).
+
+When you watch experts doing data science using _tidyverse_ in real time, like
+an experienced colleague helping you out, you will see that they can "think
+about the data" at the same time as they are typing _tidyverse_ commands. Over time,
+with practice, you will get there too.
+
+And this is actually just the beginning! The true power of data science arrives
+when we learn _ggplot2_ visualization later. _ggplot2_ uses the same philosophical
+principles ad the _dplyr_ commands we practiced above, but allows you to
+_"visualize information at the same time as you're thinking about it"_.
+
