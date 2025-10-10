@@ -405,6 +405,7 @@ window.Quarto = {
   <li><a href="#recipe-for-merging-metadata" id="toc-recipe-for-merging-metadata" class="nav-link" data-scroll-target="#recipe-for-merging-metadata">Recipe for merging metadata</a></li>
   <li><a href="#exercise-4.-final-data-processing" id="toc-exercise-4.-final-data-processing" class="nav-link" data-scroll-target="#exercise-4.-final-data-processing">Exercise 4. Final data processing</a></li>
   <li><a href="#exercise-5-reproducibility-intermezzo" id="toc-exercise-5-reproducibility-intermezzo" class="nav-link" data-scroll-target="#exercise-5-reproducibility-intermezzo">Exercise 5: Reproducibility intermezzo</a></li>
+  <li><a href="#additional-resources" id="toc-additional-resources" class="nav-link" data-scroll-target="#additional-resources">Additional resources</a></li>
   </ul>
 </nav>
     </div>
@@ -430,8 +431,17 @@ window.Quarto = {
 </header>
 
 
-<p>In this chapter we will introduce new (and reinforce already familiar) <em>tidyverse</em> concepts on another real-world population genetic data set. We will build the components of a processing and filtering pipeline for a new <a href="https://en.wikipedia.org/wiki/Identity_by_descent">Identity-by-Descent (IBD)</a> data set that I recently got my hands. We will proceed step by step, developing new components to the processing and analytical pipeline and learning how <em>tidyverse</em> can be useful in a very practical way, before we learn how to wrap it all up in a nice, structured, reproducible way in later parts of our workshop.</p>
+<p><strong>In this chapter we will introduce new (and reinforce already familiar) <em>tidyverse</em> concepts on another real-world population genetic data set. We will build the components of a processing and filtering (and later visualization) pipeline for a new <a href="https://en.wikipedia.org/wiki/Identity_by_descent">Identity-by-Descent (IBD)</a> data set</strong> that I recently got my hands on. We will proceed step by step, developing new components to the processing and analytical pipeline and learning how <em>tidyverse</em> can be useful in a very practical way, before we learn how to wrap it all up in a nice, structured, reproducible way in later parts of our workshop.</p>
 <p>This is a real world example! You will be retracing the steps I had to work through in my job in August 2025 where I got sent a completely unfamiliar new data set of IBD segments and asked to do some science with it. 😳</p>
+<hr>
+<p><strong>Why do this <em>tidyverse</em> stuff again? We just did this with the metadata table.</strong></p>
+<p><strong>A few reasons:</strong></p>
+<ol type="1">
+<li><p>The metadata is straightforward, easy to understand by looking at it. The IBD segment data (you will see) contains millions of data points. Being able to look at the data with your own eyes makes translating concepts to <em>tidyverse</em> operations much easier.</p></li>
+<li><p>However, the metadata is just that, metadata. It’s a collection of meta information about individuals. But it’s not data you can do (biological) science with. As such, it’s much less exciting to <em>really</em> dig into more interesting concepts.</p></li>
+<li><p>Related to point 2. above — the fact that the IBD data is more complex makes it more interesting to learn visualization on, like <em>ggplot2</em> in the next section. So the rest of this session is a preparation for that.</p></li>
+<li><p>The previous chapter on IBD basics was really about fundamental application of the most important <em>tidyverse</em> functions. This sesson is much more of a set of “recipes” that you should be able to apply to your own data, regardless of what statistics or biological measures you end up working with in your projects.</p></li>
+</ol>
 <hr>
 <p><strong>Again, here is how the start of our solutions script for this session will look like. Same as before.</strong></p>
 <div class="cell">
@@ -449,7 +459,7 @@ window.Quarto = {
 <p>This helps a huge deal to avoid feeling overwhelmed by what can initially seem like a problem that’s too hard!</p>
 <p>Even testing things one line, one command at a time, helps a lot. So whenever I give you a chunk of R code, always write it out in your own scripts or R console and run it (or, if it’s too long, just copy it… but typing it out manually engages your memory banks more efficiently).</p>
 <hr>
-<p><strong>Let us also read in data which we will be using in these exercises.</strong> These are coordinates of identity-by-descent (IBD) segments between pairs of individuals in a <a href="https://www.nature.com/articles/s41586-023-06865-0">huge aDNA study</a> we’ve already talked about. This data is huge and quite complex – I’ve prefiltered it to contain only IBD segments for chromosome 1.</p>
+<p><strong>Let us also read in data which we will be using in these exercises.</strong> These are coordinates of identity-by-descent (IBD) segments between pairs of individuals in a <a href="https://www.nature.com/articles/s41586-023-06865-0">huge aDNA study</a> we’ve already talked about. This data is huge and quite complex – I’ve prefiltered it to contain only IBD segments for chromosome 21. The IBD data should correspond to individuals in the metadata we worked with in the previous session (at least I hope so! that’s what I’ve been told when I started the IBD journey as I began preparing this workshop… you’ll be really retracing my steps).</p>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
 <p>Why use IBD for these exercises? First, IBD data are increasingly popular across population genomics and evolutionary biology, so it’s very likely you will encounter it in your own work. Second, it’s an excellent data se on which you can practice and develop your data science skills.</p>
@@ -481,23 +491,24 @@ dbl  (8): latitude, longitude, age14C, ageHigh, ageLow, ageAverage, coverage...
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 </div>
+<p><strong>Note:</strong> I call it <code>metadata_all</code> because later we will be working with a smaller section of it, for better clarity. Therefore, <code>metadata_all</code> will be the original, unprocessed data set. It’s often very useful to keep raw data in our session like this.</p>
 <hr>
-<p><strong>Skim through the messages given by <code>read_tsv()</code> above. I personally find them annoying and often silence them in finished pipelines or reports (how can you silence them?) but it is good to keep an eye on them when you’re starting because they give you an overview of data types!</strong></p>
+<p><strong>Skim through the messages given by <code>read_tsv()</code> above. I personally find them annoying and often silence them in finished pipelines or reports (how can you silence them? look up <code>?read_tsv</code>) but it is good to keep an eye on them when you’re starting because they give you an overview of data types!</strong></p>
 <hr>
-<p><strong>Create a new R script in RStudio, (<code>File</code> <code>-&gt;</code> <code>New file</code> <code>-&gt;</code> <code>R Script</code>) and save it somewhere on your computer as <code>tidy-advanced.R</code> (<code>File</code> -&gt; <code>Save</code>). Copy the two chunks of code above into it and let’s get started!</strong></p>
-<p>You just got a new data set from a bioinformatics software, in this case the IBDseq software for detecting IBD segments between pairs of individuals. Before you proceed with doing any kind of statistical analysis you need to do two things:</p>
+<p><strong>Create a new R script in RStudio, (<code>File</code> <code>-&gt;</code> <code>New file</code> <code>-&gt;</code> <code>R Script</code>) and save it somewhere on your computer as <code>tidy-advanced.R</code> (<code>File</code> -&gt; <code>Save</code>). Copy the chunks of code above into it (the <code>library()</code> and <code>read_tsv()</code> commands and let’s get started)!</strong></p>
+<hr>
+<p><strong>So, the story is that you just got a new data set from a bioinformatics software, in this case the <a href="https://faculty.washington.edu/browning/ibdseq.html">IBDseq software</a> for detecting IBD segments between pairs of individuals. Before you proceed with doing any kind of statistical analysis you need to do two things:</strong></p>
 <ol type="1">
-<li>Exploring the data to see <em>what</em> is it that you just got.</li>
-<li>Filtering and processing it in a way which will make your work easier.</li>
+<li><p>Exploring the data to see <em>what</em> is it that you just got. <strong>Never trust the data you’ve been given blindly and always do many sanity checks! In the process, you will gain more confidence in it, and also learn its ins and outs, which will be useful either way.</strong></p></li>
+<li><p>Filtering and processing it in a way which will make your work easier.</p></li>
 </ol>
-<p>Let’s tackle step 1 first.</p>
+<p><strong>Let’s tackle step 1 first.</strong></p>
 <hr>
 </section>
 <section id="exercise-1-exploring-new-data" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-1-exploring-new-data">Exercise 1: Exploring new data</h2>
-<p><strong>As a sanity check, do you have metadata information for every individual in the <code>sample1</code> and <code>sample2</code> columns of the IBD table? What about the other way around – do all individuals in the metadata have some IBD relationship to another individual? If not, find out which individuals are these.</strong></p>
-<p>This is another sort of sanity checking you will be doing all the time. We can only analyze data for which we have metadata information (population assignment, geographical location, dating information), so let’s make sure we have what we need.</p>
-<p><strong>Hint:</strong> Another way to phrase this question is this: does every name that appears in either <code>sample1</code> or <code>sample2</code> column of <code>ibd_segments</code> have a record in the <code>sampleId</code> column of <code>metadata_all</code> (i.e., is information in one vector of names a perfect subset of the second vector of names)? Remember that you can use the function <code>unique()</code> to get all unique values in a given vector (as in, all unique values in vector <code>ibd$sample1</code> which has otherwise many duplicated entries). And remember the existence of <code>%in%</code> and <code>!</code> operators!</p>
+<p><strong>Again, the first step is always to familiarize yourself with the basic structure of the data. Which columns does the IBD data have? What’s the format of the data? What ranges or distributions of values do you have available, and with what data types? Do you have information for the entire genome?</strong></p>
+<p><strong>Hint:</strong> <code>head()</code>, <code>colnames()</code>, <code>glimpse()</code>, <code>str()</code>, <code>table()</code>, <code>summary()</code> which are either applicable to an entire data frame, or a specific column (columns being indexable with the <code>$</code> or <code>[[ ]]</code> operators, of course).</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -510,15 +521,76 @@ Click to see the solution
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+  sample1 sample2 chrom start   end rel  
+  &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+1 VK548   NA20502    21  58.3  62.1 none 
+2 VK528   HG01527    21  24.8  27.9 none 
+3 PL_N28  NEO36      21  14.0  16.5 none 
+4 NEO556  HG02230    21  13.1  14.0 none 
+5 HG02399 HG04062    21  18.8  21.0 none 
+6 EKA1    NEO220     21  30.1  35.8 none </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sample1" "sample2" "chrom"   "start"   "end"     "rel"    </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 461,858
+Columns: 6
+$ sample1 &lt;chr&gt; "VK548", "VK528", "PL_N28", "NEO556", "HG02399", "EKA1", "1965…
+$ sample2 &lt;chr&gt; "NA20502", "HG01527", "NEO36", "HG02230", "HG04062", "NEO220",…
+$ chrom   &lt;dbl&gt; 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21…
+$ start   &lt;dbl&gt; 58.325139, 24.809766, 14.011766, 13.051847, 18.777295, 30.1228…
+$ end     &lt;dbl&gt; 62.077452, 27.851017, 16.454424, 14.014276, 20.985679, 35.8404…
+$ rel     &lt;chr&gt; "none", "none", "none", "none", "none", "none", "none", "none"…</code></pre>
+</div>
+</div>
+<p>We have information just for chromosome 1 to make the data set a little smaller and easier for your laptops to handle.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(ibd_segments<span class="sc">$</span>chrom)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    21 
+461858 </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>As a sanity check, do you have metadata information for every individual in the <code>sample1</code> and <code>sample2</code> columns of the IBD table? What about the other way around – do all individuals in the metadata have some IBD relationship to another individual in the IBD segments table? If not, find out which individuals are these.</strong></p>
+<p>This is another sort of sanity checking you will be doing all the time. We can only analyze data for which we have metadata information (population assignment, geographical location, dating information), so let’s make sure we have what we need.</p>
+<p><strong>Hint:</strong> Another way to phrase this question is this: does every name that appears in either <code>sample1</code> or <code>sample2</code> column of <code>ibd_segments</code> have a record in the <code>sampleId</code> column of <code>metadata_all</code> (i.e., is information in one vector of names a perfect subset of the second vector of names)? Remember that you can use the function <code>unique()</code> to get all unique values in a given vector (as in, all unique values in vector <code>ibd$sample1</code> which has otherwise many duplicated entries). And remember the existence of <code>%in%</code> and <code>!</code> operators!</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <p>We can get unique values across a combination of vectors by first binding everything together using <code>c(ibd$sample1, ibd$sample2)</code> which gets us a single vector, then calling <code>unique()</code> on that:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ibd_samples <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">c</span>(ibd_segments<span class="sc">$</span>sample1, ibd_segments<span class="sc">$</span>sample2))</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>metadata_samples <span class="ot">&lt;-</span> metadata_all<span class="sc">$</span>sampleId</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>ibd_samples <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">c</span>(ibd_segments<span class="sc">$</span>sample1, ibd_segments<span class="sc">$</span>sample2))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>metadata_samples <span class="ot">&lt;-</span> metadata_all<span class="sc">$</span>sampleId</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Then we can use our well-known operator <code>%in%</code> to check that every sample in the IBD data has a representative in the metadata:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(ibd_samples <span class="sc">%in%</span> metadata_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(ibd_samples <span class="sc">%in%</span> metadata_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] TRUE</code></pre>
 </div>
@@ -526,14 +598,14 @@ Click to see the solution
 <p>This is a good sign! We’re not missing any information about anyone we have an IBD segment for! Otherwise, we would have trouble analyzing such person’s IBD patterns across time, geography, populations, etc.</p>
 <p>How about the other way around? Note that this is not the same operation, although it might look similar superficially:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(metadata_samples <span class="sc">%in%</span> ibd_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(metadata_samples <span class="sc">%in%</span> ibd_samples)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] FALSE</code></pre>
 </div>
 </div>
-<p>There are some individuals in our metadata who are not participating in any pairwise IBD sharing. Who are these?</p>
+<p>The <code>FALSE</code> answer tells us that there are some individuals in our metadata who are not participating in any pairwise IBD sharing. Who are these?</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>metadata_all[<span class="sc">!</span>metadata_samples <span class="sc">%in%</span> ibd_samples, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>metadata_all[<span class="sc">!</span>metadata_samples <span class="sc">%in%</span> ibd_samples, ]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 24
   sampleId popId    site      country region continent groupLabel groupAge flag 
@@ -549,66 +621,7 @@ Click to see the solution
 </div>
 </div>
 </div>
-<hr>
-<p><strong>Which columns does the IBD data have? What’s the format of the data? What ranges or distributions of values do you have available, and with what data types? Do you have information for the entire genome?</strong></p>
-<p><strong>Hint:</strong> <code>head()</code>, <code>colnames()</code>, <code>glimpse()</code>, <code>str()</code>, <code>table()</code>, <code>summary()</code> which are either applicable to an entire data frame, or a specific column (columns being indexable with the <code>$</code> or <code>[[ ]]</code> operators, of course).</p>
-<div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon no-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Click to see the solution
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 6
-  sample1 sample2 chrom start   end rel  
-  &lt;chr&gt;   &lt;chr&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
-1 VK548   NA20502    21  58.3  62.1 none 
-2 VK528   HG01527    21  24.8  27.9 none 
-3 PL_N28  NEO36      21  14.0  16.5 none 
-4 NEO556  HG02230    21  13.1  14.0 none 
-5 HG02399 HG04062    21  18.8  21.0 none 
-6 EKA1    NEO220     21  30.1  35.8 none </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "sample1" "sample2" "chrom"   "start"   "end"     "rel"    </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Rows: 461,858
-Columns: 6
-$ sample1 &lt;chr&gt; "VK548", "VK528", "PL_N28", "NEO556", "HG02399", "EKA1", "1965…
-$ sample2 &lt;chr&gt; "NA20502", "HG01527", "NEO36", "HG02230", "HG04062", "NEO220",…
-$ chrom   &lt;dbl&gt; 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21…
-$ start   &lt;dbl&gt; 58.325139, 24.809766, 14.011766, 13.051847, 18.777295, 30.1228…
-$ end     &lt;dbl&gt; 62.077452, 27.851017, 16.454424, 14.014276, 20.985679, 35.8404…
-$ rel     &lt;chr&gt; "none", "none", "none", "none", "none", "none", "none", "none"…</code></pre>
-</div>
-</div>
-<p>We have information just for chromosome 1 to make the data set a little smaller and easier for your laptops to handle.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(ibd_segments<span class="sc">$</span>chrom)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    21 
-461858 </code></pre>
-</div>
-</div>
-</div>
-</div>
-</div>
+<p>With the basic sanity check above, we can be sure that our IBD segments table can be co-analyzed with the information in the metadata and that we won’t be missing anything important.</p>
 </section>
 <section id="exercise-2-ibd-processing" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-2-ibd-processing">Exercise 2: IBD processing</h2>
@@ -678,8 +691,8 @@ Click to see the solution
 </section>
 <section id="exercise-3-metadata-processing" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-3-metadata-processing">Exercise 3: Metadata processing</h2>
-<p>We have read our IBD table and added a new useful column to it, so let’s proceed with the metadata. There will be another important IBD processing step below where we merge both data sets together, but for that we need to do a bit more processing of the <code>metadata_all</code> first.</p>
-<p>First, there’s much more information than we need for now, just take a look:</p>
+<p>We have read our IBD table and added a new useful column to it, so let’s proceed with the metadata. There will be another important IBD processing step below where we merge both data sets together, but for that we need to do a bit more processing of the <code>metadata_all</code> first, to make the co-analysis of IBD information across space and time easier to do.</p>
+<p><strong>First, there’s much more information than we need for now, just take a look:</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata_all)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -706,7 +719,7 @@ Click to see the solution
 #   ageRaw &lt;chr&gt;, hgYMajor &lt;chr&gt;, hgYMinor &lt;chr&gt;</code></pre>
 </div>
 </div>
-<p><strong>Let’s make the data a bit smaller and easier to look at at a glance.</strong></p>
+<p><strong>Realistically, given that our interest here is pairwise IBD segments, a lot of this metadata information is quite useless at this stage. Let’s make the data a bit smaller and easier to look at at a glance.</strong></p>
 <p><strong>Use <code>select()</code> a subset of the metadata with the following columns and store it in a new variable <code>metadata</code> (we don’t want to overwrite the original big table <code>metadata_all</code> in case we need to refer to it a bit later): <code>sampleId</code>, <code>country</code>, <code>continent</code>, <code>ageAverage</code>. Then <code>rename()</code> <code>sampleId</code> to <code>sample</code>, <code>popId</code> to <code>pop</code>, and <code>ageAverage</code> to <code>age</code> just to save ourselves some typing later.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
@@ -745,7 +758,7 @@ Click to see the solution
 </div>
 </div>
 <hr>
-<p><strong>Just as you did in the previous chapter, use <code>mutate()</code> and <code>if_else()</code> inside the <code>mutate()</code> call to make sure that the “modern” individuals have the <code>age</code> set to 0, instead of <code>NA</code> (and everyone else’s age stays the same). In other words, for rows where <code>age</code> is <code>NA</code>, replace that <code>NA</code> with 0.</strong></p>
+<p><strong>Just as you did in the previous chapter, use <code>mutate()</code> and <code>if_else()</code> inside the <code>mutate()</code> call to make sure that the “modern” individuals have the <code>age</code> set to 0, instead of <code>NA</code> (and everyone else’s age stays the same). In other words, for rows where <code>age</code> is <code>NA</code>, replace that <code>NA</code> with 0.</strong> Yes, you did this before, but try not to copy-paste your solution. Try doing this on your own first.</p>
 <p><strong>Hint:</strong> Remember the <code>is.na()</code> bit we used before! Try it on the <code>age</code> column vector if you need a reminder: <code>is.na(metadata$age)</code>.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
@@ -774,7 +787,7 @@ Click to see the solution
 </div>
 <hr>
 <p><strong>Our analyses will exclusively focus on modern humans. Filter out the three archaics in the <code>metadata</code>, saving the results into the same <code>metadata</code> variable again. As a reminder, these are individuals whose <code>sample</code> name is among <code>c("Vindija33.19", "AltaiNeandertal", "Denisova")</code> which you can test in a <code>filter()</code> command using the <code>%in%</code> operator.</strong></p>
-<p><strong>Hint:</strong> Remember that you can get a <code>TRUE</code> / <code>FALSE</code> indexing vector (remember our R bootcamp session!) by not only <code>column %in% c(... some values...)</code> but you can also do the opposite test as <code>!column %in% c(... some values...)</code> (notice the <code>!</code> operator in the second version).</p>
+<p><strong>Hint:</strong> Remember that you can get a <code>TRUE</code> / <code>FALSE</code> indexing vector (remember our R bootcamp session!) by not only <code>column %in% c(... some values...)</code> but you can also do the opposite test as <code>!column %in% c(... some values...)</code> (notice the <code>!</code> operator in the second bit of code).</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -836,12 +849,12 @@ Ancient Archaic  Modern
    1664       3    2405 </code></pre>
 </div>
 </div>
-<p>Note that in the new <code>metadata</code> we removed it because it’s not actually useful at all for most data analysis purposes because it has only three values.</p>
-<p>For instance, later we might want to do some fancier analyses, looking at IBD as a time series, not just across basically two temporal categories, “young” and “old”.</p>
+<p>Note that in the new <code>metadata</code> we removed it because it’s not actually useful at all for most data analysis purposes because it has only three values. For instance, later we might want to do some fancier analyses, looking at IBD as a time series, not just across basically two temporal categories, “young” and “old”.</p>
 <p><strong>To this end, let’s create more useful time-bin categories! This will require a bit more code than above solutions. Don’t feel overwhelmed! I will first introduce a useful function using a couple of examples for you to play around with in your R console. Only then we will move on to an exercise in which you will try to implement this on the full <code>metadata</code> table! For now, keep on reading and experimenting in your R console!</strong></p>
+<p>It will be worth it, because this kind of binning is something we do all the time in computational biology, in every project.</p>
 <hr>
 <p><strong>Let’s introduce an incredibly useful function called <code>cut()</code>. Take a look at <code>?cut</code> help page and skim through it to figure out what it does. As a bit of a hint, we will want to add a new metadata column which will indicate in which age bin (maybe, split in steps of 5000 years) do our individuals belong to.</strong></p>
-<p>Here’s a small example to help us get started. Imagine that <code>df</code> is a example representative of our full-blown metadata table:</p>
+<p>Here’s a small example to help us get started. Imagine that <code>df</code> is a example representative of our full-blown metadata table. <strong>Copy this into your script, so that you can experiment with the <code>cut()</code> technique in this section.</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># a toy example data frame mimicking the age column in our huge metadata table</span></span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
@@ -865,44 +878,41 @@ Ancient Archaic  Modern
 12      t 30000</code></pre>
 </div>
 </div>
-<p>Think about what the <code>cut()</code> function does here based on the result it gives you on this little table. You can pretend for now that the <code>ages</code> variable corresponds to age of our samples in the huge <code>metadata</code> table:</p>
+<p>Think about what the <code>cut()</code> function does here based on the result it gives you on the little example code below. You can pretend for now that the <code>ages</code> variable corresponds to age of our samples in the huge <code>metadata</code> table. <strong>Again, try running this on your own to see what happens when you run this code in your R console. Particularly, take a look at the format of the new column <code>age_bin</code>:</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># let's first generate the breakpoints for our bins (check out `?seq` if</span></span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="co"># you're confused by this!)</span></span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>breakpoints <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> <span class="dv">5000</span>)</span>
-<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>breakpoints</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1]     0  5000 10000 15000 20000 25000 30000 35000 40000 45000 50000</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># binning the age into groups using our breakpoints</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints)</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   sample   age         age_bin
-1       a     0            &lt;NA&gt;
-2       b     0            &lt;NA&gt;
-3       c  1000       (0,5e+03]
-4       d     0            &lt;NA&gt;
-5       x  5000       (0,5e+03]
-6       y 10000   (5e+03,1e+04]
-7       z  7000   (5e+03,1e+04]
-8       q 13000 (1e+04,1.5e+04]
-9       w 18000 (1.5e+04,2e+04]
-10      e 21000 (2e+04,2.5e+04]
-11      r 27000 (2.5e+04,3e+04]
-12      t 30000 (2.5e+04,3e+04]</code></pre>
-</div>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>breakpoints</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="do">##  [1]     0  5000 10000 15000 20000 25000 30000 35000 40000 45000 50000</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a><span class="co"># binning the age into groups using our breakpoints</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints)</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a>df</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a><span class="do">##    sample   age         age_bin</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a><span class="do">## 1       a     0            &lt;NA&gt;</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a><span class="do">## 2       b     0            &lt;NA&gt;</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a><span class="do">## 3       c  1000       (0,5e+03]</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a><span class="do">## 4       d     0            &lt;NA&gt;</span></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a><span class="do">## 5       x  5000       (0,5e+03]</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a><span class="do">## 6       y 10000   (5e+03,1e+04]</span></span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a><span class="do">## 7       z  7000   (5e+03,1e+04]</span></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a><span class="do">## 8       q 13000 (1e+04,1.5e+04]</span></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a><span class="do">## 9       w 18000 (1.5e+04,2e+04]</span></span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a><span class="do">## 10      e 21000 (2e+04,2.5e+04]</span></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a><span class="do">## 11      r 27000 (2.5e+04,3e+04]</span></span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a><span class="do">## 12      t 30000 (2.5e+04,3e+04]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Note:</strong> The function <code>cut()</code> is extremely useful whenever you want to discretize some continuous variable in bins (basically, a little similar to what a histogram does in context of plotting). Doing statistics on this kind of binned data is something we do very often. So never forget that <code>cut()</code> is there to help you! For example, you could also use the same concept to partition samples into categories based on “low coverage”, “medium coverage”, “high coverage”, etc.</p>
 <hr>
 <p><strong>In the example of the <code>cut()</code> function right above, what is the data type of the column <code>age_bin</code> created by the <code>cut()</code> function? Use <code>glimpse(df)</code> to see this data type, then skim through the documentation of <code>?factor</code>. What is a “factor” according to this documentation?</strong></p>
-<p><strong>Note:</strong> This is a challenging topic. Please don’t stress. I’ll walk through everything myself, interactively, and will explain things in detail. Take this information on “factors” as something to be aware of and a concept to be introduced to, but <em>not</em> something to necessarily be an expert on!</p>
+<p><strong>Note:</strong> This is a challenging topic. Please don’t stress. When we’re done I’ll walk through everything myself, interactively, and will explain things in detail. Take this information on “factors” as something to be aware of and a concept to be introduced to, but <em>not</em> something to necessarily be an expert on!</p>
 <hr>
-<p><strong>Having learned about <code>?factor</code> above, consider the two following vectors and use them for experimentation when coming up with answers. What do you see when you print them out in your R console (by typing <code>x1</code> and <code>x2</code>)? And what happens when you apply the <code>typeof()</code> function on both of them? <code>x2</code> gives you a strange result – why? What do you get when you run the following command <code>levels(x2)</code>? What do you get when you run <code>as.character(x2)</code>?</strong></p>
+<p><strong>Having learned about <code>?factor</code> above, consider the two following vectors and use them for experimentation when coming up with answers. What do you see when you print them out in your R console (by typing <code>x1</code> and <code>x2</code>)? And what happens when you apply the <code>typeof()</code> function on both of them? <code>x2</code> gives you a strange result — why? What do you get when you run the following command <code>levels(x2)</code>? What do you get when you run <code>as.character(x2)</code>?</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"hello"</span>, <span class="st">"these"</span>, <span class="st">"are"</span>, <span class="st">"characters/strings"</span>)</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">factor</span>(x1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"hello"</span>, <span class="st">"hello"</span>, <span class="st">"these"</span>, <span class="st">"are"</span>, <span class="st">"characters/strings"</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>x2 <span class="ot">&lt;-</span> <span class="fu">factor</span>(x1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>In applying <code>cut()</code> to the toy data frame <code>df</code>, why is the <code>age_bin</code> value equal to <code>NA</code> for some of the rows?</strong></p>
 <p><strong>Note:</strong> The discussion of “factors” should’ve been technically part of our R bootcamp chapter, on the topic of “data types”. However, that section was already too technical, so I decided to move it here to the data analysis section, because I think it makes more sense to explain it in a wider context.</p>
@@ -920,12 +930,12 @@ Click to see the solution
 <div class="callout-body-container callout-body">
 <p>You can see that both vectors look the same, but the second has additional information about “levels”:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>x1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>x1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "hello"              "hello"              "these"             
 [4] "are"                "characters/strings"</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>x2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>x2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] hello              hello              these              are               
 [5] characters/strings
@@ -933,11 +943,12 @@ Levels: are characters/strings hello these</code></pre>
 </div>
 </div>
 <p>The reason you get the <code>typeof(x1)</code> as “character” but <code>typeof(x2)</code> as “integer” although both are “basically strings” is because factors are a special data type for encoding categorical variables which can only have a set of fixed possible values. Internally, for efficiency, levels of a factor variables are stored as integers, and their values or just “labels” for those integers.</p>
-<p>Importantly, factor levels are actually, which is very useful for plotting, as we will see later.</p>
+<p>Importantly, factor levels are actually ordered, which is very useful for plotting, as we will see later, because the plots maintain order of factors when visualized.</p>
 <p>For now, don’t worry about this too much. We needed to introduce the concept of factors because they are very frequently used whenever we need to bin continuous data, like we will now for assigning samples into bins based on their <code>age</code> value.</p>
+<hr>
 <p>Oh, and the answer to why <code>cut()</code> gave us the <code>NA</code> for every 0 value is because of its <code>include.lowest</code> argument is set to <code>FALSE</code>. Compare these two:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> <span class="dv">10000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> <span class="dv">10000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] &lt;NA&gt;          &lt;NA&gt;          (0,1e+04]     &lt;NA&gt;          (0,1e+04]    
  [6] (0,1e+04]     (0,1e+04]     (1e+04,2e+04] (1e+04,2e+04] (2e+04,3e+04]
@@ -946,7 +957,7 @@ Levels: are characters/strings hello these</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> <span class="dv">10000</span>), <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> <span class="dv">10000</span>), <span class="at">include.lowest =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] [0,1e+04]     [0,1e+04]     [0,1e+04]     [0,1e+04]     [0,1e+04]    
  [6] [0,1e+04]     [0,1e+04]     (1e+04,2e+04] (1e+04,2e+04] (2e+04,3e+04]
@@ -958,7 +969,7 @@ Levels: are characters/strings hello these</code></pre>
 <p>The <code>levels()</code> function is useful for getting the “labels” of the categories as they are presented to you in various outputs (rather than their internal numerical encoding).</p>
 <p>Consider the original vector <code>x2</code> (note the duplicated “hello” value):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>x2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>x2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] hello              hello              these              are               
 [5] characters/strings
@@ -967,7 +978,7 @@ Levels: are characters/strings hello these</code></pre>
 </div>
 <p>And the <code>levels()</code> output:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(x2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">levels</span>(x2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "are"                "characters/strings" "hello"             
 [4] "these"             </code></pre>
@@ -975,7 +986,7 @@ Levels: are characters/strings hello these</code></pre>
 </div>
 <p>When we run <code>as.character()</code>, we effectively convert the (categorical) factor values into normal strings (i.e., basically convert those values into their plain labels). This is very useful whenever we want to manipulate factors, as we’ll se below:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.character</span>(x2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.character</span>(x2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "hello"              "hello"              "these"             
 [4] "are"                "characters/strings"</code></pre>
@@ -1000,8 +1011,8 @@ Click to see the solution
 <div class="callout-body-container callout-body">
 <p>Let’s experiment first:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is where we started</span></span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is where we started</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] &lt;NA&gt;            &lt;NA&gt;            (0,5e+03]       &lt;NA&gt;           
  [5] (0,5e+03]       (5e+03,1e+04]   (5e+03,1e+04]   (1e+04,1.5e+04]
@@ -1010,8 +1021,8 @@ Click to see the solution
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this doesn't do it</span></span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this doesn't do it</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] &lt;NA&gt;            &lt;NA&gt;            (0,5e+03]       &lt;NA&gt;           
  [5] (0,5e+03]       (5e+03,1e+04]   (5e+03,1e+04]   (1e+04,1.5e+04]
@@ -1020,8 +1031,8 @@ Click to see the solution
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co"># but this does!</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co"># but this does!</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] &lt;NA&gt;          &lt;NA&gt;          (0,5000]      &lt;NA&gt;          (0,5000]     
  [6] (5000,10000]  (5000,10000]  (10000,15000] (15000,20000] (20000,25000]
@@ -1031,9 +1042,9 @@ Click to see the solution
 </div>
 <p>Our solution to get rid of the ugly scientific notation in our labels is therefore:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">10</span>)</span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">10</span>)</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   sample   age       age_bin
 1       a     0          &lt;NA&gt;
@@ -1055,10 +1066,10 @@ Click to see the solution
 </div>
 </div>
 <hr>
-<p>You have now learned that <code>cut()</code> has an optional argument called <code>include.lowest =</code>, which includes the lowest value of 0 (representing the “present-day” age of our samples) in the lowest bin [0, 5]. However, in the case of our assignment of samples from present-day, this is not what we want. We want present-day individuals to have their own category called “present-day”.</p>
+<p><strong>You have now learned that <code>cut()</code> has an optional argument called <code>include.lowest =</code>, which includes the lowest value of 0 (representing the “present-day” age of our samples) in the lowest bin [0, 5]. However, in the case of our assignment of samples from present-day, this is not what we want. We want present-day individuals to have their own category called “present-day”.</strong></p>
 <p>Here’s a useful bit of code I use often for this exact purpose, represented as a complete self-contained chunk of the time-binning code. If we start from the original toy example data frame (with the <code>NA</code> values assigned to present-day ages of 0):</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   sample   age       age_bin
 1       a     0          &lt;NA&gt;
@@ -1075,25 +1086,26 @@ Click to see the solution
 12      t 30000 (25000,30000]</code></pre>
 </div>
 </div>
-<p>We can fix this by the following three-step process, described in the comments. <em>Don’t stress about any of this!</em> Just run this code on your own and try to match the <code># text in comments</code> to the respective code. Every thing that’s being done here are bits and pieces introduced above.</p>
+<p>We can fix this by the following three-step process, described in the comments. <em>Don’t stress about any of this!</em> Just run this code on your own and try to relate the <code># text description of each step in comments</code> to the code itself. Every thing that’s being done here are bits and pieces introduced above.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 0. assign each row to a bin based on given breakpoints</span></span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">10</span>)</span>
-<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. extract labels (no "present-day" category yet)</span></span>
-<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a>bin_levels <span class="ot">&lt;-</span> <span class="fu">levels</span>(df<span class="sc">$</span>age_bin)</span>
-<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span></span>
-<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
-<span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb72-10"><a href="#cb72-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">as.character</span>(age_bin),  <span class="co"># 2. convert factors back to "plain strings"</span></span>
-<span id="cb72-11"><a href="#cb72-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(age_bin), <span class="st">"present-day"</span>, age_bin), <span class="co"># 3. replace NA with "present-day",</span></span>
-<span id="cb72-12"><a href="#cb72-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">factor</span>(age_bin, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"present-day"</span>, bin_levels)) <span class="co"># 4. convert to factor (to maintain order of levels)</span></span>
-<span id="cb72-13"><a href="#cb72-13" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 0. assign each row to a bin based on given breakpoints</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(df<span class="sc">$</span>age, <span class="at">breaks =</span> breakpoints, <span class="at">dig.lab =</span> <span class="dv">10</span>)</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. extract labels (no "present-day" category yet)</span></span>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>bin_levels <span class="ot">&lt;-</span> <span class="fu">levels</span>(df<span class="sc">$</span>age_bin)</span>
+<span id="cb69-6"><a href="#cb69-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span></span>
+<span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb69-9"><a href="#cb69-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb69-10"><a href="#cb69-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">as.character</span>(age_bin),  <span class="co"># 2. convert factors back to "plain strings"</span></span>
+<span id="cb69-11"><a href="#cb69-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(age_bin), <span class="st">"present-day"</span>, age_bin), <span class="co"># 3. replace NA with "present-day",</span></span>
+<span id="cb69-12"><a href="#cb69-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">factor</span>(age_bin, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"present-day"</span>, bin_levels)) <span class="co"># 4. convert to factor (to maintain order of levels)</span></span>
+<span id="cb69-13"><a href="#cb69-13" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<p><strong>Please run the code above bit by bit, inspecting the variables you create (or modify) after each step. Remember the <code>CTRL / CMD + Enter</code> shortcut for stepping through code!</strong></p>
 <p>When we print the modified <code>df</code> table, we see all bins properly assigned now, including the present-day samples with ages at 0:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a>df</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>   sample   age       age_bin
 1       a     0   present-day
@@ -1110,9 +1122,9 @@ Click to see the solution
 12      t 30000 (25000,30000]</code></pre>
 </div>
 </div>
-<p>This is a very useful pattern which you will get to practice now on the full <code>metadata</code> table, by literally applying the same code on the big table.</p>
+<p><strong>This is a very useful pattern which you will get to practice now on the full <code>metadata</code> table, by literally applying the same code on the big table.</strong></p>
 <hr>
-<p><strong>Now that you’re familiar with <code>cut()</code>, use the functions <code>mutate()</code> and <code>cut()</code> again (in exactly the same way as we did on the <code>df</code> table in the code chunk above!) to create a new column <code>age_bin</code> this time on the whole <code>metadata</code> table. The new column should carry a category age of each individual in steps of 10000 years again. Use `table(metadata$age_bin) to sanity check your final results.</strong></p>
+<p><strong>Now that you’re familiar with the <code>cut()</code> technique for binning values, use the functions <code>mutate()</code> and <code>cut()</code> again (in exactly the same way as we did on the <code>df</code> table in the code chunk above!) to create a new column <code>age_bin</code> this time on the whole <code>metadata</code> table. The new column should carry a category age of each individual in steps of 10000 years again.</strong></p>
 <p><strong>Hint:</strong> As we did above, first assign the <code>age_bin</code> column using the <code>cut()</code> function, then modify the column accordingly with the <code>mutate()</code> snippet to set “present-day” in the <code>age_bin</code> for all present-day individuals.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
@@ -1128,24 +1140,24 @@ Click to see the solution
 <div class="callout-body-container callout-body">
 <p>You can match the step numbers to our example code applied on the smaller table <code>df</code> above. They do the same thing!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co"># step 0. we first bin samples according to their age</span></span>
-<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>bin_step <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
-<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>metadata<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(metadata<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> bin_step), <span class="at">dig.lab =</span> <span class="dv">10</span>)</span>
-<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a><span class="co"># step 1. get the assigned bin labels</span></span>
-<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>bin_levels <span class="ot">&lt;-</span> <span class="fu">levels</span>(metadata<span class="sc">$</span>age_bin)</span>
-<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a><span class="co"># then we modify the bins to include "present-day" labels:</span></span>
-<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> metadata <span class="sc">%&gt;%</span></span>
-<span id="cb75-10"><a href="#cb75-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb75-11"><a href="#cb75-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">as.character</span>(age_bin), <span class="co"># step 2.</span></span>
-<span id="cb75-12"><a href="#cb75-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(age_bin), <span class="st">"present-day"</span>, age_bin), <span class="co"># step 3.</span></span>
-<span id="cb75-13"><a href="#cb75-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">factor</span>(age_bin, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"present-day"</span>, bin_levels)) <span class="co"># step 4.</span></span>
-<span id="cb75-14"><a href="#cb75-14" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># step 0. we first bin samples according to their age</span></span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>bin_step <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>metadata<span class="sc">$</span>age_bin <span class="ot">&lt;-</span> <span class="fu">cut</span>(metadata<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">50000</span>, <span class="at">by =</span> bin_step), <span class="at">dig.lab =</span> <span class="dv">10</span>)</span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a><span class="co"># step 1. get the assigned bin labels</span></span>
+<span id="cb72-6"><a href="#cb72-6" aria-hidden="true" tabindex="-1"></a>bin_levels <span class="ot">&lt;-</span> <span class="fu">levels</span>(metadata<span class="sc">$</span>age_bin)</span>
+<span id="cb72-7"><a href="#cb72-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb72-8"><a href="#cb72-8" aria-hidden="true" tabindex="-1"></a><span class="co"># then we modify the bins to include "present-day" labels:</span></span>
+<span id="cb72-9"><a href="#cb72-9" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> metadata <span class="sc">%&gt;%</span></span>
+<span id="cb72-10"><a href="#cb72-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb72-11"><a href="#cb72-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">as.character</span>(age_bin), <span class="co"># step 2.</span></span>
+<span id="cb72-12"><a href="#cb72-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">if_else</span>(<span class="fu">is.na</span>(age_bin), <span class="st">"present-day"</span>, age_bin), <span class="co"># step 3.</span></span>
+<span id="cb72-13"><a href="#cb72-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">age_bin =</span> <span class="fu">factor</span>(age_bin, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"present-day"</span>, bin_levels)) <span class="co"># step 4.</span></span>
+<span id="cb72-14"><a href="#cb72-14" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>We can check the binning result to see that we’ve been successful!</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(metadata<span class="sc">$</span>age_bin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(metadata<span class="sc">$</span>age_bin)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
   present-day     (0,10000] (10000,20000] (20000,30000] (30000,40000] 
@@ -1158,12 +1170,14 @@ Click to see the solution
 </div>
 </div>
 </div>
+<hr>
+<p><strong>How many individuals did we end up with in each <code>age_bin</code>? Use <code>table()</code> to answer this question (and also to sanity check your final results), to make sure everything worked correctly.</strong></p>
 </section>
 <section id="recipe-for-merging-metadata" class="level2">
 <h2 class="anchored" data-anchor-id="recipe-for-merging-metadata">Recipe for merging metadata</h2>
-<p>After basic processing and filtering of the primary data (in our case, the genomic coordinates of pairwise IBD segments), we often need to annotate this data with some meta information. What does this mean? <strong>Take a look at our IBD data in its current state again:</strong></p>
+<p>After basic processing and filtering of the primary data (in our case, the genomic coordinates of pairwise IBD segments), we often need to annotate this data with some meta information… which is what we already processed too! What does this mean? <strong>Take a look at our IBD data in its current state again:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 7
   sample1 sample2 chrom start   end rel   length
@@ -1176,11 +1190,12 @@ Click to see the solution
 6 EKA1    NEO220     21  30.1  35.8 none   5.72 </code></pre>
 </div>
 </div>
-<p>When we analyze things down the line, we might want to look at IBD patterns over space and time, look at some temporal changes, etc. However, our IBD data has none of the information in it! Besides names of individuals (from which population, at which time, which geographical location?) we have nothing, so even if we were to do run our friends <code>group_by()</code> and <code>summarize()</code> to get some summary statistics, we have no idea to correlate them to other variables… precisely because those variables are elsewhere in a completely different table we called <code>metadata</code>.</p>
+<p><strong>When we analyze things down the line, we might want to look at IBD patterns over space and time, look at some temporal changes, etc. However, our IBD data has none of the information in it!</strong> Besides names of individuals (from which population, at which time, which geographical location?) we have nothing, so even if we were to do run our friends <code>group_by()</code> and <code>summarize()</code> to get some summary statistics to get some insights into the history or biological relationships between our samples, we have no idea to correlate them to other variables… precisely because those variables are elsewhere in a completely different table we called <code>metadata</code>.</p>
 <p><strong>We now need to put both sources of information into a single joint format. I call this “metadata merging”, and it is something we always want to do regardless of what kinds of statistics or measures we work with.</strong></p>
-<p>Again, the annotation that we need is in the metadata table – it has information about ages and geography:</p>
+<p><strong>The technique below is again a very useful recipe for your future work.</strong></p>
+<p>Again, the annotation that we need is in the metadata table — it has information about ages and geography:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 5
   sample  country continent   age age_bin    
@@ -1194,54 +1209,62 @@ Click to see the solution
 </div>
 </div>
 <p>What we need to do is join our IBD data with a selection of the most important variables in our metadata, which is what we’re going to do now.</p>
-<p><strong>This bit might be a bit frustrating and repetitive if we made this into an exercise for you, so just inspect the following code, run it yourself (and put it into your own script) and try to make sense of it. Take this as a recipe that you can modify and reuse in your own projects later!</strong></p>
+<p><strong>This bit might be a bit frustrating and repetitive if I made this into an exercise for you, so just inspect the following code, run it yourself (and put it into your own script) and try to make sense of it. Take this as a recipe that you can modify and reuse in your own projects later!</strong></p>
 <p>I’m happy to answer questions!</p>
 <section id="step-1." class="level4">
 <h4 class="anchored" data-anchor-id="step-1.">Step 1.</h4>
 <p>For each IBD segment (a row in our table <code>ibd_segments</code>) we have two individuals on each row, <code>sample1</code> and <code>sample2</code>. Therefore, we will need to annotate each row of the <code>ibd_segments</code> table with metadata information for both individuals. <strong>Let’s start by making a copy of the metadata table, caling those copies <code>metadata1</code> and <code>metadata2</code>:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a>metadata1 <span class="ot">&lt;-</span> metadata</span>
-<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a>metadata2 <span class="ot">&lt;-</span> metadata</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>metadata1 <span class="ot">&lt;-</span> metadata</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>metadata2 <span class="ot">&lt;-</span> metadata</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="step-2." class="level4">
 <h4 class="anchored" data-anchor-id="step-2.">Step 2.</h4>
 <p>The columns of these metadata copies are the same, which you can verify by running this:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "sample"    "country"   "continent" "age"       "age_bin"  </code></pre>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1)</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "sample"    "country"   "continent" "age"       "age_bin"</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata1, <span class="dv">1</span>)</span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 1 × 5</span></span>
+<span id="cb80-5"><a href="#cb80-5" aria-hidden="true" tabindex="-1"></a><span class="do">##   sample  country continent   age age_bin    </span></span>
+<span id="cb80-6"><a href="#cb80-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;fct&gt;      </span></span>
+<span id="cb80-7"><a href="#cb80-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 NA18486 Nigeria Africa        0 present-day</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] "sample"    "country"   "continent" "age"       "age_bin"  </code></pre>
-</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata2)</span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a><span class="do">## [1] "sample"    "country"   "continent" "age"       "age_bin"</span></span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata2, <span class="dv">1</span>)</span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a><span class="do">## # A tibble: 1 × 5</span></span>
+<span id="cb81-5"><a href="#cb81-5" aria-hidden="true" tabindex="-1"></a><span class="do">##   sample  country continent   age age_bin    </span></span>
+<span id="cb81-6"><a href="#cb81-6" aria-hidden="true" tabindex="-1"></a><span class="do">##   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;fct&gt;      </span></span>
+<span id="cb81-7"><a href="#cb81-7" aria-hidden="true" tabindex="-1"></a><span class="do">## 1 NA18486 Nigeria Africa        0 present-day</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Obviously this doesn’t work if we want to refer to a location of <code>sample1</code> or <code>sample2</code>, respectively. Here’s another useful trick for this. Observe what <code>paste0()</code> function does in this situation:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co"># original columns</span></span>
-<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="co"># original columns</span></span>
+<span id="cb82-2"><a href="#cb82-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "sample"    "country"   "continent" "age"       "age_bin"  </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="co"># columns with a number added after</span></span>
-<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="fu">colnames</span>(metadata1), <span class="st">"1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb84"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb84-1"><a href="#cb84-1" aria-hidden="true" tabindex="-1"></a><span class="co"># columns with a number added after</span></span>
+<span id="cb84-2"><a href="#cb84-2" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="fu">colnames</span>(metadata1), <span class="st">"1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "sample1"    "country1"   "continent1" "age1"       "age_bin1"  </code></pre>
 </div>
 </div>
-<p><strong>We can use the same approach to <em>assign</em> new columns to each of our metadata copies:</strong></p>
+<p><strong>So using <code>paste0()</code> we can append “1” or “2” to each column name of both tables. We can use the same approach to <em>assign</em> new columns to each of our metadata copies:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">colnames</span>(metadata1), <span class="st">"1"</span>)</span>
-<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata2) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">colnames</span>(metadata2), <span class="st">"2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">colnames</span>(metadata1), <span class="st">"1"</span>)</span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata2) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="fu">colnames</span>(metadata2), <span class="st">"2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Now we have both metadata tables with columns renamed. Let’s check this to make sure we did this correctly:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "sample1"    "country1"   "continent1" "age1"       "age_bin1"  </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(metadata2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "sample2"    "country2"   "continent2" "age2"       "age_bin2"  </code></pre>
 </div>
@@ -1250,8 +1273,10 @@ Click to see the solution
 <section id="step-3." class="level4">
 <h4 class="anchored" data-anchor-id="step-3.">Step 3.</h4>
 <p>Now we are ready to join the table of IBD segments.</p>
-<p>The final piece of the puzzle is a <a href="https://en.wikipedia.org/wiki/Join_(SQL)">JOIN operation</a> from the realm of computer databases. A rather complex topic, which can be interpreted very easily in our situation, which can be represented by the following diagram of a so-called “inner join”:</p>
-<p><img src="https://learn.microsoft.com/en-us/power-query/media/merge-queries-inner/inner-join-operation.png" class="img-fluid"> What this operation does is that it creates a “merged” table, consisting of the columns of both “left” and “right” tables, where the “merged” table rows consist of such rows from “left” and “right”, where the two tables have a matching “key” column (here highlighted in green). <strong>Just take a moment and try to trace the one row of the “merged” table to the row(s) of the “left” and “right” tables based on the value of the green key column in both of them.</strong></p>
+<p>The final piece of the puzzle is a <a href="https://en.wikipedia.org/wiki/Join_(SQL)">JOIN operation</a> from the realm of computer databases. A rather complex topic, which can be interpreted very easily in our situation, and can be schematically described by the following diagram of a so-called “inner join”, implemented in <em>dplyr</em> by a function <code>inner_join()</code>:</p>
+<p><strong>Note:</strong> If you’re more familiar with <em>tidyverse</em> from before, I still think joins might be a relatively new topic. If so, please take a bit of time to read the <a href="https://dplyr.tidyverse.org/reference/mutate-joins.html"><em>dplyr</em></a> documentation on this topic. Joins are a superpower of data science.</p>
+<p>::: <img src="https://learn.microsoft.com/en-us/power-query/media/merge-queries-inner/inner-join-operation.png" class="img-fluid"> :::</p>
+<p>What this operation does is that it creates a “merged” table, consisting of the columns of both “left” and “right” tables, where the “merged” table rows consist of such rows from “left” and “right”, where the two tables have a matching “key” column (here highlighted in green). <strong>Just take a moment and try to trace the one row of the “merged” table at the bottom of the diagram to the row(s) of the “left” and “right” tables based on the value of the green key column in both of them.</strong></p>
 <p>Now, consider the columns of our three tables now:</p>
 <ul>
 <li><code>ibd_segments</code> columns:</li>
@@ -1276,55 +1301,57 @@ Click to see the solution
 </div>
 <p><strong>Here’s what happens when you perform an inner join like this (note that we specify <code>by</code> what column should we be merging, effectively saying which column is the key corresponding to the green column in the diagram above):</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(ibd_segments, metadata1, <span class="at">by =</span> <span class="st">"sample1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(ibd_segments, metadata1, <span class="at">by =</span> <span class="st">"sample1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Our IBD table now has added metadata information for individuals in column <code>sample1</code>, awesome! <strong>We can verify this by listing all column names:</strong></p>
+<p><strong>Take a look at the results, saved in a new variable <code>ibd_merged</code>, by typing it into your R console. Our IBD table now has added metadata information for individuals in column <code>sample1</code>, awesome! We can verify this by listing all column names:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="co"># original IBD table:</span></span>
-<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co"># original IBD table:</span></span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "sample1" "sample2" "chrom"   "start"   "end"     "rel"     "length" </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="co"># IBD table with metadata1 merged in:</span></span>
-<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb97"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb97-1"><a href="#cb97-1" aria-hidden="true" tabindex="-1"></a><span class="co"># IBD table with metadata1 merged in:</span></span>
+<span id="cb97-2"><a href="#cb97-2" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "sample1"    "sample2"    "chrom"      "start"      "end"       
  [6] "rel"        "length"     "country1"   "continent1" "age1"      
 [11] "age_bin1"  </code></pre>
 </div>
 </div>
-<p><strong>How do we add metadata for the second sample? We do it in the same way, except now we join in the second table (and we save the results to a new variable <code>ibd_merged</code>, to be able to compare the differences):</strong></p>
+<p><strong>How do we add metadata for the second sample? We do it in the same way, except now we join in the second table (and we save the results back to the new variable <code>ibd_merged</code>, to be able to compare the differences):</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(ibd_merged, metadata2, <span class="at">by =</span> <span class="st">"sample2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb99"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb99-1"><a href="#cb99-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">inner_join</span>(ibd_merged, metadata2, <span class="at">by =</span> <span class="st">"sample2"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p><strong>In fact, I do this so often for basically every computational biology project, that I like to use this concise bit of code to do it all in one go:</strong></p>
+<p><strong>In fact, I do this so often for basically every computational biology project, that I like to use this concise bit of code to do it all in one go (this is what you should add to your script!):</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span></span>
-<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a>  ibd_segments <span class="sc">%&gt;%</span>                          <span class="co"># 1. primary data without metadata</span></span>
-<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(metadata1, <span class="at">by =</span> <span class="st">"sample1"</span>) <span class="sc">%&gt;%</span> <span class="co"># 2. add metadata for sample1</span></span>
-<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(metadata2, <span class="at">by =</span> <span class="st">"sample2"</span>)     <span class="co"># 3. add metadata for sample2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span></span>
+<span id="cb100-2"><a href="#cb100-2" aria-hidden="true" tabindex="-1"></a>  ibd_segments <span class="sc">%&gt;%</span>                          <span class="co"># 1. primary data without metadata</span></span>
+<span id="cb100-3"><a href="#cb100-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(metadata1, <span class="at">by =</span> <span class="st">"sample1"</span>) <span class="sc">%&gt;%</span> <span class="co"># 2. add metadata for sample1</span></span>
+<span id="cb100-4"><a href="#cb100-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">inner_join</span>(metadata2, <span class="at">by =</span> <span class="st">"sample2"</span>)     <span class="co"># 3. add metadata for sample2</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p><strong>Again, we can verify that our new table has metadata columns for both <code>sample1</code> and <code>sample2</code>:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb101"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_segments)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "sample1" "sample2" "chrom"   "start"   "end"     "rel"     "length" </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(ibd_merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "sample1"    "sample2"    "chrom"      "start"      "end"       
  [6] "rel"        "length"     "country1"   "continent1" "age1"      
 [11] "age_bin1"   "country2"   "continent2" "age2"       "age_bin2"  </code></pre>
 </div>
 </div>
+<hr>
+<p>And this concludes merging of the primary IBD data with all necessary meta information! Every computational project I do has something like this somewhere. Of course, in the case of your primary data which could be observations at particular ecological sampling sites or excavation sites, etc., this annotation might involve metadata with more specific geographical information, environmental data, etc.</p>
 </section>
 </section>
 <section id="exercise-4.-final-data-processing" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-4.-final-data-processing">Exercise 4. Final data processing</h2>
-<p>You’ve already seen the super useful function <code>paste()</code> (and also <code>paste0()</code>) which useful whenver we need to join the elements of two (or more) character vectors together. The difference between then is that <code>paste0()</code> doesn’t add a space between the individual values and <code>paste()</code> does (the latter also allows you to customize the string which should be used for joining instead of the space).</p>
+<p>You’ve already seen the super useful function <code>paste()</code> (and also <code>paste0()</code>) which useful whenever we need to join the elements of two (or more) character vectors together. The difference between then is that <code>paste0()</code> doesn’t add a space between the individual values and <code>paste()</code> does (the latter also allows you to customize the string which should be used for joining instead of the space).</p>
 <p><strong>Take a look at your almost finalized table <code>ibd_merged</code>:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ibd_merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(ibd_merged)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 15
   sample1 sample2 chrom start   end rel   length country1 continent1  age1
@@ -1339,19 +1366,20 @@ Click to see the solution
 #   age2 &lt;dbl&gt;, age_bin2 &lt;fct&gt;</code></pre>
 </div>
 </div>
-<p>When we get to comparing IBD patterns between countries, time bins, etc., it might be useful to have metadata columns specific for that purpose. What do I mean by this? For instance, consider these two vectors and the result of pasting them together. Having this combined pair information makes it very easy to cross-compare multiple sample categories together:</p>
+<p>When we get to comparing IBD patterns between countries, time bins, etc., it might be useful to have metadata columns specific for that purpose. What do I mean by this? For instance, consider these two vectors and the result of pasting them together. Having this combined pair information makes it very easy to cross-compare multiple sample categories together, rather than having to keep track of two variables <code>v1</code> or <code>v2</code>, we have just the merged pairs:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Denmark"</span>, <span class="st">"Czech Republic"</span>, <span class="st">"Estonia"</span>)</span>
-<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Finland"</span>, <span class="st">"Italy"</span>, <span class="st">"Estonia"</span>)</span>
-<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb112-4"><a href="#cb112-4" aria-hidden="true" tabindex="-1"></a><span class="fu">paste</span>(v1, v2, <span class="at">sep =</span> <span class="st">":"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a>v1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Denmark"</span>, <span class="st">"Czech Republic"</span>, <span class="st">"Estonia"</span>)</span>
+<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>v2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Finland"</span>, <span class="st">"Italy"</span>, <span class="st">"Estonia"</span>)</span>
+<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a>pairs_v <span class="ot">&lt;-</span> <span class="fu">paste</span>(v1, v2, <span class="at">sep =</span> <span class="st">":"</span>)</span>
+<span id="cb107-5"><a href="#cb107-5" aria-hidden="true" tabindex="-1"></a>pairs_v</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "Denmark:Finland"      "Czech Republic:Italy" "Estonia:Estonia"     </code></pre>
 </div>
 </div>
 <hr>
 <p>Let’s create this information for <code>country1/2</code>, <code>continent1/2</code>, and <code>age_bin1/2</code> columns.</p>
-<p><strong>Specifically, use the same <code>paste()</code> trick to add a new column to your <code>ibd_merged</code> table named <code>country_pair</code>, which will contain a vector of values created by joining of the columns <code>country1</code> and <code>country2</code>. Add this column <code>.before</code> the <code>chrom</code> column for clearer visibility (check out <code>?mutate</code> if you need a refresher on how does its <code>.before =</code> argument work). Then do the same to create a <code>region_pair</code> based on <code>continent1</code> and <code>continent2</code>. Save the result back to the variable named <code>ibd_merged</code>.</strong></p>
+<p><strong>Specifically, use the same <code>paste()</code> trick in a <code>mutate()</code> function to add a new column to your <code>ibd_merged</code> table named <code>country_pair</code>, which will contain a vector of values created by joining of the columns <code>country1</code> and <code>country2</code>. Add this column <code>.before</code> the <code>chrom</code> column for clearer visibility (check out <code>?mutate</code> if you need a refresher on how does its <code>.before =</code> argument work). Then do the same to create a <code>region_pair</code> based on <code>continent1</code> and <code>continent2</code>. Save the result back to the variable named <code>ibd_merged</code>.</strong></p>
 <p><strong>Hint:</strong> Note that you can create multiple new columns with <code>mutate()</code>, but you can also pipe <code>%&gt;%</code> one <code>mutate()</code> into another <code>mutate()</code> into another <code>mutate()</code>, etc.!</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
@@ -1366,15 +1394,15 @@ Click to see the solution
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
-<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>  ibd_merged,</span>
-<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">country_pair =</span> <span class="fu">paste</span>(country1, country2, <span class="at">sep =</span> <span class="st">":"</span>),</span>
-<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">region_pair =</span> <span class="fu">paste</span>(continent1, continent2, <span class="at">sep =</span> <span class="st">":"</span>),</span>
-<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.before =</span> chrom</span>
-<span id="cb114-6"><a href="#cb114-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb114-7"><a href="#cb114-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb114-8"><a href="#cb114-8" aria-hidden="true" tabindex="-1"></a><span class="co"># let's verify the results</span></span>
-<span id="cb114-9"><a href="#cb114-9" aria-hidden="true" tabindex="-1"></a>ibd_merged</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a>  ibd_merged,</span>
+<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">country_pair =</span> <span class="fu">paste</span>(country1, country2, <span class="at">sep =</span> <span class="st">":"</span>),</span>
+<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">region_pair =</span> <span class="fu">paste</span>(continent1, continent2, <span class="at">sep =</span> <span class="st">":"</span>),</span>
+<span id="cb109-5"><a href="#cb109-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">.before =</span> chrom</span>
+<span id="cb109-6"><a href="#cb109-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb109-7"><a href="#cb109-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-8"><a href="#cb109-8" aria-hidden="true" tabindex="-1"></a><span class="co"># let's verify the results</span></span>
+<span id="cb109-9"><a href="#cb109-9" aria-hidden="true" tabindex="-1"></a>ibd_merged</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 461,847 × 17
    sample1 sample2 country_pair     region_pair   chrom start   end rel   length
@@ -1399,7 +1427,7 @@ Click to see the solution
 </div>
 </div>
 <hr>
-<p>**In addition to computing statistics across pairs of geographical regions, we will also probably want to look at temporal patterns. Create a new column <code>time_pair</code>, which will in this case contains a <code>paste()</code> combination of <code>age_bin1</code> and <code>age_bin2</code>, added <code>.after</code> the <code>region</code>_pair<code>column. Save the result back to the</code>ibd` variable.**</p>
+<p><strong>In addition to computing statistics across pairs of geographical regions, we will also probably want to look at temporal patterns. Create a new column <code>time_pair</code>, which will in this case contains a <code>paste()</code> combination of <code>age_bin1</code> and <code>age_bin2</code>, added <code>.after</code> the <code>region_pair</code> column. Save the result back to the <code>ibd_merged</code> variable.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1413,12 +1441,12 @@ Click to see the solution
 <div id="callout-11" class="callout-11-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
-<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>  ibd_merged,</span>
-<span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">time_pair =</span> <span class="fu">paste</span>(age_bin1, age_bin2, <span class="at">sep =</span> <span class="st">":"</span>), <span class="at">.after =</span> region_pair</span>
-<span id="cb116-4"><a href="#cb116-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb116-5"><a href="#cb116-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb116-6"><a href="#cb116-6" aria-hidden="true" tabindex="-1"></a>ibd_merged</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">mutate</span>(</span>
+<span id="cb111-2"><a href="#cb111-2" aria-hidden="true" tabindex="-1"></a>  ibd_merged,</span>
+<span id="cb111-3"><a href="#cb111-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">time_pair =</span> <span class="fu">paste</span>(age_bin1, age_bin2, <span class="at">sep =</span> <span class="st">":"</span>), <span class="at">.after =</span> region_pair</span>
+<span id="cb111-4"><a href="#cb111-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb111-5"><a href="#cb111-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb111-6"><a href="#cb111-6" aria-hidden="true" tabindex="-1"></a>ibd_merged</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 461,847 × 18
    sample1 sample2 country_pair    region_pair time_pair chrom start   end rel  
@@ -1446,48 +1474,93 @@ Click to see the solution
 <section id="exercise-5-reproducibility-intermezzo" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-5-reproducibility-intermezzo">Exercise 5: Reproducibility intermezzo</h2>
 <p>You have written a lot of code in this chapter, both for filtering and processing of the IBD data and the metadata. Your script is already very long. If you need to ever update or change something (which you always will during a project, usually many times over) it can be hard to figure out which line of your script should be modified. If you forget to update something somewhere in a long script, you’re in big trouble (and sometimes you won’t even find out where’s the problem until its too late).</p>
-<p>Our session on reproducibility is in the following chapter, but let’s work towards making your current workflow more reproducible even now.</p>
+<p>Our session on reproducibility is in the following chapter, and will introduce various techniques towards making a project codebase tidyly structured and reproducible. But <strong>for now, let’s work towards making our current IBD pipeline a little bit more reusable (which we will leverage in the next session on <em>ggplot2</em>).</strong></p>
 <hr>
-<p><strong>Create a new script called <code>ibd_utils.R</code> in your RStudio and create the following functions. Then take bits and pieces from the exercises used above and add them to the bodies of these functions accordingly.</strong></p>
+<p><strong>Create a new script called <code>ibd_utils.R</code> in your RStudio and create the following functions. Then take bits and pieces from the exercises used above and add them to the bodies of these functions accordingly, so that each function contains all the code we used above for that particular step.</strong></p>
+<p><strong>Note:</strong> If you’ve never written R functions before and are confused, don’t worry. You can skip ahead and use my solution! If you do, however, try to examine the code in each of the three functions, and try to make a connection between it — line by line — and the code you ran earlier in our session!</p>
 <ol start="0" type="1">
-<li><p>Don’t forget to load all packages needed using <code>library()</code> calls at the top of the <code>ibd_utils.R</code> script.</p></li>
-<li><p>function <code>process_ibd()</code> which will (without accepting any arguments):</p></li>
+<li><p>First, don’t forget to load all packages needed using <code>library()</code> calls at the top of the <code>ibd_utils.R</code> script.</p></li>
+<li><p>Create a function <code>process_ibd &lt;- function() { ... add all code here ... }</code> which will:</p></li>
 </ol>
 <ul>
 <li>read the IBD data from the internet like you did above using <code>read_tsv()</code></li>
 <li>process it in the same way you did above, adding the length column</li>
-<li>return the processed table with IBD segments in the same way like you produced the <code>ibd_segments</code> data frame</li>
+<li>return the processed table with IBD segments in the same way like you produced the <code>ibd_segments</code> data frame with <code>return(ibd_segments)</code> at the last line of that function</li>
 </ul>
 <ol start="2" type="1">
-<li>function <code>process_metadata()</code>, which will (accepting a single <code>bin_step</code> argument!):</li>
+<li>function <code>process_metadata &lt;- function(bin_step)</code>, which will (accepting a single <code>bin_step</code> argument):</li>
 </ol>
 <ul>
 <li>download the metadata from the internet like you did above,</li>
 <li>process and filter it in the same way like above (replacing <code>NA</code> in <code>age</code> column, filtering out unwanted individuals, adding the <code>age_bin</code> column by binning according to the <code>bin_step</code> function parameter, etc.)</li>
-<li>return the processed table with this processed metadata in the same way like you produced the <code>metadata</code> data frame</li>
+<li>return the processed table with this processed metadata in the same way like you produced the <code>metadata</code> data frame as <code>return(metadata)</code></li>
 </ul>
 <ol start="3" type="1">
-<li>function <code>join_metadata()</code>, which will accept arguments <code>ibd_segments</code> and <code>metadata</code> (produced by the two functions above) and then:</li>
+<li>function <code>join_metadata &lt;- function(ibd_segments, metdata)</code>, which will accept two arguments <code>ibd_segments</code> and <code>metadata</code> (produced by the two functions above) and then:</li>
 </ol>
 <ul>
 <li>join the <code>ibd_segments</code> table with the <code>metadata</code> table</li>
 <li>add the three <code>country_pair</code>, <code>region_pair</code>, and <code>time_pair</code> columns</li>
-<li>return the finalized table with all information, just like you created your <code>ibd_merged</code> table above</li>
+<li>return the finalized table with all information, just like you created your <code>ibd_merged</code> table above, as <code>return(ibd_merged)</code></li>
 </ul>
 <p><strong>Do not write all the code at once! Start with the first function, test it by executing it in your R console independently, checking that your results make sense before you move on to the other function! Building up more complex pipelines from simple components is absolutely critical to minimize bugs!</strong></p>
 <p><strong>Make sure to add comments to your code! Reproducibility is only half of the story – you (and other people) need to be able to understand your code a long time after you wrote it.</strong></p>
 <p><strong>Hint:</strong> If this looks overwhelming and scary, then remember that function is a block of code (optionally accepting arguments) which simply wraps in <code>{</code> and <code>}</code> the code already written by you above, and calls <code>return</code> on the result.</p>
 <p><strong>Hint:</strong> An extremely useful shortcut when writing R functions is “Run function definition” under <code>Code</code> <code>-&gt;</code> <code>Run region</code>. Remember that keyboard shortcut! (On macOS it’s <code>Option+CMD+F</code>).</p>
+<p><strong>To summarize, basically fill in the following template:</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Click to see the “template” for <code>ibd_utils.R</code>
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<pre><code>library(dplyr)
+library(tidyr)
+library(readr)
+
+process_ibd &lt;- function() {
+  cat("Downloading and processing IBD data...\n")
+
+  # ADD ALL YOUR CODE HERE
+
+  return(ibd)
+}
+
+process_metadata &lt;- function(bin_step) {
+  cat("Downloading and processing metadata...\n")
+
+  # ADD ALL YOUR CODE HERE
+
+  return(metadata)
+}
+
+join_metadata &lt;- function(ibd_segments, metadata) {
+  cat("Joining IBD data and metadata...\n")
+
+  # ADD ALL YOUR CODE HERE
+
+  return(ibd_merged)
+}</code></pre>
+</div>
+</div>
+</div>
 <hr>
-<p><strong>After you’re done with the previous exercise, and are confident that your functions do what they should, create a new script (you can name it something like <code>ibd_pipeline.R</code>) and be able to add the following code. As a final test, restart your R session (<code>Session</code> <code>-&gt;</code> <code>Restart R</code>) and run this script.</strong></p>
+<p><strong>After you’re done with the previous exercise, and are confident that your functions do what they should, create a new script (you can name it something like <code>ibd_pipeline.R</code>), save it to the same directory as your script <code>ibd_utils.R</code>, and add the following code to it, which, when you run it, will execute your entire pipeline and create the final <code>ibd_merged</code> table in a fully automated way. As a final test, restart your R session (<code>Session</code> <code>-&gt;</code> <code>Restart R</code>) and run the script <code>ibd_pipeline.R</code>.</strong></p>
 <p><strong>Note:</strong> The <code>source()</code> command executes all the code in your utility script and therefore makes your custom-built functions available in your R session. This is an incredibly useful trick which you should use all the time whenever you modularize your code into reproducible functions in their own scripts.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"ibd_utils.R"</span>)</span>
-<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">process_metadata</span>()</span>
-<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a>ibd_segments <span class="ot">&lt;-</span> <span class="fu">process_ibd</span>(<span class="at">bin_step =</span> <span class="dv">10000</span>)</span>
-<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb118-6"><a href="#cb118-6" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">join_metadata</span>(ibd_segments, metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="co"># you might need to change the path if your ibd_utils.R is in a different location</span></span>
+<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">"ibd_utils.R"</span>)</span>
+<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">process_metadata</span>()</span>
+<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>ibd_segments <span class="ot">&lt;-</span> <span class="fu">process_ibd</span>(<span class="at">bin_step =</span> <span class="dv">10000</span>)</span>
+<span id="cb114-6"><a href="#cb114-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb114-7"><a href="#cb114-7" aria-hidden="true" tabindex="-1"></a>ibd_merged <span class="ot">&lt;-</span> <span class="fu">join_metadata</span>(ibd_segments, metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -1501,7 +1574,7 @@ Click to see the solution
 </div>
 </div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1510,23 +1583,32 @@ Click to see the solution
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>You can find my solution <a href="https://github.com/bodkan/simgen/blob/main/files/repro/ibd_utils.R">here</a>.</p>
 </div>
 </div>
 </div>
+<hr>
 <center>
 <h3 class="anchored">
 Congratulations! You’ve just passed an important milestone of learning how to structure and modularize your code in a reproducible, efficient way!
 </h3>
 </center>
-<p>This is not a joke and I really, really mean it. Most scientists sadly never reach this point in their careers, ever. Over the next sessions you will see how much difference does (admittedly very annoying!) setup makes. Trust me!</p>
+<p>This is not a joke and I really, really mean it. Most scientists sadly never reach this point in their careers, ever. Over the next sessions you will see how much difference does (admittedly very annoying!) setup makes, and even learn other techniques how to make your computational research more robust and reliable.</p>
 <p><strong>It’s worth pausing here and reflecting on what we’ve just done. Yes, we took (lots!) of code already written and basically “just moved it elsewhere”. But consider how clean your new script <code>ibd_pipeline.R</code> is and how easily readable it is. What we’ve done is sometimes called “abstraction” in software engineering. We took components of our pipeline, and “hidden” them away so that we no longer have to think in terms of <code>select()</code>, <code>filter()</code>, <code>group_by()</code>, etc. We now can think about steps called <code>process_ibd()</code>, <code>process_metadata()</code>, and <code>join_metadata()</code>. Much less code to look at and think about! Plus, if we do need to take a deep dive into details, we just have to look at the code of our functions!</strong></p>
 <hr>
 <p><strong>Point your cursor somewhere inside the <code>process_ibd()</code> call in your new script <code>ibd_pipeline.R</code> and press “CTRL+.”. This is how easy it is to navigate code, even when we modularized it across multiple files!</strong></p>
-<hr>
-<p>Having your processing and filtering code available in a self-contained modularized way will make a huge difference in later parts of our workshop.</p>
+</section>
+<section id="additional-resources" class="level2">
+<h2 class="anchored" data-anchor-id="additional-resources">Additional resources</h2>
+<p>If you’re more comfortable with <em>tidyverse</em> and breezed through this content quickly, here are some resources on topics I think you should study (and do exercises in them) to take your data science skills to the next level:</p>
+<ol type="1">
+<li><p>A huge topic I wish I had a chance to get into here are transformations between long and wide table formats – <a href="https://r4ds.hadley.nz/data-tidy.html">link</a>. <strong>As an exercise, try to convert the various “age-related” columns in our <code>metadata</code> table (encoded in the “wide format”) to a long format after studying this chapter. Then learn how to transform the long format back into the wide format!</strong></p></li>
+<li><p>Regular expression are another critical topic which every professional data scientist should be familiar with – <a href="https://r4ds.hadley.nz/regexps.html">link</a></p></li>
+<li><p>Study the chapter on joins in more detail – <a href="https://r4ds.hadley.nz/joins.html">link</a></p></li>
+<li><p>Look up some guidelines for modern R coding style – <a href="https://style.tidyverse.org">link</a></p></li>
+</ol>
 
 
 </section>
