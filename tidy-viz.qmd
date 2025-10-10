@@ -1697,45 +1697,34 @@ plot_grid(
 ```
 
 
-## Bonus exercises and topics
+## Additional resources
 
-::: {.callout-tip collapse="true" icon=false}
-## See bonus exercises and topics
+As with our introduction to _tidyverse_, there's so much more to _ggplot2_
+than we had a chance to go through. I hope we'll get through some spatial
+visualization features of R (which are tightly linked with _tidyverse_ and
+_ggplot2_ in the modern R data science landscape), but there's much more
+I wish we had time to go through.
 
-### Exercise 9: Ridgeline plots and factor reordering
+Here are a couple of resources for you to study after the conclusion of
+the workshop, or even during the workshop itself if you find yourself with
+more time and more energy to study.
 
-Take a look at [this vignette](https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html)
-which describes the functionality of a very interesting plotting R package
-_ggridges_.
+1. Factors are both a curse and blessing. When dealing with visualization,
+often a curse, because our factors are rarely ordered in the way we want.
+If our factors are numerical but not straightforward numbers (like our `age_bin`
+column above), their order in _ggplot2_ figures is often wrong. _forcats_
+is an incredible package which helps with this. Read about it in
+[this vignette](https://forcats.tidyverse.org/articles/forcats.html) and then
+experiment with using it for figures in this session which featured factors.
 
-```{r}
-metadata %>%
-  filter(continent == "Europe", !is.na(latitude), !is.na(longitude)) %>%
-  ggplot(aes(latitude, color = country, fill = country)) +
-  geom_density(alpha = 0.75) +
-  theme_minimal()
-```
+2. _cowplot_ is another R package that's very useful for complex composite
+figures. We touched upon it in this session, but only extremely vaguely.
+Study [this introduction](https://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html)
+to learn much more about its features! You will never need Inkscape again.
 
-```{r}
-library(ggridges)
+3. _ggridges_ is a very cool package to visualize densities across multiple
+categories. It can often lead to much more informative figures compared to
+overlapping `geom_density()` plots we did in our session. Here's a great
+[official introduction](https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html)
+to the package.
 
-metadata %>%
-  filter(continent == "Europe", !is.na(latitude), !is.na(longitude)) %>%
-  ggplot(aes(x = latitude, y = country, color = country, fill = country)) +
-  geom_density_ridges(alpha = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "none")
-```
-
-```{r}
-library(ggridges)
-
-metadata %>%
-  filter(continent == "Europe", !is.na(latitude), !is.na(longitude)) %>%
-  ggplot(aes(x = latitude, y = forcats::fct_reorder(country, latitude), color = country, fill = country)) +
-  geom_density_ridges(alpha = 0.75) +
-  theme_minimal() +
-  theme(legend.position = "none")
-```
-
-:::
