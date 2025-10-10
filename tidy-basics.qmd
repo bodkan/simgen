@@ -2,12 +2,15 @@
 
 ## Packages introduced in this session
 
-Before we begin, let's introduce the a couple of crucial parts of the _tidyverse_
-ecosystem, which we will be using extensively during exercises in this chapter.
+Before we begin, let's introduce some crucial parts of the _tidyverse_
+ecosystem, which we will be using extensively during exercises in this chapter
+(and throughout the remaining chapters).
 
 1. [_dplyr_](https://dplyr.tidyverse.org) is a centerpiece of the entire R data science universe, providing
 important functions for data manipulation, data summarization, and filtering
-of tabular data;
+of tabular data. Many operations that were annoying or cumbersome to do
+during the R Bootcamp session are easy and natural to do with _tidyverse_
+packages like _dplyr_.
 
 2. [_readr_](https://readr.tidyverse.org) provides very functions for reading
 (and writing) tabular data. Think of it as a set of better alternatives to
@@ -15,8 +18,8 @@ base R functions such as `read.table()`, etc. (Another very useful package
 is [_readxl_](https://readxl.tidyverse.org) which is useful for working with
 Excel data).
 
-**Every single script you will be writing in this session will begin with these
-three lines of code.**
+**Every single script you will be writing in this session will therefore begin
+with these three lines of code, which load all functions from these two packages.**
 
 ```{r}
 #| message: false
@@ -24,25 +27,33 @@ library(dplyr)
 library(readr)
 ```
 
----
-
 ## Our example data set
 
 Let's also introduce a second star in this session, our example data set.
 The following command will read a metadata table with information about
 individuals published in a recent aDNA paper on the history or the Holocene in
 West Eurasia, dubbed "MesoNeo"
-([reference](https://www.nature.com/articles/s41586-023-06865-0)). Feel free
-to skim the paper to get an idea. If you work with anything related to human
-history, you'll become closely familiar with this study.
+([reference](https://www.nature.com/articles/s41586-023-06865-0)). **Please
+take a couple of minutes to skim the paper to get an idea about the sort
+of data we will be using during our exercises.**
 
-**We use the `read_tsv()` function (from the above-mentioned _readr_ package)
-and store it in a variable `df`.** Everything in these exercises will
+If you work with anything related to human
+history, you'll probably become closely familiar with this study at some point.
+
+**We will read the metadata of individual sequenced as part of this paper using
+the `read_tsv()` function (from the above-mentioned _readr_ package),
+and store the loaded table in a variable `df`.** Everything in the exercises in
+this session will
 revolve around working with this data because it represents an excellent
-example of this kind of metadata table you will find across the entirety of
-computational population genomics. (Yes, this function is quite magical -- it
-can read stuff from a file stored on the internet. If you're curious about
-the file itself, just paste the URL address in your browser.)
+example of the kind of metadata table you will find across the entirety of
+computational population genomics, archaeology, ecology, and other fields
+which deal with spatial and temporal data.
+
+Yes, this function is quite magical -- it
+can read stuff from a file stored on the internet. **If you're curious about
+the file itself, just paste the URL address in your browser. Even though
+R gives us superpowers in analyzing data, it's never a bad thing to rely
+on more mundane ways to look at the information we're dealing with.**
 
 ```{r}
 #| message: false
@@ -54,8 +65,9 @@ df <- read_tsv("https://tinyurl.com/simgen-metadata")
 **In addition to the brief overview from the slides for this exercise session
 and looking up documentation to functions via R's `?` help system,
 I highly encourage you to refer to [this](https://r4ds.hadley.nz/data-transform.html)
-chapter of the _R for Data Science_ text book.** I keep this book at hand every
-time I work with R.
+chapter of the _R for Data Science_ text book. If you ever need help, it's a
+good idea to get into the habit of referring to primary resources.** I keep
+this book at hand every time I work with R.
 
 ---
 
@@ -64,24 +76,16 @@ save it somewhere on your computer as `tidy-basics.R` (`File` `->` `Save`). Put
 the `library()` calls and the `read_tsv()` command above in this script, and
 let's get started!**
 
----
-
 ## A selection of data-frame inspection functions
 
-Whenever you get a new source of data, like a table from a collaborator, data
-sheet downloaded from supplementary materials of a paper (our situation in
-this session!), you need to familiarize
-yourself with it before you do anything else.
+Whenever you get a new source of data, like a table from a collaborator, or
+a data sheet downloaded from supplementary materials of a paper (our situation
+in this session!), you need to familiarize yourself with it before you do
+anything else.
 
 Here is a list of functions that
 you will be using constantly when doing data science to answer the following
 basic questions about your data.
-
-**Note:** Use this list as a cheatsheet of sorts! Also, **don't forget to use the
-`?function` command in the R console to look up the documentation to see
-the possibilities for options and additional features, or even just to
-refresh your memory. Every time I look up the `?` help for a function I've
-been using for decade, I always learn new tricks.** 
 
 1. _"How many observations (rows) and variables (columns) does my data have?"_ -- `nrow()`, `ncol()`
 
@@ -96,6 +100,13 @@ rows)?"_ -- `head()`, `tail()`
 expect in that column?"_ -- `table()` for "categorical types" (types which take
 only a couple of discrete values), `summary()` for
 "numeric types", `min()`, `max()`, `which.min()`, `which.max()`
+
+
+**Note:** Use this list as a cheatsheet of sorts! Also, don't forget to use the
+`?function` command in the R console to look up the documentation to see
+the possibilities for options and additional features, or even just to
+refresh your memory. Every time I look up the `?` help for a function I've
+been using for decade, I always learn new tricks.
 
 ---
 
@@ -114,7 +125,8 @@ data frames.**
 1. **Inspect the `df` metadata table using the functions above, and try to
 answer the following questions using the functions from the list above
 (you should decide which will be appropriate for which question). Before you use one of these functions for the first time, take a moment to
-skim through its `?function_name`.**
+skim through its `?function_name`, just to build that habit of not forgetting
+that the help pages are always there.**
 
 **How many individuals do we have metadata for?**
 
@@ -164,14 +176,15 @@ glimpse(df)
 :::
 
 **What are the variables we have that describe the ages (maybe look at those
-which have "age" in their name)? Which one would you use to get information
+which have "age" in their name you detected with the `columns()` function earlier)?
+Which one would you use to get information
 about the ages of most individuals and why? What is the distribution of dates
 of aDNA individuals?**
 
-**Hint:** Remember that for a column/vector `df$<variable>`, `is.na(df$<variable>)`
+**Hint:** Remember that for a column/vector `df$COLUMN_NAME`, `is.na(df$COLUMN_NAME)`
 gives you `TRUE` for each `NA` element in that column variable, and
-`sum(is.na(df$<variable>))` counts the number of `NA`. Alternatively,
-`mean(is.na(df$<variable>))` counts the proportion of `NA` values!
+`sum(is.na(df$COLUMN_NAME))` counts the number of `NA`. Alternatively,
+`mean(is.na(df$COLUMN_NAME))` counts the proportion of `NA` values!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -262,8 +275,8 @@ sum(which_archaic)
 ```
 :::
 
-**Who are the mysterious "Archaic" individuals? What are their names (`sampleId`)
-and which publications they come frome (`dataSource`)?**
+**Who are the mysterious "Archaic" individuals? What are their names (`sampleId`,
+column) and which publications they come frome (`dataSource` column)?**
 
 **Hint:** We need to _filter_ our table down to rows which have
 `groupAge == "Archaic"`. This is an indexing operation which you learned about
@@ -330,7 +343,8 @@ useful in truly geographical data analysis setting (which we will delve into
 a bit later).
 :::
 
-**What is the source of the sequences in our data set? Does it look like they
+**What is the source of the sequences in our data set (i.e., which are the
+publications the individuals' sequences come from)? Does it look like they
 all come from a single study?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -353,19 +367,22 @@ This is great because it allows us to refer individual specific results
 we might obtain later to the respective publications!
 :::
 
-**What's the distribution of coverage of the samples? Compute the `mean()`
+**What's the distribution of coverage of the samples (you now know which
+column has the coverage information)? Compute the `mean()`
 and other `summary()` statistics on the coverage information. Why doesn't
 the `mean()` function work when you run it on the vector of numbers in the
 `coverage` column (i.e, `df$coverage`, use `?mean` to find the solution).
 Which individuals have missing coverage? Finally, use the `hist()` function
 to visualize this information to get a rough idea about the data.**
 
-These are all basic questions which you will be asking yourself _every time_
-you read a new table into R. It might not always be coverage, but you will have
-to do this to familiarize yourself with the data and understand its potential
-issues! **Always keep an eye on strange outliers, missing data `NA`, anything
+These are all basic (maybe a bit boring) questions which you will be asking
+yourself _every time_ you read a new table into R. It might not always
+be coverage, but you will have to do this to familiarize yourself with the
+data and understand its potential issues!
+
+**Always keep an eye on strange outliers, missing data `NA`, anything
 suspicious. Never take any data for granted (that applies both to data from
-any third parties, but even to your own data sets!).
+any third parties, but even to your own data sets!).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -408,7 +425,10 @@ hist(df$coverage, breaks = 100)
 :::
 
 **Who is the oldest individuals in our data set? Who has the highest
-coverage? Who has the lowest coverage?**
+coverage? Who has the lowest coverage?** Again, the "age of a sample" here
+is just a place holder --- in practice you'll be asking yourselves this
+kind of questions for all kinds of statistics, even statistics you have to
+obtain from third-party inference software.
 
 **Hint:** Use functions `min()`, `max()` or `which.min()`, `which.max()`.
 When would you use each of the pair of functions? Look
@@ -447,49 +467,60 @@ max(df$coverage, na.rm = TRUE)
 
 ## Exercise 2: Selecting columns
 
+**We have now some basic familiarity with the format of our data and which
+kinds of variables/columns we have for every individual. It's time to learn
+about techniques for _manipulating_, _modifying_, and _filtering_ this data.**
+
 Often times we end up in a situation in which we don't want to have a large
 data frame with a huge number of columns. Not as much for the reasons of
 the data taking up too much memory, but for convenience. You can see that
 our `df` metadata table has `r ncol(df)` columns, which don't fit on the
-screen if we just print it out (note the "13 more variables" in the output):
+screen if we just print it out (note the "13 more variables" in the output).
+**Just try this yourself again in your R console and observe what kind of
+(cluttered) output you get:**
 
 ```{r}
 df
 ```
 
-We can select which columns to select with the function `select()`. It has
-the following general format:
+We can select which columns to pick from a (potentially very large data frame)
+with the function `select()`. It has the following general format:
 
 ```
 select(<data frame>, <column 1>, <column 2>, ...)
 ```
 
-As a reminder, this is how we would select columns using a normal base R
-subsetting/indexing operation:
+**As a reminder, this is how we would select columns using a normal base R
+subsetting/indexing operation:**
 
 ```{r}
-df[, c("sampleId", "region", "coverage", "ageAverage")]
+smaller_df <- df[, c("sampleId", "region", "coverage", "ageAverage")]
+
+smaller_df
 ```
 
-This is the _tidyverse_ approach using `select()`:
+**This is the _tidyverse_ approach using `select()`:**
 
 ```{r}
-select(df, sampleId, region, coverage, ageAverage)
+smaller_df <- select(df, sampleId, region, coverage, ageAverage)
+
+smaller_df
 ```
 
-**Note:** The most important thing for you to note now is the absence of "double
-quotes". It might not look like much, but saving yourself from having to type double
+**Note the most important thing for you to notice, which is the absence of "double
+quotes".** It might not look like much, but saving yourself from having to type double
 quotes for every data-frame operation (like with base R) is incredibly convenient.
 
 ---
 
 **Practice `select()` by creating three new data frame objects (remember
-that you can assign a value to a variable using the `<-` operator):**
+that you can assign a result to a variable using the `<-` operator):**
 
 1. Data frame `df_ages` which contains all variables related to sample ages
 2. Data frame `df_geo` which contains all variables related to geography
 
-Additionally, the first column of these data frames should always be `sampleId`.
+**Additionally, the first column of these data frames should always be `sampleId`,
+so make sure this column is included in the selection.**
 
 **Check visually (or using the `ncol()` functions) that you indeed have a
 smaller number of columns in your new data frames.**
@@ -512,12 +543,14 @@ df_geo
 **Note:** `select()` allows us to see the contents of columns of interest much 
 easier. For instance, in a situation in which we want to analyse the
 geographical location of samples, we don't want to see columns unrelated to
-that -- `select()` helps here.
+that (like haplogrous, sex of an individual, etc. which are all part of the
+huge original table) and `select()` is the solution to this.
 
 ---
 
-If your tables has many columns of interest, typing them all by hand can become
-tiresome real quick. **Here are a few helper functions which can be very useful
+If your tables has many columns of interest, typing them all by hand like you
+did in the `select()` examples above can become tiresome real quick.
+**Here are a few helper functions which can be very useful
 in that situation:**
 
 - `starts_with("age")` -- matches columns starting with the string "age"
@@ -528,7 +561,7 @@ in that situation:**
 modify our `select()` "template" above, we could do this, for instance:
 
 ```
-select(<data frame object or tibble>, starts_with("text1"), ends_with("text2"))
+select(df, starts_with("text1"), ends_with("text2"))
 ```
 
 **Check out the `?help` belonging to those functions (note that they have
