@@ -1,4 +1,4 @@
-chapters := slendr
+chapters := slendr whoami
 
 rendered_dir := rendered
 
