@@ -1,10 +1,10 @@
 # R bootcamp
 
-**In this first chapter, you will be exploring the fundamental, more technical
+In this first chapter, you will be exploring the fundamental, more technical
 aspects of the R programming language.
 We will focus on topics which are normally taken for granted and never
 explained in basic data science courses, which generally immediately jump to
-data manipulation and plotting.**
+data manipulation and plotting.
 
 I strongly believe that **getting familiar with the fundamentals of
 R as a complete programming language from a "lower-level" perspective,
@@ -26,8 +26,8 @@ data science issues.
 
 **Still, when we get to data science work in the following chapters, you will
 see that many things which otherwise remain quite obscure and magical boil down
-to a set of very simple principles and components. The purpose of this
-chapter is to introduce you to these fundamentals.**
+to a set of very simple principles introduced here. The purpose of this
+chapter is to show you these fundamentals.**
 
 **This knowledge will make you much more confident in the results of your work,
 and much easier to debug issues and problems in your own projects, but also
@@ -2540,15 +2540,22 @@ anyway).**
 
 ## Exercise 10: Functions
 
-The motivation for this Exercise could be summarized by an ancient motto of programming:
-[Don't repeat yourself (DRY)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself):
-_"[...] a modification of any single element of a system does not require
+The motivation for this Exercise could be summarized by an ancient principle
+of computer programming known as
+[**_"Don't repeat yourself"_ (DRY)**](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) which
+is present when:
+
+> _"[...] a modification of any single element of a system does not require
 a change in other logically unrelated elements."_.
 
-Let's demonstrate this idea in practice.
+**Let's demonstrate this idea in practice on the most common way this is
+applied in practice, which is encapsulating (repeatedly used) code
+in self-contained functions**.
 
 Let's say you have the following numeric vector (these could be base qualities,
-genotype qualities, $f$-statistics, sequencing coverage, anything):
+genotype qualities, $f$-statistics, sequencing coverage, anything
+normally probably stored in a data-frame column, but here represented
+as a plain numeric vector):
 
 ```{r}
 vec <- c(0.32, 0.78, 0.68, 0.28, 1.96, 0.21, 0.07, 1.01, 0.06, 0.74,
@@ -2559,14 +2566,13 @@ With numeric vectors, we often need to compute some summary statistics
 (mean, median, quartile, minimum, maximum, etc.). What's more, in a given project,
 we often have to do this computation multiple times in a number of places.
 
-::: {.aside}
-In R, we have a very useful built-in function `summary()`, which does exactly that.
+**Note:** In R, we have a very useful built-in function `summary()`, which does exactly that.
 But let's ignore this for the moment, for learning purposes.
-:::
 
-Here is how we can compute those summary statistics individually:
+**Here is how you can compute those summary statistics individually:**
 
 ```{r}
+#| collapse: true
 min(vec)
 
 # first quartile (a value which is higher than the bottom 25% of the data)
@@ -2582,18 +2588,143 @@ quantile(vec, probs = 0.75)
 max(vec)
 ```
 
-Now, you can imagine that you have many more of such vectors (results for different
+Now, **you can imagine that you have many more of such vectors (results for different
 sequenced samples, different computed population genetic metrics, etc.). Having
 to type out all of these commands for every single one of those vectors would
-very quickly get extremely tiresome. Worse still, when we would do this, we would
+very quickly get extremely tiresome.** Worse still, when we would do this, we would
 certainly resort to copy-pasting, which is guaranteed to lead to errors.
+
+**Custom functions are the best solution to this problem and a key
+thing most scientists are not aware of which can tremendously improve
+reproducibility.**
+
+---
+
+### How are functions defined
+
+A custom function in R is defined by the following pattern. Note that
+it looks like a variable definition, except the variable (later refered
+to as a "function name", here `fun_name`) is assigned `<-` a more complex code structure
+known as "function" body, with the code enclosed in `{` and `}` block
+delimiters.
+
+Custom functions can take several form, most importantly:
+
+1. **The function can be without parameters, defined like this:**
+
+```{r}
+#| eval: false
+fun_name <- function() {
+  # here goes your code
+}
+```
+
+**And then called like this** (without parameters, and not returning anything):
+
+```{r}
+#| eval: false
+fun_name()
+```
+
+2. **Or it can have some parameters**, which are variables that are passed
+to that function (and can be used inside the function like any other
+variable --- here just parameter variables `par1`, `par2`):
+
+```{r}
+#| eval: false
+fun_name <- function(par1, par2) {
+  # here goes your code
+}
+```
+
+**And then called like this** (still not returning anything):
+
+```{r}
+#| eval: false
+# variable1 will be assigned to par1 inside the function
+# variable2 will be assigned to par2 inside the function
+fun_name(variable1, variable2) 
+```
+
+3. **A function can also return a result**, represented
+by a variable created inside that function, and
+returned by the `return()` statement typically at the end of the function
+body (but not always):
+
+```{r}
+#| eval: false
+fun_name <- function(par1, par2) {
+  # here goes your code
+  
+  # the code could create a variable like this:
+  result <- # however you would compute the result
+  
+  return(result)
+}
+```
+
+**And then used like this:**
+
+```{r}
+#| eval: false
+# the returned value from the function is assigned to a variable
+# result_from_function which we can work with later
+result_from_function <- fun_name(par1, par2)
+```
+
+### Spoilers ahead for more advanced researchers
+
+If you're a more advanced researcher, in the later parts on practical
+reproducibility techniques, extracting your repetitive code into
+self-contained, well-documented functions, and putting collections of
+such functions into independent "utility module" scripts which can
+be sourced into data analysis scripts using the `source()` command
+is the single best, most important thing you can do do increase the
+robustness and reproducibility of your own projects!
+
+**When you find yourself with free time, use these lessons to improve
+your projects by doing this!**
 
 ---
 
 **Write a custom function called `my_summary`, which will accept a single input
-named `values`, and returns a list which binds all the six summary statistics
+named `values` (the vector of numbers), and return a list which combines all the six summary statistics
 together. Name the elements of that list as `"min"`, `"quartile_1"`, `"median"`,
 `"mean"`, `"quartile_3"`, and `"max"`.**
+
+**Hint:** You can use the following "template", and just fill in the required
+bits of code within the "function body" represented by `{` and `}`:
+
+```{r}
+#| eval: false
+# copy this template into your script and add relevant bits of code to
+# turn it into a full-blown R function
+
+my_summary <- function(values) {
+  # compute
+  # your
+  # summary
+  # statistics
+  # like
+  # you
+  # did
+  # above
+  
+  result <- list(... combine your statistics into a named list as instructed ...)
+  
+  # then return that result
+  return(result)
+}
+```
+
+**Then test that your function works correctly by running it:**
+
+```{r}
+#| eval: false
+my_summary(vec)
+```
+
+
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -2631,6 +2762,13 @@ my_summary <- function(values) {
   return(result)
 }
 ```
+
+We can then run our function like this:
+
+```{r}
+my_summary(vec)
+```
+
 :::
 
 ---
@@ -2674,10 +2812,10 @@ summary(vec3)
 
 ---
 
-The punchline is this: if we ever need to modify how are summary statistics
+**The punchline is this: if we ever need to modify how are summary statistics
 are computed, we only have to make a single change in the function code
 instead of having to modify multiple copies of the code in multiple locations
-in our project.
+in our project.**
 
 ---
 
