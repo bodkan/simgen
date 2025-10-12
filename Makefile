@@ -5,10 +5,6 @@ rendered_dir := rendered
 slides_html := $(foreach chapter,$(chapters),$(rendered_dir)/slides_$(chapter).html)
 handouts_qmd := $(foreach chapter,$(chapters),handouts_$(chapter).qmd)
 
-debug:
-	@echo $(slides_html)
-	@echo $(handouts_qmd)
-
 all: slides handouts book
 
 book: $(handouts_qmd)
