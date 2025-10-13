@@ -1,0 +1,369 @@
+
+# Introduction to _tidyverse_
+
+(A few remarks and tips before the practical session)
+
+# Quick recap from our R bootcamp yesterday
+
+<br>
+(We were not supposed to finish everything, so no stress.)
+
+#
+
+<center>
+<h3>
+The motivation was to get familiar with the background of what makes a "data frame".
+</h3>
+</center>
+
+## Vectors and lists
+
+- Vectors are collections of values of the same type:
+
+```{r}
+sample   <- c("Loschbour", "UstIshim", "Saqqaq", "AltaiNeandertal")
+coverage <- c(18.2,        35.2,       13.4,     44.8)
+archaic  <- c(FALSE,       FALSE,      FALSE,    TRUE)
+```
+
+. . .
+
+- Lists are collections of _anything_:
+
+```{r}
+list("Hello", TRUE, 123)
+```
+
+. . .
+
+<center>**... and that "anything" can also include other vectors!**</center>
+
+## An example of such a list of vectors...
+
+<br>
+<center>From vectors stored as individual variables...</center>
+<br>
+
+```{r}
+sample   <- c("Loschbour", "UstIshim", "Saqqaq", "AltaiNeandertal")
+coverage <- c(18.2,        35.2,       13.4,     44.8)
+archaic  <- c(FALSE,       FALSE,      FALSE,    TRUE)
+```
+
+## An example of such a list of vectors...
+
+<br>
+<center>To those vectors stored as (named) list...</center>
+<br>
+
+```{r}
+#| eval: false
+list(
+  sample   = c("Loschbour", "UstIshim", "Saqqaq", "AltaiNeandertal"),
+  coverage = c(18.2,        35.2,       13.4,     44.8),
+  archaic  = c(FALSE,       FALSE,      FALSE,    TRUE)
+)
+```
+
+
+## Data frame is just that
+
+<br>
+<center>A list of vectors...</center>
+<br>
+
+```{r}
+#| eval: false
+list(
+  sample   = c("Loschbour", "UstIshim", "Saqqaq", "AltaiNeandertal"),
+  coverage = c(18.2,        35.2,       13.4,     44.8),
+  archaic  = c(FALSE,       FALSE,      FALSE,    TRUE)
+)
+```
+
+## Data frame is just that
+
+<br>
+<center>... which is just printed as a table.</center>
+<br>
+
+```{r}
+#| output-location: fragment
+data.frame(
+  sample   = c("Loschbour", "UstIshim", "Saqqaq", "AltaiNeandertal"),
+  coverage = c(18.2,        35.2,       13.4,     44.8),
+  archaic  = c(FALSE,       FALSE,      FALSE,    TRUE)
+)
+```
+
+
+
+
+```{r}
+#| echo: false
+df <- data.frame(
+  sample   = c("Loschbour", "UstIshim", "Saqqaq", "AltaiNeandertal"),
+  coverage = c(18.2,        35.2,       13.4,     44.8),
+  archaic  = c(FALSE,       FALSE,      FALSE,    TRUE)
+)
+```
+
+
+
+
+## Indexing into tables: `df[rows, cols]`
+
+<br>
+<u>Indexing by columns</u> (**"selecting columns"**)
+<br>
+<br>
+
+```{r}
+df[, c("sample", "coverage")]
+```
+
+
+## Indexing into tables: `df[rows, cols]`
+
+<br>
+<u>Indexing by rows</u> (**"filtering rows"**)
+<br>
+
+1. **using row numbers**:
+
+```{r}
+df[c(2, 3), ]
+```
+
+. . .
+
+2. **using `TRUE`/`FALSE` for each row**:
+
+:::: {.columns}
+
+::: {.column}
+```{r}
+df[c(FALSE, TRUE, FALSE, TRUE), ]
+```
+:::
+
+
+::: {.column}
+
+::: {.fragment}
+```{r}
+df[df$coverage > 30, ] # same thing!
+```
+:::
+
+:::
+
+::::
+
+#
+
+<center>![](files/tidy/tidyverse_heading.png){width="72%"}</center>
+
+<br>
+<center>
+<h2>[tidyverse.org](https://tidyverse.org)</h2>
+<small><br><br></small>
+Nine "core" R packages and a "philosophy of data science design" which
+inspired many many more specialized packages.
+</center>
+
+
+#
+
+<center>
+
+![](files/tidy/tidyverse_paper.png){width="60%"}
+
+[link to the paper](https://joss.theoj.org/papers/10.21105/joss.01686)
+</center>
+
+
+## What is _tidyverse_?
+
+<center>
+
+![](files/tidy/workflow_diagram.png){width="70%"}
+
+</center>
+
+> <small>The _tidyverse_ is a language for solving data science challenges with R code.
+Its primary goal is to facilitate a conversation between a human and a computer
+about data. Less abstractly, the tidyverse is a collection of R packages that
+share a high-level design philosophy [...] so that learning one package makes
+it easier to learn the next.<br><br>
+> The tidyverse encompasses the repeated tasks at the heart of every data
+science project: data import, tidying, manipulation, visualisation, and programming.</small>
+
+
+# This is still very abstract
+
+#
+
+<h2>In the spirit of hands-on interactivity, we will
+leave "theory" and practice work hand-in-hand during exercises.</h2>
+
+## Further companion study material
+
+<center>
+
+![](https://r4ds.hadley.nz/cover.jpg){width="40%"}
+
+[https://r4ds.hadley.nz](https://r4ds.hadley.nz)
+</center>
+
+# Let's talk about our example data
+
+# 
+
+<center>
+
+![](files/tidy/mesoneo_paper.png){width="40%"}
+
+</center>
+
+> <small>_"Western Eurasia witnessed several large-scale human migrations during the Holocene. Here, to investigate the cross-continental effects of these migrations, **we shotgun-sequenced 317 genomes—mainly from the Mesolithic and Neolithic periods—from across northern and western Eurasia**. These were **imputed alongside published data to obtain diploid genotypes from more than 1,600 ancient humans [and about 2,500 present-day humans]**."_</small>
+
+
+#
+
+<center>
+
+![](files/tidy/mesoneo_samples.png)
+
+</center>
+
+. . .
+
+**Our exercises will focus on two MesoNeo data sets:**
+
+- Table of metadata information associated with each sample
+- Genome-wide data set of Identity-by-Descent segments
+
+## Why those two data sets?
+
+- Table of metadata information associated with each sample
+- Genome-wide data set of Identity-by-Descent segments
+
+<hr>
+
+1. Best representatives of modern population genetic data
+2. Lots of opportunities to practice _tidyverse_ data processing
+3. Even more opportunities to showcase _ggplot2_ possibilities
+
+#
+
+<center><h2>The main reason...</h2></center>
+
+A great example of how to approach totally unfamiliar data!
+
+. . .
+
+<br>
+<center><h1>True story.</h1></center>
+
+<center>
+<br>Recently, I was given this exact data set. I had to find
+my way around it, and figure out how to build a project around it.
+</center>
+
+. . .
+
+<center>
+<br>**The exercises are retracing my own data exploration journey!**
+</center>
+
+
+
+# Let's get started!
+
+1. Go to [www.bodkan.net/simgen](https://bodkan.net/simgen)
+2. Click on _"Introduction to _tidyverse_"_ in the left panel
+- This session will focus on the metadata
+- _"More tidyverse practice"_ will dig
+into the IBD data set
+3. _"Cheatsheets and handouts"_ section in the left panel has
+a single-page version of these slides and the _dplyr_ cheatsheet
+4. Open your RStudio and start working!
+
+
+<!-- - we can (barely) cover the most basic functionality -->
+
+<!-- - I am working with this data set for the first time ever, just as you are -->
+<!--   - I may have more technical know how to get going, but we're on an equal -->
+<!--   footing as far as the data itself is concerned, and the questions that -->
+<!--   can be asked about it -->
+
+<!-- - how I would approach analyzing a new popgen data set (for real, because -->
+<!-- you're exercises will be retracing 1:1 my own steps as I worked with the -->
+<!-- IBD data for the first time ever) -->
+
+<!-- - experiment, experiment, experiment! R console workflow (read-eval-print-loop) -->
+<!-- is incredibly powerful, so take advantage of this! -->
+
+<!-- - the number of things to REALLY know and remember is surprisingly small -->
+<!--   - what distinguish a newbie from an expert is a repetition and experience, -->
+<!--     not the amount of things to remember (I have a horrible memory and remember -->
+<!--     almost nothing unless I did it hundreds of times) -->
+<!--   - every single exercise captures something about my own personal R application -->
+<!--   which I do almost every single day (and I've been writing R for a living for -->
+<!--   many years now) -->
+
+<!-- - a set of recipes (not just teaching materials) -->
+
+<!-- - you can look up galeries of ggplot2 figures and reproduce their styles -->
+<!-- and approaches on your own data! remember, data is categories and numbers, -->
+<!-- it doesn't matter what they show, you can get inspired by anything! -->
+
+
+<!-- - combine a realworld analysis with a little bit of "handholding" to whomever -->
+<!-- needs it, with interactive hands-on work -->
+<!--   - the best way to learn how to program (or do anything, really) is by -->
+<!--   watching an expert do it (and struggle with it! :)) -->
+<!--   - this is intended to replicate this experience withing a short timeframe, -->
+<!--   but without blind copy-pasting of solutions -->
+
+<!-- - this will sound like an excuse -- but there are sure to be mistakes in my -->
+<!-- text, code, solutions -- take this as an opportunity to pay close attention, -->
+<!-- inspect and think about every line of code -->
+
+<!-- - if there's ANYTHING you don't understand, please ask -- do not just copy-paste -->
+<!-- code blindly, that's the opposite of learning -->
+<!--   - in your daily work you are often forced to do just that -- do something without -->
+<!--   having time to think carefully -->
+<!--   - use this workshop as an opportunity to learn, make mistakes, and struggle -->
+<!--   (and ask questions) in a safe environment where nobody will judge you for -->
+<!--   not knowing an aswer immediately -->
+<!--   - this is absolutely critical -- if you take anything from my "introductory -->
+<!--   slides", it's this point -->
+
+<!--   many of the things we'll -->
+<!--   be doing and code we'll be writing is 100% research code I used myself -->
+<!--   - please don't worry if things are sometimes overwhelming: -->
+<!--     - always try to understand my code and ask questions -->
+<!--     - don't ever blindly copy things -->
+
+<!-- - not going to lie to you -- this still only scratches the surface, Pareto principle -->
+<!--   - but it absolutely, definitely is enough for you to get started -->
+<!--   - and also to keep you going for a while because your familiarity with -->
+<!--   basic will help you tremendously in searching more information, googling, etc. -->
+
+<!-- - like with any apprenticeship, the best way to learn is to look over someone -->
+<!-- else's shoulder and learn from them -->
+<!--   - kind of hard to do with coding, unless I'd force you to spend five days -->
+<!--   looking at the projector while I'm coding live -->
+<!--   - these exercises are a compromise on that front -- you'll be working through -->
+<!--   practical exercises THAT I MYSELF HAD TO SOLVE RECENTLY, I will leave the -->
+<!--   questions and tasks open... but still provide my solutions which you shouldn't -->
+<!--   ever blindly copy, but think about every single line you type out -->
+<!--   - if something is not clear, please, PLEASE raise your hand and ask me -->
+<!--   - this is the only ONLY way how we can make this work, and how to make this -->
+<!--   workshop useful for you -->
+<!--   - your questions will surely prompt more detailed discussion points, which -->
+<!--   I can then always demonstrate live -->
+
+<!-- - transfer of knowledge vs transfer of skill -->
