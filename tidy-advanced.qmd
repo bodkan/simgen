@@ -1,7 +1,8 @@
 # More _tidyverse_ practice
 
 **In this chapter we will introduce new (and reinforce already familiar) _tidyverse_
-concepts on another real-world population genetic data set. We will build the
+concepts on another real-world data set, related to the metadata we
+looked previously. We will build the
 components of a processing and filtering (and later visualization) pipeline for
 a new [Identity-by-Descent
 (IBD)](https://en.wikipedia.org/wiki/Identity_by_descent) data set** that I
@@ -13,7 +14,7 @@ nice, structured, reproducible way in later parts of our workshop.
 
 This is a real world example! You will be retracing the steps I had to work
 through in my job in August 2025 where I got sent a completely unfamiliar
-new data set of IBD segments and asked to do some science with it. 😳
+new data set of IBD segments and asked to do some science with it.
 
 ---
 
@@ -21,12 +22,12 @@ new data set of IBD segments and asked to do some science with it. 😳
 
 **A few reasons:**
 
-1. The metadata is straightforward, easy to understand by looking at it. The
-IBD segment data (you will see) contains millions of data points. Being able
+1. **The metadata is straightforward, easy to understand by looking at it. The
+IBD segment data (you will see) contains millions of data points.** Being able
 to look at the data with your own eyes makes translating concepts to _tidyverse_
 operations much easier.
 
-2. However, the metadata is just that, metadata. It's a collection of meta
+2. **However, the metadata is just that, metadata.** It's a collection of meta
 information about individuals. But it's not data you can do (biological)
 science with. As such, it's much less exciting to _really_ dig into more
 interesting concepts.
@@ -77,9 +78,20 @@ whenever I give you a chunk of R code, always write it out in your own
 scripts or R console and run it (or, if it's too long, just copy it...
 but typing it out manually engages your memory banks more efficiently).
 
+## General workflow
+
+In this session, you should try to experiment with code to solve each
+little exercise. Make sure you understand how to solve the problem, either
+by writing bits and pieces into your `tidy-basics.R` script (evaluating
+your code line-by-line to check that it works), or experimenting with
+bits of code in your R console and only recording your solution to your
+script when you solved it.
+
+In practice, you'll be using both approaches.
+
 ---
 
-**Let us also read in data which we will be using in these exercises.** These
+**Let's also read in data which we will be using in these exercises.** These
 are coordinates of identity-by-descent (IBD) segments between pairs of
 individuals in a
 [huge aDNA study](https://www.nature.com/articles/s41586-023-06865-0)
@@ -90,8 +102,7 @@ previous session (at least I hope so! that's what I've been told when I
 started the IBD journey as I began preparing this workshop... you'll be really
 retracing my steps).
 
-::: {.aside}
-Why use IBD for these exercises? First, IBD data are increasingly
+**Note:** Why use IBD for these exercises? First, IBD data are increasingly
 popular across population genomics and evolutionary biology, so it's very likely
 you will encounter it in your own work. Second, it's an excellent data se on
 which you can practice and develop your data science skills.
@@ -115,22 +126,26 @@ a smaller section of it, for better clarity. Therefore, `metadata_all` will
 be the original, unprocessed data set. It's often very useful to keep raw
 data in our session like this.
 
+
+---
+
+**Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
+save it somewhere on your computer as `tidy-advanced.R` (`File` `->` `Save`).
+Copy the chunks of code above into it (the `library()` and `read_tsv()` commands
+and let's get started)!**
+
 ---
 
 **Skim through the messages given by `read_tsv()` above. I personally
 find them annoying and often silence them in finished pipelines or reports
-(how can you silence them? look up `?read_tsv`) but it is good to keep an
+(how can you silence them? look up `?read_tsv` to discover other useful
+options!) but it is good to keep an
 eye on them when you're starting because they give you an overview of data
 types!**
 
 ---
 
-**Create a new R script in RStudio, (`File` `->` `New file` `->` `R Script`) and
-save it somewhere on your computer as `tidy-advanced.R` (`File` -> `Save`).
-Copy the chunks of code above into it (the `library()` and `read_tsv()` commands
-and let's get started)!**
-
----
+## Real world story
 
 **So, the story is that you just got a new data set from a bioinformatics 
 software, in this case the [IBDseq software](https://faculty.washington.edu/browning/ibdseq.html)
@@ -138,10 +153,10 @@ for detecting IBD segments between pairs of individuals.
 Before you proceed with doing any kind of statistical analysis you need to
 do two things:**
 
-1. Exploring the data to see _what_ is it that you just got. **Never trust
-the data you've been given blindly and always do many sanity checks! In
+1. **Exploring the data to see _what_ is it that you just got. **Never trust
+the data you've been given blindly** and always do many sanity checks! In
 the process, you will gain more confidence in it, and also learn its ins
-and outs, which will be useful either way.**
+and outs, which will be useful either way.
 
 
 2. Filtering and processing it in a way which will make your work easier.
@@ -155,8 +170,8 @@ and outs, which will be useful either way.**
 **Again, the first step is always to familiarize yourself with the basic
 structure of the data. 
 Which columns does the IBD data have? What's the format of the data?
-What ranges or distributions of values do you have available, and with what
-data types? Do you have information for the entire genome?**
+What ranges or distributions of columns' values do you have, and with what
+data types? Do you have information for the entire genome (all chromosomes)?**
 
 **Hint:** `head()`, `colnames()`, `glimpse()`, `str()`, `table()`, `summary()`
 which are either applicable to an entire data frame, or a specific column
@@ -189,8 +204,8 @@ table(ibd_segments$chrom)
 
 ---
 
-**As a sanity check, do you have metadata information for every individual in
-the `sample1` and `sample2` columns of the IBD table? What about the other
+**As a sanity check, find out if you have metadata information for every individual in
+the `sample1` and `sample2` columns of the IBD table. What about the other
 way around -- do all individuals in the metadata have some IBD relationship to
 another individual in the IBD segments table? If not, find out which individuals are these.**
 
@@ -201,8 +216,7 @@ need.
 
 **Hint:** Another way to phrase this question is this: does every name that
 appears in either `sample1` or `sample2` column of `ibd_segments` have a record in the
-`sampleId` column of `metadata_all` (i.e., is information in one vector of names
-a perfect subset of the second vector of names)? Remember that you can use the
+`sampleId` column of `metadata_all`? Note that you can use the
 function `unique()` to get all unique values in a given vector (as in, all
 unique values in vector `ibd$sample1` which has otherwise many duplicated
 entries). And remember the existence of `%in%` and `!` operators!
@@ -253,16 +267,16 @@ we won't be missing anything important.
 
 ## Exercise 2: IBD processing
 
-**Add a new column to the `ibd_segments` data frame using the `mutate()`
-function called `length`, which contains the length of each IBD segment
+**Add a new column `length` to the `ibd_segments` data frame using the
+`mutate()` function, which will contain the length of each IBD segment
 in centimorgans (`end - start`). Save the data frame that `mutate()`
 returns back to the variable `ibd_segments`.**
 
 **Note:** Sometimes saving new things to already-defined variables leads to
-very messy code. In this instance, we're basically building up a processing
+very messy code and its cleaner to create new variables for nex results.
+In this instance, we're basically building up a processing
 _pipeline_ whose purpose is to filter / mutate / clean a data frame for
 downstream use. In fact, later we will add individual steps of this pipeline
-into its own function! In cases like this, it's OK to reuse the same variable 
 name in several subsequent steps.
 
 ::: {.callout-note collapse="true" icon=false}
@@ -291,24 +305,33 @@ ibd_segments
 ## Exercise 3: Metadata processing
 
 We have read our IBD table and added a new useful column to it, so let's
-proceed with the metadata. There will be another important IBD processing
-step below where we merge both data sets together, but for that we need
-to do a bit more processing of the `metadata_all` first, to make the
-co-analysis of IBD information across space and time easier to do.
+proceed with the metadata. You already became familiar with it in the
+previous session---the goal here now is to transform it to a form more
+useful for downstream data co-analysis with the genomic IBD data.
 
-**First, there's much more information than we need for now, just take a look:**
+**Think of it this way: metadata contains all relevant variables for each 
+individual in our data (age, location, population, country, etc.). IBD contains
+only genomic information. We eventually need to merge those two sets of
+information together to ask questions about population history and biology.**
+
+---
+
+**First, there's much more information than we need for now, just take
+a look again:**
 
 ```{r}
 colnames(metadata_all)
 head(metadata_all)
 ```
 
-**Realistically, given that our interest here is pairwise IBD segments,
+Realistically, given that our interest here is pairwise IBD segments,
 a lot of this metadata information is quite useless at this stage.
-Let's make the data a bit smaller and easier to look at at a glance.**
+**Let's make the data a bit smaller and easier to look at at a glance.**
+
+---
 
 **Use `select()` a subset of the metadata with the following columns and
-store it in a new variable `metadata` (we don't want to overwrite the
+store it in a new variable `metadata` (not back to `metadata_all`! we don't want to overwrite the
 original big table `metadata_all` in case we need to refer to it a bit
 later): `sampleId`, `country`, `continent`, `ageAverage`. Then `rename()`
 `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to `age` just
@@ -366,6 +389,9 @@ values...)` but you can also do the opposite test as
 `!column %in% c(... some values...)` (notice the `!` operator in the
 second bit of code).
 
+Experiment with the `filter()` command in your R console first if you
+want to check that your filtering result is correct.
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
@@ -391,15 +417,15 @@ head(metadata)
 
 ---
 
-In our original `metadata_all` table we have the `groupAge` column with these
-values:
+**In our original `metadata_all` table we have the `groupAge` column with these
+values:**
 
 ```{r}
 table(metadata_all$groupAge)
 ```
 
-Note that in the new `metadata` we removed it because it's not actually useful
-at all for most data analysis purposes because it has only three values. 
+**Note that in the new `metadata` we removed it because it's not actually useful
+for most data analysis purposes (it has only three values).** 
 For instance, later we might want to do some fancier analyses, looking at
 IBD as a time series, not just across basically two temporal categories,
 "young" and "old".
@@ -423,7 +449,7 @@ in which age bin (maybe, split in steps of 5000 years) do our individuals
 belong to.**
 
 Here's a small example to help us get started.
-Imagine that `df` is a example representative of our full-blown metadata table.
+**Let's pretend for a moment that the `df` variable created below is a example representative of our full-scale big metadata table.**
 **Copy this into your script, so that you can experiment with the `cut()`
 technique in this section.**
 
@@ -436,8 +462,8 @@ df <- data.frame(
 df
 ```
 
-Think about what the `cut()` function does here based on the result it
-gives you on the little example code below. You can pretend for now that the
+**Let's do the time-binning now! Think about what the `cut()` function does here based on the result it
+gives you on the little example code below.** You can pretend for now that the
 `ages` variable corresponds to age of our samples in the huge `metadata` table.
 **Again, try running this on your own to see what happens when you run this
 code in your R console. Particularly, take a look at the format of the new
@@ -448,17 +474,18 @@ column `age_bin`:**
 # let's first generate the breakpoints for our bins (check out `?seq` if
 # you're confused by this!)
 breakpoints <- seq(0, 50000, by = 5000)
+# take a look at the breakpoints defined:
 breakpoints
 
-# binning the age into groups using our breakpoints
+# create a new column of the data frame, containing bins of age using our breakpoints
 df$age_bin <- cut(df$age, breaks = breakpoints)
-
+# take a look at the data frame (with the new column `age_bin` added)
 df
 ```
 
-**Note:** The function `cut()` is extremely useful whenever you want to discretize
+**The function `cut()` is extremely useful whenever you want to discretize
 some continuous variable in bins (basically, a little similar to what
-a histogram does in context of plotting). Doing statistics on this kind of
+a histogram does in context of plotting).** Doing statistics on this kind of
 binned data is something we do very often. So never forget that `cut()` is
 there to help you! For example, you could also use the same concept to
 partition samples into categories based on "low coverage", "medium coverage",
@@ -540,13 +567,15 @@ cut(df$age, breaks = seq(0, 50000, by = 10000))
 cut(df$age, breaks = seq(0, 50000, by = 10000), include.lowest = TRUE)
 ```
 
-However, this isn't what we want, because we want to treat present-day individuals
+**However, this isn't what we want, because we want to treat present-day individuals
 separately as their own category, not include them with other ancient people
-less than 5000 years old.
+less than 5000 years old.**
+
+---
 
 The `levels()` function is useful for getting the "labels" of the categories
-as they are presented to you in various outputs (rather than their internal
-numerical encoding).
+as they are presented to you in various printouts in the console (rather
+than their internal numerical encoding).
 
 Consider the original vector `x2` (note the duplicated "hello" value):
 
@@ -758,8 +787,8 @@ information about ages and geography:
 head(metadata)
 ```
 
-What we need to do is join our IBD data with a selection of the most
-important variables in our metadata, which is what we're going to do now.
+**What we need to do is join our IBD data with a selection of the most
+important variables in our metadata, which is what we're going to do now.**
 
 **This bit might be a bit frustrating and repetitive if I made this into
 an exercise for you, so just inspect the following code, run it yourself
@@ -768,7 +797,7 @@ as a recipe that you can modify and reuse in your own projects later!**
 
 I'm happy to answer questions!
 
-#### Step 1.
+#### **Step 1.**
 
 For each IBD segment (a row in our table `ibd_segments`) we
 have two individuals on each row, `sample1` and `sample2`. Therefore, we
@@ -781,7 +810,7 @@ metadata1 <- metadata
 metadata2 <- metadata
 ```
 
-#### Step 2.
+#### **Step 2.**
 
 The columns of these metadata copies are the same, which you can verify by running this:
 
@@ -810,7 +839,7 @@ paste0(colnames(metadata1), "1")
 ```
 
 **So using `paste0()` we can append "1" or "2" to each column name of both tables.
-We can use the same approach to _assign_ new columns to each of our
+We can use the same approach to _assign_ new columns to both of our
 metadata copies:**
 
 ```{r}
@@ -827,7 +856,7 @@ colnames(metadata2)
 ```
 
 
-#### Step 3.
+#### **Step 3.**
 
 Now we are ready to join the table of IBD segments.
 
@@ -841,12 +870,13 @@ function `inner_join()`:
 **Note:** If you're more familiar with _tidyverse_ from before, I still think
 joins might be a relatively new topic. If so, please take a bit of time to
 read the [_dplyr_](https://dplyr.tidyverse.org/reference/mutate-joins.html)
-documentation on this topic. Joins are a superpower of data science.
+documentation on join operations. Joins are a superpower of data science.
 
-:::
+<center>
 ![](https://learn.microsoft.com/en-us/power-query/media/merge-queries-inner/inner-join-operation.png)
-:::
+</center>
 
+<br>
 What this operation does is that it creates a "merged" table, consisting
 of the columns of both "left" and "right" tables, where the "merged" table
 rows consist of such rows from "left" and "right", where the two tables
@@ -891,10 +921,10 @@ table now has added metadata information for individuals in column
 
 ```{r}
 # original IBD table:
-colnames(ibd_segments)
+head(ibd_segments, n = 3)
 
 # IBD table with metadata1 merged in:
-colnames(ibd_merged)
+head(ibd_merged, n = 3)
 ```
 
 **How do we add metadata for the second sample? We do it in the same way,
@@ -921,29 +951,30 @@ ibd_merged <-
 `sample1` and `sample2`:**
 
 ```{r}
-colnames(ibd_segments)
-colnames(ibd_merged)
+head(ibd_segments, n = 3)
+head(ibd_merged, n = 3)
 ```
 
 ---
 
-And this concludes merging of the primary IBD data with all necessary
-meta information! Every computational project I do has something like this
-somewhere. Of course, in the case of your primary data which could be observations
+**And this concludes merging of the primary IBD data with all necessary
+meta information!** _Every computational project has something like this
+somewhere._ Of course, in the case of your primary data which could be observations
 at particular ecological sampling sites or excavation sites, etc., this
 annotation might involve metadata with more specific geographical information,
-environmental data, etc.
+environmental data, etc. But the idea of using join for the annotation
+remains the same.
 
 ## Exercise 4. Final data processing
 
 You've already seen the super useful function `paste()` (and also `paste0()`)
 which useful whenever we need to join the elements of two (or more) character
-vectors together. The difference between then is that `paste0()` doesn't add
+vectors together. The difference between them is that `paste0()` doesn't add
 a space between the individual values and `paste()` does (the latter also
 allows you to customize the string which should be used for joining instead
 of the space).
 
-**Take a look at your almost finalized table `ibd_merged`:**
+**Take a look at your (now almost finalized) table `ibd_merged`:**
 
 ```{r}
 head(ibd_merged)
@@ -997,6 +1028,8 @@ ibd_merged <- mutate(
 
 # let's verify the results
 ibd_merged
+# values in the new `region_pair` column
+table(ibd_merged$region_pair)
 ```
 
 :::
@@ -1019,6 +1052,9 @@ ibd_merged <- mutate(
 )
 
 ibd_merged
+
+# values in the new `time_pair` column
+table(ibd_merged$time_pair)
 ```
 
 :::
@@ -1028,7 +1064,10 @@ ibd_merged
 
 You have written a lot of code in this chapter, both for filtering and
 processing of the IBD data and the metadata. Your script is already very
-long. If you need to ever update or change something (which you always will
+long (and maybe messy---I organized things like this on purpose, so this
+isn't on you!).
+
+If you need to ever update or change something (which you always will
 during a project, usually many times over) it can be hard to figure out which
 line of your script should be modified. If you forget to update something
 somewhere in a long script, you're in big trouble (and sometimes you won't
@@ -1043,21 +1082,38 @@ session on _ggplot2_).**
 ---
 
 **Create a new script called `ibd_utils.R` in your RStudio and create the
-following functions. Then take bits and pieces from the exercises used
-above and add them to the bodies of these functions accordingly, so
-that each function contains all the code we used above for that particular
-step.**
+following functions in that script (see the list below). Then copy-paste bits and pieces from
+your solutions above and add them to the bodies of these functions
+accordingly, so that each function contains all the code we used above
+for that particular step.** (There are three functions, for each part of
+the pipeline code we developed in this session.)
 
-**Note:** If you've never written R functions before and are confused,
-don't worry. You can skip ahead and use my solution! If you do, however,
-try to examine the code in each of the three functions, and try to make a
-connection between it --- line by line --- and the code you ran earlier
-in our session!
+---
+
+<u>**If you've never written R functions before and are confused,
+don't worry. You can skip ahead and use my solution directly (just
+paste that solution to your `ibd_utils.R` script)!**</u>
+
+::: {.aside}
+Yes, this is the first time I specifically told you that you can copy-paste
+something directly. :)
+:::
+
+**If you do, however,
+examine the code in each of the three functions, and try to make a
+connection between each function --- line by line --- and the code you ran earlier in our session! Because these functions really do contain all your
+code, just "modularized" in a reusable form. Refer back to the exercise
+on writing custom functions in our R basecamp session if you need a refresher
+on the R syntax used for this.**
+
+---
+
+**Here are the functions you should create:**
 
 0. First, don't forget to load all packages needed using `library()` calls at the
 top of the `ibd_utils.R` script.
 
-1. Create a function `process_ibd <- function() { ... add all code here ... }` which will:
+1. **Function `process_ibd <- function() { ... }` which will:**
 
 - read the IBD data from the internet like you did above using `read_tsv()`
 - process it in the same way you did above, adding the length column
@@ -1065,8 +1121,8 @@ top of the `ibd_utils.R` script.
 produced the `ibd_segments` data frame with `return(ibd_segments)` at the
 last line of that function
 
-2. function `process_metadata <- function(bin_step)`, which will (accepting
-a single `bin_step` argument):
+2. **Function `process_metadata <- function(bin_step) { ... }`, which will (accepting
+a single `bin_step` argument):**
 
 - download the metadata from the internet like you did above,
 - process and filter it in the same way like above (replacing `NA` in
@@ -1075,9 +1131,9 @@ column by binning according to the `bin_step` function parameter, etc.)
 - return the processed table with this processed metadata in the same way
 like you produced the `metadata` data frame as `return(metadata)`
 
-3. function `join_metadata <- function(ibd_segments, metdata)`, which will
+3. **Function `join_metadata <- function(ibd_segments, metdata) { ... }`, which will
 accept two arguments `ibd_segments` and `metadata` (produced by the two
-functions above) and then:
+functions above) and then:**
 
 - join the `ibd_segments` table with the `metadata` table
 - add the three `country_pair`, `region_pair`, and `time_pair` columns
@@ -1148,7 +1204,11 @@ your script `ibd_utils.R`, and add the following code to it,
 which, when you run it, will execute your entire pipeline and create
 the final `ibd_merged` table in a fully automated way.
 As a final test, restart your R session (`Session` `->` `Restart R`) and
-run the script `ibd_pipeline.R`.**
+run the script `ibd_pipeline.R` (you can use the `=> Run` button in the
+top right corner of your editor panel).**
+
+**You just build your (maybe first?) reproducible, automated data processing
+pipeline! 🎉**
 
 **Note:** The `source()` command executes all the code in your
 utility script and therefore makes your custom-built functions available
@@ -1192,8 +1252,10 @@ You can find my solution
 of learning how to structure and modularize your code in a reproducible,
 efficient way!</h3></center>
 
-This is not a joke and I really, really mean it. Most scientists sadly
-never reach this point in their careers, ever. Over the next sessions you will
+<br>
+
+This is not a joke and I really, really mean it. Most scientists unforunately
+never reach this point, ever. Over the next sessions you will
 see how much difference does (admittedly very annoying!) setup makes, and
 even learn other techniques how to make your computational research more
 robust and reliable.
@@ -1212,7 +1274,7 @@ code of our functions!**
 ---
 
 **Point your cursor somewhere inside the `process_ibd()` call in your
-new script `ibd_pipeline.R` and press "CTRL+.". This is how easy it is
+new script `ibd_pipeline.R` and press `CTRL + .`. This is how easy it is
 to navigate code, even when we modularized it across multiple files!**
 
 ## Final exercise
