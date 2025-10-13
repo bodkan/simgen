@@ -11,11 +11,12 @@ is that good.
 
 ## Part 1: Visualizing patterns in our IBD data
 
-**First, let's start from a clean slate, and leverage our modularized
-pipeline we created for our IBD data. Create a new R script in RStudio
+**First, let's start from a clean slate, and leverage the modularized
+pipeline we created for our IBD data at the very end of our second _tidyverse_
+session. Create a new R script in RStudio
 (`File` `->` `New file` `->` `R Script`), and save it somewhere on your
-computer as `tidy-viz.R` (`File` -> `Save`). Copy the following bit of code
-which will execute your IBD and metadata processing pipeline.**
+computer as `tidy-viz.R` (`File` `->` `Save`). Copy the following bit of code
+which will execute your IBD and metadata processing pipeline into that script.**
 
 The following exercises will focus on basics of visualization of various
 types of statistical summaries, using your IBD data set as a representative
@@ -55,31 +56,35 @@ ibd_segments <- process_ibd()
 ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
+**Let's appreciate the modularization aspect of the work we did earlier.
+Practically speaking, all of that work is now hidden behind three custom
+functions: `process_metadata()`, `process_ibd()` and `join_metadata()`.
+We can reuse this code anywhere and if we ever need to update something,
+we just have to change it in a single place: the `ibd_utils.R` script.
+This is a very important example of good programming practice.**
 
-### Exercise 0: Concept of layers
+### Exercise 1: Concept of layers
 
-An important, powerful, and even elegant concept with building visualizations
-using _ggplot2_ is the idea of _layering_. Let's start to introduce this
+An important (and even elegant) concept of building visualizations
+using _ggplot2_ is the idea of "layering". We will begin introducing this idea
 from the simplest possible kind of visualization, which is plotting
-the counts of observations of a categorical (i.e. discrete) variable.
-
-First, **what happens when you call a function `ggplot()` on its own?
-How about when you call `ggplot(metadata)`, i.e. when we say we want
+the counts of observations of a categorical (i.e. discrete) variable,
+**but first, what actually happens when you call a function `ggplot()` on its own?
+How about when you call `ggplot(metadata)`, i.e. when we tell `ggplot()` we want
 to be plotting something from out `metadata` table?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-We get an empty "canvas"! Almost as if we were artist starting to paint
-something. 
+We get an empty "canvas"! Almost as if we were an artist starting to paint
+something, to use a slightly pretentious metapho.
 
 ```{r}
 ggplot()
 ```
 
-
-Saying that we want to plot `metadata` doesn't change anything. We
-get the same empty canvas, with _ggplot2_ basically "waiting" for us to
+Saying that we want to plot `metadata` doesn't actually change anything. We
+get the same empty canvas, with _ggplot2_ basically waiting for us to
 give it more instructions.
 
 ```{r}
@@ -92,44 +97,54 @@ As mentioned in my solution, calling `ggplot()` on its own basically only
 sets up an empty "canvas", as if we were about to start painting something.
 
 This might sound like a silly metaphor, but when it comes to
-_ggplot2_ plotting, this is actually remarkably accurate. This is exactly
-because of the _layering_ aspect of _ggplot2_.
+_ggplot2_ plotting, this is actually remarkably accurate, because it is
+exactly how  the above-mentioned idea of the "layering grammar" of _ggplot2_
+works in practice.
 
 There are two important components of every _ggplot2_ figure:
 
 #### 1. **"Aesthetics"**
 
-Aesthetics are a specification of the _mapping_ of variables of a data frame
-(i.e., columns) to some kind of visual property of a plot (`x`, or `y`
-axis, `color`, `shape,` etc.). We specify these aesthetics with a function
-called `aes()` which you will see later many times.
+Aesthetics are a specification of the _mapping_ of columns of a data frame
+to some kind of visual property of the plot we want to create (position
+along the `x`, or `y` axes, `color`, `shape,` etc.). We specify these
+mapping aesthetics with a function called `aes()` which you will see later
+many times.
 
 #### 2. **"Geoms"**
 
 Geoms are graphical elements to be plotted (histograms, points,
 lines, etc.). We specify those using functions such as `geom_bar()`, 
-`geom_histogram()`, `geom_point()`, etc., all of which you will practice
-now.
+`geom_histogram()`, `geom_point()`, and many many others.
 
-#### How do "aesthetics" and "geoms" fit together?
+#### **How do "aesthetics" and "geoms" fit together?**
 
-I like to think about it this way:
+We can think about it this way:
 
-- "geoms" specify what our data should be plotted as
-- "aesthetics" specify how those geoms should look like
+- "geoms" specify what our data should be plotted as in terms of "geometrical
+elements" (that's where the name "geom" comes from)
+- "aesthetics" specify how those geoms should look like (so, the aesthetic
+visuals features of geoms, literally)
 
 **This is all very abstract, but don't worry. Refer to this as a guideline
 when you're implementing the exercises in practice!**
 
 
-### Exercise 1: Distribution of a categorical variable
+### Exercise 2: Distribution of a categorical variable
 
 Let's start very simply, and introduce the layering aspect of _ggplot2_
 visualization package step by step. **Our data frame has a column `age_bin`,
 which contains the assignment of each individual into a respective time
 period. Let's start by visualizing the count of individuals in each time bin.**
 
-**Run the following code in your R console. It specifies the aesthetic 
+**Run the following code in your R console:**
+
+```{r}
+#| eval: false
+ggplot(metadata, aes(x = age_bin))
+```
+
+**It specifies the aesthetic 
 mapping which will map our first variable of interest (column `age_bin` in
 our data frame) to the `x`-axis of our eventual figure. What do you get
 when you run it? How is the result different from just calling `ggplot(metadata)`
@@ -140,20 +155,14 @@ without anything else, like you did above?**
 
 Let's take it step by step:
 
-1. plotting command only sets up canvas
-
-```{r}
-ggplot()
-```
-
-2. saying what data set we want to plot doesn't change anything (_ggplot2_
+1. Again, saying what data set we want to plot doesn't do anything (_ggplot2_
 doesn't know what to plot yet!):
 
 ```{r}
 ggplot(metadata)
 ```
 
-3. mapping an aesthetic still doesn't do anything, because we didn't instruct
+2. mapping an aesthetic still doesn't do anything, because we didn't instruct
 _ggplot2_ to plot anything even now:
 
 ```{r}
@@ -181,16 +190,17 @@ To make a visualization, both aesthetic mapping and some kind of geom is needed!
 
 #### `geom_bar()`
 
-You instructed `ggplot()` to work with the `metadata` table, you mapped
+In the previous exercise, you instructed `ggplot()` to work with the `metadata` table and you mapped
 a variable of interest `age_bin` to the x-axis (and therefore set up a
-"mapping aesthetic"). To make a complete figure, we need to add a layer with
-a "geom"! In ggplot, we add layers with the `+` operator, mimicking the
+"mapping aesthetic"). **To make a complete figure, you need to add a layer with
+a "geom". In _ggplot2_, we add layers with the `+` operator**, mimicking the
 "painter metaphor" of adding layers one by one, composing a more complex
 figure with each additional layer.
 
-**Add `+ geom_bar()` to you plotting command from the previous exercise.
-What happens then? How do you read the results? Compare then to what
-you get by running `table(metadata$age_bin).**
+**Add the `+ geom_bar()` layer on the same line after the `ggplot(metadata, ...)`
+command from the previous exercise, and run the whole line.
+What happens then? How do you interpret the result? Compare then to what
+you get by running `table(metadata$age_bin)`.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -201,7 +211,7 @@ We get a full figure, yay!
 ggplot(metadata, aes(x = age_bin)) + geom_bar()
 ```
 
-This bar plot matches the counts in our data indeed:
+This bar plot indeed matches the counts in our data:
 
 ```{r}
 table(metadata$age_bin)
@@ -211,17 +221,18 @@ table(metadata$age_bin)
 :::
 
 It might be hard to believe now but you now know almost everything about
-doing _ggplot2_ figures. :) Everything else, all the amazing complexity
+making _ggplot2_ figures. 🙂 Everything else, all the amazing complexity
 of [the possible _ggplot2_ figures](https://r-graph-gallery.com/ggplot2-package.html)
-(really, look at that website!) comes down from _combining these two
+(really, look at that website!) comes down from combining these two
 simple elements: aesthetics and geoms.
 
 ---
 
 **Let's demonstrate the layering aspect a little bit more by adding more
 layers to our figure! Use a `xlab()` function to add an x-axis label
-element using the `+` operator. Look at `?xlab` to see how to use this
-function in practice.**
+element to your bar plot code above, again using the `+` operator.
+Look at `?xlab` to see how to use this function in practice. What
+changed about your figure now?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -236,11 +247,16 @@ ggplot(metadata, aes(x = age_bin)) +
   xlab("Time period [years before present]")
 ```
 
+By default, x and y axes are labeled by the data-frame column name
+specified for that x or y axis in the `aes()` mapping. `xlab()` overrides
+that default.
+
 :::
 
 ---
 
-**Now continue adding y-axis label with the `ylab()` function.**
+**Now continue adding another layer with the `ylab()` function, giving
+the plot proper y-axis label too.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -256,7 +272,8 @@ ggplot(metadata, aes(x = age_bin)) +
 
 ---
 
-**Give your figure a proper main title using the function `ggtitle()`.**
+**Give your figure a proper main title using the function `ggtitle()`
+(again, use help `?ggtitle` if you need to).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -277,10 +294,11 @@ ggplot(metadata, aes(x = age_bin)) +
 oftentimes it's better to use a general function `labs()`. Look up its
 documentation under `?lab`, then rewrite the code for your figure to use
 only this function, replacing your uses of `xlab()`, `ylab()`, and `ggtitle()`
-just with `labs()`. Note that the function has other useful arguments -- go
+just with `labs()`. Note that the function has other useful arguments---go
 ahead and use as many of them as you want.**
 
-**Note:** Don't worry about making your figure cluttered, this is just for
+**Note:** Don't worry about making your figure cluttered with too much text,
+this is just for
 practice. In a real paper, you wouldn't use title or caption directly in a
 _ggplot2_ figure, but it's definitely useful for work-in-progress reports at
 meetings, etc.
@@ -337,33 +355,36 @@ ggplot(metadata, aes(x = age_bin)) +
 ---
 
 **Does the order of adding layers with the `+` operator matter? Do a little
-experiment to figure it out!**
+experiment to figure it out by switching the order of the plotting code
+and then running each version in your R console!**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 No, generally, it doesn't. This is another very useful feature of _ggplot2_.
-Remember that a huge important part of an R data science workflow is interactive
+Remember that a huge important part of an R data science workflow is the interactive
 communication with an R console. You can start with a little bit of code
 which produces a basic outline of your figure and continue adding useful bits
-and pieces to it, modifying the outcome as you go. Almost like an artist!
+and pieces to it, modifying the outcome as you go.
 
 :::
 
 ---
 
 It's useful to keep in mind that you can always pipe a data frame
-into a `ggplot()` function using the `%>%` operator, which always places that
-table as the first argument in the `ggplot()` call, where the function
-expects it. I.e., instead of writing `ggplot(metadata, aes(...))`, you can also
+into a `ggplot()` function using the `%>%` operator. After all, `%>%`
+always places the "data frame from the left" as the first argument
+in the `ggplot()` call, where the function expects it anyway.
+I.e., instead of writing `ggplot(metadata, aes(...))`, you can also
 do `metadata %>% ggplot(aes(...))`. This allows you to transform or summarize
 data before plotting, which makes the combination of _tidyverse_ and _ggplot2_
 infinitely stronger.
 
 **As a refresher and for a bit more practice, `filter()` the metadata first
 for individuals who are 10000 years or older, discarding the rest. Then pipe
-this `filter()` result into your `ggplot()` code, keeping the plotting part
-exactly the same.**
+this `filter()` result into your `ggplot()` code for the bar plot you
+have created previously, keeping the plotting part exactly the same
+(maybe skipping the log-scale).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -389,24 +410,24 @@ ggplot(aes(x = age_bin)) +
 Believe it or not, with this basic structure of _ggplot2_ visualization and
 combining this with any other type of _tidyverse_ manipulation, filtering, and
 (as we'll later see), summarization, you're ready to make any figure imaginable.
-Let's take this one step further.
+Let's take this one step further by taking a look at another type of visualization.
 
 ---
 
-### Exercise 2: Distribution of a numerical variable
+### Exercise 3: Distribution of a numerical variable
 
 In the previous exercise you visualized a distribution of a categorical
 variable, specifically the counts of samples in an age category.
-Now let's look at continuous variables and this time consider our `ibd`
-table if IBD segments between pairs of individuals:
+Now let's look at continuous variables and this time consider not the
+metadata table, but our `ibd_merged` table of IBD segments between pairs of individuals. Here it is again, as a refresher:
 
 ```{r}
-tail(ibd_merged)
+head(ibd_merged)
 ```
 
 The most interesting quantity we might want to analyse in the IBD context
-is the `length` of IBD segments, which can indicate the degree of genetic
-affinity or relatedness between individuals. So let's take a look at the 
+is the `length` of IBD segments, which indicates the degree of genetic
+relatedness between individuals. So let's take a look at the 
 distribution of IBD lengths across our data set as an opportunity to introduce
 new functionality and useful tricks of _ggplot2_.
 
@@ -417,15 +438,17 @@ and `geom_density()`. Both are useful for similar things, each has its strengths
 and weaknesses from a visualization perspective.
 
 **Visualize the distribution of `length` values across all individuals in your
-IBD data set, starting with the basic simple patterns of:**
+IBD data set, starting with these two general patterns, just like you did in
+the previous `geom_bar()` example:**
 
-1. `ggplot() + geom_histogram()`, or
-2. `ggplot() + geom_density()`,
+1. `ggplot() + geom_histogram()`, and also
+2. `ggplot() + geom_density()`.
 
-**just like you did in the previous `geom_bar()` example. Of course, you have to
-fill in the `aes()` accordingly. Try to use the knowledge you obtained in the
+**Of course, you have to specify `ibd_merged` as the first parameter of 
+`ggplot()`, and fill in the `aes(x = length)` accordingly.
+Try to use the knowledge you obtained in the
 previous exercise! As a reminder, the `length` is expressed in units of
-centimorgans, so add immediately an x-axis label clarifying the units to
+centimorgans, so immediately add an x-axis label clarifying these units to
 anyone looking at your figure, either using `xlab()` or `labs(x = ...)`.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -435,7 +458,7 @@ Here's a histogram:
 
 ```{r}
 ibd_merged %>%
-  ggplot(aes(length)) +
+  ggplot(aes(x = length)) +
   geom_histogram() +
   labs(x = "IBD length [centimorgans]")
 ```
@@ -444,7 +467,7 @@ Here's a density plot:
 
 ```{r}
 ibd_merged %>%
-  ggplot(aes(length)) +
+  ggplot(aes(x = length)) +
   geom_density() +
   labs(x = "IBD length [centimorgans]")
 ```
@@ -454,8 +477,8 @@ ibd_merged %>%
 ---
 
 **To make our data exploration a little easier at the beginning, let's create
-a new variable `ibd_eur` from the total `ibd` data, with the following
-transformations:**
+a new variable `ibd_eur` from the total `ibd_merged` table as its subset,
+using the following _tidyverse_ transformations (both of them):**
 
 1. `filter()` for `region_pair == "Europe:Europe"`
 2. `filter()` for `time_pair == "present-day:present-day"`
@@ -466,7 +489,7 @@ the `%>%` pipeline concept that you learned about previously.**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-This should be easy for you now as budding _tidyverse_ data munging experts!
+This should be easy for you now as budding _tidyverse_ data-munging experts!
 
 ```{r}
 ibd_eur <-
@@ -489,13 +512,19 @@ readability a lot!
 
 **Now visualize the distribution of lengths in the reduced, Europe-only
 IBD data set stored in the `ibd_eur` variable. Do this in two versions again,
-using `geom_histogram()` or `geom_density()`. Additionally, for each of the
-two functions specify either `fill` or `color` (or both of them!) based on the
+using `geom_histogram()` or `geom_density()`, exactly like you did above.
+Additionally, for each of the
+two functions specify either `fill` or `color` (or both of them---experiment!) based on the
 variable `country_pair`. Experiment with the looks of the result and find
 your favourite (prettiest, cleanest, easiest to interpret, etc.).**
 
-**How do you compare these different approaches? When does one seems more
-appropriate than other?**
+**Note:** Think about how powerful the _ggplot2_ framework is. You only need
+to change one little thing (like swapping `geom_histogram()` for `geom_density()`) and keep everything else the same, and you get a completely
+new figure! This is amazing for brainstorming figures for papers, talks, etc.
+
+**How do you compare these different approaches based on the visuals
+of the graphics they produce (readability, aesthetics, scientific usefulness,
+etc.)? When does one seems more appropriate than other?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -505,7 +534,7 @@ version of histograms useful at all so I'm not showing it here):
 
 ```{r}
 ibd_eur %>%
-  ggplot(aes(length, fill = country_pair)) +
+  ggplot(aes(x = length, fill = country_pair)) +
   geom_histogram() +
   labs(x = "IBD segment length [centimorgans]")
 ```
@@ -516,49 +545,72 @@ ibd_eur %>%
 
 ```{r}
 ibd_eur %>%
-  ggplot(aes(length, color = country_pair)) +
+  ggplot(aes(x = length, color = country_pair)) +
   geom_density() +
   labs(x = "IBD segment length [centimorgans]")
 ```
 
-- using `fill`, which also requires setting the `alpha` transparency to avoid
-accidentally hiding some peaks:
+
+:::
+
+---
+
+**When you create a density plot again, setting the `fill = country_pair`
+aesthetic, you get overlapping densities which are hard to disentangle.
+Does changing `geom_density()` for `geom_density(alpha = 0.25)` help a bit?
+What does `alpha` do?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+`alpha` sets the transparency value to avoid geoms hiding behind each other,
+but it doesn't help that much here. It's a useful parameter to keep in mind
+though!
 
 ```{r}
 ibd_eur %>%
-  ggplot(aes(length, fill = country_pair, color = country_pair)) +
+  ggplot(aes(x = length, fill = country_pair, color = country_pair)) +
   geom_density(alpha = 0.5) +
   labs(x = "IBD segment length [centimorgans]")
 ```
 
 :::
 
+### Exercise 4: Categories in facets (panels)
 
-### Exercise 3: Categories in facets (panels)
-
-Let's talk a little bit more about representing multiple dimensions of the
-data (i.e., the number of variables) and about the ways we can represent them.
-This topic boils down to the question of _"How many dimensions of our data
-can we represent in a single figure and be it as comprehensible as possible?"_
-which is more and more important the more complex (and interesting!)
-our questions become.
+Let's talk a little bit more about multiple dimensions of 
+data (i.e., the number of columns in our data frame) and how we can
+represent them. This topic boils down to the question of _"How many
+dimensions of our data can we capture in a single figure and be it as
+comprehensible as possible?"_ which is more and more important the more
+complex (and interesting!) our questions become.
 
 Looking at the figures of IBD length distributions again (both histograms
 and densities), it's clear there's a lot of overlapping information that is
-a little hard to interpret. In situations like this, _facetting_ can be
-very helpful.
+a little hard to interpret. Just look at it again:
+
+```{r}
+#| code-fold: true
+ibd_eur %>%
+  ggplot(aes(x = length, fill = country_pair)) +
+  geom_histogram() +
+  labs(x = "IBD segment length [centimorgans]")
+```
+
+In situations like this, _facetting_ can be very helpful.
 
 **Faceting is easier to demonstrate than explain, so just go ahead, take
-your IBD segment length histogram plot created by `geom_histogram()`
-and add `+ facet_wrap(~ country_pair)` at the end. How do you interpret the
-result?**
+your IBD segment length histogram plot created by `geom_histogram()` above
+and add yet another layer with `+ facet_wrap(~ country_pair)` at the end
+of the plotting command. How do you interpret the result now? Is it easier
+to read?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 ```{r}
 ibd_eur %>%
-  ggplot(aes(length, fill = country_pair)) +
+  ggplot(aes(x = length, fill = country_pair)) +
   geom_histogram() +
   labs(x = "IBD segment length [centimorgans]") +
   facet_wrap(~ country_pair)
@@ -568,7 +620,7 @@ ibd_eur %>%
 
 ---
 
-**What happens when you add these variations of the `facet_wrap()` call?
+**What happens when you add these variations of the `facet_wrap()` layer instead?
 When would you use one or the other?**
 
 1. `+ facet_wrap(~ country_pair)`
@@ -580,9 +632,12 @@ When would you use one or the other?**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-I'll use a little trick of storing a _ggplot2_ result in a variable... because
-we can add to contents of variables using the `+` operator thanks to the
-magic provided by _ggplot2_!
+I'll use this opportunity to show you a useful trick of storing a
+_ggplot2_ result in a variable... because we can add to contents of
+variables using the `+` operator thanks to the magic provided by _ggplot2_!
+
+We can create our "base histogram" like this, storing it in the variable
+`p_histogram`---**try it yourself, please!**
 
 ```{r}
 p_histogram <- ggplot(ibd_eur, aes(length, fill = country_pair)) +
@@ -591,6 +646,8 @@ p_histogram <- ggplot(ibd_eur, aes(length, fill = country_pair)) +
 ```
 
 ##### This is our base histogram (very hard to read)
+
+We you type out just the variable, you get the figure!
 
 ```{r}
 p_histogram
@@ -601,6 +658,8 @@ p_histogram
 ```{r}
 p_histogram + facet_wrap(~ country_pair)
 ```
+
+And here is what you get with various `facet_wrap()` options:
 
 ##### 2. option -- each facet has its own x-axis scale
 
@@ -629,43 +688,31 @@ But there are pros and cons to doing all of these in different situations!
 
 :::
 
+
 ---
 
-**Try practicing more faceting by visualizing the histogram of `coverage`
-from the `metadata` table, facetted by `age_bin`.**
 
-**Hint:** You might have to adjust the `scales =` argument of `facet_wrap()`
-to make the histogram meaningful.
+### Exercise 5: Limiting axis scales
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+**Sometimes when visualizing distributions of numerical variables (histograms,
+densities, any other geom we'll see later), the distribution is too widely
+spread out to be useful. We can mitigate this using these two additional
+new layers which restrict the range of the x-axis of our figures:**
+
+1. `+ xlim(1, 7)`
+2. `+ coord_cartesian(xlim = c(1, 7))`
+
+**Take your density distribution ggplot of lengths of IBD segments again
+(you can use my code right below) and add 1. or 2. option above. What's the difference between both possibilities?**
 
 ```{r}
-metadata %>%
-  ggplot(aes(coverage, fill = age_bin)) +
-  geom_histogram() +
-  facet_wrap(~ age_bin, scales = "free_y")
+#| eval: false
+ibd_eur %>%
+    ggplot(aes(x = length, color = country_pair)) +
+    geom_density() +
+    labs(x = "IBD segment length [centimorgans]")
 ```
 
-
-:::
-
-
----
-
-
-### Exercise 4: Limiting axis scales
-
-Above, we clearly have some individual pairs which share a huge amount of IBD.
-We'll quantify how much a bit later, but for now, the x-axis appears in the
-density plot is too spread out. This happens often in visualizing numerical
-variables. **Use these two additional layers to improve the readability of
-your figures by restricting the range of the x-axis of your figures:**
-
-1. Add this layer `+ xlim(0, 10)` to your figure,
-2. or this layer `+ coord_cartesian(xlim = c(0, 10))`.
-
-**What's the difference between both possibilities?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -679,10 +726,10 @@ differ only by the command used at the 5th line!
 ```{r}
 #| code-line-numbers: true
 ibd_eur %>%
-  ggplot(aes(length, color = country_pair)) +
+  ggplot(aes(x = length, color = country_pair)) +
   geom_density() +
   labs(x = "IBD segment length [centimorgans]") +
-  coord_cartesian(xlim = c(0, 10))
+  coord_cartesian(xlim = c(1, 7))
 ```
 
 2. `xlim()` does "hard clipping" -- it effectively removes the points outside
@@ -692,14 +739,14 @@ if ever use this:
 ```{r}
 #| code-line-numbers: true
 ibd_eur %>%
-  ggplot(aes(length, color = country_pair)) +
+  ggplot(aes(x = length, color = country_pair)) +
   geom_density() +
   labs(x = "IBD segment length [centimorgans]") +
-  xlim(0, 10)
+  xlim(1, 7)
 ```
 
-Admittedly they both give the same result, but that's not always the case, so
-be careful!
+Admittedly they both give the same result in this situation, but that's not always the case, so be careful! I personally usually use the option 1., just
+to be safe.
 
 :::
 
@@ -733,6 +780,8 @@ that ancestors of present-day Finns experienced a strong popularion bottleneck.
 
 ---
 
+#### `geom_boxplot()` and `geom_violin()`
+
 **Let's introduce another useful geom for visualization of this type of
 numerical data, the boxplot! You can visualize boxplots with the function
 `geom_boxplot()`, and calling (in our case right here)
@@ -742,8 +791,9 @@ to show boxplots instead!**
 
 **When you have your boxplots, swap out `geom_boxplot()` for `geom_violin()`.**
 
-**Note:**  Hopefully you can see now how super modular and customizable
-_ggplot2_ for making many different types of visualizations!
+**Note:** Again, notice how super modular and customizable
+_ggplot2_ for making many different types of visualizations. We just had
+to swap one function for another.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -775,12 +825,12 @@ because I feel like boxplot hides too much about the distribution of the data.
 **On that note, another useful trick we haven't mentioned yet is that we can
 plot multiple geoms from the same data! You're already quite familiar with
 the _ggplot2_ concept of layering functions on top of each other using the `+`
-operator. What happens when you add `+ geom_jitter(size = 0.3, color = "darkgray")` after the
-line with `geom_violin()`? How do you read the resulting figure?**
+operator. What happens when you add `+ geom_jitter(size = 0.3, color = "darkgray")` (again at the end of the code which produces violin)?
+How do you read the resulting figure?**
 
 **Note:** We specified `color = "darkgray"`, which effectively overrides
-the `color = country_pair` assigned in the `ggplot()` call (and which normally
-sets the color for every single geom we would add to our figure).
+the `color = country_pair` assigned "globally" in the `ggplot()` call
+(and which normally sets the color for every single geom we would add to our figure).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -804,7 +854,7 @@ ibd_eur %>%
 
 ---
 
-**What do you think happens when you exchange the order of `geom_violin()`
+**What do you think happens when you swap the order of `geom_violin()`
 and `geom_jitter(...)` in your previous solution? Why does the order matter?**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -855,7 +905,8 @@ ggsave("~/Desktop/ibd_length_histogram.pdf")
 
 2. Or, sometimes in a larger script (like we'll see later), it's useful
 to actually **save a ggplot to a variable (yes, you can do that!), and then
-give that variable to a `ggsave()`**. This is useful when you want to first
+give that variable to `ggsave()` as its second parameter**.
+This is useful when you want to first
 create multiple plots, store them in their own variables, then save them
 to files at once. Something like this:
 
@@ -871,7 +922,7 @@ p_density <- ggplot(ibd_eur, aes(length, fill = country_pair)) +
   geom_density(alpha = 0.7) +
   labs(x = "IBD segment length [centimorgans]")
 
-# note that if you type the variable into your R console (try this please!),
+# note that if you type the variable into your R console (try this!),
 # you will get your figure visualized:
 p_histogram
 
@@ -884,7 +935,7 @@ ggsave("~/Desktop/ibd_length_density.pdf", p_density)
 approach, in which we first initialize a PDF file, then we have to print(!)
 individual variables with each _ggplot2_ figure, and then close that PDF
 file. Yes, this is confusing, but don't worry about the technical details of
-it!
+it! Just take this as a recipe you can revisit later if you need to.
 
 ```{r}
 #| eval: false
@@ -900,16 +951,16 @@ dev.off()
 ```
 
 **I don't think it's very interesting to create a specific exercise for it.
-Just try running these thre examples on your own, and see what happens!
+Just try running these three examples on your own, and see what happens!
 We'll be using these techniques a lot in the next session, so just keep
-them in mind for now..**
+them in mind for now.**
 
 **Note:** Take a peek at `?ggsave` and `?pdf` help pages to see
 customization options, particularly on the sizes of the PDFs.
 Also, how would you create a PNG images with the figures? Use the help pages!
 
 
-### Exercise 5: Relationship between two variables
+### Exercise 6: Relationship between two variables
 
 #### `geom_point()`
 
@@ -917,73 +968,88 @@ We'll now look at creating another type of visualization which is extremely
 useful and very common: a [scatter plot](https://en.wikipedia.org/wiki/Scatter_plot)!
 
 But first, let's do some more data summarization so that we can demonstrate
-building of scatter plots using _ggplot2_. At this point, this should all be
-a piece of cake for you!
+building of scatter plots using _ggplot2_. I actually created a new data set
+for you, using the original IBD segments table.
 
-The previous figures showed distributions of individual segment lengths
-on present-day individuals only. Another useful quantity is the number of
-segments shared between a pair of individuals and the total number of IBD
-sequence between those pairs.
+It contains, for a given pair of individuals in the data set, several summary
+statistics about their level of IBD sharing across the entire genome
+(not just chromosome 21). Specifically, you will now focus on three columns
+of the new table:
 
-**Practice your knowledge of `group_by()` and `summarize()` and apply them
-to our huge `ibd_segments` table, to achieve the following:**
+- `n_ibd` --- the total number of IBD segments between those two individuals
+- `total_ibd` --- the total amount of genome in IBD between those two individuals
+- `rel` --- indicator of the relatedness between those two individuals
 
-0. Start with our original big IBD table `ibd_segments` (not the smaller `ibd_eur`!)
+**Read this table using this command:**
 
-1. `filter()` for rows in which `region_pair == "Europe:Europe"` (only pairs
-within Europe, just as we did before),
+<!--  At this point, this should all be -->
+<!-- a piece of cake for you! -->
 
-2. `filter()` for rows in which `length > 10` (only long IBD segments)
+<!-- The previous figures showed distributions of individual segment lengths -->
+<!-- on present-day individuals only. Another useful quantity is the number of -->
+<!-- segments shared between a pair of individuals and the total number of IBD -->
+<!-- sequence between those pairs. -->
 
-3. `filter()` for rows in which `age_bin1 == age_bin2` (only individuals from
-the same age bin),
+<!-- **Practice your knowledge of `group_by()` and `summarize()` and apply them -->
+<!-- to our huge `ibd_segments` table, to achieve the following:** -->
 
-4. `group_by()` to create groupings based on `sample1`, `sample2`,
-`country_pair`, `region_pair`, and `time_pair`,
+<!-- 0. Start with our original big IBD table `ibd_segments` (not the smaller `ibd_eur`!) -->
 
-5. `summarize()` to create two new quantities `n_ibd = n()` and `total_ibd = sum(length)` (total number of long IBD segments and their total sequence for each
-of individuals).
+<!-- 1. `filter()` for rows in which `region_pair == "Europe:Europe"` (only pairs -->
+<!-- within Europe, just as we did before), -->
 
-**Save the result of your `%>%` pipeline implementing the steps 1.-3. above in
-a variable `ibd_sum`.**
+<!-- 2. `filter()` for rows in which `length > 10` (only long IBD segments) -->
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+<!-- 3. `filter()` for rows in which `age_bin1 == age_bin2` (only individuals from -->
+<!-- the same age bin), -->
 
-Again, once you know the functions `filter()`, `group_by()`, and `summarize()`,
-implementing the pipeline is just a matter of sequencing them together as if
-you were building a LEGO set!
+<!-- 4. `group_by()` to create groupings based on `sample1`, `sample2`, -->
+<!-- `country_pair`, `region_pair`, and `time_pair`, -->
 
-```{r}
-ibd_sum <-
-  ibd_merged %>%
-  filter(
-    length > 10 &          # only long IBD segments
-    age_bin1 == age_bin2   # only IBD pairs within the same time window
-  ) %>% 
-  group_by(sample1, sample2, rel, country_pair, region_pair, time_pair) %>%
-  summarize(n_ibd = n(), total_ibd = sum(length))
+<!-- 5. `summarize()` to create two new quantities `n_ibd = n()` and `total_ibd = sum(length)` (total number of long IBD segments and their total sequence for each -->
+<!-- of individuals). -->
 
-ibd_sum
-```
+<!-- **Save the result of your `%>%` pipeline implementing the steps 1.-3. above in -->
+<!-- a variable `ibd_sum`.** -->
 
-I hope you're all appreciating the awesome data science powers you've already
-learned to do this! This would require a crazy amount of work with standard
-base R and might be very hard (or downright impossible) to do with Excel.
 
-Believe me that if you understand this particular chunk of code (even if
-you needed help putting it together) you know the majority of _tidyverse_
-work needed to answer complex data science questions.
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- #### Click to see the solution -->
 
-:::
+<!-- Again, once you know the functions `filter()`, `group_by()`, and `summarize()`, -->
+<!-- implementing the pipeline is just a matter of sequencing them together as if -->
+<!-- you were building a LEGO set! -->
 
----
+<!-- ```{r} -->
+<!-- ibd_sum <- -->
+<!--   ibd_merged %>% -->
+<!--   filter( -->
+<!--     length > 10 &          # only long IBD segments -->
+<!--     age_bin1 == age_bin2   # only IBD pairs within the same time window -->
+<!--   ) %>%  -->
+<!--   group_by(sample1, sample2, rel, country_pair, region_pair, time_pair) %>% -->
+<!--   summarize(n_ibd = n(), total_ibd = sum(length)) -->
 
-**Your work so far has been based on a small subset of the overall IBD
-data, just for chromosome `r unique(ibd_segments$chrom)`. To move to more complex
-and interesting visualization, execute this command which reads the `ibd_long`
-just like you created it yourself, except based on all chromosomes in the
-entire genome. We'll be working on that from now on.**
+<!-- ibd_sum -->
+<!-- ``` -->
+
+<!-- I hope you're all appreciating the awesome data science powers you've already -->
+<!-- learned to do this! This would require a crazy amount of work with standard -->
+<!-- base R and might be very hard (or downright impossible) to do with Excel. -->
+
+<!-- Believe me that if you understand this particular chunk of code (even if -->
+<!-- you needed help putting it together) you know the majority of _tidyverse_ -->
+<!-- work needed to answer complex data science questions. -->
+
+<!-- ::: -->
+
+<!-- --- -->
+
+<!-- **Your work so far has been based on a small subset of the overall IBD -->
+<!-- data, just for chromosome `r unique(ibd_segments$chrom)`. To move to more complex -->
+<!-- and interesting visualization, execute this command which reads the `ibd_long` -->
+<!-- just like you created it yourself, except based on all chromosomes in the -->
+<!-- entire genome. We'll be working on that from now on.** -->
 
 ```{r}
 ibd_sum <- read_tsv("http://tinyurl.com/simgen-ibd-sum")
@@ -1039,7 +1105,7 @@ ibd_sum %>%
 **From the introduction of histograms and densities, you're already familiar
 with modifying the `aes()` aesthetic of a geom layer using the `color`
 argument of `aes()`. Right now your dots are all black, which isn't super
-informative. Luckily, you're IBD table has a "mysterious" column called
+informative. Luckily, your IBD table has a "mysterious" column called
 `rel`. What happens when you `color` points based on the values in this
 column inside the `aes()` function (i.e., set `color = rel`)? Similarly,
 what happens when you set `shape = rel`?**
@@ -1048,8 +1114,6 @@ what happens when you set `shape = rel`?**
 study of IBD patterns and their relationship to the degree of relatedness
 between individuals? This is completely independent data set and independent
 analysis, but do you see similarities between this paper and your figure?**
-
----
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1062,15 +1126,17 @@ ibd_sum %>%
 
 :::
 
-I have to say I kind of hate that "none" (basically an baseline background)
-is given a striking purple. I woudln't want that in my paper, and we will
-show a potential solution to this soon! For now, let's keep going.
+I have to say I kind of hate that "none" (basically a baseline background
+signal)
+is given a striking purple colour (and I love purple). I wouldn't want that
+in my paper, and we will show a potential solution to this soon!
+For now, let's keep going.
 
 ---
 
 
-**We're approching something which isn't far from a publication quality
-figure. To get even closer, use the `+ labs()` layer function to properly
+**To get a bit closer to a presentation-ready figure, use the
+`+ labs()` layer function to properly
 annotate your `x` and `y` axes, and give your figure a nice `title` too.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -1122,7 +1188,7 @@ want to establish is different visual treatments of different kinds of data.
 Here's one solution to do this (which will also demonstrate a very very
 useful _ggplot2_ trick).
 
-**First, take your `ibd_sum_total` table and create two versions of it
+**First, take your `ibd_sum` table and create two versions of it
 using `filter()` like this:**
 
 1. `ibd_unrel <- filter(ibd_sum, rel == "none")`
@@ -1132,39 +1198,25 @@ The first table contains only those pairs of individuals with missing informatio
 about relatedness, the second one contains only those rows with this information
 present.
 
-**Print out the `ibd_unrel` and `ibd_rel` tables to make sure they both
-contain the same columns, even though they have different rows.**
-
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
 ```{r}
+#| echo: false
 ibd_unrel <- filter(ibd_sum, rel == "none")
-head(ibd_unrel, 3)
-```
-
-```{r}
 ibd_rel <- filter(ibd_sum, rel != "none")
-head(ibd_rel, 3)
 ```
-
-:::
 
 ---
 
-**Then visualize the `ibd_unrel` (i.e., IBD summaries between unrelated individuals)
-table with the following "template".**
-
-**Note:** The `ggplot()` in this case has no arguments, just like we
-showed in the two versions of `geom_histogram()` above! Take a look at that
-example again if you need to. In our case here, similarly, everything is in
-the `geom_point()` call!
+**Now visualize the `ibd_unrel` (i.e., IBD summaries between unrelated individuals)
+table with the following code:**
 
 ```
 ggplot() +
-  geom_point(data = <DATA FRAME>, aes(<ADD WHAT IS NEEDED>), color = "lightgray")
+  geom_point(data = ibd_unrel, aes(x = n_ibd, y = total_ibd), color = "lightgray")
 ```
+
+**Note:** The `ggplot()` in this case has no arguments, just like we
+showed in the two versions of `geom_histogram()` above. Everything is in
+the `geom_point()` call!
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1179,11 +1231,11 @@ ggplot() +
 ---
 
 **Now visualize the scatter plot of pairs of individuals which are known to be
-related, `ibd_rel`, so something looking like this:**
+related, `ibd_rel`:**
 
 ```
 ggplot() +
-  geom_point(data = <DATA FRAME>, aes(<ADD WHAT IS NEEDED>, color = rel)) +
+  geom_point(data = ibd_rel, aes(x = n_ibd, y = total_ibd, color = rel))
 ```
 
 ::: {.callout-note collapse="true" icon=false}
@@ -1204,9 +1256,13 @@ that these to plots together are showing the same data.**
 
 ---
 
-**You have now plotted the two scatter plots separately, but here comes a very
-cool aspect of _ggplot2_ I wanted to show you. You can combine the two figures,
-each plotting a different data frame, into one! Do this now and to make the
+You have now plotted the two scatter plots separately, but here comes a very
+cool aspect of _ggplot2_ I wanted to show you. **You can combine the two figures,
+each plotting a different data frame, into one figure by writing _ggplot2_
+code which has both `geom_point()` calls for `ibd_unrel` and `ibd_rel` in
+the same command!**
+
+**Do this now and to make the
 figure even nicer (and even publication ready!), add proper `x` and `y` labels,
 overall plot `title` as well as `subtitle` (all using the `labs()` layer
 functions) as well as adjust the legend title (just like you did with the
@@ -1256,7 +1312,7 @@ ggplot() +
 
 **As a bonus, and to learn another parameter of `aes()` useful for scatter plots,
 in addition to setting `color = rel` (which sets a color of each point based
-on the relatedness value), add also `shape = rel`! Observe what happens
+on the relatedness value), add also `shape = rel`. Observe what happens
 when you do this!**
 
 **Finally, I'm not personally fan of the default grey-filled background of ggplots.
@@ -1297,9 +1353,9 @@ ggplot() +
 
 
 
-## Part 2: Practicing visualization on time-series data
+## Bonus Part 2: Practicing visualization on time-series data
 
-### Exercise 7: Using your knowledge on new data
+### Exercise 8: Getting fresh new new data
 
 We've spent a lot of time looking at metadata and IBD data, demonstrating
 various useful bits of techniques from across _tidyverse_ and _ggplot2_.
@@ -1610,7 +1666,7 @@ step at a time (and each step being very tiny and easily understandable!),
 makes it possible to create beautiful informative visualizations of any
 kind of tabular data!**
 
-### Exercise 8: Combining figures
+### Exercise 9: Combining figures
 
 So, here's an extremely cool revelation. Do you remember how we went through
 various data types and object classes in the R bootcamp? Numeric, logical,
@@ -1696,7 +1752,7 @@ plot_grid(
 )
 ```
 
-## Advanced bonus exercises
+## Advanced exercises
 
 If you've already been introduced to _ggplot2_ before and the exercises
 above were too easy for you, here are a couple of additional challenges:
