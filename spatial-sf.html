@@ -476,7 +476,7 @@ Attaching package: 'dplyr'</code></pre>
 <p><strong>Read and process our IBD and metadata using our utility functions:</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># download and process the metadata and IBD data set</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">process_metadata</span>(<span class="at">bin_step =</span> <span class="dv">10000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>metadata <span class="ot">&lt;-</span> <span class="fu">process_metadata</span>(<span class="at">bin_step =</span> <span class="dv">5000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Downloading and processing metadata...</code></pre>
 </div>
@@ -496,15 +496,15 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 8
-  sample country      continent   age coverage longitude latitude age_bin  
-  &lt;chr&gt;  &lt;chr&gt;        &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;fct&gt;    
-1 baa01  South Africa Africa    1908.   13.5        31.2    -29.5 (0,10000]
-2 bab01  South Africa Africa    2040.    1.30       31.2    -29.5 (0,10000]
-3 I9133  South Africa Africa    1970     2.08       18.5    -32.0 (0,10000]
-4 I9028  South Africa Africa    2103     1.19       18.0    -32.8 (0,10000]
-5 I9134  South Africa Africa    1198.    0.699      18.0    -32.8 (0,10000]
-6 ela01  South Africa Africa     493    13.5        29.1    -28.9 (0,10000]</code></pre>
+<pre><code># A tibble: 6 × 9
+  sample country    continent   age coverage longitude latitude hgYMajor age_bin
+  &lt;chr&gt;  &lt;chr&gt;      &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;fct&gt;  
+1 baa01  South Afr… Africa    1908.   13.5        31.2    -29.5 A1b      (0,500…
+2 bab01  South Afr… Africa    2040.    1.30       31.2    -29.5 A1b      (0,500…
+3 I9133  South Afr… Africa    1970     2.08       18.5    -32.0 A1b      (0,500…
+4 I9028  South Afr… Africa    2103     1.19       18.0    -32.8 A1b      (0,500…
+5 I9134  South Afr… Africa    1198.    0.699      18.0    -32.8 &lt;NA&gt;     (0,500…
+6 ela01  South Afr… Africa     493    13.5        29.1    -28.9 &lt;NA&gt;     (0,500…</code></pre>
 </div>
 </div>
 <p><strong>Use the function <code>class()</code> to check what kind of data type our metadata is (I know you know it’s a data frame, but let’s do this for practice):</strong></p>
@@ -514,53 +514,64 @@ Attaching package: 'dplyr'</code></pre>
 <pre><code>[1] "tbl_df"     "tbl"        "data.frame"</code></pre>
 </div>
 </div>
-<p><strong>Use function <code>st_as_sf()</code> to conver the (non-spatially aware) data frame object into one that can be interpreted as spatial data. Save the result as a <code>sf_metadata</code> variable. What do you see when you type <code>sf_metadata</code> to your R console and when you run <code>class()</code> on that variable? Compare this to the output you got for the original <code>metadata</code> object.</strong></p>
+<p><strong>Use function <code>st_as_sf()</code> to convert the (non-spatially aware) data frame object into one that can be interpreted as spatial data. Save the result as a <code>sf_metadata</code> variable. What do you see when you type <code>sf_metadata</code> to your R console and when you run <code>class()</code> on that variable? Compare this to the output you got for the original <code>metadata</code> object.</strong> (You’ll probably get an error message, don’t worry and move along!)</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(metadata, <span class="at">crs =</span> <span class="st">"EPSG:4326"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-error">
 <pre><code>Error in st_sf(x, ..., agr = agr, sf_column_name = sf_column_name): no simple features geometry column present</code></pre>
 </div>
 </div>
-<p><strong>The above got you a rather cryptic error. Honestly, even I don’t understand it. :) But, here’s how you fix it: run <code>st_as_sf(metadata, coords = c("longitude", "latitude"))</code>. Why do you think this is needed? Think about a situation in which the spatial coordinate columns in your data frame were called something else than “longitude” and “latitude”?</strong></p>
+<p><strong>The above got you a rather cryptic error. Honestly, even I don’t understand it. But, here’s how you fix it: run <code>st_as_sf(metadata, coords = c("longitude", "latitude"))</code> instead.</strong></p>
+<p><strong>Why do you think this is needed? Think about a situation in which the spatial coordinate columns in your data frame were called something else than “longitude” and “latitude”?</strong></p>
 <p><strong>When you have created the <code>sf_metadata</code> successfully, go back to the previous exercise.</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(metadata, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>))</span>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(metadata, <span class="at">crs =</span> <span class="st">"EPSG:4326"</span>, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>))</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(sf_metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Simple feature collection with 6 features and 6 fields
+<pre><code>Simple feature collection with 6 features and 7 fields
 Geometry type: POINT
 Dimension:     XY
 Bounding box:  xmin: 17.95 ymin: -32.81 xmax: 31.22 ymax: -28.92
-CRS:           NA
-# A tibble: 6 × 7
-  sample country      continent   age coverage age_bin       geometry
-  &lt;chr&gt;  &lt;chr&gt;        &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;fct&gt;          &lt;POINT&gt;
-1 baa01  South Africa Africa    1908.   13.5   (0,100… (31.22 -29.54)
-2 bab01  South Africa Africa    2040.    1.30  (0,100… (31.22 -29.54)
-3 I9133  South Africa Africa    1970     2.08  (0,100… (18.52 -31.98)
-4 I9028  South Africa Africa    2103     1.19  (0,100… (18.03 -32.76)
-5 I9134  South Africa Africa    1198.    0.699 (0,100… (17.95 -32.81)
-6 ela01  South Africa Africa     493    13.5   (0,100… (29.13 -28.92)</code></pre>
+Geodetic CRS:  WGS 84
+# A tibble: 6 × 8
+  sample country      continent   age coverage hgYMajor age_bin 
+  &lt;chr&gt;  &lt;chr&gt;        &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;fct&gt;   
+1 baa01  South Africa Africa    1908.   13.5   A1b      (0,5000]
+2 bab01  South Africa Africa    2040.    1.30  A1b      (0,5000]
+3 I9133  South Africa Africa    1970     2.08  A1b      (0,5000]
+4 I9028  South Africa Africa    2103     1.19  A1b      (0,5000]
+5 I9134  South Africa Africa    1198.    0.699 &lt;NA&gt;     (0,5000]
+6 ela01  South Africa Africa     493    13.5   &lt;NA&gt;     (0,5000]
+# ℹ 1 more variable: geometry &lt;POINT [°]&gt;</code></pre>
 </div>
 </div>
+<hr>
+<p><strong>The result in <code>sf_metadata</code> looks almost like a data frame, right? What do you get when you run <code>class(sf_metadata)</code> again?</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="sc">%&gt;%</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">color =</span> coverage)) <span class="sc">+</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="spatial-sf_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">class</span>(sf_metadata)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "sf"         "tbl_df"     "tbl"        "data.frame"</code></pre>
 </div>
 </div>
-</div>
+<hr>
+<p><strong>The <code>st_as_sf()</code> function converts a plain data frame into a “spatially annotated data frame”. Note the additional information about “Dimension”, and “CRS” (Coordinate Reference System “WGS 84”). Take a look at the <a href="https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset">Wikipedia article about WGS 84</a> and decipher what this could mean and why could this be needed.</strong></p>
+<hr>
+<p>Unlike <em>tidyverse</em> munging of data frames (where we introduced <em>ggplot2</em> visualizations at the end), discussing spatial data is much easier to do the other way around, starting from a visualization.</p>
+<p><strong>It turns out that <em>sf</em> spatial data is basically a normal data frame with a little bit of extra annotation. This means two things:</strong></p>
+<ol type="1">
+<li><p><strong>All your <em>tidyverse</em> knowledge applies to spatial data just like it applied for “normal data frames”!</strong> We’ll practice a little bit about <em>tidyverse</em> in the context of spatial data later.</p></li>
+<li><p>Not only that, but <strong><em>ggplot2</em> automatically supports plotting of spatial data points using a dedicated “geom” function <code>geom_sf()</code>!</strong></p></li>
+</ol>
+<hr>
+<p>As a reminder, the general pattern of plotting with <em>ggplot2</em> was something like this:</p>
+<pre><code>ggplot(DATA_FRAME, aes(MAPPING AESTHETICS, LIKE COLOR ETC.)) +
+  geom_...()</code></pre>
+<p><strong>Try plotting your <code>sf_metadata</code> using the same pattern, but with a new <code>geom_sf()</code>:</strong></p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="sc">%&gt;%</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(continent <span class="sc">==</span> <span class="st">"Europe"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">color =</span> coverage)) <span class="sc">+</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">color =</span> coverage)) <span class="sc">+</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -568,6 +579,412 @@ CRS:           NA
 </figure>
 </div>
 </div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>sf_metadata <span class="sc">%&gt;%</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(continent <span class="sc">==</span> <span class="st">"Europe"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">color =</span> coverage)) <span class="sc">+</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>sf_countries <span class="ot">&lt;-</span> <span class="fu">ne_countries</span>(<span class="at">continent =</span> <span class="st">"Europe"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>sf_countries</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Simple feature collection with 39 features and 168 fields
+Geometry type: MULTIPOLYGON
+Dimension:     XY
+Bounding box:  xmin: -180 ymin: 2.053389 xmax: 180 ymax: 81.2504
+Geodetic CRS:  WGS 84
+First 10 features:
+         featurecla scalerank labelrank sovereignt sov_a3 adm0_dif level
+19  Admin-0 country         1         2     Russia    RUS        0     2
+22  Admin-0 country         1         3     Norway    NOR        0     2
+44  Admin-0 country         1         2     France    FR1        1     2
+111 Admin-0 country         1         3     Sweden    SWE        0     2
+112 Admin-0 country         1         4    Belarus    BLR        0     2
+113 Admin-0 country         1         3    Ukraine    UKR        0     2
+114 Admin-0 country         1         3     Poland    POL        0     2
+115 Admin-0 country         1         4    Austria    AUT        0     2
+116 Admin-0 country         1         5    Hungary    HUN        0     2
+117 Admin-0 country         1         6    Moldova    MDA        0     2
+                 type  tlc   admin adm0_a3 geou_dif geounit gu_a3 su_dif
+19  Sovereign country    1  Russia     RUS        0  Russia   RUS      0
+22  Sovereign country &lt;NA&gt;  Norway     NOR        0  Norway   NOR      0
+44            Country    1  France     FRA        0  France   FRA      0
+111 Sovereign country    1  Sweden     SWE        0  Sweden   SWE      0
+112 Sovereign country    1 Belarus     BLR        0 Belarus   BLR      0
+113 Sovereign country    1 Ukraine     UKR        0 Ukraine   UKR      0
+114 Sovereign country    1  Poland     POL        0  Poland   POL      0
+115 Sovereign country    1 Austria     AUT        0 Austria   AUT      0
+116 Sovereign country    1 Hungary     HUN        0 Hungary   HUN      0
+117 Sovereign country    1 Moldova     MDA        0 Moldova   MDA      0
+    subunit su_a3 brk_diff    name          name_long brk_a3 brk_name brk_group
+19   Russia   RUS        0  Russia Russian Federation    RUS   Russia      &lt;NA&gt;
+22   Norway   NOR        0  Norway             Norway    NOR   Norway      &lt;NA&gt;
+44   France   FRA        0  France             France    FRA   France      &lt;NA&gt;
+111  Sweden   SWE        0  Sweden             Sweden    SWE   Sweden      &lt;NA&gt;
+112 Belarus   BLR        0 Belarus            Belarus    BLR  Belarus      &lt;NA&gt;
+113 Ukraine   UKR        0 Ukraine            Ukraine    UKR  Ukraine      &lt;NA&gt;
+114  Poland   POL        0  Poland             Poland    POL   Poland      &lt;NA&gt;
+115 Austria   AUT        0 Austria            Austria    AUT  Austria      &lt;NA&gt;
+116 Hungary   HUN        0 Hungary            Hungary    HUN  Hungary      &lt;NA&gt;
+117 Moldova   MDA        0 Moldova            Moldova    MDA  Moldova      &lt;NA&gt;
+    abbrev postal           formal_en formal_fr name_ciawf note_adm0 note_brk
+19    Rus.    RUS  Russian Federation      &lt;NA&gt;     Russia      &lt;NA&gt;     &lt;NA&gt;
+22    Nor.      N   Kingdom of Norway      &lt;NA&gt;     Norway      &lt;NA&gt;     &lt;NA&gt;
+44     Fr.      F     French Republic      &lt;NA&gt;     France      &lt;NA&gt;     &lt;NA&gt;
+111   Swe.      S   Kingdom of Sweden      &lt;NA&gt;     Sweden      &lt;NA&gt;     &lt;NA&gt;
+112  Bela.     BY Republic of Belarus      &lt;NA&gt;    Belarus      &lt;NA&gt;     &lt;NA&gt;
+113   Ukr.     UA             Ukraine      &lt;NA&gt;    Ukraine      &lt;NA&gt;     &lt;NA&gt;
+114   Pol.     PL  Republic of Poland      &lt;NA&gt;     Poland      &lt;NA&gt;     &lt;NA&gt;
+115  Aust.      A Republic of Austria      &lt;NA&gt;    Austria      &lt;NA&gt;     &lt;NA&gt;
+116   Hun.     HU Republic of Hungary      &lt;NA&gt;    Hungary      &lt;NA&gt;     &lt;NA&gt;
+117   Mda.     MD Republic of Moldova      &lt;NA&gt;    Moldova      &lt;NA&gt;     &lt;NA&gt;
+             name_sort name_alt mapcolor7 mapcolor8 mapcolor9 mapcolor13
+19  Russian Federation     &lt;NA&gt;         2         5         7          7
+22              Norway     &lt;NA&gt;         5         3         8         12
+44              France     &lt;NA&gt;         7         5         9         11
+111             Sweden     &lt;NA&gt;         1         4         2          4
+112            Belarus     &lt;NA&gt;         1         1         5         11
+113            Ukraine     &lt;NA&gt;         5         1         6          3
+114             Poland     &lt;NA&gt;         3         7         1          2
+115            Austria     &lt;NA&gt;         3         1         3          4
+116            Hungary     &lt;NA&gt;         4         6         1          5
+117            Moldova     &lt;NA&gt;         3         5         4         12
+      pop_est pop_rank pop_year  gdp_md gdp_year                    economy
+19  144373535       17     2019 1699876     2019   3. Emerging region: BRIC
+22    5347896       13     2019  403336     2019 2. Developed region: nonG7
+44   67059887       16     2019 2715518     2019    1. Developed region: G7
+111  10285453       14     2019  530883     2019 2. Developed region: nonG7
+112   9466856       13     2019   63080     2019       6. Developing region
+113  44385155       15     2019  153781     2019       6. Developing region
+114  37970874       15     2019  595858     2019 2. Developed region: nonG7
+115   8877067       13     2019  445075     2019 2. Developed region: nonG7
+116   9769949       13     2019  163469     2019 2. Developed region: nonG7
+117   2657637       12     2019   11968     2019       6. Developing region
+                income_grp fips_10 iso_a2 iso_a2_eh iso_a3 iso_a3_eh iso_n3
+19  3. Upper middle income      RS     RU        RU    RUS       RUS    643
+22    1. High income: OECD     -99    -99        NO    -99       NOR    -99
+44    1. High income: OECD      FR    -99        FR    -99       FRA    -99
+111   1. High income: OECD      SW     SE        SE    SWE       SWE    752
+112 3. Upper middle income      BO     BY        BY    BLR       BLR    112
+113 4. Lower middle income      UP     UA        UA    UKR       UKR    804
+114   1. High income: OECD      PL     PL        PL    POL       POL    616
+115   1. High income: OECD      AU     AT        AT    AUT       AUT    040
+116   1. High income: OECD      HU     HU        HU    HUN       HUN    348
+117 4. Lower middle income      MD     MD        MD    MDA       MDA    498
+    iso_n3_eh un_a3 wb_a2 wb_a3   woe_id woe_id_eh
+19        643   643    RU   RUS 23424936  23424936
+22        578   -99   -99   -99      -90  23424910
+44        250   250    FR   FRA      -90  23424819
+111       752   752    SE   SWE 23424954  23424954
+112       112   112    BY   BLR 23424765  23424765
+113       804   804    UA   UKR 23424976  23424976
+114       616   616    PL   POL 23424923  23424923
+115       040   040    AT   AUT 23424750  23424750
+116       348   348    HU   HUN 23424844  23424844
+117       498   498    MD   MDA 23424885  23424885
+                                                               woe_note
+19                                           Exact WOE match as country
+22  Does not include Svalbard, Jan Mayen, or Bouvet Islands (28289410).
+44                Includes only Metropolitan France (including Corsica)
+111                                          Exact WOE match as country
+112                                          Exact WOE match as country
+113                                          Exact WOE match as country
+114                                          Exact WOE match as country
+115                                          Exact WOE match as country
+116                                          Exact WOE match as country
+117                                          Exact WOE match as country
+    adm0_iso adm0_diff adm0_tlc adm0_a3_us adm0_a3_fr adm0_a3_ru adm0_a3_es
+19       RUS      &lt;NA&gt;      RUS        RUS        RUS        RUS        RUS
+22       NOR      &lt;NA&gt;      NOR        NOR        NOR        NOR        NOR
+44       FRA      &lt;NA&gt;      FRA        FRA        FRA        FRA        FRA
+111      SWE      &lt;NA&gt;      SWE        SWE        SWE        SWE        SWE
+112      BLR      &lt;NA&gt;      BLR        BLR        BLR        BLR        BLR
+113      UKR      &lt;NA&gt;      UKR        UKR        UKR        UKR        UKR
+114      POL      &lt;NA&gt;      POL        POL        POL        POL        POL
+115      AUT      &lt;NA&gt;      AUT        AUT        AUT        AUT        AUT
+116      HUN      &lt;NA&gt;      HUN        HUN        HUN        HUN        HUN
+117      MDA      &lt;NA&gt;      MDA        MDA        MDA        MDA        MDA
+    adm0_a3_cn adm0_a3_tw adm0_a3_in adm0_a3_np adm0_a3_pk adm0_a3_de
+19         RUS        RUS        RUS        RUS        RUS        RUS
+22         NOR        NOR        NOR        NOR        NOR        NOR
+44         FRA        FRA        FRA        FRA        FRA        FRA
+111        SWE        SWE        SWE        SWE        SWE        SWE
+112        BLR        BLR        BLR        BLR        BLR        BLR
+113        UKR        UKR        UKR        UKR        UKR        UKR
+114        POL        POL        POL        POL        POL        POL
+115        AUT        AUT        AUT        AUT        AUT        AUT
+116        HUN        HUN        HUN        HUN        HUN        HUN
+117        MDA        MDA        MDA        MDA        MDA        MDA
+    adm0_a3_gb adm0_a3_br adm0_a3_il adm0_a3_ps adm0_a3_sa adm0_a3_eg
+19         RUS        RUS        RUS        RUS        RUS        RUS
+22         NOR        NOR        NOR        NOR        NOR        NOR
+44         FRA        FRA        FRA        FRA        FRA        FRA
+111        SWE        SWE        SWE        SWE        SWE        SWE
+112        BLR        BLR        BLR        BLR        BLR        BLR
+113        UKR        UKR        UKR        UKR        UKR        UKR
+114        POL        POL        POL        POL        POL        POL
+115        AUT        AUT        AUT        AUT        AUT        AUT
+116        HUN        HUN        HUN        HUN        HUN        HUN
+117        MDA        MDA        MDA        MDA        MDA        MDA
+    adm0_a3_ma adm0_a3_pt adm0_a3_ar adm0_a3_jp adm0_a3_ko adm0_a3_vn
+19         RUS        RUS        RUS        RUS        RUS        RUS
+22         NOR        NOR        NOR        NOR        NOR        NOR
+44         FRA        FRA        FRA        FRA        FRA        FRA
+111        SWE        SWE        SWE        SWE        SWE        SWE
+112        BLR        BLR        BLR        BLR        BLR        BLR
+113        UKR        UKR        UKR        UKR        UKR        UKR
+114        POL        POL        POL        POL        POL        POL
+115        AUT        AUT        AUT        AUT        AUT        AUT
+116        HUN        HUN        HUN        HUN        HUN        HUN
+117        MDA        MDA        MDA        MDA        MDA        MDA
+    adm0_a3_tr adm0_a3_id adm0_a3_pl adm0_a3_gr adm0_a3_it adm0_a3_nl
+19         RUS        RUS        RUS        RUS        RUS        RUS
+22         NOR        NOR        NOR        NOR        NOR        NOR
+44         FRA        FRA        FRA        FRA        FRA        FRA
+111        SWE        SWE        SWE        SWE        SWE        SWE
+112        BLR        BLR        BLR        BLR        BLR        BLR
+113        UKR        UKR        UKR        UKR        UKR        UKR
+114        POL        POL        POL        POL        POL        POL
+115        AUT        AUT        AUT        AUT        AUT        AUT
+116        HUN        HUN        HUN        HUN        HUN        HUN
+117        MDA        MDA        MDA        MDA        MDA        MDA
+    adm0_a3_se adm0_a3_bd adm0_a3_ua adm0_a3_un adm0_a3_wb continent region_un
+19         RUS        RUS        RUS        -99        -99    Europe    Europe
+22         NOR        NOR        NOR        -99        -99    Europe    Europe
+44         FRA        FRA        FRA        -99        -99    Europe    Europe
+111        SWE        SWE        SWE        -99        -99    Europe    Europe
+112        BLR        BLR        BLR        -99        -99    Europe    Europe
+113        UKR        UKR        UKR        -99        -99    Europe    Europe
+114        POL        POL        POL        -99        -99    Europe    Europe
+115        AUT        AUT        AUT        -99        -99    Europe    Europe
+116        HUN        HUN        HUN        -99        -99    Europe    Europe
+117        MDA        MDA        MDA        -99        -99    Europe    Europe
+          subregion             region_wb name_len long_len abbrev_len tiny
+19   Eastern Europe Europe &amp; Central Asia        6       18          4  -99
+22  Northern Europe Europe &amp; Central Asia        6        6          4  -99
+44   Western Europe Europe &amp; Central Asia        6        6          3  -99
+111 Northern Europe Europe &amp; Central Asia        6        6          4  -99
+112  Eastern Europe Europe &amp; Central Asia        7        7          5  -99
+113  Eastern Europe Europe &amp; Central Asia        7        7          4  -99
+114  Eastern Europe Europe &amp; Central Asia        6        6          4  -99
+115  Western Europe Europe &amp; Central Asia        7        7          5  -99
+116  Eastern Europe Europe &amp; Central Asia        7        7          4  -99
+117  Eastern Europe Europe &amp; Central Asia        7        7          4  -99
+    homepart min_zoom min_label max_label   label_x  label_y      ne_id
+19         1        0       1.7       5.2 44.686469 58.24936 1159321201
+22         1        0       3.0       7.0  9.679975 61.35709 1159321109
+44         1        0       1.7       6.7  2.552275 46.69611 1159320637
+111        1        0       2.0       7.0 19.017050 65.85918 1159321287
+112        1        0       3.0       8.0 28.417701 53.82189 1159320427
+113        1        0       2.7       7.0 32.140865 49.72474 1159321345
+114        1        0       2.5       7.0 19.490468 51.99032 1159321179
+115        1        0       3.0       8.0 14.130515 47.51886 1159320379
+116        1        0       4.0       9.0 19.447867 47.08684 1159320841
+117        1        0       5.0      10.0 28.487904 47.43500 1159321045
+    wikidataid   name_ar name_bn         name_de name_en     name_es  name_fa
+19        Q159     روسيا  রাশিয়া        Russland  Russia       Rusia    روسیه
+22         Q20   النرويج   নরওয়ে        Norwegen  Norway     Noruega     نروژ
+44        Q142     فرنسا   ফ্রান্স      Frankreich  France     Francia   فرانسه
+111        Q34    السويد   সুইডেন        Schweden  Sweden      Suecia     سوئد
+112       Q184 بيلاروسيا  বেলারুশ         Belarus Belarus Bielorrusia   بلاروس
+113       Q212  أوكرانيا  ইউক্রেন         Ukraine Ukraine     Ucrania  اوکراین
+114        Q36    بولندا পোল্যান্ড           Polen  Poland     Polonia   لهستان
+115        Q40    النمسا অস্ট্রিয়া      Österreich Austria     Austria    اتریش
+116        Q28     المجر হাঙ্গেরি          Ungarn Hungary     Hungría مجارستان
+117       Q217   مولدوفا  মলদোভা Republik Moldau Moldova    Moldavia  مولداوی
+        name_fr    name_el  name_he name_hi          name_hu  name_id
+19       Russie      Ρωσία    רוסיה      रूस      Oroszország    Rusia
+22      Norvège   Νορβηγία נורווגיה    नॉर्वे         Norvégia Norwegia
+44       France     Γαλλία     צרפת   फ़्रान्स    Franciaország  Prancis
+111       Suède    Σουηδία   שוודיה   स्वीडन       Svédország   Swedia
+112 Biélorussie Λευκορωσία   בלארוס   बेलारूस Fehéroroszország  Belarus
+113     Ukraine   Ουκρανία אוקראינה    युक्रेन          Ukrajna  Ukraina
+114     Pologne    Πολωνία    פולין    पोलैंड    Lengyelország Polandia
+115    Autriche    Αυστρία  אוסטריה ऑस्ट्रिया         Ausztria  Austria
+116     Hongrie   Ουγγαρία  הונגריה    हंगरी     Magyarország Hongaria
+117    Moldavie   Μολδαβία  מולדובה मॉल्डोवा          Moldova  Moldova
+        name_it      name_ja    name_ko     name_nl  name_pl      name_pt
+19       Russia       ロシア     러시아     Rusland    Rosja       Rússia
+22     Norvegia   ノルウェー   노르웨이   Noorwegen Norwegia      Noruega
+44      Francia     フランス     프랑스   Frankrijk  Francja       França
+111      Svezia スウェーデン     스웨덴      Zweden  Szwecja       Suécia
+112 Bielorussia   ベラルーシ   벨라루스 Wit-Rusland Białoruś Bielorrússia
+113     Ucraina   ウクライナ 우크라이나    Oekraïne  Ukraina      Ucrânia
+114     Polonia   ポーランド     폴란드       Polen   Polska      Polónia
+115     Austria オーストリア 오스트리아  Oostenrijk  Austria      Áustria
+116    Ungheria   ハンガリー     헝가리   Hongarije    Węgry      Hungria
+117    Moldavia     モルドバ     몰도바    Moldavië Mołdawia     Moldávia
+       name_ru   name_sv     name_tr  name_uk name_ur   name_vi  name_zh
+19      Россия  Ryssland       Rusya    Росія     روس       Nga   俄罗斯
+22    Норвегия     Norge      Norveç Норвегія   ناروے     Na Uy     挪威
+44     Франция Frankrike      Fransa  Франція   فرانس      Pháp     法国
+111     Швеция   Sverige       İsveç   Швеція   سویڈن Thụy Điển     瑞典
+112 Белоруссия   Belarus Beyaz Rusya Білорусь بیلاروس   Belarus 白俄罗斯
+113    Украина   Ukraina     Ukrayna  Україна  یوکرین   Ukraina   乌克兰
+114     Польша     Polen     Polonya   Польща  پولینڈ    Ba Lan     波兰
+115    Австрия Österrike   Avusturya  Австрія  آسٹریا        Áo   奥地利
+116    Венгрия    Ungern  Macaristan Угорщина   ہنگری   Hungary   匈牙利
+117   Молдавия Moldavien     Moldova  Молдова مالدووا   Moldova 摩尔多瓦
+    name_zht      fclass_iso tlc_diff      fclass_tlc fclass_us fclass_fr
+19    俄羅斯 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+22      挪威    Unrecognized     &lt;NA&gt;    Unrecognized      &lt;NA&gt;      &lt;NA&gt;
+44      法國 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+111     瑞典 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+112 白俄羅斯 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+113   烏克蘭 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+114     波蘭 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+115   奧地利 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+116   匈牙利 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+117 摩爾多瓦 Admin-0 country     &lt;NA&gt; Admin-0 country      &lt;NA&gt;      &lt;NA&gt;
+    fclass_ru fclass_es fclass_cn fclass_tw fclass_in fclass_np fclass_pk
+19       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+22       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+44       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+111      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+112      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+113      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+114      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+115      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+116      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+117      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+    fclass_de fclass_gb fclass_br fclass_il fclass_ps fclass_sa fclass_eg
+19       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+22       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+44       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+111      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+112      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+113      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+114      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+115      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+116      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+117      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+    fclass_ma fclass_pt fclass_ar fclass_jp fclass_ko fclass_vn fclass_tr
+19       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+22       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+44       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+111      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+112      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+113      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+114      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+115      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+116      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+117      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+    fclass_id fclass_pl fclass_gr fclass_it fclass_nl fclass_se fclass_bd
+19       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+22       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+44       &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+111      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+112      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+113      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+114      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+115      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+116      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+117      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;
+    fclass_ua                       geometry
+19       &lt;NA&gt; MULTIPOLYGON (((178.7253 71...
+22       &lt;NA&gt; MULTIPOLYGON (((15.14282 79...
+44       &lt;NA&gt; MULTIPOLYGON (((-51.6578 4....
+111      &lt;NA&gt; MULTIPOLYGON (((11.02737 58...
+112      &lt;NA&gt; MULTIPOLYGON (((28.17671 56...
+113      &lt;NA&gt; MULTIPOLYGON (((31.78599 52...
+114      &lt;NA&gt; MULTIPOLYGON (((23.48413 53...
+115      &lt;NA&gt; MULTIPOLYGON (((16.97967 48...
+116      &lt;NA&gt; MULTIPOLYGON (((22.08561 48...
+117      &lt;NA&gt; MULTIPOLYGON (((26.61934 48...</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_countries) <span class="sc">+</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">70</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">80</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_countries) <span class="sc">+</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_metadata) <span class="sc">+</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">70</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">80</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_countries) <span class="sc">+</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_metadata) <span class="sc">+</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">70</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">80</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_countries) <span class="sc">+</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_metadata, <span class="fu">aes</span>(<span class="at">color =</span> country)) <span class="sc">+</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">70</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">80</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_countries) <span class="sc">+</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> <span class="fu">filter</span>(sf_metadata, continent <span class="sc">==</span> <span class="st">"Europe"</span>), <span class="fu">aes</span>(<span class="at">color =</span> country)) <span class="sc">+</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">70</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">80</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> sf_countries) <span class="sc">+</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> <span class="fu">filter</span>(sf_metadata, continent <span class="sc">==</span> <span class="st">"Europe"</span>), <span class="fu">aes</span>(<span class="at">color =</span> coverage)) <span class="sc">+</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">10</span>, <span class="dv">70</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">30</span>, <span class="dv">80</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="spatial-sf_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ggplot() +</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   geom_sf(data = sf_countries) +</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="co">#   geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = haplo_y)) +</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +</span></span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   facet_wrap(~ age_bin)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 
