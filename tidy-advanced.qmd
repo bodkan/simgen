@@ -3,7 +3,7 @@
 **In this chapter we will introduce new (and reinforce already familiar) _tidyverse_
 concepts on another real-world data set, related to the metadata we
 looked previously. We will build the
-components of a processing and filtering (and later visualization) pipeline for
+components of a processing and filtering (and in the next session, visualization) pipeline for
 a new [Identity-by-Descent
 (IBD)](https://en.wikipedia.org/wiki/Identity_by_descent) data set** that I
 recently got my hands on.
@@ -25,27 +25,27 @@ new data set of IBD segments and asked to do some science with it.
 1. **The metadata is straightforward, easy to understand by looking at it. The
 IBD segment data (you will see) contains millions of data points.** Being able
 to look at the data with your own eyes makes translating concepts to _tidyverse_
-operations much easier.
+operations much easier, which is why the metadata was a better starting point.
 
 2. **However, the metadata is just that, metadata.** It's a collection of meta
 information about individuals. But it's not data you can do (biological)
-science with. As such, it's much less exciting to _really_ dig into more
-interesting concepts.
+science with. **As such, it's much less exciting to _really_ dig into more
+interesting concepts.**
 
-3. Related to point 2. above --- the fact that the IBD data is more complex
+3. Related to point 2. above --- **the fact that the IBD data is more complex
 makes it more interesting to learn visualization on, like _ggplot2_ in the next
-section. So the rest of this session is a preparation for that.
+section. So the rest of this session is a preparation for that.**
 
 4. The previous chapter on IBD basics was really about fundamental application
-of the most important _tidyverse_ functions. This sesson is much more of a
-set of "recipes" that you should be able to apply to your own data, regardless
+of the most important _tidyverse_ functions. **This sesson is much more of a
+set of "recipes" that you should be able to apply to your own data**, regardless
 of what statistics or biological measures you end up working with in your
 projects.
 
 ---
 
 **Again, here is how the start of our solutions script for this session will
-look like. Same as before.**
+look like. Same as before:**
 
 ```{r}
 #| message: false
@@ -55,39 +55,16 @@ library(readr)
 
 ---
 
-#### Tip 1
+#### Tip on doing interactive data science
 
-As always, if you're ever unsure about some function, don't forget you can
-use `?function_name` to get help on how it works, what are its optional 
-arguments, and (on the bottom of the help page) see copy-pasteable examples
-you can try to get intuition into how that function works in practice!
-
-#### Tip 2
-
-**Never forget that you can solve every R problem by building a solution up
-one little step at a time. First work in the R console, try bits and pieces
-of code interactively, and only when you're sure you understand the problem
-(and solution) you can finalize it by writing it in your solution script
-(often saving the result in a variable for later use).**
+**Remember that the best way can solve any R problem is by building up
+a solution one little step at a time. First work in the R console, try bits
+and pieces of code interactively, and only when you're sure you understand
+the problem (and solution) you can finalize it by writing it in your
+solution script (often saving the result in a variable for later use).**
 
 This helps a huge deal to avoid feeling overwhelmed by what can initially
 seem like a problem that's too hard!
-
-Even testing things one line, one command at a time, helps a lot. So
-whenever I give you a chunk of R code, always write it out in your own
-scripts or R console and run it (or, if it's too long, just copy it...
-but typing it out manually engages your memory banks more efficiently).
-
-## General workflow
-
-In this session, you should try to experiment with code to solve each
-little exercise. Make sure you understand how to solve the problem, either
-by writing bits and pieces into your `tidy-basics.R` script (evaluating
-your code line-by-line to check that it works), or experimenting with
-bits of code in your R console and only recording your solution to your
-script when you solved it.
-
-In practice, you'll be using both approaches.
 
 ---
 
@@ -95,18 +72,10 @@ In practice, you'll be using both approaches.
 are coordinates of identity-by-descent (IBD) segments between pairs of
 individuals in a
 [huge aDNA study](https://www.nature.com/articles/s41586-023-06865-0)
-we've already talked about. This data is huge and quite complex -- I've
+we've already talked about. This data is big and quite complex --- I
 prefiltered it to contain only IBD segments for chromosome 21. The IBD
 data should correspond to individuals in the metadata we worked with in the
-previous session (at least I hope so! that's what I've been told when I
-started the IBD journey as I began preparing this workshop... you'll be really
-retracing my steps).
-
-**Note:** Why use IBD for these exercises? First, IBD data are increasingly
-popular across population genomics and evolutionary biology, so it's very likely
-you will encounter it in your own work. Second, it's an excellent data se on
-which you can practice and develop your data science skills.
-:::
+previous session.
 
 ```{r}
 ibd_segments <- read_tsv("https://tinyurl.com/simgen-ibd-segments")
@@ -122,10 +91,9 @@ metadata_all <- read_tsv("https://tinyurl.com/simgen-metadata")
 ```
 
 **Note:** I call it `metadata_all` because later we will be working with
-a smaller section of it, for better clarity. Therefore, `metadata_all` will
+a smaller section of it, for more clarity. Therefore, `metadata_all` will
 be the original, unprocessed data set. It's often very useful to keep raw
 data in our session like this.
-
 
 ---
 
@@ -133,15 +101,6 @@ data in our session like this.
 save it somewhere on your computer as `tidy-advanced.R` (`File` `->` `Save`).
 Copy the chunks of code above into it (the `library()` and `read_tsv()` commands
 and let's get started)!**
-
----
-
-**Skim through the messages given by `read_tsv()` above. I personally
-find them annoying and often silence them in finished pipelines or reports
-(how can you silence them? look up `?read_tsv` to discover other useful
-options!) but it is good to keep an
-eye on them when you're starting because they give you an overview of data
-types!**
 
 ---
 
@@ -154,7 +113,7 @@ Before you proceed with doing any kind of statistical analysis you need to
 do two things:**
 
 1. **Exploring the data to see _what_ is it that you just got. **Never trust
-the data you've been given blindly** and always do many sanity checks! In
+the data you've been given blindly and always do many sanity checks! In
 the process, you will gain more confidence in it, and also learn its ins
 and outs, which will be useful either way.
 
@@ -175,7 +134,7 @@ data types? Do you have information for the entire genome (all chromosomes)?**
 
 **Hint:** `head()`, `colnames()`, `glimpse()`, `str()`, `table()`, `summary()`
 which are either applicable to an entire data frame, or a specific column
-(columns being indexable with the `$` or `[[ ]]` operators, of course).
+(column vectors can be extracted with the `$` operator, of course).
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -214,12 +173,19 @@ only analyze data for which we have metadata information (population assignment,
 geographical location, dating information), so let's make sure we have what we
 need.
 
-**Hint:** Another way to phrase this question is this: does every name that
-appears in either `sample1` or `sample2` column of `ibd_segments` have a record in the
+**Hint:** Another way to phrase this question is this: does every sample that
+appears in either `sample1` or `sample2` column of `ibd_segments` have a corresponding row in the
 `sampleId` column of `metadata_all`? Note that you can use the
-function `unique()` to get all unique values in a given vector (as in, all
-unique values in vector `ibd$sample1` which has otherwise many duplicated
-entries). And remember the existence of `%in%` and `!` operators!
+function `unique()` to get all values unique in a given vector (i.e.,
+`unique(ibd_segments$sample1)` gives all individuals in the `sample1`
+column, which has otherwise many duplicated entries).
+And remember the existence of the `all()` function, and the `%in%`
+operator, which can check if `unique(ibd_segments$sample1)`
+is in `metadata_all$sampleId`.
+
+**Hint:** If this still doesn't make sense, please work through my solution
+directly and try to understand it bit by bit! This is a bit more advanced
+than our previous _tidyverse_ exercises.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -304,7 +270,7 @@ ibd_segments
 
 ## Exercise 3: Metadata processing
 
-We have read our IBD table and added a new useful column to it, so let's
+We have read our IBD table and added a new useful column `length` to it, so let's
 proceed with the metadata. You already became familiar with it in the
 previous session---the goal here now is to transform it to a form more
 useful for downstream data co-analysis with the genomic IBD data.
@@ -321,7 +287,6 @@ a look again:**
 
 ```{r}
 colnames(metadata_all)
-head(metadata_all)
 ```
 
 Realistically, given that our interest here is pairwise IBD segments,
@@ -333,7 +298,7 @@ a lot of this metadata information is quite useless at this stage.
 **Use `select()` a subset of the metadata with the following columns and
 store it in a new variable `metadata` (not back to `metadata_all`! we don't want to overwrite the
 original big table `metadata_all` in case we need to refer to it a bit
-later): `sampleId`, `country`, `continent`, `ageAverage`. Then `rename()`
+later): `sampleId`, `country`, `continent`, `ageAverage`. Then rename
 `sampleId` to `sample`, `popId` to `pop`, and `ageAverage` to `age` just
 to save ourselves some typing later.**
 
@@ -1248,28 +1213,26 @@ You can find my solution
 
 ---
 
-<center><h3>Congratulations! You've just passed an important milestone
+<center><h4>**Congratulations! You've just passed an important milestone
 of learning how to structure and modularize your code in a reproducible,
-efficient way!</h3></center>
+efficient way!**</h4></center>
 
 <br>
 
-This is not a joke and I really, really mean it. Most scientists unforunately
-never reach this point, ever. Over the next sessions you will
+This is not a joke and I really, really mean it. Most scientists are 
+unfortunately never taught this important concept. Over the next sessions you will
 see how much difference does (admittedly very annoying!) setup makes, and
 even learn other techniques how to make your computational research more
 robust and reliable.
 
-**It's worth pausing here and reflecting on what we've just done. Yes,
-we took (lots!) of code already written and basically "just moved it elsewhere".
-But consider how clean your new script `ibd_pipeline.R` is and how easily
-readable it is. What we've done is sometimes called "abstraction" in software
-engineering. We took components of our pipeline, and "hidden" them away so
-that we no longer have to think in terms of `select()`, `filter()`, `group_by()`,
-etc. We now can think about steps called `process_ibd()`, `process_metadata()`,
-and `join_metadata()`. Much less code to look at and think about! Plus,
-if we do need to take a deep dive into details, we just have to look at the
-code of our functions!**
+**If this was too much programming and you struggled to push through, please
+don't worry. As I said at the beginning, this session was mostly about
+showing you a useful recipe for processing data and to demonstrate
+why _tidyverse_ is so powerful.**
+
+**Taking a look at 
+[my solution](https://github.com/bodkan/simgen/blob/main/files/repro/ibd_utils.R) again (now copied to your on `ibd_utils.R` script), and being able to understand the general process by reading the code line
+by line is enough at this stage.**
 
 ---
 
@@ -1277,7 +1240,7 @@ code of our functions!**
 new script `ibd_pipeline.R` and press `CTRL + .`. This is how easy it is
 to navigate code, even when we modularized it across multiple files!**
 
-## Final exercise
+## "Take home exercise"
 
 **Take your own data and play around with it using the concepts you
 learned above.** If the data isn't in a form that's readily readable
