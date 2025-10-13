@@ -43,14 +43,14 @@ source("scripts/ibd_utils.R")
 
 ```{r}
 #| echo: false
-source("files/repro/ibd_utils.R")
+source(here::here("files/repro/ibd_utils.R"))
 ```
 
 **Read and process our IBD and metadata using our utility functions:**
 
 ```{r}
 # download and process the metadata and IBD data set
-metadata <- process_metadata(bin_step = 10000)
+metadata <- process_metadata(bin_step = 5000)
 ibd_segments <- process_ibd()
 
 # combine the IBD table with metadata information
@@ -73,38 +73,89 @@ is (I know you know it's a data frame, but let's do this for practice):**
 class(metadata)
 ```
 
-**Use function `st_as_sf()` to conver the (non-spatially aware) data frame
+**Use function `st_as_sf()` to convert the (non-spatially aware) data frame
 object into one that can be interpreted as spatial data. Save the result
 as a `sf_metadata` variable. What do you see when you type `sf_metadata`
 to your R console and when you run `class()` on that variable? Compare this
-to the output you got for the original `metadata` object.**
+to the output you got for the original `metadata` object.** (You'll probably
+get an error message, don't worry and move along!)
 
 ```{r}
 #| error: true
-sf_metadata <- st_as_sf(metadata)
+sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326")
 ```
 
 **The above got you a rather cryptic error. Honestly, even I don't understand
-it. :) But, here's how you fix it: run
-`st_as_sf(metadata, coords = c("longitude", "latitude"))`. Why do you
-think this is needed? Think about a situation in which the spatial coordinate
-columns in your data frame were called something else than "longitude" and
-"latitude"?**
+it. But, here's how you fix it: run
+`st_as_sf(metadata, coords = c("longitude", "latitude"))` instead.**
+
+**Why do you think this is needed? Think about a situation in which the
+spatial coordinate columns in your data frame were called something else than
+"longitude" and "latitude"?**
 
 **When you have created the `sf_metadata` successfully, go back to the previous
 exercise.**
 
 ```{r}
-sf_metadata <- st_as_sf(metadata, coords = c("longitude", "latitude"))
+sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326", coords = c("longitude", "latitude"))
 
 head(sf_metadata)
 ```
+
+---
+
+**The result in `sf_metadata` looks almost like a data frame, right? What
+do you get when you run `class(sf_metadata)` again?**
+
+```{r}
+class(sf_metadata)
+```
+
+---
+
+**The `st_as_sf()` function converts a plain data frame into a "spatially
+annotated data frame". Note the additional information about "Dimension",
+and "CRS" (Coordinate Reference System "WGS 84"). Take a look at the
+[Wikipedia article about WGS 84](https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset)
+and decipher what this could mean and why could this be needed.**
+
+---
+
+Unlike _tidyverse_ munging of data frames (where we introduced _ggplot2_ visualizations
+at the end), discussing spatial data is much easier to do the other way around,
+starting from a visualization.
+
+**It turns out that _sf_ spatial data is basically a normal data frame with
+a little bit of extra annotation. This means two things:**
+
+1. **All your _tidyverse_ knowledge applies to spatial data just like it applied
+for "normal data frames"!** We'll practice a little bit about _tidyverse_ in
+the context of spatial data later.
+
+2. Not only that, but **_ggplot2_ automatically supports plotting of spatial data
+points using a dedicated "geom" function `geom_sf()`!**
+
+---
+
+As a reminder, the general pattern of plotting with _ggplot2_ was something
+like this:
+
+```
+ggplot(DATA_FRAME, aes(MAPPING AESTHETICS, LIKE COLOR ETC.)) +
+  geom_...()
+```
+
+**Try plotting your `sf_metadata` using the same pattern, but with a new
+`geom_sf()`:**
+
 
 ```{r}
 sf_metadata %>%
 ggplot(aes(color = coverage)) +
   geom_sf()
 ```
+
+
 
 ```{r}
 sf_metadata %>%
@@ -113,5 +164,61 @@ ggplot(aes(color = coverage)) +
   geom_sf()
 ```
 
+```{r}
+sf_countries <- ne_countries(continent = "Europe")
+sf_countries
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata, aes(color = country)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
 
 
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = country)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
+
+
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = coverage)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
+
+
+
+```{r}
+# ggplot() +
+#   geom_sf(data = sf_countries) +
+#   geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = haplo_y)) +
+#   coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+#   facet_wrap(~ age_bin)
+```
