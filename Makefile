@@ -1,4 +1,4 @@
-chapters := whoami r-bootcamp tidy-basics slendr
+chapters := whoami r-bootcamp tidy-basics tidy-viz slendr
 
 rendered_dir := rendered
 
