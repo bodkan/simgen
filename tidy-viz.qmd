@@ -1436,11 +1436,15 @@ ancestry in a set of European individuals spanning the past 50 thousand years.
 
 Here's a brief description of the contents of the columns:
 
-1 `individual`, `time` -- name and time (in years before present) of an individual
+1. `individual`, `time` -- name and time (in years before present) of an individual
+
 2. `statistic` -- a variant of an estimator of Neanderthal ancestry
+
 3. `proportion` -- the proportion of Neanderthal ancestry estimated by `statistic`
+
 4. `rate_eur2afr` -- the amount of ancient migration (gene flow) from
 Europe to Africa in a given scenario
+
 5. `replicate` -- the replicate number of a simulation run (each scenario was
 run multiple times to capture the effect of stochasticity)
 
@@ -1450,7 +1454,7 @@ head(f4ratio)
 
 In other words, each row of this table contains the `proportion` of Neanderthal
 ancestry estimated for a given `individual` at a given `time` in some scenario
-specified by a given set of other parameters (`rate_afr2afr`, `rate_eur2afr`,
+specified by a given set of other parameters (`rate_eur2afr`,
 `replicate`).
 
 **In this exercise, I will be asking you some questions, the answers to
@@ -1464,15 +1468,11 @@ visualization, because I think this is the most crucial skill in doing
 any kind of data analysis. Why? The faster you can get from an idea to
 a visualization of that idea, the faster you'll be able to do research.**
 
-Yes, we could do this on the MesoNeo metadata or the IBD data too, but
-I think it would be too boring to stay with the same set of tables for this
-long. :)
-
 Let's go!
 
 ---
 
-**Use `geom_point()` to plot the relationship between `time` (`x` axis`)
+**Use `geom_point()` to plot the relationship between `time` (`x` axis)
 and `propotion` of Neanderthal ancestry (`y` axis). Don't worry about any
 other variables just yet (colors, facet, etc.).**
 
@@ -1509,7 +1509,7 @@ ggplot(aes(time, proportion)) +
 both statistics in two separate panels. For the time being, keep doing the
 10% subsampling step.**
 
-**Hint:** You can do this by adding `+ facet_wrap(~ statistic)` to your previous code.**
+**Hint:** You can do this by adding `+ facet_wrap(~ statistic)` to your previous code.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1526,9 +1526,9 @@ ggplot(aes(time, proportion)) +
 
 ---
 
-**Take a look at the values on the x-axis of your figures. Purely for
+**Take a look at the values on the x-axis of your figure. Purely for
 aesthetics, it is customary to visualize time going from oldest (left) to
-present-day (right). But currently the time direction is reversed.
+present-day (right). But, currently, the time direction is reversed.
 Fix this by adding a new layer with `+ scale_x_reverse()`!**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -1551,8 +1551,8 @@ ggplot(aes(time, proportion)) +
 their values to some kind of baseline (or a null hypothesis) value. In our
 case we have two:**
 
-1. baseline of "no Neanderthal ancestry" at y-axis value 0,
-2. baseline of "known proportion of Neanderthal ancestry" today, which is
+1. The baseline of "no Neanderthal ancestry" at y-axis value 0,
+2. Te baseline of "known proportion of Neanderthal ancestry" today, which is
 about 3% (so y-axis value of 0.03).
 
 **Add those two baselines to your figure using a new function
@@ -1590,15 +1590,15 @@ in the "indirect f4-ratio" figure. And we're not even plotting all
 points because there's just too many of them!
 
 **Additionally, what I cared about in this particular case (during my PhD)
-were not values for each individual person, but about the _statistical trend_
+were not values for each individual person (each represented by a single dot
+in the figure), but about the _statistical trend_
 in my data. An extremely important function for this is `geom_smoot()`,
 which fits a line through the data, capturing this trend.**
 
 **In this next part, remove the subsampling done by `sample_frac()`, and
-also replace your `geom_point()` call in your figure with
-this: `+ geom_line(stat = "smooth", se = FALSE)`. What happens when you do
-this? Read `?geom_line` to figure out what `se = FALSE` means. Why do we want
-to do this?**
+also replace your `geom_point()` call in your figure code with
+this: `+ geom_line(stat = "smooth", se = FALSE)`. What happens when you run
+this modified version of your code? Read `?geom_line` to figure out what `se = FALSE` means.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1633,8 +1633,8 @@ but we want to plot one line for each value of our variable of interest,
 `rate_eur2afr`.**
 
 **Let's add the variable into play by adding `color = rate_eur2afr` into your
-`aes()` call in the `ggplot()` function (i.e., in addition to the `x = time`
-and `y = proportion` you already got there).**
+`aes()` call in the `ggplot()` function so that it looks like this:
+`ggplot(aes(time, proportion, color = rate_eur2afr))`**
 
 **Note:** You'll get a warning which we will fix in the next step, don't worry!
 
@@ -1660,12 +1660,13 @@ Don't worry about the warning, we'll fix this soon!
 The reason we got a warning here is a slightly confusing behavior of the
 smoothing function `geom_smooth()`. Because `rate_eur2afr` is a numerical
 variable, the smoothing function cannot plot a single smoothed line for
-each of its values, because there could be infinite numnber of them.
+each of its values, because there could be (theoreticaly) an infinite number
+of them.
 
-**Fix the problem by adding `group = rate_eur2afr` right after your
-`color = rate_eur2afr` you added in the previous exercise. This explicitly
-instructs `geom_smooth()` to treat individual values of `rate_eur2afr` as
-discrete categories.**
+**Fix the problem by adding `group = rate_eur2afr` right after the
+`color = rate_eur2afr` aesthetic mapping which you added in the
+previous exercise. This explicitly instructs `geom_smooth()` to treat
+individual values of `rate_eur2afr` as discrete categories.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1715,96 +1716,107 @@ ggplot(aes(time, proportion, color = rate_eur2afr, group = rate_eur2afr)) +
 
 :::
 
+And that concludes the recreation of one of my "famous" PhD-era
+figures. It demonstrated that various statistics estimating the
+proportion of Neanderthal ancestry in Europe across tens of thousands of
+years can reveal false (nonexistent) decline over time due to various
+(unaccounted for) demographic factors. It also showed that one particular
+statistic, since then named "direct $f_4$-ratio statistic" is robust
+to these problems, and that statistic remains in use to this day. We now
+know that Neanderthal ancestry levels in Europe remained stable for
+tens of thousands of years.
+
+---
+
 **I hope that you now appreciate how adding little bits and pieces, one
-step at a time (and each step being very tiny and easily understandable!),
-makes it possible to create beautiful informative visualizations of any
-kind of tabular data!**
+step at a time, makes it possible to create beautiful informative
+visualizations of any kind of tabular data!**
 
-### Exercise 9: Combining figures
+<!-- ### Exercise 9: Combining figures -->
 
-So, here's an extremely cool revelation. Do you remember how we went through
-various data types and object classes in the R bootcamp? Numeric, logical,
-character types, etc?
+<!-- So, here's an extremely cool revelation. Do you remember how we went through -->
+<!-- various data types and object classes in the R bootcamp? Numeric, logical, -->
+<!-- character types, etc? -->
 
-_ggplot() functions actually do return a (hidden) value, which is a normal
-object like any other R value!_ The fact that we immediately see a plot
-visualized is "just" a side effect that R provides for convenience! After
-all, when we write plotting code, we usually want to see the plot, right?
+<!-- _ggplot() functions actually do return a (hidden) value, which is a normal -->
+<!-- object like any other R value!_ The fact that we immediately see a plot -->
+<!-- visualized is "just" a side effect that R provides for convenience! After -->
+<!-- all, when we write plotting code, we usually want to see the plot, right? -->
 
-What does this mean? Well, first of all, consider this bit of code:
+<!-- What does this mean? Well, first of all, consider this bit of code: -->
 
-```{r}
-p1 <- ggplot()
-```
+<!-- ```{r} -->
+<!-- p1 <- ggplot() -->
+<!-- ``` -->
 
-Weird, huh? Why would you do that? **When you type `p1` in your R console
-you get the usual (empty) figure!**
+<!-- Weird, huh? Why would you do that? **When you type `p1` in your R console -->
+<!-- you get the usual (empty) figure!** -->
 
-```{r}
-p1
-```
+<!-- ```{r} -->
+<!-- p1 -->
+<!-- ``` -->
 
-Of course, we can also create (and save in a variable) a full figure like this:
+<!-- Of course, we can also create (and save in a variable) a full figure like this: -->
 
-```{r}
-p1 <- ggplot(ibd_sum, aes(total_ibd)) + geom_density() + ggtitle("Normal x-axis scale IBD total sum")
-p1
-```
+<!-- ```{r} -->
+<!-- p1 <- ggplot(ibd_sum, aes(total_ibd)) + geom_density() + ggtitle("Normal x-axis scale IBD total sum") -->
+<!-- p1 -->
+<!-- ``` -->
 
-We could also create and save another figure, this time a density on a log
-scale, just by adding a new layer to the `p1` variable plot:
+<!-- We could also create and save another figure, this time a density on a log -->
+<!-- scale, just by adding a new layer to the `p1` variable plot: -->
 
-```{r}
-p2 <- p1 + scale_x_log10() + ggtitle("Logarithmic x-axis scale IBD total sum")
-p2
-```
+<!-- ```{r} -->
+<!-- p2 <- p1 + scale_x_log10() + ggtitle("Logarithmic x-axis scale IBD total sum") -->
+<!-- p2 -->
+<!-- ``` -->
 
-This is extremely useful for making composite figures built out of individual
-panels (like you often see in scientific figures as panels **A**, **B**, **C**,
-etc.). The way we can do this is using a helper R package _cowplot_ (don't
-ask me about its name, I have no idea! :)) and its function `plot_grid()`. **Check
-this out:**
+<!-- This is extremely useful for making composite figures built out of individual -->
+<!-- panels (like you often see in scientific figures as panels **A**, **B**, **C**, -->
+<!-- etc.). The way we can do this is using a helper R package _cowplot_ (don't -->
+<!-- ask me about its name, I have no idea! :)) and its function `plot_grid()`. **Check -->
+<!-- this out:** -->
 
-```{r}
-library(cowplot)
+<!-- ```{r} -->
+<!-- library(cowplot) -->
 
-plot_grid(p1, p2, labels = c("A", "B"))
-```
+<!-- plot_grid(p1, p2, labels = c("A", "B")) -->
+<!-- ``` -->
 
-This is an extremely useful pattern because it basically eliminates the need
-for manually pasting figures in a graphics editor (which defies the purpose
-of reproducibility!). The sky is actually a limit, because you can place
-other `plot_grid()` calls within another `plot_grid()`, composing figures
-of various levels of complexity. Check out
-[a figure from one of my papers](https://github.com/bodkan/archaic-ychr/blob/master/figures/fig1.pdf),
-each panel is an independently made _ggplot2_ figure, all pasted together
-with `plot_grid()`. 
+<!-- This is an extremely useful pattern because it basically eliminates the need -->
+<!-- for manually pasting figures in a graphics editor (which defies the purpose -->
+<!-- of reproducibility!). The sky is actually a limit, because you can place -->
+<!-- other `plot_grid()` calls within another `plot_grid()`, composing figures -->
+<!-- of various levels of complexity. Check out -->
+<!-- [a figure from one of my papers](https://github.com/bodkan/archaic-ychr/blob/master/figures/fig1.pdf), -->
+<!-- each panel is an independently made _ggplot2_ figure, all pasted together -->
+<!-- with `plot_grid()`.  -->
 
-For instance, if we make `p3` like this:
+<!-- For instance, if we make `p3` like this: -->
 
-```{r}
-# create a silly scatter plot of geographical coordinates of our samples
-# (do you see an outline of Europe? :))
-p3 <-
-  metadata %>%
-  filter(continent == "Europe") %>%
-  ggplot(aes(longitude, latitude)) +
-    geom_point() +
-  ggtitle("A silly toy map of Europe drawn using locations of metadata points")
-p3
-```
+<!-- ```{r} -->
+<!-- # create a silly scatter plot of geographical coordinates of our samples -->
+<!-- # (do you see an outline of Europe? :)) -->
+<!-- p3 <- -->
+<!--   metadata %>% -->
+<!--   filter(continent == "Europe") %>% -->
+<!--   ggplot(aes(longitude, latitude)) + -->
+<!--     geom_point() + -->
+<!--   ggtitle("A silly toy map of Europe drawn using locations of metadata points") -->
+<!-- p3 -->
+<!-- ``` -->
 
-**You could combine them like this** (this is just an example, don't read too
-much into the meaning of putting these particular plots together).
+<!-- **You could combine them like this** (this is just an example, don't read too -->
+<!-- much into the meaning of putting these particular plots together). -->
 
-```{r}
-plot_grid(
-  p3,
-  plot_grid(p1, p2, labels = c("B", "C")),
-  nrow = 2,
-  labels = "A"
-)
-```
+<!-- ```{r} -->
+<!-- plot_grid( -->
+<!--   p3, -->
+<!--   plot_grid(p1, p2, labels = c("B", "C")), -->
+<!--   nrow = 2, -->
+<!--   labels = "A" -->
+<!-- ) -->
+<!-- ``` -->
 
 ## Advanced exercises
 
