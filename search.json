@@ -156,7 +156,7 @@
     "href": "r-bootcamp.html#exercise-10-functions",
     "title": "R bootcamp",
     "section": "Exercise 10: Functions",
-    "text": "Exercise 10: Functions\nThe motivation for this Exercise could be summarized by an ancient principle of computer programming known as “Don’t repeat yourself” (DRY) which is present when:\n\n“[…] a modification of any single element of a system does not require a change in other logically unrelated elements.”.\n\nLet’s demonstrate this idea in practice on the most common way this is applied in practice, which is encapsulating (repeatedly used) code in self-contained functions.\nLet’s say you have the following numeric vector (these could be base qualities, genotype qualities, \\(f\\)-statistics, sequencing coverage, anything normally probably stored in a data-frame column, but here represented as a plain numeric vector):\n\nvec &lt;- c(0.32, 0.78, 0.68, 0.28, 1.96, 0.21, 0.07, 1.01, 0.06, 0.74,\n         0.37, 0.6, 0.08, 1.81, 0.65, 1.23, 1.28, 0.11, 1.74,  1.68)\n\nWith numeric vectors, we often need to compute some summary statistics (mean, median, quartile, minimum, maximum, etc.). What’s more, in a given project, we often have to do this computation multiple times in a number of places.\nNote: In R, we have a very useful built-in function summary(), which does exactly that. But let’s ignore this for the moment, for learning purposes.\nHere is how you can compute those summary statistics individually:\n\nmin(vec)\n## [1] 0.06\n\n# first quartile (a value which is higher than the bottom 25% of the data)\nquantile(vec, probs = 0.25)\n##    25% \n## 0.2625\n\nmedian(vec)\n## [1] 0.665\n\nmean(vec)\n## [1] 0.783\n\n# third quartile (a value which is higher than the bottom 75% of the data)\nquantile(vec, probs = 0.75)\n##    75% \n## 1.2425\n\nmax(vec)\n## [1] 1.96\n\nNow, you can imagine that you have many more of such vectors (results for different sequenced samples, different computed population genetic metrics, etc.). Having to type out all of these commands for every single one of those vectors would very quickly get extremely tiresome. Worse still, when we would do this, we would certainly resort to copy-pasting, which is guaranteed to lead to errors.\nCustom functions are the best solution to this problem and a key thing most scientists are not aware of which can tremendously improve reproducibility.\n\n\nHow are functions defined\nA custom function in R is defined by the following patterns. Note that it looks like a variable definition, except the variable (later refered to as a “function name”, here fun_name) is assigned &lt;- a more complex code structure known as “function” body, with the code enclosed in { and } block delimiters.\n\nCustom functions can take several forms, most importantly:\n\nThe function can be without parameters, defined like this:\n\n\nfun_name &lt;- function() {\n  # here goes your code\n}\n\nAnd then called like this (without parameters, and not returning anything):\n\nfun_name()\n\n\n\nOr it can have some parameters, which are variables that are passed to that function (and can be used inside the function like any other variable — here just parameter variables par1, par2):\n\n\nfun_name &lt;- function(par1, par2) {\n  # here goes your code\n}\n\nAnd then called like this (still not returning anything):\n\n# variable1 will be assigned to par1 inside the function\n# variable2 will be assigned to par2 inside the function\nfun_name(variable1, variable2) \n\n\n\nA function can also return a result, represented by a variable created inside that function, and returned by the return() statement typically at the end of the function body (but not always):\n\n\nfun_name &lt;- function(par1, par2) {\n  # here goes your code\n  \n  # the code could create a variable like this:\n  result &lt;- # however you would compute the result\n  \n  return(result)\n}\n\nAnd then used like this:\n\n# the returned value from the function is assigned to a variable\n# result_from_function which we can work with later\nresult_from_function &lt;- fun_name(par1, par2)\n\n\n\nSpoilers ahead for more advanced researchers\nIf you’re a more advanced researcher, in the later parts on practical reproducibility techniques, extracting your repetitive code into self-contained, well-documented functions, and putting collections of such functions into independent “utility module” scripts which can be sourced into data analysis scripts using the source() command is the single best, most important thing you can do do increase the robustness and reproducibility of your own projects!\nWhen you find yourself with free time, use these lessons to improve your projects by doing this!\n\nWrite a custom function called my_summary, which will accept a single input named values (a vector of numbers like vec above), and return a list which combines all the six summary statistics together. Name the elements of that list as \"min\", \"quartile_1\", \"median\", \"mean\", \"quartile_3\", and \"max\".\nHint: You can use the following “template”, and just fill in the required bits of code within the “function body” represented by { and }:\n\n# copy this template into your script and add relevant bits of code to\n# turn it into a full-blown R function\n\nmy_summary &lt;- function(values) {\n  # compute\n  # your\n  # summary\n  # statistics\n  # like\n  # you\n  # did\n  # above\n  \n  result &lt;- list(... combine your statistics into a named list as instructed ...)\n  \n  # then return that result\n  return(result)\n}\n\nThen test that your function works correctly by executing it like this in your R console:\n\nmy_summary(vec)\n\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\nHere is how we could write the function:\n\nmy_summary &lt;- function(values) {\n  a &lt;- min(vec)\n  b &lt;- quantile(vec, probs = 0.25)\n  c &lt;- median(vec)\n  d &lt;- mean(vec)\n  e &lt;- quantile(vec, probs = 0.75)\n  f &lt;- max(vec)\n  \n  result &lt;- list(min = a, quartile_1 = b, median = c, mean = d, quartile_3 = e, max = f)\n  \n  return(result)\n}\n\nAlthough I would probably prefer to write it a bit more tersely like this:\n\nmy_summary &lt;- function(values) {\n  result &lt;- list(\n    min = min(vec),\n    quartile_1 = quantile(vec, probs = 0.25),\n    median = median(vec),\n    mean = mean(vec),\n    quartile_3 = quantile(vec, probs = 0.75),\n    max = max(vec)\n  )\n  \n  return(result)\n}\n\nWe can then run our function like this:\n\nmy_summary(vec)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\n\n\n\n\n\nYes, we had to write the code anyway, we even had to do the extra work of wrapping it inside other code (the function body, name the one input argument values, which could be multiple arguments for more complex function). So, one could argue that we didn’t actually save any time. However, that code is now “encapsulated” in a fully self-contained form and can be called repeatably, without any copy-pasting.\nIn other words, if you now create these three vectors of numeric values:\n\nvec1 &lt;- runif(10)\nvec2 &lt;- runif(10)\nvec3 &lt;- runif(10)\n\nYou can now compute our summary statistics by calling our function my_summary() on these vectors, without any code repetition:\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\nmy_summary(vec1)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\nmy_summary(vec2)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\nmy_summary(vec3)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\n\nAnd, surprise! This is what the incredibly useful built-in function summary() provided with every R installation does!\n\nsummary(vec1)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n0.03565 0.11506 0.31821 0.37555 0.63193 0.86466 \n\nsummary(vec2)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n0.08613 0.16234 0.35965 0.38624 0.62463 0.77184 \n\nsummary(vec3)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n 0.1346  0.3512  0.6017  0.5461  0.7607  0.8375 \n\n\n\n\n\n\nThe punchline is this: if we ever need to modify how are summary statistics are computed, we only have to make a single change in the function code instead of having to modify multiple copies of the code in multiple locations in our project. This is what “Don’t Repeat Yoursef (DRY)” means!\n\nIn the penguin section above, you used hist(penguins$body_mass) to plot a histogram of the penguins’ body mass. Write a custom function penguin_hist() which will accept two arguments: 1. the name of the column in the penguins data frame, and 2. the number of histogram breakpoints to use as the breaks = arguments in a hist(&lt;vector&gt;, breaks = ...) call.\nHint: Remember that you can extract a column of a data frame as a vector not just using a symbolic identifier with the $ operator but also as a string name with the [[]] operator.\nHint: A useful new argument of the hist() function is main =. You can specify this as a string and the contents of this argument will be plotted as the figure’s title.\nIf you need further help, feel free to use this template and fill the insides of the function body with your code:\n\npenguin_hist &lt;- function(df, column, breaks) {\n  # ... put your hist() code here\n}\n\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\nWe can extract a column column of any data frame df with df[[column]], therefore, we only need to do this:\n\npenguin_hist &lt;- function(df, column, breaks) {\n  title &lt;- paste(\"Histogram of the column\", column)\n  hist(df[[column]], breaks = breaks, main = title)\n}\n\nWe can then use our fancy new function like this:\n\npenguin_hist(penguins, \"bill_length_mm\", breaks = 50)\n\n\n\n\n\n\n\n\n\npenguin_hist(penguins, \"bill_depth_mm\", breaks = 50)\n\n\n\n\n\n\n\n\n\npenguin_hist(penguins, \"flipper_length_mm\", breaks = 50)\n\n\n\n\n\n\n\n\n\npenguin_hist(penguins, \"body_mass_g\", breaks = 50)",
+    "text": "Exercise 10: Functions\nThe motivation for this Exercise could be summarized by an ancient principle of computer programming known as “Don’t repeat yourself” (DRY) which is present when:\n\n“[…] a modification of any single element of a system does not require a change in other logically unrelated elements.”.\n\nLet’s demonstrate this idea in practice on the most common way this is applied in practice, which is encapsulating (repeatedly used) code in self-contained functions.\nLet’s say you have the following numeric vector (these could be base qualities, genotype qualities, \\(f\\)-statistics, sequencing coverage, anything normally probably stored in a data-frame column, but here represented as a plain numeric vector):\n\nvec &lt;- c(0.32, 0.78, 0.68, 0.28, 1.96, 0.21, 0.07, 1.01, 0.06, 0.74,\n         0.37, 0.6, 0.08, 1.81, 0.65, 1.23, 1.28, 0.11, 1.74,  1.68)\n\nWith numeric vectors, we often need to compute some summary statistics (mean, median, quartile, minimum, maximum, etc.). What’s more, in a given project, we often have to do this computation multiple times in a number of places.\nNote: In R, we have a very useful built-in function summary(), which does exactly that. But let’s ignore this for the moment, for learning purposes.\nHere is how you can compute those summary statistics individually:\n\nmin(vec)\n## [1] 0.06\n\n# first quartile (a value which is higher than the bottom 25% of the data)\nquantile(vec, probs = 0.25)\n##    25% \n## 0.2625\n\nmedian(vec)\n## [1] 0.665\n\nmean(vec)\n## [1] 0.783\n\n# third quartile (a value which is higher than the bottom 75% of the data)\nquantile(vec, probs = 0.75)\n##    75% \n## 1.2425\n\nmax(vec)\n## [1] 1.96\n\nNow, you can imagine that you have many more of such vectors (results for different sequenced samples, different computed population genetic metrics, etc.). Having to type out all of these commands for every single one of those vectors would very quickly get extremely tiresome. Worse still, when we would do this, we would certainly resort to copy-pasting, which is guaranteed to lead to errors.\nCustom functions are the best solution to this problem and a key thing most scientists are not aware of which can tremendously improve reproducibility.\n\n\nHow are functions defined\nA custom function in R is defined by the following patterns. Note that it looks like a variable definition, except the variable (later refered to as a “function name”, here fun_name) is assigned &lt;- a more complex code structure known as “function” body, with the code enclosed in { and } block delimiters.\n\nCustom functions can take several forms, most importantly:\n\nThe function can be without parameters, defined like this:\n\n\nfun_name &lt;- function() {\n  # here goes your code\n}\n\nAnd then called like this (without parameters, and not returning anything):\n\nfun_name()\n\n\n\nOr it can have some parameters, which are variables that are passed to that function (and can be used inside the function like any other variable — here just parameter variables par1, par2):\n\n\nfun_name &lt;- function(par1, par2) {\n  # here goes your code\n}\n\nAnd then called like this (still not returning anything):\n\n# variable1 will be assigned to par1 inside the function\n# variable2 will be assigned to par2 inside the function\nfun_name(variable1, variable2) \n\n\n\nA function can also return a result, represented by a variable created inside that function, and returned by the return() statement typically at the end of the function body (but not always):\n\n\nfun_name &lt;- function(par1, par2) {\n  # here goes your code\n  \n  # the code could create a variable like this:\n  result &lt;- # however you would compute the result\n  \n  return(result)\n}\n\nAnd then used like this:\n\n# the returned value from the function is assigned to a variable\n# result_from_function which we can work with later\nresult_from_function &lt;- fun_name(par1, par2)\n\n\n\nSpoilers ahead for more advanced researchers\nIf you’re a more advanced researcher, in the later parts on practical reproducibility techniques, extracting your repetitive code into self-contained, well-documented functions, and putting collections of such functions into independent “utility module” scripts which can be sourced into data analysis scripts using the source() command is the single best, most important thing you can do do increase the robustness and reproducibility of your own projects!\nWhen you find yourself with free time, use these lessons to improve your projects by doing this!\n\nWrite a custom function called my_summary, which will accept a single input named values (a vector of numbers like vec above), and return a list which combines all the six summary statistics together. Name the elements of that list as \"min\", \"quartile_1\", \"median\", \"mean\", \"quartile_3\", and \"max\".\nHint: You can use the following “template”, and just fill in the required bits of code within the “function body” represented by { and }:\n\n# copy this template into your script and add relevant bits of code to\n# turn it into a full-blown R function\n\nmy_summary &lt;- function(values) {\n  # compute\n  # your\n  # summary\n  # statistics\n  # like\n  # you\n  # did\n  # above\n  \n  result &lt;- list(... combine your statistics into a named list as instructed ...)\n  \n  # then return that result\n  return(result)\n}\n\nThen test that your function works correctly by executing it like this in your R console:\n\nmy_summary(vec)\n\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\nHere is how we could write the function:\n\nmy_summary &lt;- function(values) {\n  a &lt;- min(vec)\n  b &lt;- quantile(vec, probs = 0.25)\n  c &lt;- median(vec)\n  d &lt;- mean(vec)\n  e &lt;- quantile(vec, probs = 0.75)\n  f &lt;- max(vec)\n  \n  result &lt;- list(min = a, quartile_1 = b, median = c, mean = d, quartile_3 = e, max = f)\n  \n  return(result)\n}\n\nAlthough I would probably prefer to write it a bit more tersely like this:\n\nmy_summary &lt;- function(values) {\n  result &lt;- list(\n    min = min(vec),\n    quartile_1 = quantile(vec, probs = 0.25),\n    median = median(vec),\n    mean = mean(vec),\n    quartile_3 = quantile(vec, probs = 0.75),\n    max = max(vec)\n  )\n  \n  return(result)\n}\n\nWe can then run our function like this:\n\nmy_summary(vec)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\n\n\n\n\n\nYes, we had to write the code anyway, we even had to do the extra work of wrapping it inside other code (the function body, name the one input argument values, which could be multiple arguments for more complex function). So, one could argue that we didn’t actually save any time. However, that code is now “encapsulated” in a fully self-contained form and can be called repeatably, without any copy-pasting.\nIn other words, if you now create these three vectors of numeric values:\n\nvec1 &lt;- runif(10)\nvec2 &lt;- runif(10)\nvec3 &lt;- runif(10)\n\nYou can now compute our summary statistics by calling our function my_summary() on these vectors, without any code repetition:\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\nmy_summary(vec1)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\nmy_summary(vec2)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\nmy_summary(vec3)\n\n$min\n[1] 0.06\n\n$quartile_1\n   25% \n0.2625 \n\n$median\n[1] 0.665\n\n$mean\n[1] 0.783\n\n$quartile_3\n   75% \n1.2425 \n\n$max\n[1] 1.96\n\n\nAnd, surprise! This is what the incredibly useful built-in function summary() provided with every R installation does!\n\nsummary(vec1)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n0.05341 0.18273 0.58679 0.47040 0.69031 0.88357 \n\nsummary(vec2)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n0.02391 0.33215 0.54889 0.53831 0.82216 0.95596 \n\nsummary(vec3)\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n0.01872 0.42124 0.53118 0.53188 0.74028 0.89410 \n\n\n\n\n\n\nThe punchline is this: if we ever need to modify how are summary statistics are computed, we only have to make a single change in the function code instead of having to modify multiple copies of the code in multiple locations in our project. This is what “Don’t Repeat Yoursef (DRY)” means!\n\nIn the penguin section above, you used hist(penguins$body_mass) to plot a histogram of the penguins’ body mass. Write a custom function penguin_hist() which will accept two arguments: 1. the name of the column in the penguins data frame, and 2. the number of histogram breakpoints to use as the breaks = arguments in a hist(&lt;vector&gt;, breaks = ...) call.\nHint: Remember that you can extract a column of a data frame as a vector not just using a symbolic identifier with the $ operator but also as a string name with the [[]] operator.\nHint: A useful new argument of the hist() function is main =. You can specify this as a string and the contents of this argument will be plotted as the figure’s title.\nIf you need further help, feel free to use this template and fill the insides of the function body with your code:\n\npenguin_hist &lt;- function(df, column, breaks) {\n  # ... put your hist() code here\n}\n\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\nWe can extract a column column of any data frame df with df[[column]], therefore, we only need to do this:\n\npenguin_hist &lt;- function(df, column, breaks) {\n  title &lt;- paste(\"Histogram of the column\", column)\n  hist(df[[column]], breaks = breaks, main = title)\n}\n\nWe can then use our fancy new function like this:\n\npenguin_hist(penguins, \"bill_length_mm\", breaks = 50)\n\n\n\n\n\n\n\n\n\npenguin_hist(penguins, \"bill_depth_mm\", breaks = 50)\n\n\n\n\n\n\n\n\n\npenguin_hist(penguins, \"flipper_length_mm\", breaks = 50)\n\n\n\n\n\n\n\n\n\npenguin_hist(penguins, \"body_mass_g\", breaks = 50)",
     "crumbs": [
       "R language",
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>R bootcamp</span>"
@@ -827,7 +827,7 @@
     "href": "popgen-models.html#part-3-simulating-genomic-data",
     "title": "Demographic models",
     "section": "Part 3: Simulating genomic data",
-    "text": "Part 3: Simulating genomic data\nOnce you have a compiled slendr model stored in an R variable (from now on, model will always mean a variable containing a compiled slendr model object relevant for the given exercise, for simplicity), we can simulate data from it. By default, slendr models always produce a tree sequence.\n\n\nNote: Tree sequence provides an extremely efficient means to store and work with genomic data at a massive scale. However, you can always get simulated data even in traditional file formats, such as VCF, EIGENSTRAT, or a plain old table of ancestral/derived genotypes.\nIn this activity we will be only working with tree sequences, because it’s much easier and faster to get interesting statistics from it directly in R.\nThere are two simulation engines built into slendr implemented by functions msprime() and slim(). For traditional, non-spatial, neutral demographic models, the engine provided by the msprime() function is much more efficient, so we’ll be using that for the time being. However, from a popgen theoretical perspective, both simulation functions will give you the same results for any given compiled slendr model (up to some level of stochastic noise, of course).\n\n\nNote: Yes, this means you don’t have to write any msprime (or SLiM) code to simulate data from a slendr model!\nHere’s how you can use the function to simulate a tree sequence from the model you’ve just created using compile_model() in your script:\n\nts &lt;- msprime(\n  model,\n  sequence_length = &lt;length of sequence to simulate [as bp]&gt;,\n  recombination_rate = &lt;uniform recombination rate [per bp per generation]&gt;\n)\n\nYou will be seeing this kind of pattern over and over again in this exercise, so it’s a good idea to keep it in mind.\nHint: The msprime() function has also arguments debug and run which can be extremely useful for debugging.\nSimulate a tree sequence from your compiled model using the msprime() engine, storing it to a variable ts as shown right above. Use sequence_length = 1e6 (so 1 Mb of sequence) and recombination_rate = 1e-8 (crossover events per base pair per generation). Then experiment with setting debug = TRUE (this prints out msprime’s own debugging summary which you might already be familiar with from your previous activity?) and then run = FALSE (this prints out a raw command-line which can run a slendr simulation in the shell).\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# This simulates a tskit tree sequence from a slendr model. Note that you didn't have\n# to write any msprime or tskit Python code!\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)\n\n# Setting `debug = TRUE` instructs slendr's built-in msprime script to print\n# out msprime's own debugger information. This can be very useful for debugging,\n# in addition to the visualization of the model as shown above.\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, debug = TRUE)\n## DemographyDebugger\n## ╠═════════════════════════════════════╗\n## ║ Epoch[0]: [0, 1.67e+03) generations ║\n## ╠═════════════════════════════════════╝\n## ╟    Populations (total=4 active=4)\n## ║    ┌─────────────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │ NEA │ EUR │\n## ║    ├─────────────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    EUR│    3000.0│    3000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    └─────────────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 1.67e+03\n## ║    ┌─────────────────────────────────────────────────────────────────────────────────────────┐\n## ║    │  time│type            │parameters              │effect                                  │\n## ║    ├─────────────────────────────────────────────────────────────────────────────────────────┤\n## ║    │  1666│Migration rate  │source=EUR, dest=NEA,   │Backwards-time migration rate from EUR  │\n## ║    │      │change          │rate=0.000179640718562  │to NEA → 0.00017964071856287425         │\n## ║    │      │                │87425                   │                                        │\n## ║    └─────────────────────────────────────────────────────────────────────────────────────────┘\n## ╠════════════════════════════════════════════╗\n## ║ Epoch[1]: [1.67e+03, 1.83e+03) generations ║\n## ╠════════════════════════════════════════════╝\n## ╟    Populations (total=4 active=4)\n## ║    ┌───────────────────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │    NEA    │ EUR │\n## ║    ├───────────────────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │     0     │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │     0     │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │     0     │  0  │\n## ║    │    EUR│    3000.0│    3000.0│ 0           │   0   │  0  │ 0.0001796 │  0  │\n## ║    └───────────────────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 1.83e+03\n## ║    ┌────────────────────────────────────────────────────────────────────────────────────────┐\n## ║    │  time│type            │parameters             │effect                                  │\n## ║    ├────────────────────────────────────────────────────────────────────────────────────────┤\n## ║    │  1833│Migration rate  │source=EUR, dest=NEA,  │Backwards-time migration rate from EUR  │\n## ║    │      │change          │rate=0                 │to NEA → 0                              │\n## ║    │┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈│\n## ║    │  1833│Census          │                       │Insert census nodes to record the       │\n## ║    │      │                │                       │location of all lineages                │\n## ║    └────────────────────────────────────────────────────────────────────────────────────────┘\n## ╠═════════════════════════════════════════╗\n## ║ Epoch[2]: [1.83e+03, 2e+03) generations ║\n## ╠═════════════════════════════════════════╝\n## ╟    Populations (total=4 active=4)\n## ║    ┌─────────────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │ NEA │ EUR │\n## ║    ├─────────────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    EUR│    3000.0│    3000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    └─────────────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 2e+03\n## ║    ┌───────────────────────────────────────────────────────────────────────────┐\n## ║    │  time│type        │parameters      │effect                                │\n## ║    ├───────────────────────────────────────────────────────────────────────────┤\n## ║    │  2000│Population  │derived=[EUR],  │Moves all lineages from the 'EUR'     │\n## ║    │      │Split       │ancestral=AFR   │derived population to the ancestral   │\n## ║    │      │            │                │'AFR' population. Also set 'EUR' to   │\n## ║    │      │            │                │inactive, and all migration rates to  │\n## ║    │      │            │                │and from the derived population to    │\n## ║    │      │            │                │zero.                                 │\n## ║    └───────────────────────────────────────────────────────────────────────────┘\n## ╠══════════════════════════════════════╗\n## ║ Epoch[3]: [2e+03, 2e+04) generations ║\n## ╠══════════════════════════════════════╝\n## ╟    Populations (total=4 active=3)\n## ║    ┌───────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │ NEA │\n## ║    ├───────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │  0  │\n## ║    └───────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 2e+04\n## ║    ┌────────────────────────────────────────────────────────────────────────────┐\n## ║    │   time│type        │parameters      │effect                                │\n## ║    ├────────────────────────────────────────────────────────────────────────────┤\n## ║    │  2e+04│Population  │derived=[NEA],  │Moves all lineages from the 'NEA'     │\n## ║    │       │Split       │ancestral=AFR   │derived population to the ancestral   │\n## ║    │       │            │                │'AFR' population. Also set 'NEA' to   │\n## ║    │       │            │                │inactive, and all migration rates to  │\n## ║    │       │            │                │and from the derived population to    │\n## ║    │       │            │                │zero.                                 │\n## ║    └────────────────────────────────────────────────────────────────────────────┘\n## ╠══════════════════════════════════════╗\n## ║ Epoch[4]: [2e+04, 2e+05) generations ║\n## ╠══════════════════════════════════════╝\n## ╟    Populations (total=4 active=2)\n## ║    ┌─────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │\n## ║    ├─────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │\n## ║    └─────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 2e+05\n## ║    ┌──────────────────────────────────────────────────────────────────────────────┐\n## ║    │   time│type        │parameters       │effect                                 │\n## ║    ├──────────────────────────────────────────────────────────────────────────────┤\n## ║    │  2e+05│Population  │derived=[AFR],   │Moves all lineages from the 'AFR'      │\n## ║    │       │Split       │ancestral=CHIMP  │derived population to the ancestral    │\n## ║    │       │            │                 │'CHIMP' population. Also set 'AFR' to  │\n## ║    │       │            │                 │inactive, and all migration rates to   │\n## ║    │       │            │                 │and from the derived population to     │\n## ║    │       │            │                 │zero.                                  │\n## ║    └──────────────────────────────────────────────────────────────────────────────┘\n## ╠════════════════════════════════════╗\n## ║ Epoch[5]: [2e+05, inf) generations ║\n## ╠════════════════════════════════════╝\n## ╟    Populations (total=4 active=1)\n## ║    ┌─────────────────────────────────────────┐\n## ║    │       │    start│      end│growth_rate  │\n## ║    ├─────────────────────────────────────────┤\n## ║    │  CHIMP│   5000.0│   5000.0│ 0           │\n## ║    └─────────────────────────────────────────┘\n\n# For debugging of technical issues (with msprime, with slendr, or both), it is\n# very useful to have the `msprime` function dump the \"raw\" command-line to\n# run the simulation on the terminal using plain Python interpreter\nmsprime(model, sequence_length = 1e6, recombination_rate = 1e-8, run = FALSE)\n## /Users/mp/Library/r-miniconda-arm64/envs/Python-3.12_msprime-1.3.4_tskit-0.6.4_pyslim-1.0.4_tspop-0.0.2/bin/python /Users/mp/Code/simgen/files/popgen/introgression/script.py --seed 88935881 --model /Users/mp/Code/simgen/files/popgen/introgression --sequence-length 1000000 --recombination-rate 1e-08    --coalescent_only --path path_to_a_trees_file.trees",
+    "text": "Part 3: Simulating genomic data\nOnce you have a compiled slendr model stored in an R variable (from now on, model will always mean a variable containing a compiled slendr model object relevant for the given exercise, for simplicity), we can simulate data from it. By default, slendr models always produce a tree sequence.\n\n\nNote: Tree sequence provides an extremely efficient means to store and work with genomic data at a massive scale. However, you can always get simulated data even in traditional file formats, such as VCF, EIGENSTRAT, or a plain old table of ancestral/derived genotypes.\nIn this activity we will be only working with tree sequences, because it’s much easier and faster to get interesting statistics from it directly in R.\nThere are two simulation engines built into slendr implemented by functions msprime() and slim(). For traditional, non-spatial, neutral demographic models, the engine provided by the msprime() function is much more efficient, so we’ll be using that for the time being. However, from a popgen theoretical perspective, both simulation functions will give you the same results for any given compiled slendr model (up to some level of stochastic noise, of course).\n\n\nNote: Yes, this means you don’t have to write any msprime (or SLiM) code to simulate data from a slendr model!\nHere’s how you can use the function to simulate a tree sequence from the model you’ve just created using compile_model() in your script:\n\nts &lt;- msprime(\n  model,\n  sequence_length = &lt;length of sequence to simulate [as bp]&gt;,\n  recombination_rate = &lt;uniform recombination rate [per bp per generation]&gt;\n)\n\nYou will be seeing this kind of pattern over and over again in this exercise, so it’s a good idea to keep it in mind.\nHint: The msprime() function has also arguments debug and run which can be extremely useful for debugging.\nSimulate a tree sequence from your compiled model using the msprime() engine, storing it to a variable ts as shown right above. Use sequence_length = 1e6 (so 1 Mb of sequence) and recombination_rate = 1e-8 (crossover events per base pair per generation). Then experiment with setting debug = TRUE (this prints out msprime’s own debugging summary which you might already be familiar with from your previous activity?) and then run = FALSE (this prints out a raw command-line which can run a slendr simulation in the shell).\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# This simulates a tskit tree sequence from a slendr model. Note that you didn't have\n# to write any msprime or tskit Python code!\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)\n\n# Setting `debug = TRUE` instructs slendr's built-in msprime script to print\n# out msprime's own debugger information. This can be very useful for debugging,\n# in addition to the visualization of the model as shown above.\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, debug = TRUE)\n## DemographyDebugger\n## ╠═════════════════════════════════════╗\n## ║ Epoch[0]: [0, 1.67e+03) generations ║\n## ╠═════════════════════════════════════╝\n## ╟    Populations (total=4 active=4)\n## ║    ┌─────────────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │ NEA │ EUR │\n## ║    ├─────────────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    EUR│    3000.0│    3000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    └─────────────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 1.67e+03\n## ║    ┌─────────────────────────────────────────────────────────────────────────────────────────┐\n## ║    │  time│type            │parameters              │effect                                  │\n## ║    ├─────────────────────────────────────────────────────────────────────────────────────────┤\n## ║    │  1666│Migration rate  │source=EUR, dest=NEA,   │Backwards-time migration rate from EUR  │\n## ║    │      │change          │rate=0.000179640718562  │to NEA → 0.00017964071856287425         │\n## ║    │      │                │87425                   │                                        │\n## ║    └─────────────────────────────────────────────────────────────────────────────────────────┘\n## ╠════════════════════════════════════════════╗\n## ║ Epoch[1]: [1.67e+03, 1.83e+03) generations ║\n## ╠════════════════════════════════════════════╝\n## ╟    Populations (total=4 active=4)\n## ║    ┌───────────────────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │    NEA    │ EUR │\n## ║    ├───────────────────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │     0     │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │     0     │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │     0     │  0  │\n## ║    │    EUR│    3000.0│    3000.0│ 0           │   0   │  0  │ 0.0001796 │  0  │\n## ║    └───────────────────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 1.83e+03\n## ║    ┌────────────────────────────────────────────────────────────────────────────────────────┐\n## ║    │  time│type            │parameters             │effect                                  │\n## ║    ├────────────────────────────────────────────────────────────────────────────────────────┤\n## ║    │  1833│Migration rate  │source=EUR, dest=NEA,  │Backwards-time migration rate from EUR  │\n## ║    │      │change          │rate=0                 │to NEA → 0                              │\n## ║    │┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈│\n## ║    │  1833│Census          │                       │Insert census nodes to record the       │\n## ║    │      │                │                       │location of all lineages                │\n## ║    └────────────────────────────────────────────────────────────────────────────────────────┘\n## ╠═════════════════════════════════════════╗\n## ║ Epoch[2]: [1.83e+03, 2e+03) generations ║\n## ╠═════════════════════════════════════════╝\n## ╟    Populations (total=4 active=4)\n## ║    ┌─────────────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │ NEA │ EUR │\n## ║    ├─────────────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    │    EUR│    3000.0│    3000.0│ 0           │   0   │  0  │  0  │  0  │\n## ║    └─────────────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 2e+03\n## ║    ┌───────────────────────────────────────────────────────────────────────────┐\n## ║    │  time│type        │parameters      │effect                                │\n## ║    ├───────────────────────────────────────────────────────────────────────────┤\n## ║    │  2000│Population  │derived=[EUR],  │Moves all lineages from the 'EUR'     │\n## ║    │      │Split       │ancestral=AFR   │derived population to the ancestral   │\n## ║    │      │            │                │'AFR' population. Also set 'EUR' to   │\n## ║    │      │            │                │inactive, and all migration rates to  │\n## ║    │      │            │                │and from the derived population to    │\n## ║    │      │            │                │zero.                                 │\n## ║    └───────────────────────────────────────────────────────────────────────────┘\n## ╠══════════════════════════════════════╗\n## ║ Epoch[3]: [2e+03, 2e+04) generations ║\n## ╠══════════════════════════════════════╝\n## ╟    Populations (total=4 active=3)\n## ║    ┌───────────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │ NEA │\n## ║    ├───────────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │  0  │\n## ║    │    NEA│    1000.0│    1000.0│ 0           │   0   │  0  │  0  │\n## ║    └───────────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 2e+04\n## ║    ┌────────────────────────────────────────────────────────────────────────────┐\n## ║    │   time│type        │parameters      │effect                                │\n## ║    ├────────────────────────────────────────────────────────────────────────────┤\n## ║    │  2e+04│Population  │derived=[NEA],  │Moves all lineages from the 'NEA'     │\n## ║    │       │Split       │ancestral=AFR   │derived population to the ancestral   │\n## ║    │       │            │                │'AFR' population. Also set 'NEA' to   │\n## ║    │       │            │                │inactive, and all migration rates to  │\n## ║    │       │            │                │and from the derived population to    │\n## ║    │       │            │                │zero.                                 │\n## ║    └────────────────────────────────────────────────────────────────────────────┘\n## ╠══════════════════════════════════════╗\n## ║ Epoch[4]: [2e+04, 2e+05) generations ║\n## ╠══════════════════════════════════════╝\n## ╟    Populations (total=4 active=2)\n## ║    ┌─────────────────────────────────────────────────────────┐\n## ║    │       │     start│       end│growth_rate  │ CHIMP │ AFR │\n## ║    ├─────────────────────────────────────────────────────────┤\n## ║    │  CHIMP│    5000.0│    5000.0│ 0           │   0   │  0  │\n## ║    │    AFR│   15000.0│   15000.0│ 0           │   0   │  0  │\n## ║    └─────────────────────────────────────────────────────────┘\n## ╟    Events @ generation 2e+05\n## ║    ┌──────────────────────────────────────────────────────────────────────────────┐\n## ║    │   time│type        │parameters       │effect                                 │\n## ║    ├──────────────────────────────────────────────────────────────────────────────┤\n## ║    │  2e+05│Population  │derived=[AFR],   │Moves all lineages from the 'AFR'      │\n## ║    │       │Split       │ancestral=CHIMP  │derived population to the ancestral    │\n## ║    │       │            │                 │'CHIMP' population. Also set 'AFR' to  │\n## ║    │       │            │                 │inactive, and all migration rates to   │\n## ║    │       │            │                 │and from the derived population to     │\n## ║    │       │            │                 │zero.                                  │\n## ║    └──────────────────────────────────────────────────────────────────────────────┘\n## ╠════════════════════════════════════╗\n## ║ Epoch[5]: [2e+05, inf) generations ║\n## ╠════════════════════════════════════╝\n## ╟    Populations (total=4 active=1)\n## ║    ┌─────────────────────────────────────────┐\n## ║    │       │    start│      end│growth_rate  │\n## ║    ├─────────────────────────────────────────┤\n## ║    │  CHIMP│   5000.0│   5000.0│ 0           │\n## ║    └─────────────────────────────────────────┘\n\n# For debugging of technical issues (with msprime, with slendr, or both), it is\n# very useful to have the `msprime` function dump the \"raw\" command-line to\n# run the simulation on the terminal using plain Python interpreter\nmsprime(model, sequence_length = 1e6, recombination_rate = 1e-8, run = FALSE)\n## /Users/mp/Library/r-miniconda-arm64/envs/Python-3.12_msprime-1.3.4_tskit-0.6.4_pyslim-1.0.4_tspop-0.0.2/bin/python /Users/mp/Code/simgen/files/popgen/introgression/script.py --seed 1397206167 --model /Users/mp/Code/simgen/files/popgen/introgression --sequence-length 1000000 --recombination-rate 1e-08    --coalescent_only --path path_to_a_trees_file.trees",
     "crumbs": [
       "Modeling fundamentals",
       "<span class='chapter-number'>8</span>  <span class='chapter-title'>Demographic models</span>"
@@ -838,7 +838,7 @@
     "href": "popgen-models.html#part-4-inspecting-the-tree-sequence-object",
     "title": "Demographic models",
     "section": "Part 4: Inspecting the tree-sequence object",
-    "text": "Part 4: Inspecting the tree-sequence object\nAs we will see later, slendr provides an R-friendly interface to accessing a subset of tskit’s functionality for working with tree sequences and for computing various popgen statistics.\nFor now, type out the ts object in the terminal – what do you see? You should get a summary of a tree-sequence object that you’re familiar with from your msprime and tskit activity earlier in the day.\n\n\nNote: This is a very important feature of slendr – when a simulation is concluded (doesn’t matter if it was a slim() or msprime() simulation), you will get a normal tskit object. In fact, the fact that slendr supports (so far, and likely always) only a “subset” of all of tskit’s functionality isn’t stopping you to write custom Python/tskit processing code of a tree sequence generated from a slendr model. Under the hood, a slendr simulation really is just an msprime (or SLiM) simulation! It’s just executed through a simplified interface.\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# Typing out the object with the result shows that it's a good old tskit\n# tree-sequence object\nts\n\n╔═══════════════════════════╗\n║TreeSequence               ║\n╠═══════════════╤═══════════╣\n║Trees          │      9,799║\n╟───────────────┼───────────╢\n║Sequence Length│  1,000,000║\n╟───────────────┼───────────╢\n║Time Units     │generations║\n╟───────────────┼───────────╢\n║Sample Nodes   │     48,000║\n╟───────────────┼───────────╢\n║Total Size     │    8.9 MiB║\n╚═══════════════╧═══════════╝\n╔═══════════╤═══════╤═════════╤════════════╗\n║Table      │Rows   │Size     │Has Metadata║\n╠═══════════╪═══════╪═════════╪════════════╣\n║Edges      │135,003│  4.1 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Individuals│ 24,000│656.3 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Migrations │      0│  8 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Mutations  │      0│ 16 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Nodes      │105,100│  2.8 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Populations│      4│341 Bytes│         Yes║\n╟───────────┼───────┼─────────┼────────────╢\n║Provenances│      1│  2.7 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Sites      │      0│ 16 Bytes│          No║\n╚═══════════╧═══════╧═════════╧════════════╝\n\n\n\n\n\nThe brilliance of the tree-sequence data structure rests on its elegant table-based implementation (much more information on that is here). slendr isn’t really designed to run very complex low-level manipulations of tree-sequence data (its strength lies in the convenient interface to popgen statistical functions implemented by tskit), but it does contain a couple of functions which can be useful for inspecting the lower-level nature of a tree sequence. Let’s look at a couple of them now.\nUse the ts_table function to inspect the low-level table-based representation of a tree sequence. For instance, you can get the table of nodes with ts_table(ts, \"nodes\"), edges with ts_table(ts, \"edges\"), and do the same thing for “individuals”, “mutations”, and “sites”. Does your tree sequence contain any mutations? If not, why, and how can we even do any popgen with data without any mutations? As you’re doing this, take a look at at the following figure (this was made from a different tree sequence than you have, but that’s OK) to help you relate the information in the tables to a tree sequence which those tables (particularly tables of nodes and edges) implicitly encode.\nThis should convince you that the final product of a slendr simulation really is the same kind of tree-sequence object that you learned about in the previous activities today. You don’t have to study these tables in detail!\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# slendr provides a helper function which allows access to all the low-level\n# components of every tree-sequence object\nts_table(ts, \"nodes\")\n\n# A tibble: 105,100 × 5\n   node_id    ind_id pop_id  time time_tskit\n     &lt;int&gt; &lt;int[1d]&gt;  &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt;\n 1       0         0      0     0          0\n 2       1         0      0     0          0\n 3       2         1      0     0          0\n 4       3         1      0     0          0\n 5       4         2      0     0          0\n 6       5         2      0     0          0\n 7       6         3      0     0          0\n 8       7         3      0     0          0\n 9       8         4      0     0          0\n10       9         4      0     0          0\n# ℹ 105,090 more rows\n\nts_table(ts, \"edges\")\n\n# A tibble: 135,003 × 5\n      id child parent  left   right\n   &lt;dbl&gt; &lt;int&gt;  &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;\n 1     0 23556  48000     0 1000000\n 2     1 37244  48000     0 1000000\n 3     2 24058  48001     0 1000000\n 4     3 25446  48001     0 1000000\n 5     4  4738  48002     0 1000000\n 6     5  7325  48002     0 1000000\n 7     6 40583  48003     0 1000000\n 8     7 41317  48003     0 1000000\n 9     8 14787  48004     0 1000000\n10     9 14825  48004     0 1000000\n# ℹ 134,993 more rows\n\nts_table(ts, \"individuals\")\n\n# A tibble: 24,000 × 5\n   ind_id  time    pop_id sampled   time_tskit\n    &lt;dbl&gt; &lt;dbl&gt; &lt;int[1d]&gt; &lt;lgl[1d]&gt;  &lt;dbl[1d]&gt;\n 1      0     0         0 TRUE               0\n 2      1     0         0 TRUE               0\n 3      2     0         0 TRUE               0\n 4      3     0         0 TRUE               0\n 5      4     0         0 TRUE               0\n 6      5     0         0 TRUE               0\n 7      6     0         0 TRUE               0\n 8      7     0         0 TRUE               0\n 9      8     0         0 TRUE               0\n10      9     0         0 TRUE               0\n# ℹ 23,990 more rows\n\n# We didn't simulate any mutations, so we only have genealogies for now.\nts_table(ts, \"mutations\")\n\n# A tibble: 0 × 5\n# ℹ 5 variables: id &lt;dbl&gt;, site &lt;int&gt;, node &lt;int&gt;, time &lt;dbl&gt;, time_tskit &lt;dbl&gt;\n\nts_table(ts, \"sites\")\n\n# A tibble: 0 × 2\n# ℹ 2 variables: id &lt;dbl&gt;, position &lt;dbl&gt;\n\n\n\n\n\nThere are also two slendr-specific functions called ts_samples() (which retrieves the “symbolic names” and dates of all recorded individuals at the end of a simulation) and ts_nodes(). You can run them simply as ts_samples(ts) and ts_nodes(ts). How many individuals (samples) are in your tree sequence as you simulated it? How is the result of ts_nodes() different from ts_samples()?\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# slendr provides a convenient function `ts_samples()` which allows us to\n# inspect the contents of a simulated tree sequence in a more human-readable,\n# simplified way. We can see that our tree sequence contains a massive number\n# of individuals. Too many, in fact -- we recorded every single individual alive\n# at the end of our simulation, which is something we're unlikely to be ever lucky\n# enough to have, regardless of which species we study.\nts_samples(ts)\n\n# A tibble: 24,000 × 3\n   name      time pop  \n   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;\n 1 CHIMP_1      0 AFR  \n 2 CHIMP_2      0 AFR  \n 3 CHIMP_3      0 AFR  \n 4 CHIMP_4      0 AFR  \n 5 CHIMP_5      0 AFR  \n 6 CHIMP_6      0 AFR  \n 7 CHIMP_7      0 AFR  \n 8 CHIMP_8      0 AFR  \n 9 CHIMP_9      0 AFR  \n10 CHIMP_10     0 AFR  \n# ℹ 23,990 more rows\n\nts_samples(ts) %&gt;% nrow()\n\n[1] 24000\n\nlibrary(dplyr)\n\n\nAttaching package: 'dplyr'\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union\n\nts_samples(ts) %&gt;% group_by(pop) %&gt;% tally\n\n# A tibble: 4 × 2\n  pop       n\n  &lt;chr&gt; &lt;int&gt;\n1 AFR   15000\n2 CHIMP  5000\n3 EUR    3000\n4 NEA    1000\n\n# This function returns a table similar to the one produced by `ts_table(ts, \"nodes\")`\n# above, except that it contains additional slendr metadata (names of individuals\n# belonging to each node, spatial coordinates of nodes for spatial models, etc.).\n# It's a bit more useful for analyzing tree-sequence data than the \"low-level\" functions.\nts_nodes(ts) %&gt;% head(5)\n\n# A tibble: 5 × 8\n  name    pop   ind_id node_id  time time_tskit sampled pop_id\n  &lt;chr&gt;   &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;\n1 CHIMP_1 AFR     5000   10000     0          0 TRUE         1\n2 CHIMP_1 AFR     5000   10001     0          0 TRUE         1\n3 CHIMP_2 AFR     5001   10002     0          0 TRUE         1\n4 CHIMP_2 AFR     5001   10003     0          0 TRUE         1\n5 CHIMP_3 AFR     5002   10004     0          0 TRUE         1\n\nts_nodes(ts) %&gt;% tail(5)\n\n# A tibble: 5 × 8\n  name  pop   ind_id node_id     time time_tskit sampled pop_id\n  &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;\n1 &lt;NA&gt;  CHIMP     NA  105095 7223973.    240799. FALSE        0\n2 &lt;NA&gt;  CHIMP     NA  105096 7296319.    243211. FALSE        0\n3 &lt;NA&gt;  CHIMP     NA  105097 7376765.    245892. FALSE        0\n4 &lt;NA&gt;  CHIMP     NA  105098 7460603.    248687. FALSE        0\n5 &lt;NA&gt;  CHIMP     NA  105099 7622142.    254071. FALSE        0",
+    "text": "Part 4: Inspecting the tree-sequence object\nAs we will see later, slendr provides an R-friendly interface to accessing a subset of tskit’s functionality for working with tree sequences and for computing various popgen statistics.\nFor now, type out the ts object in the terminal – what do you see? You should get a summary of a tree-sequence object that you’re familiar with from your msprime and tskit activity earlier in the day.\n\n\nNote: This is a very important feature of slendr – when a simulation is concluded (doesn’t matter if it was a slim() or msprime() simulation), you will get a normal tskit object. In fact, the fact that slendr supports (so far, and likely always) only a “subset” of all of tskit’s functionality isn’t stopping you to write custom Python/tskit processing code of a tree sequence generated from a slendr model. Under the hood, a slendr simulation really is just an msprime (or SLiM) simulation! It’s just executed through a simplified interface.\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# Typing out the object with the result shows that it's a good old tskit\n# tree-sequence object\nts\n\n╔═══════════════════════════╗\n║TreeSequence               ║\n╠═══════════════╤═══════════╣\n║Trees          │      9,332║\n╟───────────────┼───────────╢\n║Sequence Length│  1,000,000║\n╟───────────────┼───────────╢\n║Time Units     │generations║\n╟───────────────┼───────────╢\n║Sample Nodes   │     48,000║\n╟───────────────┼───────────╢\n║Total Size     │    8.8 MiB║\n╚═══════════════╧═══════════╝\n╔═══════════╤═══════╤═════════╤════════════╗\n║Table      │Rows   │Size     │Has Metadata║\n╠═══════════╪═══════╪═════════╪════════════╣\n║Edges      │133,217│  4.1 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Individuals│ 24,000│656.3 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Migrations │      0│  8 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Mutations  │      0│ 16 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Nodes      │104,756│  2.8 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Populations│      4│341 Bytes│         Yes║\n╟───────────┼───────┼─────────┼────────────╢\n║Provenances│      1│  2.7 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Sites      │      0│ 16 Bytes│          No║\n╚═══════════╧═══════╧═════════╧════════════╝\n\n\n\n\n\nThe brilliance of the tree-sequence data structure rests on its elegant table-based implementation (much more information on that is here). slendr isn’t really designed to run very complex low-level manipulations of tree-sequence data (its strength lies in the convenient interface to popgen statistical functions implemented by tskit), but it does contain a couple of functions which can be useful for inspecting the lower-level nature of a tree sequence. Let’s look at a couple of them now.\nUse the ts_table function to inspect the low-level table-based representation of a tree sequence. For instance, you can get the table of nodes with ts_table(ts, \"nodes\"), edges with ts_table(ts, \"edges\"), and do the same thing for “individuals”, “mutations”, and “sites”. Does your tree sequence contain any mutations? If not, why, and how can we even do any popgen with data without any mutations? As you’re doing this, take a look at at the following figure (this was made from a different tree sequence than you have, but that’s OK) to help you relate the information in the tables to a tree sequence which those tables (particularly tables of nodes and edges) implicitly encode.\nThis should convince you that the final product of a slendr simulation really is the same kind of tree-sequence object that you learned about in the previous activities today. You don’t have to study these tables in detail!\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# slendr provides a helper function which allows access to all the low-level\n# components of every tree-sequence object\nts_table(ts, \"nodes\")\n\n# A tibble: 104,756 × 5\n   node_id    ind_id pop_id  time time_tskit\n     &lt;int&gt; &lt;int[1d]&gt;  &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt;\n 1       0         0      0     0          0\n 2       1         0      0     0          0\n 3       2         1      0     0          0\n 4       3         1      0     0          0\n 5       4         2      0     0          0\n 6       5         2      0     0          0\n 7       6         3      0     0          0\n 8       7         3      0     0          0\n 9       8         4      0     0          0\n10       9         4      0     0          0\n# ℹ 104,746 more rows\n\nts_table(ts, \"edges\")\n\n# A tibble: 133,217 × 5\n      id child parent  left   right\n   &lt;dbl&gt; &lt;int&gt;  &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;\n 1     0 29444  48000     0 1000000\n 2     1 33655  48000     0 1000000\n 3     2 17196  48001     0 1000000\n 4     3 28964  48001     0 1000000\n 5     4 11148  48002     0 1000000\n 6     5 17959  48002     0 1000000\n 7     6 47192  48003     0 1000000\n 8     7 47483  48003     0 1000000\n 9     8 15249  48004     0 1000000\n10     9 26360  48004     0 1000000\n# ℹ 133,207 more rows\n\nts_table(ts, \"individuals\")\n\n# A tibble: 24,000 × 5\n   ind_id  time    pop_id sampled   time_tskit\n    &lt;dbl&gt; &lt;dbl&gt; &lt;int[1d]&gt; &lt;lgl[1d]&gt;  &lt;dbl[1d]&gt;\n 1      0     0         0 TRUE               0\n 2      1     0         0 TRUE               0\n 3      2     0         0 TRUE               0\n 4      3     0         0 TRUE               0\n 5      4     0         0 TRUE               0\n 6      5     0         0 TRUE               0\n 7      6     0         0 TRUE               0\n 8      7     0         0 TRUE               0\n 9      8     0         0 TRUE               0\n10      9     0         0 TRUE               0\n# ℹ 23,990 more rows\n\n# We didn't simulate any mutations, so we only have genealogies for now.\nts_table(ts, \"mutations\")\n\n# A tibble: 0 × 5\n# ℹ 5 variables: id &lt;dbl&gt;, site &lt;int&gt;, node &lt;int&gt;, time &lt;dbl&gt;, time_tskit &lt;dbl&gt;\n\nts_table(ts, \"sites\")\n\n# A tibble: 0 × 2\n# ℹ 2 variables: id &lt;dbl&gt;, position &lt;dbl&gt;\n\n\n\n\n\nThere are also two slendr-specific functions called ts_samples() (which retrieves the “symbolic names” and dates of all recorded individuals at the end of a simulation) and ts_nodes(). You can run them simply as ts_samples(ts) and ts_nodes(ts). How many individuals (samples) are in your tree sequence as you simulated it? How is the result of ts_nodes() different from ts_samples()?\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# slendr provides a convenient function `ts_samples()` which allows us to\n# inspect the contents of a simulated tree sequence in a more human-readable,\n# simplified way. We can see that our tree sequence contains a massive number\n# of individuals. Too many, in fact -- we recorded every single individual alive\n# at the end of our simulation, which is something we're unlikely to be ever lucky\n# enough to have, regardless of which species we study.\nts_samples(ts)\n\n# A tibble: 24,000 × 3\n   name      time pop  \n   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;\n 1 CHIMP_1      0 AFR  \n 2 CHIMP_2      0 AFR  \n 3 CHIMP_3      0 AFR  \n 4 CHIMP_4      0 AFR  \n 5 CHIMP_5      0 AFR  \n 6 CHIMP_6      0 AFR  \n 7 CHIMP_7      0 AFR  \n 8 CHIMP_8      0 AFR  \n 9 CHIMP_9      0 AFR  \n10 CHIMP_10     0 AFR  \n# ℹ 23,990 more rows\n\nts_samples(ts) %&gt;% nrow()\n\n[1] 24000\n\nlibrary(dplyr)\n\n\nAttaching package: 'dplyr'\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union\n\nts_samples(ts) %&gt;% group_by(pop) %&gt;% tally\n\n# A tibble: 4 × 2\n  pop       n\n  &lt;chr&gt; &lt;int&gt;\n1 AFR   15000\n2 CHIMP  5000\n3 EUR    3000\n4 NEA    1000\n\n# This function returns a table similar to the one produced by `ts_table(ts, \"nodes\")`\n# above, except that it contains additional slendr metadata (names of individuals\n# belonging to each node, spatial coordinates of nodes for spatial models, etc.).\n# It's a bit more useful for analyzing tree-sequence data than the \"low-level\" functions.\nts_nodes(ts) %&gt;% head(5)\n\n# A tibble: 5 × 8\n  name    pop   ind_id node_id  time time_tskit sampled pop_id\n  &lt;chr&gt;   &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;\n1 CHIMP_1 AFR     5000   10000     0          0 TRUE         1\n2 CHIMP_1 AFR     5000   10001     0          0 TRUE         1\n3 CHIMP_2 AFR     5001   10002     0          0 TRUE         1\n4 CHIMP_2 AFR     5001   10003     0          0 TRUE         1\n5 CHIMP_3 AFR     5002   10004     0          0 TRUE         1\n\nts_nodes(ts) %&gt;% tail(5)\n\n# A tibble: 5 × 8\n  name  pop   ind_id node_id     time time_tskit sampled pop_id\n  &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;\n1 &lt;NA&gt;  CHIMP     NA  104751 7269049.    242302. FALSE        0\n2 &lt;NA&gt;  CHIMP     NA  104752 7347305.    244910. FALSE        0\n3 &lt;NA&gt;  CHIMP     NA  104753 7398027.    246601. FALSE        0\n4 &lt;NA&gt;  CHIMP     NA  104754 7411673.    247056. FALSE        0\n5 &lt;NA&gt;  CHIMP     NA  104755 7585175.    252839. FALSE        0",
     "crumbs": [
       "Modeling fundamentals",
       "<span class='chapter-number'>8</span>  <span class='chapter-title'>Demographic models</span>"
@@ -860,7 +860,7 @@
     "href": "popgen-models.html#part-7-simulating-a-defined-set-of-individuals",
     "title": "Demographic models",
     "section": "Part 7: Simulating a defined set of individuals",
-    "text": "Part 7: Simulating a defined set of individuals\nYou have now both a compiled slendr model and a well-defined sampling schedule.\nUse your combined sampling schedule stored in the schedule variable to run a new tree-sequence simulation from your model (again using the msprime() function), this time restricted to just those individuals scheduled for recording. You can do this by providing the combined sampling schedule as the samples = schedule argument of the function msprime you used above. Just replace the line(s) with your first msprime() from the previous part of this exercise with the new one, which uses the schedule for customized sampling.\nAlso, while you’re doing this, use the ts_mutate() function to overlay neutral mutations on the simulated tree sequence right after the msprime() call. (Take a look at the handounts for a reminder of the %&gt;% pipe patterns I showed you.)\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\nThe command below will likely take a few minutes to run, so feel free to go down from 100 Mb sequence_length to even 10Mb (it doesn’t matter much). (The random_seed = argument is there for reproducibility purposes.)\n\nts &lt;-\n  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %&gt;%\n  ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)\n# Time difference of 2.141642 mins\n\nIf you’re bothered by how long the simulation takes, feel free to call these two lines to 100% reproduce my results without any expensive computation:\n\nurl_path &lt;- \"https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees\"\nts_path &lt;- tempfile()\ndownload.file(url_path, destfile = ts_path, mode = \"wb\")\nts &lt;- ts_read(file = ts_path, model = model)\n\n\n\n\nInspect the tree-sequence object saved in the ts variable by typing it into the R console again (this interactivity really helps with catching nasty bugs early during the programming of your script). You can also do a similar thing via the table produced by the ts_samples() function. You should see a much smaller number of individuals being recorded, indicating that the simulation was much more efficient and produced genomic data for only the individuals of interest.\n\n\nNote: When you think about it, it’s actually quite astonishing how fast msprime and tskit are when dealing with such a huge amount of sequence data from tens of thousands of individuals on a simple laptop!\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# Inspect the (tskit/Python-based) summary of the new tree sequence\n# (note the much smaller number of \"sample nodes\"!)\nts\n\n╔═══════════════════════════╗\n║TreeSequence               ║\n╠═══════════════╤═══════════╣\n║Trees          │      9,799║\n╟───────────────┼───────────╢\n║Sequence Length│  1,000,000║\n╟───────────────┼───────────╢\n║Time Units     │generations║\n╟───────────────┼───────────╢\n║Sample Nodes   │     48,000║\n╟───────────────┼───────────╢\n║Total Size     │    8.9 MiB║\n╚═══════════════╧═══════════╝\n╔═══════════╤═══════╤═════════╤════════════╗\n║Table      │Rows   │Size     │Has Metadata║\n╠═══════════╪═══════╪═════════╪════════════╣\n║Edges      │135,003│  4.1 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Individuals│ 24,000│656.3 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Migrations │      0│  8 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Mutations  │      0│ 16 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Nodes      │105,100│  2.8 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Populations│      4│341 Bytes│         Yes║\n╟───────────┼───────┼─────────┼────────────╢\n║Provenances│      1│  2.7 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Sites      │      0│ 16 Bytes│          No║\n╚═══════════╧═══════╧═════════╧════════════╝\n\n# Get the table of all recorded samples in the tree sequence\nts_samples(ts)\n\n# A tibble: 24,000 × 3\n   name      time pop  \n   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;\n 1 CHIMP_1      0 AFR  \n 2 CHIMP_2      0 AFR  \n 3 CHIMP_3      0 AFR  \n 4 CHIMP_4      0 AFR  \n 5 CHIMP_5      0 AFR  \n 6 CHIMP_6      0 AFR  \n 7 CHIMP_7      0 AFR  \n 8 CHIMP_8      0 AFR  \n 9 CHIMP_9      0 AFR  \n10 CHIMP_10     0 AFR  \n# ℹ 23,990 more rows\n\n# Compute the count of individuals in different time points\nlibrary(dplyr)\n\nts_samples(ts) %&gt;% group_by(pop, present_day = time == 0) %&gt;% tally %&gt;% select(present_day, pop, n)\n\n# A tibble: 4 × 3\n# Groups:   pop [4]\n  present_day pop       n\n  &lt;lgl&gt;       &lt;chr&gt; &lt;int&gt;\n1 TRUE        AFR   15000\n2 TRUE        CHIMP  5000\n3 TRUE        EUR    3000\n4 TRUE        NEA    1000",
+    "text": "Part 7: Simulating a defined set of individuals\nYou have now both a compiled slendr model and a well-defined sampling schedule.\nUse your combined sampling schedule stored in the schedule variable to run a new tree-sequence simulation from your model (again using the msprime() function), this time restricted to just those individuals scheduled for recording. You can do this by providing the combined sampling schedule as the samples = schedule argument of the function msprime you used above. Just replace the line(s) with your first msprime() from the previous part of this exercise with the new one, which uses the schedule for customized sampling.\nAlso, while you’re doing this, use the ts_mutate() function to overlay neutral mutations on the simulated tree sequence right after the msprime() call. (Take a look at the handounts for a reminder of the %&gt;% pipe patterns I showed you.)\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\nThe command below will likely take a few minutes to run, so feel free to go down from 100 Mb sequence_length to even 10Mb (it doesn’t matter much). (The random_seed = argument is there for reproducibility purposes.)\n\nts &lt;-\n  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %&gt;%\n  ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)\n# Time difference of 2.141642 mins\n\nIf you’re bothered by how long the simulation takes, feel free to call these two lines to 100% reproduce my results without any expensive computation:\n\nurl_path &lt;- \"https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees\"\nts_path &lt;- tempfile()\ndownload.file(url_path, destfile = ts_path, mode = \"wb\")\nts &lt;- ts_read(file = ts_path, model = model)\n\n\n\n\nInspect the tree-sequence object saved in the ts variable by typing it into the R console again (this interactivity really helps with catching nasty bugs early during the programming of your script). You can also do a similar thing via the table produced by the ts_samples() function. You should see a much smaller number of individuals being recorded, indicating that the simulation was much more efficient and produced genomic data for only the individuals of interest.\n\n\nNote: When you think about it, it’s actually quite astonishing how fast msprime and tskit are when dealing with such a huge amount of sequence data from tens of thousands of individuals on a simple laptop!\n\n\n\n\n\n\nClick to see the solution\n\n\n\n\n\n\n# Inspect the (tskit/Python-based) summary of the new tree sequence\n# (note the much smaller number of \"sample nodes\"!)\nts\n\n╔═══════════════════════════╗\n║TreeSequence               ║\n╠═══════════════╤═══════════╣\n║Trees          │      9,332║\n╟───────────────┼───────────╢\n║Sequence Length│  1,000,000║\n╟───────────────┼───────────╢\n║Time Units     │generations║\n╟───────────────┼───────────╢\n║Sample Nodes   │     48,000║\n╟───────────────┼───────────╢\n║Total Size     │    8.8 MiB║\n╚═══════════════╧═══════════╝\n╔═══════════╤═══════╤═════════╤════════════╗\n║Table      │Rows   │Size     │Has Metadata║\n╠═══════════╪═══════╪═════════╪════════════╣\n║Edges      │133,217│  4.1 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Individuals│ 24,000│656.3 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Migrations │      0│  8 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Mutations  │      0│ 16 Bytes│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Nodes      │104,756│  2.8 MiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Populations│      4│341 Bytes│         Yes║\n╟───────────┼───────┼─────────┼────────────╢\n║Provenances│      1│  2.7 KiB│          No║\n╟───────────┼───────┼─────────┼────────────╢\n║Sites      │      0│ 16 Bytes│          No║\n╚═══════════╧═══════╧═════════╧════════════╝\n\n# Get the table of all recorded samples in the tree sequence\nts_samples(ts)\n\n# A tibble: 24,000 × 3\n   name      time pop  \n   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;\n 1 CHIMP_1      0 AFR  \n 2 CHIMP_2      0 AFR  \n 3 CHIMP_3      0 AFR  \n 4 CHIMP_4      0 AFR  \n 5 CHIMP_5      0 AFR  \n 6 CHIMP_6      0 AFR  \n 7 CHIMP_7      0 AFR  \n 8 CHIMP_8      0 AFR  \n 9 CHIMP_9      0 AFR  \n10 CHIMP_10     0 AFR  \n# ℹ 23,990 more rows\n\n# Compute the count of individuals in different time points\nlibrary(dplyr)\n\nts_samples(ts) %&gt;% group_by(pop, present_day = time == 0) %&gt;% tally %&gt;% select(present_day, pop, n)\n\n# A tibble: 4 × 3\n# Groups:   pop [4]\n  present_day pop       n\n  &lt;lgl&gt;       &lt;chr&gt; &lt;int&gt;\n1 TRUE        AFR   15000\n2 TRUE        CHIMP  5000\n3 TRUE        EUR    3000\n4 TRUE        NEA    1000",
     "crumbs": [
       "Modeling fundamentals",
       "<span class='chapter-number'>8</span>  <span class='chapter-title'>Demographic models</span>"
@@ -1216,6 +1216,160 @@
     ]
   },
   {
+    "objectID": "handouts_tidy-viz.html",
+    "href": "handouts_tidy-viz.html",
+    "title": "Visualization with ggplot2",
+    "section": "",
+    "text": "R is the best technology for doing computational science\n(A few remarks and tips before the practical session)\n(Subjectively.)",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#ggplot2-is-a-core-tidyverse-package",
+    "href": "handouts_tidy-viz.html#ggplot2-is-a-core-tidyverse-package",
+    "title": "Visualization with ggplot2",
+    "section": "ggplot2 is a core tidyverse package",
+    "text": "ggplot2 is a core tidyverse package",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#grammar-of-graphics",
+    "href": "handouts_tidy-viz.html#grammar-of-graphics",
+    "title": "Visualization with ggplot2",
+    "section": "“Grammar of Graphics”",
+    "text": "“Grammar of Graphics”\nA formal syntax and grammar for describing visualizations\n\n\n\n. . .\n\nWhat does this mean?",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#lets-consider-base-r-plotting",
+    "href": "handouts_tidy-viz.html#lets-consider-base-r-plotting",
+    "title": "Visualization with ggplot2",
+    "section": "Let’s consider base R plotting",
+    "text": "Let’s consider base R plotting\n\n\n\n\nAttaching package: 'dplyr'\n\n\nThe following objects are masked from 'package:stats':\n\n    filter, lag\n\n\nThe following objects are masked from 'package:base':\n\n    intersect, setdiff, setequal, union\n\n\n\nlibrary(palmerpenguins)\n\n\nAttaching package: 'palmerpenguins'\n\n\nThe following objects are masked from 'package:datasets':\n\n    penguins, penguins_raw\n\nglimpse(penguins[1:4, ])\n\nRows: 4\nColumns: 8\n$ species           &lt;fct&gt; Adelie, Adelie, Adelie, Adelie\n$ island            &lt;fct&gt; Torgersen, Torgersen, Torgersen, Torgersen\n$ bill_length_mm    &lt;dbl&gt; 39.1, 39.5, 40.3, NA\n$ bill_depth_mm     &lt;dbl&gt; 18.7, 17.4, 18.0, NA\n$ flipper_length_mm &lt;int&gt; 181, 186, 195, NA\n$ body_mass_g       &lt;int&gt; 3750, 3800, 3250, NA\n$ sex               &lt;fct&gt; male, female, female, NA\n$ year              &lt;int&gt; 2007, 2007, 2007, 2007",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g)",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-1",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-1",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g, xlim = c(2000, 8000))",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-2",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-2",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100))",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-3",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-3",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Histogram of body mass of penguins\")",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-4",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-4",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Histogram of body mass of penguins\",\n     xlab = \"Body mass [grams]\")",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-5",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-5",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Histogram of body mass of penguins\",\n     xlab = \"Body mass [grams]\", ylab = \"Count of individuals\")",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-6",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-6",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\nhist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Histogram of body mass of penguins\",\n     xlab = \"Body mass [grams]\", ylab = \"Count of individuals\",\n     col = \"black\", border = \"white\")",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#a-base-r-histogram-7",
+    "href": "handouts_tidy-viz.html#a-base-r-histogram-7",
+    "title": "Visualization with ggplot2",
+    "section": "A base R histogram",
+    "text": "A base R histogram\n\n\nCode\npar(mfrow = c(1, 3))\n\nspecies_1 &lt;- filter(penguins, species ==  \"Adelie\")\nhist(species_1$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Species 'Adelie'\",\n     xlab = \"Body mass [grams]\", ylab = \"Count of individuals\",\n     col = \"darkgreen\", border = \"white\")\n\nspecies_2 &lt;- filter(penguins, species ==  \"Chinstrap\")\nhist(species_2$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Species 'Chinstrap'\",\n     xlab = \"Body mass [grams]\", ylab = \"Count of individuals\",\n     col = \"darkblue\", border = \"white\")\n\nspecies_3 &lt;- filter(penguins, species ==  \"Gentoo\")\nhist(species_3$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),\n     main = \"Species 'Gentoo'\",\n     xlab = \"Body mass [grams]\", ylab = \"Count of individuals\",\n     col = \"darkorange\", border = \"white\")",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#layers-in-grammar-of-graphics",
+    "href": "handouts_tidy-viz.html#layers-in-grammar-of-graphics",
+    "title": "Visualization with ggplot2",
+    "section": "Layers in “Grammar of Graphics”",
+    "text": "Layers in “Grammar of Graphics”\n\n\n\n\n\nIllustration of Layers in Grammar of Graphics from  Quebec Centre for Biodiversity Science",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
+    "objectID": "handouts_tidy-viz.html#layers-in-grammar-of-graphics-1",
+    "href": "handouts_tidy-viz.html#layers-in-grammar-of-graphics-1",
+    "title": "Visualization with ggplot2",
+    "section": "Layers in “Grammar of Graphics”",
+    "text": "Layers in “Grammar of Graphics”\n\n\n\n\ndata — our data frame\n\n\n\n\naesthetics — “mapping” of columns to visual properties of a figure (x, or y axes, color, shape, etc.)\n\n\n\n\ngeoms — graphical elements to be plotted (histograms, points, lines, etc.).",
+    "crumbs": [
+      "Cheatsheets and handouts",
+      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Visualization with _ggplot2_</span>"
+    ]
+  },
+  {
     "objectID": "handouts_slendr.html",
     "href": "handouts_slendr.html",
     "title": "Introduction to slendr",
@@ -1223,7 +1377,7 @@
     "text": "Why use simulations?",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1234,7 +1388,7 @@
     "text": "Developing intuition into statistics\n\n\n\n\n\nImage from Peter (2016)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1245,7 +1399,7 @@
     "text": "Developing intuition into statistics\n\n\n\n\n\nImage from Lawson et al. (2018)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1256,7 +1410,7 @@
     "text": "Estimating model parameters (i.e. ABC)\n\n\n\n\n\nImage from Wikipedia on ABC",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1267,7 +1421,7 @@
     "text": "Ground truth for method development\n\n\n\n\n\nImage from Schiffels and Durbin (2014)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1278,7 +1432,7 @@
     "text": "Simulation software\nThe most famous and widely used are SLiM and msprime.\n\nThey are very powerful and (nearly) infinitely flexible.\n\n\nHowever, they both require:\n\nquite a bit of code for complex simulations (“complex” is relative, of course)\nrelatively high confidence in programming\n\n\n\n\n\n\nOur exercises will focus on the slendr simulation toolkit for population genetics in R.\n\n\n\n\n\nBut, as a recap, let’s look at msprime and SLiM a little bit…",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1289,7 +1443,7 @@
     "text": "What is msprime?\n\n\nA Python module for writing coalescent simulations\nExtremely fast (genome-scale, population-scale data!)\nYou should know Python fairly well to build complex models\n\n\n\n\n\n\nImage modified from Alexei Drummond",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1300,7 +1454,7 @@
     "text": "Simple simulation using msprime\n\n\nimport msprime\n\ndemography = msprime.Demography()\ndemography.add_population(name=\"A\", initial_size=10_000)\ndemography.add_population(name=\"B\", initial_size=5_000)\ndemography.add_population(name=\"C\", initial_size=1_000)\ndemography.add_population_split(time=1000, derived=[\"A\", \"B\"], ancestral=\"C\")\n\nts = msprime.sim_ancestry(\n  sequence_length=10e6,\n  recombination_rate=1e-8,\n  samples={\"A\": 100, \"B\": 100},\n  demography=demography\n)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1311,7 +1465,7 @@
     "text": "What is SLiM?\n\n\nA forward-time simulator\nHas its own programming language\nMassive library of functions for:\n\ndemographic events\nvarious mating systems\nnatural selection\n\nMore than 700 pages long manual!\n\n\n\n\n\n\nImage modified from Alexei Drummond",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1322,7 +1476,7 @@
     "text": "Simple neutral simulation in SLiM\n\n\ninitialize() {\n    // create a neutral mutation type\n    initializeMutationType(\"m1\", 0.5, \"f\", 0.0);\n\n    // initialize 1Mb segment\n    initializeGenomicElementType(\"g1\", m1, 1.0);\n    initializeGenomicElement(g1, 0, 999999);\n\n    // set mutation rate and recombination rate of the segment\n    initializeMutationRate(1e-8);\n    initializeRecombinationRate(1e-8);\n}\n\n// create an ancestral population p1 of 10000 diploid individuals\n1 early() { sim.addSubpop(\"p1\", 10000); }\n\n// in generation 1000, create two daughter populations p2 and p3\n1000 early() {\n    sim.addSubpopSplit(\"p2\", 5000, p1);\n    sim.addSubpopSplit(\"p3\", 1000, p1);\n}\n\n// in generation 10000, stop the simulation and save 100 individuals\n// from p2 and p3 to a VCF file\n10000 late() {\n    p2_subset = sample(p2.individuals, 100);\n    p3_subset = sample(p3.individuals, 100);\n    c(p2_subset, p3_subset).genomes.outputVCF(\"/tmp/slim_output.vcf.gz\");\n\n    sim.simulationFinished();\n}",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1333,7 +1487,7 @@
     "text": "… so why slendr?\n\n\n\nwww.slendr.net",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1344,7 +1498,7 @@
     "text": "First motivation: spatial simulations!",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1355,7 +1509,7 @@
     "text": "A broader motivation for slendr\n\nMost researchers are not expert programmers\nAll but the most trivial simulations require lots of code\n\n\n\nYet, 90% [citation needed] of simulations are basically the same!\n\ncreate populations (splits and \\(N_e\\) changes)\nspecify admixture rates and admixture times\n\n… all this means duplication of code across many projects\n\n\n\n\nComputing statistics presents even more hurdles\n\n\n\n\n\nslendr makes this very easy, even for “complex models”",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1366,7 +1520,7 @@
     "text": "Typical slendr workflow\nWe will always start our R scripts with this:\n\nlibrary(slendr) # You can safely ignore any potential warnings!\ninit_env()      # This activates the internal Python environmet\n\nFollowed by some combination of the following:\n\ncreating populations\nprogramming \\(N_e\\) size changes\nencoding gene-flow events\nsimulating genomic data\ncomputing popgen statistics",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1377,7 +1531,7 @@
     "text": "Creating populations\nAt minimum, we need its name, size and “time of appearance”:\n\npop1 &lt;- population(\"pop1\", N = 1000, time = 1)\n\n\nThis creates a normal R object! Typing it out gives a summary:\n\npop1\n\nslendr 'population' object \n-------------------------- \nname: pop1 \nnon-spatial population\nstays until the end of the simulation\n\npopulation history overview:\n  - time 1: created as an ancestral population (N = 1000)\n\n\n\n\n\nNote: Because slendr uses either msprime or SLiM internally for simulation of genomic data, all individuals are assumed to be diploid.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1388,7 +1542,7 @@
     "text": "Programming population splits\nSplits are defined by providing a parent = &lt;pop&gt; argument:\n\npop2 &lt;- population(\"pop2\", N = 100, time = 50, parent = pop1)\n\n\n\nNote: Here pop1 is an R object created above, not a string \"pop1\"!\n\nThe split is again reported in the “historical summary”:\n\npop2\n\nslendr 'population' object \n-------------------------- \nname: pop2 \nnon-spatial population\nstays until the end of the simulation\n\npopulation history overview:\n  - time 50: split from pop1 (N = 100)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1399,7 +1553,7 @@
     "text": "Scheduling resize events\n\nStep size decrease:\n\n\npop1 &lt;- population(\"pop1\", N = 1000, time = 1)\npop1_step &lt;- resize(pop1, N = 100, time = 500, how = \"step\")\n\n\n\nExponential increase:\n\n\npop2 &lt;- population(\"pop2\", N = 100, time = 50, parent = pop1)\npop2_exp &lt;- resize(pop2, N = 10000, time = 500, end = 2000, how = \"exponential\")",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1410,7 +1564,7 @@
     "text": "Tidyverse-style pipe %&gt;% interface\nThe following leads to a more concise (and “elegant”) code.\n\nStep size decrease:\n\n\npop1 &lt;-\n  population(\"pop1\", N = 1000, time = 1) %&gt;%\n  resize(N = 100, time = 500, how = \"step\")\n\n\nExponential increase:\n\n\npop2 &lt;-\n  population(\"pop2\", N = 1000, time = 1) %&gt;%\n  resize(N = 10000, time = 500, end = 2000, how = \"exponential\")\n\n\n\nNote: You can read (and understand) a() %&gt;% b() %&gt;% c() as “take the result of the function a, pipe it into function b, and then pipe that to function c”.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1421,7 +1575,7 @@
     "text": "A more complex model\nUsing just the two functions introduced so far:\n\npop1 &lt;- population(\"pop1\", N = 1000, time = 1)\n\npop2 &lt;-\n  population(\"pop2\", N = 1000, time = 300, parent = pop1) %&gt;%\n  resize(N = 100, how = \"step\", time = 1000)\n\npop3 &lt;-\n  population(\"pop3\", N = 1000, time = 400, parent = pop2) %&gt;%\n  resize(N = 2500, how = \"step\", time = 800)\n\npop4 &lt;-\n  population(\"pop4\", N = 1500, time = 500, parent = pop3) %&gt;%\n  resize(N = 700, how = \"exponential\", time = 1200, end = 2000)\n\npop5 &lt;-\n  population(\"pop5\", N = 100, time = 600, parent = pop4) %&gt;%\n  resize(N = 50, how = \"step\", time = 900) %&gt;%\n  resize(N = 1000, how = \"exponential\", time = 1600, end = 2200)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1432,7 +1586,7 @@
     "text": "Again, each object carries its history!\nFor instance, this is the summary you will get from the last population from the previous code chunk:\n\npop5\n\nslendr 'population' object \n-------------------------- \nname: pop5 \nnon-spatial population\nstays until the end of the simulation\n\npopulation history overview:\n  - time 600: split from pop4 (N = 100)\n  - time 900: resize from 100 to 50 individuals\n  - time 1600-2200: exponential resize from 50 to 1000 individuals\n\n\n\nThis way, you can build up complex models step by step, checking things as you go by interacting with the R console.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1443,7 +1597,7 @@
     "text": "Gene flow / admixture\nWe can schedule gene flow from pop1 into pop2 with:\n\ngf &lt;- gene_flow(from = pop1, to = pop2, start = 2000, end = 2200, rate = 0.13)\n\n\n\nNote: Here rate = 0.13 means 13% migrants over the given time window will come from “pop1” into “pop2”.\n\n\nMultiple gene-flow events can be gathered in a list:\n\ngf &lt;- list(\n  gene_flow(from = pop1, to = pop2, start = 500, end = 600, rate = 0.13),\n  gene_flow(from = ..., to = ..., start = ..., end = ..., rate = ...),\n  ...\n)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1454,7 +1608,7 @@
     "text": "Model compilation\n\nThis is the final step before we can simulate data.\n\n\nmodel &lt;- compile_model(\n  populations = list(pop1, pop2, pop3, pop4, pop5),\n  generation_time = 1,       # (converts the all times into generations)\n  simulation_length = 3000,  # (number of generations to run the simulation for)\n  direction = \"forward\"      # (not totally necessary but good practice)\n)\n\n\n\ncompile_model() takes a list of components, performs some consistency checks, and returns a single R object",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1465,7 +1619,7 @@
     "text": "Model compilation\n\nThis is the final step before we can simulate data.\n\n\nmodel &lt;- compile_model(\n  populations = list(pop1, pop2, pop3, pop4, pop5),\n  gene_flow = gf,      # &lt;----- in case our model includes gene flow(s)\n  generation_time = 1,\n  simulation_length = 3000,\n  direction = \"forward\"\n)\n\n\n\nGene flow(s) can be included via the gene_flow argument.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1473,10 +1627,10 @@
     "href": "handouts_slendr.html#model-summary",
     "title": "Introduction to slendr",
     "section": "Model summary",
-    "text": "Model summary\nTyping the compiled model into R prints a brief summary:\n\nmodel\n\nslendr 'model' object \n--------------------- \npopulations: pop1, pop2, pop3, pop4, pop5 \ngeneflow events: 1 \ngeneration time: 1 \ntime direction: forward \ntime units: generations \ntotal running length: 3000 time units\nmodel type: non-spatial\n\nconfiguration files in: /private/var/folders/h2/qs0z_44x2vn2sskqc0cct7540000gn/T/RtmpHEVA6b/file139b31bf713cb_slendr_model \n\n\nThis can be useful as a quick overview of the model we are working with. However, a better way to check a model is…",
+    "text": "Model summary\nTyping the compiled model into R prints a brief summary:\n\nmodel\n\nslendr 'model' object \n--------------------- \npopulations: pop1, pop2, pop3, pop4, pop5 \ngeneflow events: 1 \ngeneration time: 1 \ntime direction: forward \ntime units: generations \ntotal running length: 3000 time units\nmodel type: non-spatial\n\nconfiguration files in: /private/var/folders/h2/qs0z_44x2vn2sskqc0cct7540000gn/T/RtmpTPwpVU/file13f527476df2b_slendr_model \n\n\nThis can be useful as a quick overview of the model we are working with. However, a better way to check a model is…",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1487,7 +1641,7 @@
     "text": "Model visualization\n\nplot_model(model)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1498,7 +1652,7 @@
     "text": "“Forward time units”\n\npop1 &lt;- population(\"pop1\", N = 1000, time = 1)\n\npop2 &lt;-\n  population(\"pop2\", N = 1000, time = 300, parent = pop1) %&gt;%\n  resize(N = 100, how = \"step\", time = 1000)\n\npop3 &lt;-\n  population(\"pop3\", N = 1000, time = 400, parent = pop2) %&gt;%\n  resize(N = 2500, how = \"step\", time = 800)\n\npop4 &lt;-\n  population(\"pop4\", N = 1500, time = 500, parent = pop3) %&gt;%\n  resize(N = 700, how = \"exponential\", time = 1200, end = 2000)\n\npop5 &lt;-\n  population(\"pop5\", N = 100, time = 600, parent = pop4) %&gt;%\n  resize(N = 50, how = \"step\", time = 900) %&gt;%\n  resize(N = 1000, how = \"exponential\", time = 1600, end = 2200)\n\nmodel &lt;- compile_model(\n  populations = list(pop1, pop2, pop3, pop4, pop5),\n  generation_time = 1,\n  simulation_length = 3000, # forward-time sims need an explicit end\n  direction = \"forward\"\n)\n\n\n\nWe started with pop1 in generation 1, with later events at an increasing time value.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1509,7 +1663,7 @@
     "text": "“Forward time units”\n\nplot_model(model) # see time progressing from generation 1 forwards\n\n\n\n\n\n\n\n\n\n\nWe started with pop1 in generation 1, with later events at an increasing time value.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1520,7 +1674,7 @@
     "text": "“Backward time units”\n\npop1 &lt;- population(\"pop1\", N = 1000, time = 30000)\n\npop2 &lt;-\n  population(\"pop2\", N = 1000, time = 27000, parent = pop1) %&gt;%\n  resize(N = 100, how = \"step\", time = 20000)\n\npop3 &lt;-\n  population(\"pop3\", N = 1000, time = 26000, parent = pop2) %&gt;%\n  resize(N = 2500, how = \"step\", time = 22000)\n\npop4 &lt;-\n  population(\"pop4\", N = 1500, time = 25000, parent = pop3) %&gt;%\n  resize(N = 700, how = \"exponential\", time = 18000, end = 10000)\n\npop5 &lt;-\n  population(\"pop5\", N = 100, time = 24000, parent = pop4) %&gt;%\n  resize(N = 50, how = \"step\", time = 21000) %&gt;%\n  resize(N = 1000, how = \"exponential\", time = 14000, end = 8000)\n\nmodel &lt;- compile_model(\n  populations = list(pop1, pop2, pop3, pop4, pop5),\n  generation_time = 10 # (10 time units for each generation)\n  # (we don't need to provide `simulation_length =` because\n  # \"backwards\" models end at time 0 by default, i.e. \"present-day\")\n)\n\n\n\nSame model as before, except now expressed in units of “years before present”.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1531,7 +1685,7 @@
     "text": "“Backward time units”\n\nplot_model(model) # see time progressing from \"year\" 30000 backwards\n\n\n\n\n\n\n\n\n\n\nSame model as before, except now expressed in units of “years before present”.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1542,7 +1696,7 @@
     "text": "Built-in simulation “engines”\nslendr has two simulation “engine scripts” built-in:\n\nmsprime engine (slendr source) – R function msprime()\nSLiM engine (slendr source) – R function slim()\n\n\nThey are designed to “understand” slendr models, meaning that you can simulate data just with this command:\n\nts &lt;- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8)\n\n\n\n\n\n\nNo need to write any msprime or SLiM code!",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1553,7 +1707,7 @@
     "text": "What is tree sequence?\n\n\n\n\n\n\na record of full genetic ancestry of a set of samples\nan encoding of DNA sequence carried by those samples\nan efficient analysis framework",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1564,7 +1718,7 @@
     "text": "What we usually have",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1575,7 +1729,7 @@
     "text": "What we usually want\nAn understanding of our samples’ evolutionary history:\n\n\n\n\n\n\nThis is exactly what a tree sequence is!\n\n\n\n\n\nImage from the tskit documentation",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1586,7 +1740,7 @@
     "text": "The magic of tree sequences\nThey allow us to compute statistics without genotypes!\n\n\n\nThere is a “duality” between mutations and branch lengths.\n\n\nNote: See an amazing paper by Ralph et al. (2020) for more detail.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1597,7 +1751,7 @@
     "text": "What if we need mutations though?",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1608,7 +1762,7 @@
     "text": "What if we need mutations though?\nCoalescent and mutation processes can be decoupled!\n\n\n\n\nThis means we can add mutations to ts after the simulation using ts_mutate().",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1619,7 +1773,7 @@
     "text": "Let’s go back to our example model…\n\nplot_model(model)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1630,7 +1784,7 @@
     "text": "… simulate a tree sequence…\n\nIn our script we’ll have something like this:\n\nlibrary(slendr)\ninit_env()\n\n# &lt;... population() definitions ...&gt;\n\n# &lt;... gene_flow() definition ...&gt;\n\n# &lt;... compile_model(...) ...&gt;\n  \nts &lt;-\n  msprime(model, sequence_length = 50e6, recombination_rate = 1e-8)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1641,7 +1795,7 @@
     "text": "… and overlay mutations on it\n\nIn our script we’ll have something like this:\n\nlibrary(slendr)\ninit_env()\n\n# &lt;... population() definitions ...&gt;\n\n# &lt;... gene_flow() definition ...&gt;\n\n# &lt;... compile_model(...) ...&gt;\n  \nts &lt;-\n  msprime(model, sequence_length = 50e6, recombination_rate = 1e-8) %&gt;%\n  ts_mutate(mutation_rate = 1e-8)\n\n\n\nNote: In some exercises, mutations won’t be necessary. Where we will need them, you can use ts_mutate() using the pattern shown here.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1652,7 +1806,7 @@
     "text": "slendr’s R interface to tskit statistics\n\n\n\nAllele-frequecy spectrum, \\(\\pi\\), \\(f\\)-statistics, \\(F_{ST}\\), Tajima’s D, etc.\nFind help at slendr.net/reference or in R under ?ts_fst etc.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1660,10 +1814,10 @@
     "href": "handouts_slendr.html#extracting-names-of-recorded-samples",
     "title": "Introduction to slendr",
     "section": "Extracting names of recorded samples",
-    "text": "Extracting names of recorded samples\n\nWe can get individuals recorded in ts with ts_samples():\n\n\nts_samples(ts) %&gt;% head(1) # returns a data frame (one row here, for brevity)\n\n\n\n    name time  pop\n1 pop1_1 3001 pop1\n\n\n\n\nA shortcut ts_names() can also be useful:\n\n\nts_names(ts) %&gt;% head(5) # returns a vector of individuals' names\n\n[1] \"pop1_1\" \"pop1_2\" \"pop1_3\" \"pop1_4\" \"pop1_5\"\n\n\n\n\n\nWe can get a per-population list of individuals like this:\n\n\nts_names(ts, split = \"pop\") # returns a named list of such vectors\n\n\n\n$pop1\n[1] \"pop1_767\" \"pop1_397\" \"pop1_818\" \"pop1_196\" \"pop1_662\"",
+    "text": "Extracting names of recorded samples\n\nWe can get individuals recorded in ts with ts_samples():\n\n\nts_samples(ts) %&gt;% head(1) # returns a data frame (one row here, for brevity)\n\n\n\n    name time  pop\n1 pop1_1 3001 pop1\n\n\n\n\nA shortcut ts_names() can also be useful:\n\n\nts_names(ts) %&gt;% head(5) # returns a vector of individuals' names\n\n[1] \"pop1_1\" \"pop1_2\" \"pop1_3\" \"pop1_4\" \"pop1_5\"\n\n\n\n\n\nWe can get a per-population list of individuals like this:\n\n\nts_names(ts, split = \"pop\") # returns a named list of such vectors\n\n\n\n$pop1\n[1] \"pop1_689\" \"pop1_368\" \"pop1_110\" \"pop1_416\" \"pop1_11\"",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1674,7 +1828,7 @@
     "text": "tskit computation – option #1\nFor a function which operates on one set of individuals, we can first get a vector of names to compute on like this:\n\n# a random selection of names of three individuals in a tree sequence\nsamples &lt;- c(\"popX_1\", \"popX_2\", \"popY_42\")\n\n\n\nThen we can calculate the statistic of interest like this:\n\n# this computes nucleotide diversity in our set of individuals\ndf_result &lt;- ts_diversity(ts, sample_sets = list(samples))\n\n\n\n\nNote: Wherever you see list(&lt;vector of names&gt;), you can think of it as “compute a statistic for the entire group of individuals” (you get a single number). Without the list(), it would mean “compute the statistic for each individual separately” (and get a value for each of them individually).",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1685,7 +1839,7 @@
     "text": "tskit computation – option #2\nFor a function operating on multiple sets of individuals, we want a list of vectors of names (one such vector per group):\n\n# when we compute on multiple groups, it's a good idea to name them\nsamples &lt;- list(\n  popX = c(\"popX_1\", \"popX_2\", \"popX_3\"),\n  popY = c(\"popY_1\", \"popY_2\", \"popY_3\"),\n  popZ = c(\"popZ_1\", \"popZ_2\")\n)\n\n\nThen we use this list of vectors in the same way as before:\n\n# this computes a pairwise divergence between all three groups\ndf_result &lt;- ts_divergence(ts, sample_sets = samples)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1696,7 +1850,7 @@
     "text": "tskit computation – option #3\nFor something like \\(f\\) statistics, the function arguments must be more precisely specified (here A, B, C, not sample_sets):\n\ndf_result &lt;- ts_f3(\n  ts,\n  A = c(\"popX_1\", \"popX_2\", \"popX_3\"),\n  B = c(\"popY_1\", \"popY_2\", \"popY_3\"),\n  C = c(\"popZ_1\", \"popZ_2\")\n)\n\n\nDoing this manually can be annoying — ts_names() helps by preparing the list of names in the correct format:\n\n# get names of individuals in each population as a named list of vectors\nsamples &lt;- ts_names(ts, split = \"pop\")\n\n# use this list directly by specifying which vectors to take out\nts_f3(ts, A = samples$popX, B = samples$popY, C = samples$popZ)",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1704,10 +1858,10 @@
     "href": "handouts_slendr.html#example-nucleotide-diversity",
     "title": "Introduction to slendr",
     "section": "Example: nucleotide diversity",
-    "text": "Example: nucleotide diversity\n\n\nGet a list of individuals in each population:\n\nsamples &lt;- ts_names(ts, split = \"pop\")\n\nnames(samples)\n\n[1] \"pop1\" \"pop2\"\n\n\n\n\nWe can index into the list via population name:\n\nsamples$pop1\n\n\n\n[1] \"pop1_1\" \"pop1_2\" \"pop1_3\"\n\n\n\nsamples$pop2\n\n\n\n[1] \"pop2_1\" \"pop2_2\" \"pop2_3\"\n\n\n\n\n \n\n\nCompute nucleotide diversity (note the list samples):\n\nts_diversity(ts, sample_sets = samples)\n\n# A tibble: 2 × 2\n  set   diversity\n  &lt;chr&gt;     &lt;dbl&gt;\n1 pop1  0.000399 \n2 pop2  0.0000590\n\n\n\nOur tree sequence had two populations, pop1 and pop2, which is why we get a data frame with diversity in each of them.",
+    "text": "Example: nucleotide diversity\n\n\nGet a list of individuals in each population:\n\nsamples &lt;- ts_names(ts, split = \"pop\")\n\nnames(samples)\n\n[1] \"pop1\" \"pop2\"\n\n\n\n\nWe can index into the list via population name:\n\nsamples$pop1\n\n\n\n[1] \"pop1_1\" \"pop1_2\" \"pop1_3\"\n\n\n\nsamples$pop2\n\n\n\n[1] \"pop2_1\" \"pop2_2\" \"pop2_3\"\n\n\n\n\n \n\n\nCompute nucleotide diversity (note the list samples):\n\nts_diversity(ts, sample_sets = samples)\n\n# A tibble: 2 × 2\n  set   diversity\n  &lt;chr&gt;     &lt;dbl&gt;\n1 pop1  0.000392 \n2 pop2  0.0000784\n\n\n\nOur tree sequence had two populations, pop1 and pop2, which is why we get a data frame with diversity in each of them.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1718,7 +1872,7 @@
     "text": "Example: allele frequency spectrum\n\n\nGet names of individuals:\n\nsamples &lt;- ts_names(ts)[1:5]\nsamples\n\n[1] \"pop_1\" \"pop_2\" \"pop_3\" \"pop_4\" \"pop_5\"\n\n\n\nCompute the AFS:\n\nafs &lt;- ts_afs(ts, sample_sets = list(samples))\n\n# we skip the 1st item because it has a special meaning in tskit\nafs[-1]\n\n [1] 3917 2151 1432  941  740  624  607  587  416  385\n\n\n\n\n \n\n\n\nplot(afs[-1], type = \"b\",\n     xlab = \"allele count bin\",\n     ylab = \"frequency\")\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nNote: One of the rare examples when a slendr / tskit statistical function does not return a data frame (ts_afs() returns a numerical vector, not a data frame).",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1729,7 +1883,7 @@
     "text": "Tree sequence tables\n\nThis simulates 2 \\(\\times\\) 10000 chromosomes of 100 Mb:\n\nlibrary(slendr)\ninit_env(quiet = FALSE)\n\npop &lt;- population(\"pop\", time = 100e6, N = 10000)\nmodel &lt;- compile_model(pop, generation_time = 30, direction = \"backward\")\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)\n\n\n\nThe interface to all required Python modules has been activated.\n\n\n\nRuns in less than 30 seconds on my laptop!\nTakes only about 66 Mb of memory!",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1740,7 +1894,7 @@
     "text": "How is this even possible?!",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1751,7 +1905,7 @@
     "text": "Tree-sequence tables\n\n\n\nA tree can be represented by\n\n\na table of nodes,\na table of edges between nodes,\na table of mutations on edges\n\n\n\n\n\n\n\n\n\n\n\nA collection of such tables is a tree sequence.\n\n\n\nNote: This is a huge oversimplification. Find more information in tskit docs.",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1762,7 +1916,7 @@
     "text": "Tree-sequence tables in practice\n\n\n\n\n\n\n\n\n\n\n\n\nNodes:\n\n\n  node     time\n1  360 871895.1\n2  256 475982.3\n3  255 471179.5\n\n\n\n\n\nEdges:\n\n\n  child parent\n1   256    360\n2   255    256\n3    69    256\n\n\n\n\n\nMutations:\n\n\n   id node     time\n1  69   74 125539.4\n2 272   22 242337.9\n3 277   22 129474.1",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1773,7 +1927,7 @@
     "text": "Standard genotype formats\nIf a tree sequence doesn’t cut it, you can always…\n\n\nexport genotypes to a VCF file:\n\n\nts_vcf(ts, path = \"path/to/a/file.vcf.gz\")\n\n\n\n\nexport genotypes in the EIGENSTRAT format:\n\n\nts_eigenstrat(ts, prefix = \"path/to/eigenstrat/prefix\")\n\n\n\n\naccess genotypes as a data frame:\n\n\nts_genotypes(ts)\n\n\n\n    pos pop_1_chr1 pop_1_chr2 pop_2_chr1 pop_2_chr2 pop_3_chr1 pop_3_chr2\n1 12977          0          1          0          0          0          0\n2 15467          1          0          1          1          1          1",
     "crumbs": [
       "Cheatsheets and handouts",
-      "<span class='chapter-number'>12</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
+      "<span class='chapter-number'>13</span>  <span class='chapter-title'>Introduction to _slendr_</span>"
     ]
   },
   {
@@ -1813,7 +1967,7 @@
     "href": "setup-slendr.html",
     "title": "Appendix B — Installation – slendr",
     "section": "",
-    "text": "Installation steps\nThe chapters of the workbook focused on population genomics and population genomic simulations rely exclusive on the R package called slendr (plus an assortment of other useful R packages for data science, all of which will be automatically installed alongside slendr).\nPlease don’t hesitate to get in touch with me over email at contact [snail sign] bodkan.net if you run into any problems with this setup procedure or with anything else related to the workshop! You can also catch me whenever you see me in the teaching venue.\ninstall.packages(\"slendr\")\nSys.setenv(CONDA_PLUGINS_AUTO_ACCEPT_TOS = \"yes\")\n\nslendr::setup_env(agree = TRUE)\nIf everything worked, you should get an optimistic message at the end of the entire procedure saying:\nlibrary(slendr)\ninit_env()\n## The interface to all required Python modules has been activated.\n\nA &lt;- population(\"popA\", time = 8000, N = 1000)\nB &lt;- population(\"popB\", time = 4000, N = 1000, parent = A)\nC &lt;- population(\"popC\", time = 4000, N = 1000, parent = A)\nD &lt;- population(\"popD\", time = 3000, N = 1000, parent = C)\n\ngf &lt;- list(\n  gene_flow(from = B, to = D, start = 1000, end = 800, rate = 0.2),\n  gene_flow(from = C, to = D, start = 1000, end = 800, rate = 0.1)\n)\n\nmodel &lt;- compile_model(\n  populations = list(A, B, C, D),\n  gene_flow = gf, generation_time = 30\n)\n\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)\nts\n## ╔═══════════════════════════╗\n## ║TreeSequence               ║\n## ╠═══════════════╤═══════════╣\n## ║Trees          │        814║\n## ╟───────────────┼───────────╢\n## ║Sequence Length│  1,000,000║\n## ╟───────────────┼───────────╢\n## ║Time Units     │generations║\n## ╟───────────────┼───────────╢\n## ║Sample Nodes   │      8,000║\n## ╟───────────────┼───────────╢\n## ║Total Size     │    1.4 MiB║\n## ╚═══════════════╧═══════════╝\n## ╔═══════════╤══════╤═════════╤════════════╗\n## ║Table      │Rows  │Size     │Has Metadata║\n## ╠═══════════╪══════╪═════════╪════════════╣\n## ║Edges      │19,823│619.5 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Individuals│ 4,000│109.4 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Migrations │     0│  8 Bytes│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Mutations  │     0│ 16 Bytes│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Nodes      │17,399│475.8 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Populations│     4│343 Bytes│         Yes║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Provenances│     1│  2.8 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Sites      │     0│ 16 Bytes│          No║\n## ╚═══════════╧══════╧═════════╧════════════╝\nThe outcome of this script should approximately match what you see above (minus some statistical noise manifesting in your numbers in the summary being slightly different).\nIn order to be able to run my own solutions to some of the exercises (particularly some more advanced bonus exercises which will be entirely optional, and we very likely won’t have time to go through during the short span of the worksop), a couple of additional R packages might be useful.\nYou can install those like this:\ninstall.packages(c(\"combinat\", \"cowplot\"))\nIf you’ve made it this far, you’re good to go!",
+    "text": "Installation steps\nThe chapters of the workbook focused on population genomics and population genomic simulations rely exclusive on the R package called slendr (plus an assortment of other useful R packages for data science, all of which will be automatically installed alongside slendr).\nPlease don’t hesitate to get in touch with me over email at contact [snail sign] bodkan.net if you run into any problems with this setup procedure or with anything else related to the workshop! You can also catch me whenever you see me in the teaching venue.\ninstall.packages(\"slendr\")\nSys.setenv(CONDA_PLUGINS_AUTO_ACCEPT_TOS = \"yes\")\n\nslendr::setup_env(agree = TRUE)\nIf everything worked, you should get an optimistic message at the end of the entire procedure saying:\nlibrary(slendr)\ninit_env()\n## The interface to all required Python modules has been activated.\n\nA &lt;- population(\"popA\", time = 8000, N = 1000)\nB &lt;- population(\"popB\", time = 4000, N = 1000, parent = A)\nC &lt;- population(\"popC\", time = 4000, N = 1000, parent = A)\nD &lt;- population(\"popD\", time = 3000, N = 1000, parent = C)\n\ngf &lt;- list(\n  gene_flow(from = B, to = D, start = 1000, end = 800, rate = 0.2),\n  gene_flow(from = C, to = D, start = 1000, end = 800, rate = 0.1)\n)\n\nmodel &lt;- compile_model(\n  populations = list(A, B, C, D),\n  gene_flow = gf, generation_time = 30\n)\n\nts &lt;- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)\nts\n## ╔═══════════════════════════╗\n## ║TreeSequence               ║\n## ╠═══════════════╤═══════════╣\n## ║Trees          │        825║\n## ╟───────────────┼───────────╢\n## ║Sequence Length│  1,000,000║\n## ╟───────────────┼───────────╢\n## ║Time Units     │generations║\n## ╟───────────────┼───────────╢\n## ║Sample Nodes   │      8,000║\n## ╟───────────────┼───────────╢\n## ║Total Size     │    1.4 MiB║\n## ╚═══════════════╧═══════════╝\n## ╔═══════════╤══════╤═════════╤════════════╗\n## ║Table      │Rows  │Size     │Has Metadata║\n## ╠═══════════╪══════╪═════════╪════════════╣\n## ║Edges      │19,884│621.4 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Individuals│ 4,000│109.4 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Migrations │     0│  8 Bytes│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Mutations  │     0│ 16 Bytes│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Nodes      │17,405│475.9 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Populations│     4│343 Bytes│         Yes║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Provenances│     1│  2.8 KiB│          No║\n## ╟───────────┼──────┼─────────┼────────────╢\n## ║Sites      │     0│ 16 Bytes│          No║\n## ╚═══════════╧══════╧═════════╧════════════╝\nThe outcome of this script should approximately match what you see above (minus some statistical noise manifesting in your numbers in the summary being slightly different).\nIn order to be able to run my own solutions to some of the exercises (particularly some more advanced bonus exercises which will be entirely optional, and we very likely won’t have time to go through during the short span of the worksop), a couple of additional R packages might be useful.\nYou can install those like this:\ninstall.packages(c(\"combinat\", \"cowplot\"))\nIf you’ve made it this far, you’re good to go!",
     "crumbs": [
       "Appendices",
       "<span class='chapter-number'>B</span>  <span class='chapter-title'>Installation -- _slendr_</span>"

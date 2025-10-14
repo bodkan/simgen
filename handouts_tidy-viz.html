@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>References – Computational Population Genomics and Data Science in R</title>
+<title>Visualization with ggplot2 – Computational Population Genomics and Data Science in R</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,26 +20,42 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
 }
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -49,8 +65,8 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./acknowledgements.html" rel="next">
-<link href="./handouts_slendr.html" rel="prev">
+<link href="./handouts_slendr.html" rel="next">
+<link href="./handouts_tidy-basics.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -92,7 +108,7 @@ div.csl-indent {
 
 </head>
 
-<body class="nav-sidebar floating quarto-light">
+<body class="nav-sidebar floating slimcontent quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -101,7 +117,7 @@ div.csl-indent {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./references.html">References</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./handouts.html">Cheatsheets and handouts</a></li><li class="breadcrumb-item"><a href="./handouts_tidy-viz.html"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -253,7 +269,7 @@ div.csl-indent {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./handouts_tidy-viz.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a>
+  <a href="./handouts_tidy-viz.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -265,7 +281,7 @@ div.csl-indent {
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./references.html" class="sidebar-item-text sidebar-link active">
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">References</span></a>
   </div>
 </li>
@@ -306,15 +322,42 @@ div.csl-indent {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#r-is-the-best-technology-for-doing-computational-science" id="toc-r-is-the-best-technology-for-doing-computational-science" class="nav-link active" data-scroll-target="#r-is-the-best-technology-for-doing-computational-science">R is the best technology for doing computational science</a></li>
+  <li><a href="#ggplot2-is-the-most-powerful-visualization-framework" id="toc-ggplot2-is-the-most-powerful-visualization-framework" class="nav-link" data-scroll-target="#ggplot2-is-the-most-powerful-visualization-framework"><em>ggplot2</em> is the most powerful visualization framework</a>
+  <ul class="collapse">
+  <li><a href="#ggplot2-is-a-core-tidyverse-package" id="toc-ggplot2-is-a-core-tidyverse-package" class="nav-link" data-scroll-target="#ggplot2-is-a-core-tidyverse-package"><em>ggplot2</em> is a core <em>tidyverse</em> package</a></li>
+  <li><a href="#grammar-of-graphics" id="toc-grammar-of-graphics" class="nav-link" data-scroll-target="#grammar-of-graphics">“Grammar of Graphics”</a></li>
+  <li><a href="#lets-consider-base-r-plotting" id="toc-lets-consider-base-r-plotting" class="nav-link" data-scroll-target="#lets-consider-base-r-plotting">Let’s consider base R plotting</a></li>
+  <li><a href="#a-base-r-histogram" id="toc-a-base-r-histogram" class="nav-link" data-scroll-target="#a-base-r-histogram">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-1" id="toc-a-base-r-histogram-1" class="nav-link" data-scroll-target="#a-base-r-histogram-1">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-2" id="toc-a-base-r-histogram-2" class="nav-link" data-scroll-target="#a-base-r-histogram-2">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-3" id="toc-a-base-r-histogram-3" class="nav-link" data-scroll-target="#a-base-r-histogram-3">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-4" id="toc-a-base-r-histogram-4" class="nav-link" data-scroll-target="#a-base-r-histogram-4">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-5" id="toc-a-base-r-histogram-5" class="nav-link" data-scroll-target="#a-base-r-histogram-5">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-6" id="toc-a-base-r-histogram-6" class="nav-link" data-scroll-target="#a-base-r-histogram-6">A base R histogram</a></li>
+  <li><a href="#a-base-r-histogram-7" id="toc-a-base-r-histogram-7" class="nav-link" data-scroll-target="#a-base-r-histogram-7">A base R histogram</a></li>
+  </ul></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  <li><a href="#tidyverse-provides-grammar-for-data-manipulation" id="toc-tidyverse-provides-grammar-for-data-manipulation" class="nav-link" data-scroll-target="#tidyverse-provides-grammar-for-data-manipulation"><em>tidyverse</em> provides “grammar for data manipulation”…</a></li>
+  <li><a href="#ggplot2-provides-grammar-for-visualizations" id="toc-ggplot2-provides-grammar-for-visualizations" class="nav-link" data-scroll-target="#ggplot2-provides-grammar-for-visualizations"><em>ggplot2</em> provides “grammar for visualizations”…</a>
+  <ul class="collapse">
+  <li><a href="#layers-in-grammar-of-graphics" id="toc-layers-in-grammar-of-graphics" class="nav-link" data-scroll-target="#layers-in-grammar-of-graphics">Layers in “Grammar of Graphics”</a></li>
+  <li><a href="#layers-in-grammar-of-graphics-1" id="toc-layers-in-grammar-of-graphics-1" class="nav-link" data-scroll-target="#layers-in-grammar-of-graphics-1">Layers in “Grammar of Graphics”</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./handouts.html">Cheatsheets and handouts</a></li><li class="breadcrumb-item"><a href="./handouts_tidy-viz.html"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">References</h1>
+<h1 class="title"><span class="chapter-title">Visualization with <em>ggplot2</em></span></h1>
 </div>
 
 
@@ -331,11 +374,268 @@ div.csl-indent {
 </header>
 
 
-<div id="refs" role="list" style="display: none">
+<p>(A few remarks and tips before the practical session)</p>
+<section id="r-is-the-best-technology-for-doing-computational-science" class="level1">
+<h1>R is the best technology for doing computational science</h1>
+<p align="right">
+(Subjectively.)
+</p>
+</section>
+<section id="ggplot2-is-the-most-powerful-visualization-framework" class="level1">
+<h1><em>ggplot2</em> is the most powerful visualization framework</h1>
+<p align="right">
+(Objectively.)
+</p>
+<section id="ggplot2-is-a-core-tidyverse-package" class="level2">
+<h2 class="anchored" data-anchor-id="ggplot2-is-a-core-tidyverse-package"><em>ggplot2</em> is a core <em>tidyverse</em> package</h2>
+<center>
+<img src="files/r-bootcamp/packages_tidyverse.png" class="img-fluid" style="width:50.0%">
+</center>
+</section>
+<section id="grammar-of-graphics" class="level2">
+<h2 class="anchored" data-anchor-id="grammar-of-graphics">“Grammar of Graphics”</h2>
+<p>A formal syntax and grammar for describing visualizations</p>
+<center>
+<img src="files/tidy-viz/gog_cover.jpg" class="img-fluid" style="width:30.0%">
+</center>
+<p>. . .</p>
+<center>
+<strong>What does this mean?</strong>
+</center>
+</section>
+<section id="lets-consider-base-r-plotting" class="level2">
+<h2 class="anchored" data-anchor-id="lets-consider-base-r-plotting">Let’s consider base R plotting</h2>
+<p><br></p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
 
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(palmerpenguins)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'palmerpenguins'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:datasets':
+
+    penguins, penguins_raw</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(penguins[<span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>, ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 4
+Columns: 8
+$ species           &lt;fct&gt; Adelie, Adelie, Adelie, Adelie
+$ island            &lt;fct&gt; Torgersen, Torgersen, Torgersen, Torgersen
+$ bill_length_mm    &lt;dbl&gt; 39.1, 39.5, 40.3, NA
+$ bill_depth_mm     &lt;dbl&gt; 18.7, 17.4, 18.0, NA
+$ flipper_length_mm &lt;int&gt; 181, 186, 195, NA
+$ body_mass_g       &lt;int&gt; 3750, 3800, 3250, NA
+$ sex               &lt;fct&gt; male, female, female, NA
+$ year              &lt;int&gt; 2007, 2007, 2007, 2007</code></pre>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-1" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-1">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-2" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-2">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-3" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-3">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Histogram of body mass of penguins"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-4" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-4">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Histogram of body mass of penguins"</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Body mass [grams]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-5" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-5">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Histogram of body mass of penguins"</span>,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Body mass [grams]"</span>, <span class="at">ylab =</span> <span class="st">"Count of individuals"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-6" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-6">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(penguins<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Histogram of body mass of penguins"</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Body mass [grams]"</span>, <span class="at">ylab =</span> <span class="st">"Count of individuals"</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">border =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-base-r-histogram-7" class="level2">
+<h2 class="anchored" data-anchor-id="a-base-r-histogram-7">A base R histogram</h2>
+<div class="cell" data-layout-align="center">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>))</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>species_1 <span class="ot">&lt;-</span> <span class="fu">filter</span>(penguins, species <span class="sc">==</span>  <span class="st">"Adelie"</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(species_1<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Species 'Adelie'"</span>,</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Body mass [grams]"</span>, <span class="at">ylab =</span> <span class="st">"Count of individuals"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"darkgreen"</span>, <span class="at">border =</span> <span class="st">"white"</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>species_2 <span class="ot">&lt;-</span> <span class="fu">filter</span>(penguins, species <span class="sc">==</span>  <span class="st">"Chinstrap"</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(species_2<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Species 'Chinstrap'"</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Body mass [grams]"</span>, <span class="at">ylab =</span> <span class="st">"Count of individuals"</span>,</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"darkblue"</span>, <span class="at">border =</span> <span class="st">"white"</span>)</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>species_3 <span class="ot">&lt;-</span> <span class="fu">filter</span>(penguins, species <span class="sc">==</span>  <span class="st">"Gentoo"</span>)</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(species_3<span class="sc">$</span>body_mass_g, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">8000</span>), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">100</span>),</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"Species 'Gentoo'"</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Body mass [grams]"</span>, <span class="at">ylab =</span> <span class="st">"Count of individuals"</span>,</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">col =</span> <span class="st">"darkorange"</span>, <span class="at">border =</span> <span class="st">"white"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="handouts_tidy-viz_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="section" class="level1">
+<h1></h1>
+<center>
+Base R plots use a single function and specify (a huge) number of optional parameters which change their “aesthetic” properties and visual elements.
+</center>
+<p>. . .</p>
+<br>
+<center>
+<strong>Creating a new figure (from the same data even) requires us to write usually a completely different code.</strong>
+</center>
+</section>
+<section id="tidyverse-provides-grammar-for-data-manipulation" class="level1">
+<h1><em>tidyverse</em> provides “grammar for data manipulation”…</h1>
+</section>
+<section id="ggplot2-provides-grammar-for-visualizations" class="level1 page-columns page-full">
+<h1><em>ggplot2</em> provides “grammar for visualizations”…</h1>
+<section id="layers-in-grammar-of-graphics" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="layers-in-grammar-of-graphics">Layers in “Grammar of Graphics”</h2>
+<center>
+<img src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*t4hhk-oxZkFEo5bGmbZ92A.png" class="img-fluid" style="width:65.0%">
+</center>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><small>Illustration of Layers in Grammar of Graphics from <a href="https://r.qcbs.ca/"> Quebec Centre for Biodiversity Science</a></small></p>
+</div></div></section>
+<section id="layers-in-grammar-of-graphics-1" class="level2">
+<h2 class="anchored" data-anchor-id="layers-in-grammar-of-graphics-1">Layers in “Grammar of Graphics”</h2>
+<div class="columns">
+<div class="column">
+<div class="fragment">
+<ul>
+<li><code>data</code> — our data frame</li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li><code>aesthetics</code> — “mapping” of columns to visual properties of a figure (<code>x</code>, or <code>y</code> axes, <code>color</code>, <code>shape</code>, etc.)</li>
+</ul>
+</div>
+<div class="fragment">
+<ul>
+<li><code>geoms</code> — graphical elements to be plotted (histograms, points, lines, etc.).</li>
+</ul>
+</div>
+</div><div class="column">
+<center>
+<img src="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*t4hhk-oxZkFEo5bGmbZ92A.png" class="img-fluid">
+</center>
+</div>
 </div>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -739,13 +1039,13 @@ div.csl-indent {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./handouts_slendr.html" class="pagination-link" aria-label="Introduction to _slendr_">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Introduction to <em>slendr</em></span></span>
+      <a href="./handouts_tidy-basics.html" class="pagination-link" aria-label="Introduction to _tidyverse_">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Introduction to <em>tidyverse</em></span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./acknowledgements.html" class="pagination-link" aria-label="Acknowledgements">
-        <span class="nav-page-text">Acknowledgements</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./handouts_slendr.html" class="pagination-link" aria-label="Introduction to _slendr_">
+        <span class="nav-page-text"><span class="chapter-title">Introduction to <em>slendr</em></span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
