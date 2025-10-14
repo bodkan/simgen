@@ -9,7 +9,7 @@
 
 # _ggplot2_ is the most powerful visualization framework
 
-<p align="right">(Objectively.)</p>
+<p align="right">(Objectively. 🙂)</p>
 
 ## _ggplot2_ is a core _tidyverse_ package
 
@@ -21,8 +21,6 @@ A formal syntax and grammar for describing visualizations
 
 <center>![](files/tidy-viz/gog_cover.jpg){width="30%"}</center>
 
-. . .
-
 <center>**What does this mean?**</center>
 
 ## Let's consider base R plotting
@@ -30,14 +28,23 @@ A formal syntax and grammar for describing visualizations
 <br>
 
 ```{r}
-#| echo: false
-library(dplyr)
-```
-
-```{r}
+#| eval: false
 library(palmerpenguins)
 
-glimpse(penguins[1:4, ])
+head(penguins, 7)
+```
+
+<br>
+
+```{r}
+#| echo: false
+library(dplyr)
+library(palmerpenguins)
+library(kableExtra)
+penguins %>%
+  head(7) %>%
+  kable %>%
+  kable_styling(font_size = 20)
 ```
 
 ## A base R histogram
@@ -59,16 +66,7 @@ hist(penguins$body_mass_g, xlim = c(2000, 8000))
 
 ```{r}
 #| fig-align: center
-hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100))
-```
-
-
-
-## A base R histogram
-
-```{r}
-#| fig-align: center
-hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
+hist(penguins$body_mass_g, xlim = c(2000, 8000),
      main = "Histogram of body mass of penguins")
 ```
 
@@ -78,7 +76,7 @@ hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
 
 ```{r}
 #| fig-align: center
-hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
+hist(penguins$body_mass_g, xlim = c(2000, 8000),
      main = "Histogram of body mass of penguins",
      xlab = "Body mass [grams]")
 ```
@@ -89,20 +87,9 @@ hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
 
 ```{r}
 #| fig-align: center
-hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
+hist(penguins$body_mass_g, xlim = c(2000, 8000),
      main = "Histogram of body mass of penguins",
-     xlab = "Body mass [grams]", ylab = "Count of individuals")
-```
-
-
-
-## A base R histogram
-
-```{r}
-#| fig-align: center
-hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
-     main = "Histogram of body mass of penguins",
-     xlab = "Body mass [grams]", ylab = "Count of individuals",
+     xlab = "Body mass [grams]",
      col = "black", border = "white")
 ```
 
@@ -117,41 +104,46 @@ hist(penguins$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
 par(mfrow = c(1, 3))
 
 species_1 <- filter(penguins, species ==  "Adelie")
-hist(species_1$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
+hist(species_1$body_mass_g, xlim = c(2000, 8000),
      main = "Species 'Adelie'",
-     xlab = "Body mass [grams]", ylab = "Count of individuals",
+     xlab = "Body mass [grams]",
      col = "darkgreen", border = "white")
 
 species_2 <- filter(penguins, species ==  "Chinstrap")
-hist(species_2$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
+hist(species_2$body_mass_g, xlim = c(2000, 8000),
      main = "Species 'Chinstrap'",
-     xlab = "Body mass [grams]", ylab = "Count of individuals",
+     xlab = "Body mass [grams]",
      col = "darkblue", border = "white")
 
 species_3 <- filter(penguins, species ==  "Gentoo")
-hist(species_3$body_mass_g, xlim = c(2000, 8000), ylim = c(0, 100),
+hist(species_3$body_mass_g, xlim = c(2000, 8000),
      main = "Species 'Gentoo'",
-     xlab = "Body mass [grams]", ylab = "Count of individuals",
+     xlab = "Body mass [grams]",
      col = "darkorange", border = "white")
 ```
 
 # 
 
-<center>Base R plots use a single function and specify
-(a huge) number of optional parameters which change their
+<center>Base R plots use a single function and specify a
+(potentially large) number of parameters which change their
 "aesthetic" properties and visual elements.</center>
 
 . . .
 
 <br>
-<center>**Creating a new figure (from the same data even) requires us
-to write usually a completely different code.**</center>
+<center>**Creating a new figure (even from the same data) usually requires
+a completely different command.**</center>
 
 # _tidyverse_ provides "grammar for data manipulation"...
 
+A "mini-language" with verbs like `select()`, `filter()`, etc.
+
+(Helps us avoid "R bootcamp"-level nightmares.)
 
 
 # _ggplot2_ provides "grammar for visualizations"...
+
+(To make visualizations easier in a similar sense.)
 
 ## Layers in "Grammar of Graphics"
 
@@ -189,6 +181,12 @@ a figure (`x`, or `y` axes, `color`, `shape`, etc.)
 
 :::
 
+::: {.fragment}
+
+- many other customizations
+
+:::
+
 :::
 
 
@@ -202,3 +200,110 @@ a figure (`x`, or `y` axes, `color`, `shape`, etc.)
 :::
 
 ::::
+
+# A tiny example
+
+A quick advertisement for the "layering" concept of _ggplot2_
+
+```{r}
+#| echo: false
+library(ggplot2)
+```
+
+
+## What data to visualize?
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "1"
+ggplot(penguins)
+```
+
+## How to visualize it? (`x` "aesthetic")
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "1"
+ggplot(penguins, aes(x = body_mass_g))
+```
+
+## On what dimensions?
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "2"
+ggplot(penguins, aes(x = body_mass_g)) + # the + is a bit like %>%
+  xlim(2000, 8000) 
+```
+
+## What to visualize? ("geom")
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "3"
+ggplot(penguins, aes(x = body_mass_g)) +
+  xlim(2000, 8000) +
+  geom_histogram()
+```
+
+
+## How to visualize it? (`fill` "aesthetic")
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "1,"
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+  xlim(2000, 8000) +
+  geom_histogram()
+```
+
+## How to visualize it? (adding "facets")
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "4"
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+  xlim(2000, 8000) +
+  geom_histogram() +
+  facet_wrap(~ species)
+```
+
+
+## What to visualize? ("geom" again)
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "3"
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+  xlim(2000, 8000) +
+  geom_density() +
+  facet_wrap(~ species)
+```
+
+## More "layers"...
+
+```{r}
+#| fig-align: center
+#| code-line-numbers: "5"
+ggplot(penguins, aes(x = body_mass_g, fill = species)) +
+  xlim(2000, 8000) +
+  geom_density() +
+  facet_wrap(~ species) +
+  theme_minimal()
+```
+
+# Today we're going to learn _ggplot2_ on our metadata and IBD data
+
+# A bit of catch-up work on IBDs from yesterday
+
+We need to make a copy of an IBD processing pipeline.
+
+# Let's get started!
+
+1. Go to [www.bodkan.net/simgen](https://bodkan.net/simgen)
+2. Click on _"Visualization with _ggplot2_"_ in the left panel
+3. _"Cheatsheets and handouts"_ section in the left panel has
+a single-page version of these slides and the _dplyr_ cheatsheet
+and _ggplot2_ cheatsheets
+4. Open your RStudio and start working!
+
