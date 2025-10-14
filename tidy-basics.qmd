@@ -1932,8 +1932,16 @@ Look up confidence interval equation on Wikipedia.**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-If you're here this means that you needed extra challenge, so I'm sure you
-figured it out. 😜 Reach out to me if you want to discuss the solution!
+```{r}
+group_by(df, continent, set) %>%
+    filter(set == "Ancient") %>%
+    summarise(mean_cov=mean(coverage), sd_cov=sd(coverage), n_cov=n()) %>%
+    mutate(
+        se_cov = sd_cov / sqrt(n_cov),
+        lower_ci = mean_cov - qt(1 - (0.05 / 2), n_cov - 1) * se_cov,
+        upper_ci = mean_cov + qt(1 - (0.05 / 2), n_cov - 1) * se_cov
+    )
+```
 
 :::
 
