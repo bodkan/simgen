@@ -1215,6 +1215,56 @@ ibd_sum %>%
 
 :::
 
+#### Setting custom scales
+
+**TODO:** Add some explanation how customizing color scales works.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+ggplot() +
+  geom_point(data = ibd_unrel, aes(x = total_ibd, y = n_ibd), color = "lightgray", size = 0.75) +
+  geom_point(data = ibd_rel, aes(x = total_ibd, y = n_ibd, color = rel, shape = rel)) +
+  labs(
+    x = "total IBD sequence",
+    y = "number of IBD segments",
+    title = "Total IBD sequence vs number of IBD segments",
+    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+  ) +
+  guides(color = guide_legend(title = "relatedness"),
+         shape = guide_legend(title = "relatedness")) +
+  scale_color_manual(values = c("duplicate" = "red",
+                                "1st degree" = "darkgreen",
+                                "2nd degree" = "blue")) +
+  theme_minimal()
+```
+
+#### Ordering categories
+
+```{r}
+ibd_sum$relatedness <- factor(
+  ibd_sum$rel,
+  levels = c("duplicate", "1st degree", "2nd degree", "none")
+)
+
+ggplot() +
+  geom_point(data = ibd_sum, aes(x = total_ibd, y = n_ibd, color = relatedness), size = 0.75) +
+  labs(
+    x = "total IBD sequence",
+    y = "number of IBD segments",
+    title = "Total IBD sequence vs number of IBD segments",
+    subtitle = "Both quantities computed only on IBD segments 10 cM or longer"
+  ) +
+  theme_minimal() +
+  scale_color_manual(values = c("duplicate" = "red",
+                                "1st degree" = "darkgreen",
+                                "2nd degree" = "blue",
+                                "none" = "lightgray"))
+```
+
+:::
+
 ### Exercise 7: Multiple data sets in one plot
 
 So far we've always followed this pattern of _ggplot2_ usage, to borrow our
@@ -1606,8 +1656,8 @@ which fits a line through the data, capturing this trend.**
 
 **In this next part, remove the subsampling done by `sample_frac()`, and
 also replace your `geom_point()` call in your figure code with
-this: `+ geom_line(stat = "smooth", se = FALSE)`. What happens when you run
-this modified version of your code? Read `?geom_line` to figure out what `se = FALSE` means.**
+this: `+ geom_smooth(se = FALSE)`. What happens when you run
+this modified version of your code? Read `?geom_smooth` to figure out what `se = FALSE` means.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -1615,7 +1665,7 @@ this modified version of your code? Read `?geom_line` to figure out what `se = F
 ```{r}
 f4ratio %>%
 ggplot(aes(time, proportion)) +
-  geom_line(stat = "smooth", se = FALSE) +
+  geom_smooth(se = FALSE) +
   facet_wrap(~ statistic) +
   scale_x_reverse() +
   geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
@@ -1653,7 +1703,7 @@ but we want to plot one line for each value of our variable of interest,
 ```{r}
 f4ratio %>%
 ggplot(aes(time, proportion, color = rate_eur2afr)) +
-  geom_line(stat = "smooth", se = FALSE) +
+  geom_smooth(se = FALSE) +
   facet_wrap(~ statistic) +
   scale_x_reverse() +
   geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
@@ -1683,7 +1733,7 @@ individual values of `rate_eur2afr` as discrete categories.**
 ```{r}
 f4ratio %>%
 ggplot(aes(time, proportion, color = rate_eur2afr, group = rate_eur2afr)) +
-  geom_line(stat = "smooth", se = FALSE) +
+  geom_smooth(se = FALSE) +
   facet_wrap(~ statistic) +
   scale_x_reverse() +
   geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
@@ -1710,7 +1760,7 @@ Use `labs()` to add proper `x`, `y`, and `title` descriptions (something like
 ```{r}
 f4ratio %>%
 ggplot(aes(time, proportion, color = rate_eur2afr, group = rate_eur2afr)) +
-  geom_line(stat = "smooth", se = FALSE) +
+  geom_smooth(se = FALSE) +
   facet_wrap(~ statistic) +
   scale_x_reverse() +
   geom_hline(yintercept = 0.03, color = "red", linetype = "dashed") +
