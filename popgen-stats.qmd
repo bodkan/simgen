@@ -1,32 +1,35 @@
 # Tree-sequence statistics
 
-In this exercise, you will build on top of the results from the [exercise
+## Introduction
+
+In this session, you are going to build on top of the results from the previous [session
 on programming demographic models](https://bodkan.net/simgen/popgen-models.html).
-Specifically, we will learn how to compute popgen statistics on _slendr_-simulated
+Specifically, you will learn how to compute population genetic statistics on _slendr_-simulated
 tree sequences using
 [_slendr_'s interface](https://www.slendr.net/reference/index.html#tree-sequence-statistics)
 to the _tskit_ Python module.
 
-::: {.aside}
-**Note:** This exercise session is split into individual **"Parts"** intended to be
-solved in order. Different tasks within each individual Part are **highlighted
-in bold**.
-
-If you ever get totally stuck, take a look at the provided solution. The point
+**Note:** If you ever get _totally stuck_, take a look at the provided solution. The point
 of these exercises is to learn things, not fight through endless frustration.
 That said, try not to look at the solution automatically, always take a stab at
-solving each exercise on your own first.
-:::
+solving each exercise on your own first. And when you do decide to look
+at my solution, always try to understand the code on your own, line by
+line, before you run it (and therefore at least mentally follow a
+similar process to writing yourself).
 
-**First, create a new R script `stats.R` and paste in the following code.** This
-is one of the possible solutions to the Exercise 1, and it's easier if we all
+## Setup
+
+**First, create a new R script `popgen-stats.R` and paste in the following code.** This
+is one of the possible solutions to the Exercise 1 of the session
+on building demographic models, and it's easier if we all
 use it to be on the same page from now on, starting from the same model and
 the same simulated tree sequence:
 
 ```{r}
 #| collapse: true
+#| results: hide
 library(slendr)
-init_env()
+init_env(quiet = TRUE)
 
 chimp <- population("CHIMP", time = 7e6, N = 5000)
 afr <- population("AFR", parent = chimp, time = 6e6, N = 15000)
@@ -66,14 +69,17 @@ ts <-
 ts
 ```
 
-As a sanity check, let's use a couple of tidyverse table-munging tricks
+As a sanity check, let's use a couple of _tidyverse_ table-munging tricks
 to make sure the tree sequence does contain a set of sample
 which matches our intended sampling schedule (particularly the time series
 of European individuals and the two Neanderthals):
 
 ```{r}
+#| message: false
 library(dplyr)
+```
 
+```{r}
 # total number of recorded individuals in the tree sequence
 ts_samples(ts) %>% nrow
 # times of sampling of each recorded European individual
@@ -83,25 +89,25 @@ ts_samples(ts) %>% filter(pop == "NEA") %>% pull(time)
 # count of individuals in each population
 ts_samples(ts) %>%
   group_by(pop, present_day = time == 0) %>%
-  tally %>%
+  summarize(n = n()) %>%
   select(pop, present_day, n) %>%
   arrange(present_day)
 ```
 
 ::: {.aside}
-**Note:** These bits of tidyverse code are extremely helpful when you're working
+**Note:** These bits of _tidyverse_ code are extremely helpful when you're working
 with large tree sequences with many individuals as sanity checks that your
 sampling worked as intended. I'm listing them here in case you've never worked
-with the tidyverse family of R packages before (such as the _dplyr_ package
+with the _tidyverse_ family of R packages before (such as the _dplyr_ package
 where `filter()`, `group_by()`, `tally()`, and `pull()` come from).
 :::
 
 Everything looks good! Having made sure that the `ts` object contains the
-individuals we want, let's move to the exercise.
+individuals we want, let's move to the first exercise.
 
-## Part 1: Computing nucleotide diversity
+## Exercise 1: Computing nucleotide diversity
 
-The toy model of ancient human history plotted above makes a fairly clear prediction of what would be the
+The toy model of ancient human history plotted above makes a fairly clear prediction of what should be the
 nucleotide diversity expected in the simulated populations.
 **Compute the nucleotide diversity in all populations using the _slendr_ function
 [`ts_diversity()`](https://www.slendr.net/reference/ts_diversity.html#ref-examples) in your tree sequence `ts`. Do you get numbers that (relatively between
@@ -112,7 +118,7 @@ you programmed for each?**
 accepts a `ts` tree-sequence object as its first argument, with further arguments
 being either a vector of individual names representing a group of samples to
 compute a statistic on, or a (named) list of such vectors (each element of that
-list for a group of samples) -- these lists are intended to be equivalent to
+list for a group of samples) --- these lists are intended to be equivalent to
 the `sample_sets =` argument of many _tskit_ Python methods (which you've learned
 about in your activity on _tskit_), except that they allow symbolic names
 of individuals, rather then integer indices of nodes in a tree sequence.
@@ -129,7 +135,7 @@ ts_names(ts)
 ```
 
 This is not super helpful, unless we want to compute some statistic for _everyone_
-in the tree sequence, regardless of their population assignment. Perhaps a bit
+in the tree sequence, regardless of their population assignment. A bit
 more useful is to call the function like this, because it will produce a result
 which can be immediately used as the `sample_sets =` argument mentioned in the
 **Hint** above:
@@ -140,7 +146,7 @@ ts_names(ts, split = "pop")
 
 As you can see, this gave us a normal R list, with each element containing
 a vector of individual names in a population. Note that we can use standard R
-list indexing to get subsets of individuals:
+named-list indexing to get subsets of individuals:
 
 ```{r}
 names <- ts_names(ts, split = "pop")
@@ -155,17 +161,6 @@ etc.
 Many of the following exercises will use these kinds of tricks to instruct
 various _slendr_ / _tskit_ functions to compute statistics on subsets of
 all individuals sub-sampled in this way.
-
-**After you computed nucleotide diversity per-population, compute it for
-each individual separately using the same function `ts_diversity()`** (which,
-in this setting, gives you effectively the heterozygosity for each individual).
-**If you are familiar with plotting in R, visualize the individual-based
-heterozygosities across all populations.**
-
-**Hint:** You can do this by giving a vector of names as `sample_sets =` (so
-not an R list of vectors). You could also use the data frame produced by
-`ts_samples(ts)` to get the names, just adding the heterozygosities to that
-data frame as a new column.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -192,6 +187,26 @@ arrange(pi_pop, diversity)
 
 You can see that this simple computation fits  the extreme differences in
 long-term $N_e$ encoded by your _slendr_ demografr model.
+
+:::
+
+---
+
+**After you've computed nucleotide diversity per-population, compute it for
+each individual separately using the same function `ts_diversity()`** (which,
+in this setting, gives you effectively the heterozygosity for each individual).
+**If you are familiar with plotting in R, visualize the individual-based
+heterozygosities across all populations.**
+
+**Hint:** You can do this by giving a vector of names as `sample_sets =` (so
+not an R list of vectors like you did in the previous exercise).
+One way to make plotting of the result easy is to first get a table of
+all individuals using `pi_df <- ts_samples(ts)`. Then you can use
+`pi_df$name` as the parameter to `ts_diversity(ts, sample_sets = pi_df$name)`, and assign the `diversity` column values to `pi_df` as
+a new column (perhaps named `diversity` as well).
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
 
 **Per-individual heterozygosity:**
 
@@ -223,7 +238,7 @@ ggplot(pi_df, aes(pop, diversity, color = pop, group = pop)) +
 
 :::
 
-## Part 2: Computing pairwise divergence
+## Exercise 2: Computing pairwise divergence
 
 **Use the function
 [`ts_divergence()`](https://www.slendr.net/reference/ts_divergence.html#ref-examples)
@@ -233,9 +248,9 @@ given the split times between populations as you programmed them for your
 model?**
 
 **Hint:** Again, you can use the same concept of `sample_sets =` we discussed
-in the previous part. In this case, the function computes _pairwise_
+in the previous exercise. In this case, the function computes _pairwise_
 divergence between each element of the list given as `sample_sets =` (i.e.,
-for each vector of individual names).
+for each vector of individual names in that list).
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -252,7 +267,94 @@ recapitulate the known population/species relationships we would expect from
 our model.
 :::
 
-## Part 3: Detecting Neanderthal admixture in Europeans
+## Exercise 3: Outgroup $f_3$ statistic
+
+**Use the function `ts_f3()` to compute the outgroup $f_3$ statistic
+between pairs of African-European, African-Neanderthal, and
+European-Neanderthal and a Chimpanzee outgroup. For instance, the first
+one can be computed as `ts_f3(ts, B = "AFR_1", C = "EUR_1", A = "CHIMP_1")`.
+
+**Hint:** The $f_3$ statistic is traditionally expressed as $f_3(A, B; C)$, where C represents the outgroup. Unfortunately, in _tskit_ the outgroup is named A, with B and C being the pair of samples from which we trace the length of branches towards the outgroup, so the statistic is interpreted as $f_3(B, C; A).$
+
+**Note:** As a reminder, the higher the $f_3$ value, the more evolutionary
+time has been shared between samples B and C.
+
+**How do the outgroup $f_3$ results compare to your expectation based on simple population relationships (and to the divergence computation above)?**
+
+**Do you see any impact of introgression on the $f_3$ value when a Neanderthal is included in the computation?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+# Standard formalism is this:
+#    f3(A, B; C) = E[ (A - C) * (B - C) ]
+# But in tskit, A is the outgroup (different from ADMIXTOOLS!), see below...
+
+# We can compute f3 for individuals...
+ts_f3(ts, B = "AFR_1", C = "EUR_1", A = "CHIMP_1")
+
+# ... but also whole populations (or population samples)
+ts_f3(ts, B = sample_sets["AFR"], C = sample_sets["EUR"], A = "CHIMP_1")
+
+ts_f3(ts, B = sample_sets["AFR"], C = sample_sets["NEA"], A = "CHIMP_1")
+
+ts_f3(ts, B = sample_sets["EUR"], C = sample_sets["NEA"], A = "CHIMP_1")
+```
+:::
+
+
+## Exercise 4: `mode = "branch"` vs `mode = "site"`
+
+**Repeat the exercise 3 by setting `mode = "site"` in the 
+`ts_f3()` function calls** (this is actually the default behavior of all
+_slendr_ tree-sequence based _tskit_ functions). This will switch the _tskit_
+computation to using mutation counts along each branch of the tree sequence,
+rather than using branch length themselves. **Why might the branch-based computation
+be a bit better if what we're after is investigating the expected values of statistics
+under some model?**
+
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+See [this tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy) (and particularly the directly linked section) for explanation.
+:::
+
+
+
+## Exercise 5: Outgroup $f_3$ statistic as a linear combination of $f_2$ statistics
+
+You might have learned that any complex $f$-statistic can be expressed as a linear combination of multiple $f_2$ statistics (which represent simple branch length separating two lineages). **Verify that this is the case by looking up equation *(20b)* in [this amazing paper](https://academic.oup.com/genetics/article/202/4/1485/5930214) and computing an $f_3$ statistic for any arbitrary trio of individuals of your choosing using such linear combination of $f_2$ statistics.**
+
+**Hint:** Here's that equation in a schematic form
+
+```
+      f3(A, B; C) = f2(A, C) + f2(B, C) - f2(A, B) / 2
+```
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+# standard f3
+ts_f3(ts, B = "AFR_1", C = "AFR_2", A = "CHIMP_1")
+
+# a "homemade" f3 statistic as a linear combination of f2 statistics
+# f3(A, B; C) = f2(A, C) + f2(B, C) - f2(A, B) / 2
+homemade_f3 <- (
+  ts_f2(ts, A = "AFR_1", B = "CHIMP_1")$f2 +
+  ts_f2(ts, A = "AFR_2", B = "CHIMP_1")$f2 -
+  ts_f2(ts, A = "AFR_1", B = "AFR_2")$f2
+) / 2
+
+homemade_f3
+```
+:::
+
+
+
+## Exercise 6: Detecting Neanderthal admixture in Europeans
 
 Let's now pretend its about 2008, we've sequenced the first Neanderthal genome,
 and we are working on a project that will
@@ -261,27 +363,25 @@ We also have the genomes of a couple of people from Africa and Europe, which we
 want to use to answer the most burning question of all evolutionary
 anthropology: _"Do some people living today carry Neanderthal ancestry?"_
 
-Earlier you've learned about $f$-statistics of various kinds. You have also
-heard that an $f_4$ statistic (or its equivalent $D$ statistic) can be used
+Perhaps you've heard earlier about an $f_4$ statistic (or its equivalent $D$ statistic) can be used
 as a test of "treeness". Simply speaking, for some "quartet" of individuals
-or population samples, they can be used as a hypothesis test of whether the
+or population samples (whose names can be giving as characters such as
+"EUR_1" to the `ts_f4()` function, as you can see in the help
+page of `?ts_f4`), they can be used as a hypothesis test of whether the
 history of those samples is compatible with there not having been an introgression.
 
 **Compute the $f_4$ test of Neanderthal introgression in EUR individuals using
-the _slendr_ function `ts_f4()`.** When you're running it, you will have to
-provide individuals to compute the statistic using a slightly different
-format. Take a look at the help page available as `?ts_f4` for more information.
-**When you're computing the $f_4$, make sure to set `mode = "branch"` argument
-of the `ts_f4()` function (we will get to why a bit later).**
+the _slendr_ function `ts_f4()`.** 
 
-::: {.aside}
+**When you're computing the $f_4$, make sure to set `mode = "branch"` argument
+of the `ts_f4()` function.**
+
 **Note:** By default, each _slendr_ / _tskit_ statistic function operates
 on mutations, and this will switch them to use branch length (as you might
 know, $f$-statistics are mathematically defined using branch lengths in trees
 and `mode = "branch"` does exactly that).
-:::
 
-**Hint:** If you haven't learned this in your $f$-statistics lecture, you want
+**Hint:** If you haven't learned this earlier, you want
 to compute (and compare) the values of these two statistics using the _slendr_
 function `ts_f4()`:
 
@@ -307,8 +407,8 @@ The first $f_4$ statistic above is not expected to give values "too different"
 from 0 (even in case of Neanderthal introgression into Europeans) because we
 don't expect two African individuals to differ "significantly" in terms of how
 much alleles they share with a Neanderthal (because their ancestors
-never met Neanderthals!). The other should -- if there was
-a Neanderthal introgression into Europeans some time in their history -- be
+never met Neanderthals!). The other should --- if there was
+a Neanderthal introgression into Europeans some time in their history --- be
 "significantly negative".
 
 **Is the second of those two statistics "much more negative" than the first,
@@ -318,8 +418,8 @@ as expected assuming introgression from Neanderthals into Europeans?**
 negative" in quotes in the previous sentence?
 What are we missing here for this being a true hypothesis
 test as you might be accustomed to from computing $f$-statistics using
-a tool such as ADMIXTOOLS?** (We will get to this again in the following part
-of this exercise.)
+a tool such as ADMIXTOOLS?** (We will get to this again in a following
+exercise.)
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -354,7 +454,12 @@ standard error which would give us something like a p-value for the hypothesis
 test, as we get by jackknife procedure in ADMIXTOOLS)
 :::
 
-## Part 4: Detecting Neanderthal admixture in Europeans v2.0
+
+
+
+
+
+## Exercise 7: Detecting Neanderthal admixture in Europeans v2.0
 
 The fact that we don't get something equivalent to a p-value in these kinds of
 simulations is generally not a problem, because we're often interested in
@@ -378,7 +483,7 @@ statistics given some underlying evolutionary model, which is what we're after
 in these exercises.
 
 That said, even in perfect simulated data, what exactly does
-"significantly different from zero compared to some baseline expectation"
+_"significantly different from zero compared to some baseline expectation"_
 mean can be blurred by noise with simple single-individual comparisons that we
 did above. Let's increase the sample size a bit to see if a statistical
 pattern expected in $f_4$ statistic from our Neanderthal introgression model
@@ -394,7 +499,7 @@ trend stand out much more clearly.**
 **Hint:** Whenever you need to compute something for many things in sequence,
 looping is very useful. One way to do compute, say, an $f_4$ statistic over
 many individuals is by using this kind of pattern using R's looping function 
-`lapply()`:
+`lapply()` (you can get a refresher on looping in the R bootcamp session):
 
 ```{r}
 #| eval: false
@@ -469,85 +574,10 @@ Europeans indeed does give a much more negative distribution of values compared
 to the baseline expectation which compares two Africans to each other.
 :::
 
-## Bonus exercises
 
-::: {.callout-tip collapse="true" icon=false}
-## Bonus exercises
+## Exercise 8: Trajectory of Neanderthal ancestry in Europe over time
 
-### Bonus 1: `mode = "branch"` vs `mode = "site"`
-
-**Repeat the previous part of the exercise by setting `mode = "site"` in the 
-`ts_f4()` function calls** (this is actually the default behavior of all
-_slendr_ tree-sequence based _tskit_ functions). This will switch the _tskit_
-computation to using mutation counts along each branch of the tree sequence,
-rather than using branch length themselves. **Why might the branch-based computation
-be a bit better if what we're after is investigating the expected values of statistics
-under some model?**
-
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-See [this tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy) (and particularly the directly linked section) for explanation.
-:::
-
-
-### Bonus 2: Outgroup $f_3$ statistic
-
-**Use the function `ts_f3()` to compute the outgroup** $f_3$ statistic between pairs of African-European, African-Neanderthal, and European-Neanderthal and a Chimpanzee outgroup.
-
-**Hint:** The $f_3$ statistic is traditionally expressed as $f_3(A, B; C)$, where C represents the outgroup. Unfortunately, in _tskit_ the outgroup is named A, with B and C being the pair of samples from which we trace the length of branches towards the outgroup, so the statistic is interpreted as $f_3(B, C; A)$.
-
-**How do the outgroup f3 results compare to your expectation based on simple population relationships (and to the divergence computation above)?**
-
-**Do you see any impact of introgression on the $f_3$ value when a Neanderthal is included in the computation?**
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-```{r}
-# Standard formalism is this:
-#    f3(A, B; C) = E[ (A - C) * (B - C) ]
-# But in tskit, A is the outgroup (different from ADMIXTOOLS!), see below...
-
-# We can compute f3 for individuals...
-ts_f3(ts, B = "AFR_1", C = "EUR_1", A = "CHIMP_1")
-
-# ... but also whole populations (or population samples)
-ts_f3(ts, B = sample_sets["AFR"], C = sample_sets["EUR"], A = "CHIMP_1")
-
-ts_f3(ts, B = sample_sets["AFR"], C = sample_sets["NEA"], A = "CHIMP_1")
-
-ts_f3(ts, B = sample_sets["EUR"], C = sample_sets["NEA"], A = "CHIMP_1")
-```
-:::
-
-### Bonus 3: Outgroup $f_3$ statistic as a linear combination of $f_2$ statistics
-
-You might have learned that any complex $f$-statistic can be expressed as a linear combination of multiple $f_2$ statistics (which represent simple branch length separating two lineages). **Verify that this is the case by looking up equation *(20b)* in [this amazing paper](https://academic.oup.com/genetics/article/202/4/1485/5930214) and compute an** $f_3$ statistic for any arbitrary trio of individuals of your choosing using this linear combination of $f_2$ statistics.
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-```{r}
-# standard f3
-ts_f3(ts, B = "AFR_1", C = "AFR_2", A = "CHIMP_1")
-
-# a "homemade" f3 statistic as a linear combination of f2 statistics
-# f3(A, B; C) = f2(A, C) + f2(B, C) - f2(A, B) / 2
-homemade_f3 <- (
-  ts_f2(ts, A = "AFR_1", B = "CHIMP_1")$f2 +
-  ts_f2(ts, A = "AFR_2", B = "CHIMP_1")$f2 -
-  ts_f2(ts, A = "AFR_1", B = "AFR_2")$f2
-) / 2
-
-homemade_f3
-```
-:::
-
-### Bonus 4: Trajectory of Neanderthal ancestry in Europe over time
-
-There used to be a lot of controversy about the question of whether or not did Neanderthal ancestry proportion in Europeans decline or not over the past 40 thousand years (see figure 1 in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.1814338116) figure 2 in [this paper](https://www.nature.com/articles/nature17993)).
+There used to be a lot of controversy about the question of whether or not did Neanderthal ancestry proportion in Europeans decline or not over the past 40 thousand years (see Figure 1 in [this paper](https://www.pnas.org/doi/full/10.1073/pnas.1814338116) and Figure 2 in [this paper](https://www.nature.com/articles/nature17993)).
 
 Your simulated tree sequence contains a time-series of European individuals over time. Use the _slendr_ function `ts_f4ratio()` to compute (and then plot) the proportion (commonly designated as `alpha`) of Neanderthal ancestry in Europe over time. Use $f_4$-ratio statistic of the following form:
 
@@ -587,11 +617,14 @@ summary(lm(alpha ~ time, data = nea_ancestry))
 ```
 :::
 
-### Bonus 5: How many unique f4 quartets are there?
 
-In your lecture about $f$-statistics, you've probably learned about various symmetries in $f_4$ (but also other $f$-statistics) depending on the arrangement of the "quartet". As a trivial example, an $f_3(A; B, C)$ and $f_3(A; C, B)$ will give you exactly the same value, and the same thing applies even to more complex $f$-statistics like $f_4$.
 
-**Use simulations to compute how manu unique** $f_4$ values involving a single quartet are there.
+
+## Exercise 9 (<u>hard challenge</u>): How many unique f4 quartets are there?
+
+If you've used $f$-statistics before, you've probably learned about various symmetries in $f_4$ (but also other $f$-statistics) depending on the arrangement of the "quartet". As a trivial example, an $f_3(A; B, C)$ and $f_3(A; C, B)$ will give you exactly the same value, and the same thing applies even to more complex $f$-statistics like $f_4$.
+
+**Use simulations to compute how many unique** $f_4$ values involving a single quartet are there.
 
 **Hint:** Draw some trees to figure out why could that be true. Also, when computing `ts_f4()`, set `mode = "branch"` to avoid the effect of statistical noise due to mutations.
 
@@ -630,8 +663,4 @@ distinct(all_f4s, f4, .keep_all = TRUE)
 distinct(all_f4s, abs(f4), .keep_all = TRUE)
 ```
 :::
-::::::
-<!-- End of Bonus exercises -->
-
-
 
