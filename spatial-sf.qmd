@@ -1,17 +1,5 @@
-# Working with _tidy_ spatial data
+# Working with spatial data
 
-**This chapter is still a work in progress. It's a very advanced topic and
-it's a little hard to guess how much use it is to the average intended
-participant of this workshop. If you do care about this (it's my favourite
-topic, after all!), I will be adding materials and tutorials throughout
-the course which you will be able to play around with (and learn how to
-apply to your own data) towards the end of the course.**
-
----
-
-**What follows are just a few intermediate sketches of code ideas, using
-our `metadata` data (for point locations and region-based spatial summaries)
-and `ibd_sum` data (for links between spatial locations) as motivation examples.**
 
 ---
 
@@ -73,6 +61,8 @@ is (I know you know it's a data frame, but let's do this for practice):**
 class(metadata)
 ```
 
+### Converting non-spatial data to spatial data
+
 **Use function `st_as_sf()` to convert the (non-spatially aware) data frame
 object into one that can be interpreted as spatial data. Save the result
 as a `sf_metadata` variable. What do you see when you type `sf_metadata`
@@ -89,9 +79,12 @@ sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326")
 it. But, here's how you fix it: run
 `st_as_sf(metadata, coords = c("longitude", "latitude"))` instead.**
 
-**Why do you think this is needed? Think about a situation in which the
-spatial coordinate columns in your data frame were called something else than
-"longitude" and "latitude"?**
+**Why do you think this is needed?**
+
+**Hint:** Although it's easy to think that a table with columns "latitude" and
+"longitude" is _obviously_ interpretable as spatial data, think about a
+situation in which the spatial coordinate columns in your data frame were
+called something else (like "lat" / "lon", or "x" / "y", or anything else).
 
 **When you have created the `sf_metadata` successfully, go back to the previous
 exercise.**
@@ -155,70 +148,148 @@ ggplot(aes(color = coverage)) +
   geom_sf()
 ```
 
+**For simplicity and ease of plotting, use `filter()` to remove individuals
+in the metadata who are not from Europe, and save the result to a new
+variable `sf_metadata_eur`:**
 
+**Hint:** Remember that even spatial _sf_ data is like any other data frame,
+and can therefore be transformed and filtered with every _tidyverse_ function
+you already know (`filter()`, `select()`, etc.):**
 
 ```{r}
-sf_metadata %>%
-filter(continent == "Europe") %>%
-ggplot(aes(color = coverage)) +
-  geom_sf()
+sf_metadata_eur <- sf_metadata %>% filter(continent == "Europe")
 ```
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_metadata_eur)
+```
+
+In the _ggplot2_ session you've learned about the possibility of visualizing
+multiple geoms in the same figure. This concept becomes even more powerful
+when visualizing spatial data. **Consider the plot above---we know the points
+are from Europe because they form a roughly Europe-shaped cloud. But we want
+to add the outline of the European continent, to make the figure look much
+nicer.**
+
+**Use the function `ne_countries()` (from the _rnaturalearth_ R package) to
+download the spatial coordinates of the European continent. You can do
+this by setting its argument `continent = "Europe"`. Save the result into
+the variable `sf_countries`:**
 
 ```{r}
 sf_countries <- ne_countries(continent = "Europe")
-sf_countries
 ```
+
+Let's talk about data types which are possible for spatial data. When you
+type the `sf_metadata` into your R console again, you will see the
+column `geometry`. What is the data type of this column that you see when
+you apply the function `glimpse()` on the `sf_metadata` variable (remember,
+although it contains a spatial data object, it is actually still a data
+frame too!):**
+
+```{r}
+glimpse(sf_metadata)
+```
+
+You see a `geometry  <POINT [°]>` data type. This means that the `sf_metadata`
+table contains the geometrical objects which are of the type `POINT`---locations
+of individuals points in space. This is appropriate for locations of samples
+excavated (or sampled) at a particular location.
+
+**What do you get when you run `glimpse()` on the newly downloaded data set
+of the European continent in the `sf_countries` variable? To make the output
+a little smaller, apply `glimpse()` to the result `%>%` piped from 
+`select(sf_countries, geometry):**
+
+```{r}
+select(sf_countries, geometry) %>% glimpse
+```
+
+You see a data type `geometry <MULTIPOLYGON [°]>`. This is a more complex
+spatial geometry type. You might remember [what a "polygon" is](https://en.wikipedia.org/wiki/Polygon)
+from school. A `MULTIPOLYGON` is simply a collection of polygons.
+
+There are also other spatial data types. [See this](https://r-spatial.github.io/sf/articles/sf1.html#simple-feature-geometry-types)
+for a quick list of possible data types that you might encounter in doing
+spatial data analysis.
+
+**To recap the idea of combining multiple geoms on a single _ggplot2_ figure,
+let's start just from visualizing a single geom, this time the (what should be)
+outlines the continents of the world. You can do this using `geom_sf()`
+in exactly the same way how you visualized the metadata, just using
+`geom_sf(data = sf_countries)` instead of `geom_sf(data = sf_metadata)`:**
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries)
+```
+
+---
+
+The figure above works, but it looks very weird. We should probably restrict the geographic
+area of the world we're plotting. For our data set, including "Kamchatka" in
+Europe for visualization purposes is pushing it a little bit.
+
+For basic _ggplot2_ figures, we learned to use the `xlim()` function. This
+(and the `ylim()` function) operates on the [Cartesian coordinates system](https://en.wikipedia.org/wiki/Cartesian_coordinate_system).
+However, spatial data coordinates are not Cartesian. The world is a globe,
+and longitude / latitude coordinates (although they might be often written
+as plain x and y coordinates) have a different meaning. For that reason,
+_ggplot2_ provides a spatial-specific version of `xlim()` and `ylim()`
+in the `coord_sf()` function.
+
+**Restrict the geographical range of your spatial figure by adding the layer
+`+ coord_sf(xlim = c(-10, 70), ylim = c(30, 80))`:**
 
 ```{r}
 ggplot() +
   geom_sf(data = sf_countries) +
-  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+  coord_sf(xlim = c(-10, 70), ylim = c(35, 73))
 ```
+
+---
+
+**Now add a new layer to the previous code which will plot the coordinates
+of our European spatial data points, using `+ geom_sf(data = sf_metadata_eur)`:**
 
 ```{r}
 ggplot() +
   geom_sf(data = sf_countries) +
-  geom_sf(data = sf_metadata) +
+  geom_sf(data = sf_metadata_eur) +
   coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
 ```
+
+---
+
+Let's map some aesthetics, to practice the concept of modifying the visual
+properties of a figure.
+
+**First, try setting `aes(fill = name_en)` in the `geom_sf(data = sf_countries)`.
+The visuals will be a bit cluttered, so immediately add also a new layer
+`+ guides(fill = "none")`:**
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries, aes(fill = name_en)) +
+  geom_sf(data = sf_metadata_eur) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(fill = "none")
+```
+
+---
+
+**Now try setting `aes(color = country)` in `geom_sf(data = sf_metadata_eur)`
+(and remove `fill` from `geom_sf(data = sf_countries)`:**
 
 ```{r}
 ggplot() +
   geom_sf(data = sf_countries) +
-  geom_sf(data = sf_metadata) +
-  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+  geom_sf(data = sf_metadata_eur, aes(color = country)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(color = "none")
 ```
 
-```{r}
-ggplot() +
-  geom_sf(data = sf_countries) +
-  geom_sf(data = sf_metadata, aes(color = country)) +
-  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
-```
+---
 
-
-```{r}
-ggplot() +
-  geom_sf(data = sf_countries) +
-  geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = country)) +
-  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
-```
-
-
-
-```{r}
-ggplot() +
-  geom_sf(data = sf_countries) +
-  geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = coverage)) +
-  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
-```
-
-
-
-```{r}
-# ggplot() +
-#   geom_sf(data = sf_countries) +
-#   geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = haplo_y)) +
-#   coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
-#   facet_wrap(~ age_bin)
-```
+**In practice, 
