@@ -448,7 +448,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="exercise-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs">Exercise 1: A self-contained <em>slendr</em> function of <span class="math inline">\(N_e \rightarrow \textrm{AFS}\)</span></h2>
 <p><strong>In a new script <code>inference-afs.R</code> write a custom R function called <code>simulate_afs()</code>, which will take <code>Ne</code> as its only parameter. Use this function to compute (and return) <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">AFS vectors</a> for a couple of <code>Ne</code> values of your choosing, but staying between <code>Ne = 1000</code> and <code>Ne = 30000</code> Plot those AFS vectors and observe how (and why?) do they differ based on <code>Ne</code> parameter you used in each respective simulation.</strong></p>
 <p><strong>Hint:</strong> The function should create a one-population <em>forward-time</em> model (our population starting at <code>time = 1</code>, with the model <code>simulation_length = 100000</code> and <code>generation_time = 1</code> in <code>compile_model()</code>), simulate 10Mb tree sequence using <code>msprime()</code> (recombination rate 1e-8) and then overlay neutral mutations on it at <code>mutation_rate = 1e-8</code>), compute AFS for 10 samples and return the AFS vector as result of this custom function.</p>
-<p><strong>Hint:</strong> If you’ve never programmed before, the concept of a “custom function” might be very alien to you. Again, if you need help, feel free to start building your <code>afs.R</code> solution based on this “template” (just fill in missing relevant bits of <em>slendr</em> code that you should be already familiar with):</p>
+<p><strong>Hint:</strong> If you’ve never programmed before, the concept of a “custom function” might be very alien to you. Again, if you need help, feel free to start building your <code>inference-afs.R</code> solution based on this “template” (just fill in missing relevant bits of <em>slendr</em> code that you should be already familiar with):</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -479,8 +479,8 @@ window.Quarto = {
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># to the number of fixed mutations in our sample of 10 individuals</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 443 232 128 142  76  50  61  55  47  41  31  28  27  17  20  45  26  19  24
-[20]  21</code></pre>
+<pre><code> [1] 426 193 129 100  74  68  69  72  32  38  47  60  38  23  43  27  22  15  17
+[20]  32</code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
@@ -527,8 +527,8 @@ Click to see the solution
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>afs_1k</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 361 205 135 113  83  73  81  51  48  32  31  41  49  22  25  43  22  13   5
-[20]  17</code></pre>
+<pre><code> [1] 335 207 170 135  88  66  60  42  40  51  24  27  38  37  39  34  25  15  11
+[20]  14</code></pre>
 </div>
 </div>
 <p>To see the results of this function in a clearer context, let’s visualize the vectors in the same plot:</p>
@@ -657,24 +657,24 @@ Click to see the solution to “Option 2”
 <span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>afs_grid[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$`1000`
- [1] 395 217 171  82  76  46  68  53  37  52  28  27  27  21  28  20  34  17  19
-[20]  13
+ [1] 362 190 146 117  54  59  47  33  49  29  26  24  21  38  25  40  25  30  23
+[20]  20
 
 $`1500`
- [1] 571 226 203 135 118 140 103  48  68  64  43  30  47  47  36  37  24  29  28
-[20]  21
+ [1] 641 241 197 139  98 101  88  94  54  47  54  74  32  41  40  37  31  27  39
+[20]  33
 
 $`2000`
- [1] 809 460 290 193 194 106 120  79  84  85  57  82  41  61  55  54  66  26  42
-[20]  26
+ [1] 738 429 278 250 220 176 128  85  86  74  67  73  80  72  48  50  34  30  29
+[20]  38
 
 $`2500`
- [1] 1055  486  385  267  225  198  148  136  106  102   83   84   91   85   80
-[16]   78   67   67   47   42
+ [1] 1092  560  385  280  183  163  143  137  116   89   88   97   88   49   64
+[16]   75   72   50   49   27
 
 $`3000`
- [1] 1141  625  359  304  282  214  170  130  120   83   98   72   90  100   64
-[16]   90   92   35   48   54</code></pre>
+ [1] 1191  593  339  333  275  217  139  138  142  124  101  104   71   98   66
+[16]   64   59   70   84   42</code></pre>
 </div>
 </div>
 <p>Plot the observed AFS and overlay the simulated AFS vectors on top of it:</p>
