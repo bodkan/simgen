@@ -7,8 +7,8 @@
 
 **<u>This chapter is a work-in-progress.</u>**
 
-Unlike other finished chapters which feature extensive explanations and a proper
-problem-solution set of exercises, **the material for this session is still
+Unlike finished chapters which feature extensive explanations and proper
+problem-solution sets of exercises, **the material for this session is still
 just a rough tutorial, or a set of little code snippets which demonstrate
 the possibilities of visualizing and working with spatial data**.
 
@@ -23,7 +23,7 @@ requirement to being able to do modern spatial data analysis using R.
 "geoms"**. This means that, again, whatever you learned about _ggplot2_
 (plus a tiny bit more) applies also to plotting spatial data.
 
-### Some resources
+### Some resources for later self-study
 
 - **Start with an introductory chapter from the book _Spatial Data Science_ about the R
 packages _sf_ and _stars_ [available at this link](https://r-spatial.org/book/07-Introsf.html)**.
@@ -232,7 +232,7 @@ ggplot(<DATA FRAME>, aes(<MAPPING AESTHETICS, LIKE COLOR ETC.>)) +
 **Try plotting your `sf_metadata` using the same pattern, but with a new
 geom function called `geom_sf()`. Unlike most of your standard _ggplot2_ code,
 use the following pattern, however, in which
-you specify everything not in the `ggplot()` function, but in `geom_sf()`.
+you specify everything not in the `ggplot()` function but in `geom_sf()` instead.
 The `geom_sf()` function is used to visualize every possible kind of 
 spatial geometry (some of whom will be shown below).**
 
@@ -288,13 +288,15 @@ select(sf_countries, name_en, geometry) %>% glimpse
 You see a data type `geometry <MULTIPOLYGON [°]>`. This is a more complex
 spatial geometry type. You might remember [what a "polygon" is](https://en.wikipedia.org/wiki/Polygon)
 from school. A `MULTIPOLYGON` is simply a collection of polygons, and it
-is a data type used to describe "area-like" spatial geometries.
+is a data type used to describe "area-like" spatial geometries,
+like outlines of continents or countries.
 
 There are also other spatial data types. [See this](https://r-spatial.github.io/sf/articles/sf1.html#simple-feature-geometry-types)
 for a quick list of possible data types that you might encounter in doing
 spatial data analysis.
 
----
+## Plotting multiple types of spatial features
+
 
 In the _ggplot2_ session earlier you've learned about the possibility of visualizing
 multiple geoms in the same figure. This concept becomes even more powerful
@@ -311,8 +313,8 @@ ggplot() +
 ---
 
 **To recap the idea of combining multiple geoms on a single _ggplot2_ figure,
-let's start just from visualizing a single geom, this time the (what should be)
-outlines of the continents of the world. You can do this using `geom_sf()`
+let's start just from visualizing a single geom, this time the 
+outlines of the countries of the world. You can do this using `geom_sf()`
 in exactly the same way how you visualized the metadata, just using
 `geom_sf(data = sf_countries)` instead of `geom_sf(data = sf_metadata)`:**
 
@@ -321,7 +323,8 @@ ggplot() +
   geom_sf(data = sf_countries)
 ```
 
-## Plotting multiple types of spatial features
+
+---
 
 **You can visualize multiple geoms simply by adding multiple calls to the
 `geom_sf()` function, perhaps like this:**
@@ -345,7 +348,7 @@ ggplot() +
 
 Better (but still not very pretty).
 
----
+## Zooming in on a map
 
 Let's talk about narrowing down the scale of the world we're looking at.
 For basic _ggplot2_ figures, we learned to use the `xlim()` function. This
@@ -463,7 +466,7 @@ ggplot() +
 ---
 
 **Coloring by countries is maybe not that interesting. How about if we color
-the `sf_metadata_eur` by Y chromosome haplogroup of a sample?**
+the `sf_metadata_eur` by the Y chromosome haplogroup of a given sample?**
 
 ```{r}
 sf_metadata_eur <- filter(sf_metadata, continent == "Europe")
@@ -479,7 +482,7 @@ ggplot() +
 
 **We have metadata from many female individuals with (obviously) missing
 information about the Y haplogroup. Let's filter for individuals who are male,
-saving the results into `sf_metadata_eur_y:**
+saving the results into `sf_metadata_eur_y`:**
 
 ```{r}
 sf_metadata_eur_y <- filter(sf_metadata, continent == "Europe" & !is.na(y_haplo))
@@ -501,6 +504,8 @@ column):
 head(sf_metadata_eur_y)
 ```
 
+---
+
 **Let's try splitting the data based on an age bin (`+ facet_wrap(~ age_bin)`).
 Maybe something interesting pops up?. Additionally, let's remove the grey
 background using `+ theme_minimal()`**
@@ -517,7 +522,7 @@ ggplot() +
   theme_minimal()
 ```
 
-**I'll leave historical and evolutionary interpretation to you, at this stage.** 🙂
+**I'll leave the historical and evolutionary interpretation to you, at this stage.** 🙂
 
 
 ## Other _rnaturalearth_ data
@@ -588,7 +593,7 @@ authoritative in any way!**</u>
 ---
 
 **We will first download the aggregate IBD data and only retain information
-crucial for our analysis here:**
+relevant for our exploratory analysis here:**
 
 ```{r}
 #| message: false
@@ -611,7 +616,7 @@ sf_metadata <- process_metadata(bin_step = 1000) %>%
 ---
 
 **Merge the IBD data table with the (spatial!) table of metadata. This
-effectively turns the IBD table into a spatial table too, because after this
+effectively turns the IBD table we read just above this step into a spatial table too, because after this
 processing step it will also has spatial geometry columns for both `sample1`
 and also `sample2`:**
 
@@ -672,7 +677,7 @@ sf_ibd
 ```
 
 **Note:** The `LINESTRING` type is of the format `(lon1 lat1, lon2 lat2)`
-(longitude and latitude of `sample2`, and the same for `sample2`).
+(longitude and latitude of `sample1`, and the same for `sample2`).
 
 ---
 
@@ -693,7 +698,7 @@ actually need to plot some fascinating data from ancient DNA!
 ### Where do IBDs link Estonia to?
 
 ```{r}
-# filter for IBDs with one individual being from present-day Estonia
+# filter for IBDs with one individual being from Estonia
 sf_ibd_target <- filter(sf_ibd, country1 == "Estonia" | country2 == "Estonia")
 
 ggplot() +
@@ -714,7 +719,7 @@ ggplot() +
 The time bin **(4000,5000]** is very cool I think---Yamnaya migration!
 
 ```{r}
-# filter for IBDs with one individual being from present-day Ukraine
+# filter for IBDs with one individual being from Ukraine
 sf_ibd_target <- filter(sf_ibd, country1 == "Ukraine" | country2 == "Ukraine")
 
 ggplot() +
@@ -734,10 +739,11 @@ ggplot() +
 
 
 Again, the time bin **(4000,5000]** is consistent with
-[this study](https://english.elpais.com/elpais/2018/10/03/inenglish/1538568010_930565.html).
+[this study](https://english.elpais.com/elpais/2018/10/03/inenglish/1538568010_930565.html) on the impact of the Yamnaya migration on the populations
+of Iberia.
 
 ```{r}
-# filter for IBDs with one individual being from present-day Spain
+# filter for IBDs with one individual being from Spain
 sf_ibd_target <- filter(sf_ibd, country1 == "Spain" | country2 == "Spain")
 
 ggplot() +
@@ -755,8 +761,11 @@ ggplot() +
 
 ### Where do IBDs link Denmark to?
 
+Very clear evidence of the Viking era in the **(0,1000]** years BP time bin,
+I think.
+
 ```{r}
-# filter for IBDs with one individual being from present-day Denmark
+# filter for IBDs with one individual being from Denmark
 sf_ibd_target <- filter(sf_ibd, country1 == "Denmark" | country2 == "Denmark")
 
 ggplot() +
