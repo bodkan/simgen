@@ -17,7 +17,7 @@ most important thing to realize is that:
 
 1. **Spatial data in R are nothing but _tidy_ data frames**. Everything you learned
 about _tidyverse_ still applies. In fact, those _tidyverse_ concepts are a
-requirement to being able to do modern spatial data analysis.
+requirement to being able to do modern spatial data analysis using R.
 
 2. **Spatial data are visualized using _ggplot2_ concepts of "aesthetics" and
 "geoms"**. This means that, again, whatever you learned about _ggplot2_
@@ -36,10 +36,15 @@ called, "simple features"): [link](https://r-spatial.github.io/sf/articles/sf1.h
 
 - A [cheatsheet](https://rstudio.github.io/cheatsheets/sf.pdf) about the R package _sf_
 
+---
+
+**Let's apply the most basic concepts of spatial visualizations using _sf_
+on our metadata (and later) IBD data. Just a quick exploratory analysis,
+nothing serious!**
 
 ## Setup and data processing
 
-**Read spatial packages:**
+**Load spatial packages:**
 
 ```{r}
 #| message: false
@@ -47,7 +52,7 @@ library(sf)
 library(rnaturalearth)
 ```
 
-**Read other data science packages:**
+**Load other data science packages:**
 
 ```{r}
 #| message: false
@@ -58,7 +63,7 @@ library(ggplot2)
 
 **Source the IBD and metadata processing pipeline functions:**
 
-This reads functions:
+This load the following functions:
 
 - `process_metadata()`
 - `process_ibd()`
@@ -87,6 +92,9 @@ ibd_segments <- process_ibd()
 ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
+This is the same data you worked with during our _tidyverse_ and _ggplot2_
+sessions.
+
 ---
 
 **Filter metadata to only individuals who have `longitude` and `latitude`
@@ -99,8 +107,11 @@ metadata <- filter(metadata, !is.na(longitude) & !is.na(latitude))
 head(metadata)
 ```
 
+---
+
 **Use the function `class()` to check what kind of data type our metadata
-is (I know you know it's a data frame, but let's do this for practice):**
+is (I know you know it's a data frame, we'll get to why we're doing this
+soon):**
 
 ```{r}
 class(metadata)
@@ -112,7 +123,7 @@ Keep this in mind when you run the following code chunks!
 
 ### Converting non-spatial data to spatial data
 
-**Use function `st_as_sf()` to convert the (non-spatially aware) data frame
+**Use the function `st_as_sf()` to convert the (non-spatially aware) data frame
 object into one that can be interpreted as spatial data. Save the result
 as a `sf_metadata` variable.** (You'll probably get an error message, don't
 worry and move along!)
@@ -123,15 +134,21 @@ sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326")
 ```
 
 **The above got you a rather cryptic error. Honestly, even I don't think it's as
-informative as it should be. But, in any case, here's how you fix it: run
-`st_as_sf(metadata, coords = c("longitude", "latitude"))` instead.**
+informative as it should be. But, in any case, you can fix it by running
+this instead:**
+
+```{r}
+sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326", coords = c("longitude", "latitude"))
+```
+
 
 **Why do you think this is needed?**
 
 **Hint:** Although it's easy to think that a table with columns "latitude" and
 "longitude" is _obviously_ interpretable as spatial data, think about a
 situation in which the spatial coordinate columns in your data frame were
-called something else (like "lat" / "lon", or "x" / "y", or anything else).
+called something else (like "lat" / "lon", or "x" / "y", or anything else
+which is not an "obviously geographical coordinates column").
 
 ---
 
@@ -542,7 +559,12 @@ ggplot() +
 ```
 
 
+
 ## Plotting lines
+
+<u>**Take the following purely as a demonstration of other _sf_ / _ggplot2_
+visualization features. Don't take any of the IBD results as conclusive in
+any way!**</u> :)
 
 ```{r}
 #| message: false
@@ -550,13 +572,15 @@ ggplot() +
 library(tidyr)
 ```
 
-We will first download the aggregate IBD data, and do a little table-munging:
+We will first download the aggregate IBD data and only retain information
+crucial for our analysis here:
 
 ```{r}
+#| message: false
 ibd_sum <-
   read_tsv("http://tinyurl.com/simgen-ibd-sum") %>%
-  filter(distance > 0) %>%
-  select(sample1, sample2, total_ibd)
+  filter(distance > 0 & rel == "none") %>%
+  select(sample1, sample2, total_ibd, n_ibd)
 ```
 
 Let's also process the metadata again, this time adding a more fine-grained
@@ -571,22 +595,32 @@ sf_metadata <- process_metadata(bin_step = 1000) %>%
 ---
 
 **Join the IBD data table with the (spatial!) table of metadata. This
-effectively also turns the IBD table into a spatial table, because it
-now also has spatial geometry columns for both `sample1` and also `sample2`:**
+effectively turns the IBD table into a spatial table, because after this
+processing step it will also has spatial geometry columns for both `sample1`
+and also `sample2`:**
+
+(This code is very ugly because it was written in haste without much
+care of thinking put into it. It will be polished eventually.)
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the rough (and ugly) sketch of how to do this
 
 ```{r}
 sf_ibd <-
-  # take the aggregate IBD table
+  # take the aggregate IBD table...
   ibd_sum %>%
-  # join in spatial location and metadata of the Estonian sample1
+  # ... join in spatial location and metadata of the sample1...
   inner_join(select(sf_metadata, sample, geometry, age_bin, country), by = join_by(sample1 == sample)) %>%
   rename(point1 = geometry, time_bin1 = age_bin, country1 = country) %>%
-  # join in spatial location and metadata of the "source" second individual
+  # ... join in spatial location and metadata of the sample2...
   inner_join(select(sf_metadata, sample, geometry, age_bin, country), by = join_by(sample2 == sample)) %>%
-  rename(point2 = geometry, time_bin2 = age_bin, country2 = country)
+  rename(point2 = geometry, time_bin2 = age_bin, country2 = country) %>%
+  # remove within-country IBD links
+  filter(country1 != country2)
 ```
 
 ```{r}
+# use some sf magic to transform pairs of individual points into lines connecting them
 sf_ibd$link <- lapply(
   1:nrow(sf_ibd),
   function(i) {
@@ -594,18 +628,91 @@ sf_ibd$link <- lapply(
             "LINESTRING")
   }
 ) %>% st_sfc()
-
+# set the sf table so that the main geometry is this link
 st_geometry(sf_ibd) <- "link"
-sf_ibd <- relocate(sf_ibd, sample1, sample2, total_ibd, link, country1, country2, time_bin1, time_bin2)
+# and remove the point1 and point2 geometries, because they are not needed anymore
+sf_ibd$point1 <- NULL
+sf_ibd$point2 <- NULL
+
+# make sure the "link geometry" has a properly set Coordinate Reference System
+# (otherwise it can't be plotted on a longitude/latitude world map)
 st_crs(sf_ibd) <- st_crs(sf_metadata)
+
+sf_ibd <- relocate(sf_ibd, sample1, sample2, total_ibd, time_bin1, time_bin2, country1, country2, link)
 ```
 
+:::
+
+Now we have a tidy spatially-aware data frame of all IBD aggregate links:
+
 ```{r}
-sf_ibd_target <- filter(sf_ibd, country1 == "Estonia")
+sf_ibd
+```
+
+---
+
+#### Where do IBDs link Estonia to?
+
+```{r}
+sf_ibd_target <- filter(sf_ibd, country1 == "Estonia" | country2 == "Estonia")
+
 ggplot() +
-  geom_sf(data = sf_countries) +
-  geom_sf(data = sf_ibd_target, aes(color = country2)) +
-  coord_sf(xlim = c(-25, 70), ylim = c(30, 80)) +
+  geom_sf(data = sf_countries, alpha = 0.5) +
+  geom_sf(data = sf_ibd_target, color = "purple") +
+  coord_sf(xlim = c(-25, 100), ylim = c(30, 80)) +
+  guides(fill = "none") +
+  theme_bw() +
+  facet_wrap(~ time_bin2)
+```
+
+
+
+#### Where do IBDs link Ukraine to?
+
+The time bin **(4000,5000]** is very cool I think! Yamnaya moving out! :)
+
+```{r}
+sf_ibd_target <- filter(sf_ibd, country1 == "Ukraine" | country2 == "Ukraine")
+
+ggplot() +
+  geom_sf(data = sf_countries, alpha = 0.5) +
+  geom_sf(data = sf_ibd_target, color = "purple") +
+  coord_sf(xlim = c(-25, 100), ylim = c(30, 80)) +
+  guides(fill = "none") +
+  theme_bw() +
+  facet_wrap(~ time_bin2)
+```
+
+
+
+#### Where do IBDs link Spain to?
+
+
+Again, the time bin **(4000,5000]** consistent with [this study](https://english.elpais.com/elpais/2018/10/03/inenglish/1538568010_930565.html)?
+
+```{r}
+sf_ibd_target <- filter(sf_ibd, country1 == "Spain" | country2 == "Spain")
+
+ggplot() +
+  geom_sf(data = sf_countries, alpha = 0.5) +
+  geom_sf(data = sf_ibd_target, color = "purple") +
+  coord_sf(xlim = c(-25, 100), ylim = c(30, 80)) +
+  guides(fill = "none") +
+  theme_bw() +
+  facet_wrap(~ time_bin2)
+```
+
+
+
+#### Where do IBDs link Denmark to?
+
+```{r}
+sf_ibd_target <- filter(sf_ibd, country1 == "Denmark" | country2 == "Denmark")
+
+ggplot() +
+  geom_sf(data = sf_countries, alpha = 0.5) +
+  geom_sf(data = sf_ibd_target, color = "purple") +
+  coord_sf(xlim = c(-25, 100), ylim = c(30, 80)) +
   guides(fill = "none") +
   theme_bw() +
   facet_wrap(~ time_bin2)
