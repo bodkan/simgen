@@ -22,7 +22,7 @@ process_metadata <- function(bin_step) {
   # select a subset of columns
   metadata <- metadata_all %>%
     select(sampleId, country, continent, ageAverage, coverage, longitude, latitude, hgYMajor) %>%
-    rename(sample = sampleId, age = ageAverage)
+    rename(sample = sampleId, age = ageAverage, y_haplo = hgYmajor)
 
   # replace missing ages of present-day individuals with 0
   metadata <- mutate(metadata, age = if_else(is.na(age), 0, age))
@@ -47,8 +47,8 @@ join_metadata <- function(ibd_segments, metadata) {
   cat("Joining IBD data and metadata...\n")
 
   # prepare metadata for IBD annotation
-  metadata1 <- select(metadata, -coverage, -longitude, -latitude)
-  metadata2 <- select(metadata, -coverage, -longitude, -latitude)
+  metadata1 <- select(metadata, -coverage, -longitude, -latitude, -y_haplo)
+  metadata2 <- select(metadata, -coverage, -longitude, -latitude, -y_haplo)
   colnames(metadata1) <- paste0(colnames(metadata1), "1")
   colnames(metadata2) <- paste0(colnames(metadata2), "2")
 
