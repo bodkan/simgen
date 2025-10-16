@@ -103,7 +103,7 @@ process_metadata2 <- function(bin_step) {
   # select a subset of columns
   metadata <- metadata_all %>%
     select(sampleId, country, continent, ageAverage, coverage, longitude, latitude) %>%
-    rename(sample = sampleId, age = ageAverage, lon = longitude, lat = latitude, )
+    rename(sample = sampleId, age = ageAverage, lon = longitude, lat = latitude)
 
   # replace missing ages of present-day individuals with 0
   metadata <- mutate(metadata, age = if_else(is.na(age), 0, age))
