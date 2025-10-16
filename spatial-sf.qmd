@@ -3,26 +3,66 @@
 
 ---
 
-[_sf_ cheatsheet!](https://rstudio.github.io/cheatsheets/sf.pdf)
+### Introduction
+
+**<u>This chapter is a work-in-progress.</u>**
+
+Unlike other finished chapters which feature extensive explanations and a proper
+problem-solution set of exercises, **the material for this session is still
+just a rough tutorial, or a set of little code snippets which demonstrate
+the possibilities of visualizing and working with spatial data**.
+
+In light of the work you've done on learning _tidyverse_ and _ggplot2_, the
+most important thing to realize is that:
+
+1. **Spatial data in R are nothing but _tidy_ data frames**. Everything you learned
+about _tidyverse_ still applies. In fact, those _tidyverse_ concepts are a
+requirement to being able to do modern spatial data analysis.
+
+2. **Spatial data are visualized using _ggplot2_ concepts of "aesthetics" and
+"geoms"**. This means that, again, whatever you learned about _ggplot2_
+(plus a tiny bit more) applies also to plotting spatial data.
+
+### Some resources
+
+- **Start with an introductory chapter from the book _Spatial Data Science_ about the R
+packages _sf_ and _stars_ [available at this link](https://r-spatial.org/book/07-Introsf.html)**.
+This chapter includes executable R code, so you can again play around with the
+most important concepts interactively (which is the only way to learn anything).
+
+- Basic introductory tutorial on the concept of "simple features" implemented
+in the R package _sf_ (which is how _tidyverse_-compatible spatial data are
+called, "simple features"): [link](https://r-spatial.github.io/sf/articles/sf1.html)
+
+- A [cheatsheet](https://rstudio.github.io/cheatsheets/sf.pdf) about the R package _sf_
+
 
 ## Setup and data processing
 
 **Read spatial packages:**
 
 ```{r}
+#| message: false
 library(sf)
 library(rnaturalearth)
 ```
 
-**Read other data analysis packages:**
+**Read other data science packages:**
 
 ```{r}
+#| message: false
 library(dplyr)
 library(readr)
 library(ggplot2)
 ```
 
-**Read our pre-processed data:**
+**Source the IBD and metadata processing pipeline functions:**
+
+This reads functions:
+
+- `process_metadata()`
+- `process_ibd()`
+- `join_metadata()`
 
 ```{r}
 #| eval: false
@@ -34,19 +74,24 @@ source("scripts/ibd_utils.R")
 source(here::here("files/repro/ibd_utils.R"))
 ```
 
-**Read and process our IBD and metadata using our utility functions:**
+**Read and process IBD and metadata using our utility functions:**
 
 ```{r}
+#| message: false
+#| output: false
 # download and process the metadata and IBD data set
-metadata <- process_metadata(bin_step = 5000)
+metadata <- process_metadata(bin_step = 2500)
 ibd_segments <- process_ibd()
 
 # combine the IBD table with metadata information
 ibd_merged <- join_metadata(ibd_segments, metadata)
 ```
 
+---
+
 **Filter metadata to only individuals who have `longitude` and `latitude`
-values available (use `filter()`, `!is.na()` and the `&` operator):**
+values available (use `filter()`, `!is.na()` and the `&` operator) because
+those are the only ones we can do spatial data analysis on:**
 
 ```{r}
 metadata <- filter(metadata, !is.na(longitude) & !is.na(latitude))
@@ -61,22 +106,24 @@ is (I know you know it's a data frame, but let's do this for practice):**
 class(metadata)
 ```
 
+Keep this in mind when you run the following code chunks!
+
+---
+
 ### Converting non-spatial data to spatial data
 
 **Use function `st_as_sf()` to convert the (non-spatially aware) data frame
 object into one that can be interpreted as spatial data. Save the result
-as a `sf_metadata` variable. What do you see when you type `sf_metadata`
-to your R console and when you run `class()` on that variable? Compare this
-to the output you got for the original `metadata` object.** (You'll probably
-get an error message, don't worry and move along!)
+as a `sf_metadata` variable.** (You'll probably get an error message, don't
+worry and move along!)
 
 ```{r}
 #| error: true
 sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326")
 ```
 
-**The above got you a rather cryptic error. Honestly, even I don't understand
-it. But, here's how you fix it: run
+**The above got you a rather cryptic error. Honestly, even I don't think it's as
+informative as it should be. But, in any case, here's how you fix it: run
 `st_as_sf(metadata, coords = c("longitude", "latitude"))` instead.**
 
 **Why do you think this is needed?**
@@ -86,8 +133,12 @@ it. But, here's how you fix it: run
 situation in which the spatial coordinate columns in your data frame were
 called something else (like "lat" / "lon", or "x" / "y", or anything else).
 
-**When you have created the `sf_metadata` successfully, go back to the previous
-exercise.**
+---
+
+**When you have created the `sf_metadata` successfully, what do you see when
+you type `sf_metadata` to your R console? Compare this to the output you got
+from typing the original data frame `metadata` object into your R console
+earlier.**
 
 ```{r}
 sf_metadata <- st_as_sf(metadata, crs = "EPSG:4326", coords = c("longitude", "latitude"))
@@ -98,25 +149,39 @@ head(sf_metadata)
 ---
 
 **The result in `sf_metadata` looks almost like a data frame, right? What
-do you get when you run `class(sf_metadata)` again?**
+do you get when you run `class(sf_metadata)`?**
 
 ```{r}
 class(sf_metadata)
 ```
 
+Notice that you still get the `"tbl_df" "tbl" "data.frame"` classes
+which all indicate the object of the type "data frame". But there's also
+a new data type called `"sf"`.
+
 ---
 
 **The `st_as_sf()` function converts a plain data frame into a "spatially
-annotated data frame". Note the additional information about "Dimension",
-and "CRS" (Coordinate Reference System "WGS 84"). Take a look at the
-[Wikipedia article about WGS 84](https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset)
-and decipher what this could mean and why could this be needed.**
+annotated data frame" of the class `sf` (standing for "simple features").
+Going into all the details would be too much for this tutorial at this stage,
+but please do study the [introductory chapter](https://r-spatial.org/book/07-Introsf.html)
+on the _sf_ R package.**
 
 ---
 
-Unlike _tidyverse_ munging of data frames (where we introduced _ggplot2_ visualizations
-at the end), discussing spatial data is much easier to do the other way around,
-starting from a visualization.
+***Note the additional information about "Dimension",
+and "CRS" (Coordinate Reference System "WGS 84") in the output of the
+`sf_metadata` table in your R console. Take a look at the
+[Wikipedia article about WGS 84](https://en.wikipedia.org/wiki/EPSG_Geodetic_Parameter_Dataset) if you're
+interested in knowing more.**
+
+---
+
+## How do "spatial tables" relate to "normal tables"?
+
+Unlike _tidyverse_ munging of data frames (where we introduced _ggplot2_
+visualizations at the end), discussing spatial data is much easier to do the
+other way around, starting from visualizations instead.
 
 **It turns out that _sf_ spatial data is basically a normal data frame with
 a little bit of extra annotation. This means two things:**
@@ -134,52 +199,28 @@ As a reminder, the general pattern of plotting with _ggplot2_ was something
 like this:
 
 ```
-ggplot(DATA_FRAME, aes(MAPPING AESTHETICS, LIKE COLOR ETC.)) +
+ggplot(<DATA FRAME>, aes(<MAPPING AESTHETICS, LIKE COLOR ETC.>)) +
   geom_...()
 ```
 
+---
+
+### Plotting points
+
 **Try plotting your `sf_metadata` using the same pattern, but with a new
-`geom_sf()`:**
+geom function called `geom_sf()`. You the following pattern, however, in which
+you specify everything not in the `ggplot()` function, but in `geom_sf()`:**
 
-
-```{r}
-sf_metadata %>%
-ggplot(aes(color = coverage)) +
-  geom_sf()
-```
-
-**For simplicity and ease of plotting, use `filter()` to remove individuals
-in the metadata who are not from Europe, and save the result to a new
-variable `sf_metadata_eur`:**
-
-**Hint:** Remember that even spatial _sf_ data is like any other data frame,
-and can therefore be transformed and filtered with every _tidyverse_ function
-you already know (`filter()`, `select()`, etc.):**
-
-```{r}
-sf_metadata_eur <- sf_metadata %>% filter(continent == "Europe")
-```
 
 ```{r}
 ggplot() +
-  geom_sf(data = sf_metadata_eur)
+  geom_sf(data = sf_metadata)
 ```
 
-In the _ggplot2_ session you've learned about the possibility of visualizing
-multiple geoms in the same figure. This concept becomes even more powerful
-when visualizing spatial data. **Consider the plot above---we know the points
-are from Europe because they form a roughly Europe-shaped cloud. But we want
-to add the outline of the European continent, to make the figure look much
-nicer.**
+If you squint hard enough, you might see an outline of the world "painted" using
+geo-locations of our metadata samples!
 
-**Use the function `ne_countries()` (from the _rnaturalearth_ R package) to
-download the spatial coordinates of the European continent. You can do
-this by setting its argument `continent = "Europe"`. Save the result into
-the variable `sf_countries`:**
-
-```{r}
-sf_countries <- ne_countries(continent = "Europe")
-```
+---
 
 Let's talk about data types which are possible for spatial data. When you
 type the `sf_metadata` into your R console again, you will see the
@@ -197,13 +238,26 @@ table contains the geometrical objects which are of the type `POINT`---locations
 of individuals points in space. This is appropriate for locations of samples
 excavated (or sampled) at a particular location.
 
+### Plotting polygons
+
+**Now, use the function `ne_countries()` (from the _rnaturalearth_ R package) to
+download the spatial coordinates of the countries of the world (note that
+this package has [many other sources of data](https://cran.r-project.org/web/packages/rnaturalearth/vignettes/rnaturalearth.html).
+Save the result into the variable `sf_countries`:**
+
+```{r}
+sf_countries <- ne_countries()
+```
+
+---
+
 **What do you get when you run `glimpse()` on the newly downloaded data set
 of the European continent in the `sf_countries` variable? To make the output
 a little smaller, apply `glimpse()` to the result `%>%` piped from 
-`select(sf_countries, geometry):**
+`select(), maybe like this:**
 
 ```{r}
-select(sf_countries, geometry) %>% glimpse
+select(sf_countries, name_en, geometry) %>% glimpse
 ```
 
 You see a data type `geometry <MULTIPOLYGON [°]>`. This is a more complex
@@ -213,6 +267,22 @@ from school. A `MULTIPOLYGON` is simply a collection of polygons.
 There are also other spatial data types. [See this](https://r-spatial.github.io/sf/articles/sf1.html#simple-feature-geometry-types)
 for a quick list of possible data types that you might encounter in doing
 spatial data analysis.
+
+---
+
+In the _ggplot2_ session earlier you've learned about the possibility of visualizing
+multiple geoms in the same figure. This concept becomes even more powerful
+when visualizing spatial data. **Consider the following plot again---we know the points
+are from planet Earth because they form a roughly world-map-shaped cloud of dots.
+But we want to add the outline of the World continent, to make the figure look 
+nicer.**
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_metadata)
+```
+
+---
 
 **To recap the idea of combining multiple geoms on a single _ggplot2_ figure,
 let's start just from visualizing a single geom, this time the (what should be)
@@ -225,12 +295,33 @@ ggplot() +
   geom_sf(data = sf_countries)
 ```
 
+### Plotting multiple types of spatial features
+
+**You can visualize multiple geoms simply by adding multiple calls to the
+`geom_sf()` function, perhaps like this:**
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_metadata) +
+  geom_sf(data = sf_countries)
+```
+
 ---
 
-The figure above works, but it looks very weird. We should probably restrict the geographic
-area of the world we're plotting. For our data set, including "Kamchatka" in
-Europe for visualization purposes is pushing it a little bit.
+**Oh, again, the order of layering individual geoms matters, of course. Let's
+fix this:**
 
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata)
+```
+
+Better (but still not very pretty).
+
+---
+
+Let's talk about narrowing down the scale of the world we're looking at.
 For basic _ggplot2_ figures, we learned to use the `xlim()` function. This
 (and the `ylim()` function) operates on the [Cartesian coordinates system](https://en.wikipedia.org/wiki/Cartesian_coordinate_system).
 However, spatial data coordinates are not Cartesian. The world is a globe,
@@ -240,30 +331,21 @@ _ggplot2_ provides a spatial-specific version of `xlim()` and `ylim()`
 in the `coord_sf()` function.
 
 **Restrict the geographical range of your spatial figure by adding the layer
-`+ coord_sf(xlim = c(-10, 70), ylim = c(30, 80))`:**
+`coord_sf(xlim = c(-25, 60), ylim = c(33, 73))` (note that the units
+of numbers given for the limits are longitude and latitude degrees):**
 
 ```{r}
 ggplot() +
   geom_sf(data = sf_countries) +
-  coord_sf(xlim = c(-10, 70), ylim = c(35, 73))
+  geom_sf(data = sf_metadata) +
+  coord_sf(xlim = c(-25, 60), ylim = c(33, 73))
 ```
 
 ---
 
-**Now add a new layer to the previous code which will plot the coordinates
-of our European spatial data points, using `+ geom_sf(data = sf_metadata_eur)`:**
-
-```{r}
-ggplot() +
-  geom_sf(data = sf_countries) +
-  geom_sf(data = sf_metadata_eur) +
-  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
-```
-
----
-
-Let's map some aesthetics, to practice the concept of modifying the visual
-properties of a figure.
+**Let's map some aesthetics, to practice the concept of modifying the visual
+properties of a figure in the spatial context. Most important thing to note
+here is that everything remains _exactly_ the same as with normal _ggplot2_.**
 
 **First, try setting `aes(fill = name_en)` in the `geom_sf(data = sf_countries)`.
 The visuals will be a bit cluttered, so immediately add also a new layer
@@ -272,24 +354,260 @@ The visuals will be a bit cluttered, so immediately add also a new layer
 ```{r}
 ggplot() +
   geom_sf(data = sf_countries, aes(fill = name_en)) +
-  geom_sf(data = sf_metadata_eur) +
+  geom_sf(data = sf_metadata) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(fill = "none")
+```
+
+Yikes. This is very hard to look at, but it proves the point of showing that
+spatial figures work exactly the same as _ggplot2_ figures.
+
+---
+
+**Now try setting `aes(color = country)` in `geom_sf(data = sf_metadata)`
+(and remove `fill` from `geom_sf(data = sf_countries)`:**
+
+```{r}
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata, aes(color = country)) +
   coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
   guides(fill = "none")
 ```
 
 ---
 
-**Now try setting `aes(color = country)` in `geom_sf(data = sf_metadata_eur)`
-(and remove `fill` from `geom_sf(data = sf_countries)`:**
+**Notice that the legend for each color of our figure shows a huge number of
+countries, despite us "zooming in" on West Eurasia using our `coord_sf()`
+layer.**
+
+This lets us discuss another topic of spatial data analysis. Just as spatial
+figures work exactly like _ggplot2_ figures (because they are!), spatial
+data processing works exactly like what we learned about _tidyverse_ (because
+spatial data are just data frames!).
+
+**In the chunk of code above, modify this line:**
+
+```{r}
+#| eval: false
+geom_sf(data = sf_metadata, aes(color = country))
+```
+
+**to look like this:**
+
+```{r}
+#| eval: false
+geom_sf(data = filter(sf_metadata, country == "Europe"), aes(color = country))
+```
+
+So the entire code looks like this:
 
 ```{r}
 ggplot() +
   geom_sf(data = sf_countries) +
+  geom_sf(data = filter(sf_metadata, continent == "Europe"), aes(color = country)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(fill = "none")
+```
+
+Compare the difference to the previous figure!
+
+**Note:** How exactly you apply _tidyverse_ principles is up to you. If you'd
+like to take things step by step, you could also do this and run `filter()` first
+to create a new (maybe just temporary) variable. This can be useful if you
+need to do much more _tidyverse_ spatial munging (maybe by chaining together
+several `%>%` operations), which would be unreadable inside the `geom_sf(data ...`)
+function call. This does the same thing as the code just above:
+
+```{r}
+sf_metadata_eur <- filter(sf_metadata, continent == "Europe")
+
+ggplot() +
+  geom_sf(data = sf_countries) +
   geom_sf(data = sf_metadata_eur, aes(color = country)) +
   coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
-  guides(color = "none")
+  guides(fill = "none")
 ```
 
 ---
 
-**In practice, 
+**Coloring by countries is maybe not that interesting. How about if we color
+the `sf_metadata_eur` by Y chromosome haplogroup of a sample (where applicable)?**
+
+```{r}
+sf_metadata_eur <- filter(sf_metadata, continent == "Europe")
+
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata_eur, aes(color = y_haplo)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(fill = "none")
+```
+
+---
+
+**Obviously, we have data from many female individuals with (obviously) missing
+information about the Y haplogroup. Let's filter for individuals who are male,
+saving the results into `sf_metadata_eur_y:**
+
+```{r}
+sf_metadata_eur_y <- filter(sf_metadata, continent == "Europe" & !is.na(y_haplo))
+
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata_eur_y, aes(color = y_haplo)) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(fill = "none")
+```
+
+---
+
+The data is cleaner, but no pattern is emerging yet. In our data, we have also
+information about the ages of our individuals:
+
+```{r}
+head(sf_metadata_eur_y)
+```
+
+**Let's try splitting the data based on an age bin (`+ facet_wrap(~ age_bin)`).
+Maybe something interesting pops up?. Additionally, let's remove the grey
+background using `+ theme_minimal()`**
+
+```{r}
+sf_metadata_eur_y <- filter(sf_metadata, continent == "Europe" & !is.na(y_haplo))
+
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_metadata_eur_y, aes(color = y_haplo), size = 1) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  guides(fill = "none") +
+  facet_wrap(~ age_bin)+
+  theme_minimal()
+```
+
+**I'll leave historical and evolutionary interpretation to you, at this stage.** 🙂
+
+
+### Other _rnaturalearth_ data
+
+First of all, the [_rnaturalearth_](https://cran.r-project.org/web/packages/rnaturalearth/vignettes/rnaturalearth.html)
+package is only one of great many possible
+sources of spatial data (maybe one of the most convenient to download
+into R but still, just one of many).
+
+The good thing is, that the [_sf_]https://r-spatial.github.io/sf/) data
+type represents a universal format for storing spatial data sets.
+You can even [import](https://r-spatial.github.io/sf/articles/sf2.html) spatial
+data from other sources!
+
+That being said, here are a couple of more examples of data provided
+by the _rnaturalearth_ resource:
+
+#### `ne_download()`
+
+This functions downloads all sorts of spatial data made available
+by the public domans [Natural Earth](https://www.naturalearthdata.com)
+project.
+
+```{r}
+sf_data <- ne_download(scale = "small", type = "land", category = "physical")
+
+ggplot() +
+  geom_sf(data = sf_data) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  theme_minimal()
+```
+
+
+#### `ne_countries()` (you're already familiar with this)
+
+```{r}
+sf_data <- ne_countries()
+
+ggplot() +
+  geom_sf(data = sf_data) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80)) +
+  theme_minimal()
+```
+
+
+#### `ne_coastline()`
+
+```{r}
+sf_data <- ne_coastline()
+
+ggplot() +
+  geom_sf(data = sf_data) +
+  coord_sf(xlim = c(-10, 70), ylim = c(30, 80))
+```
+
+
+## Plotting lines
+
+```{r}
+#| message: false
+# install.packages("tidyr")
+library(tidyr)
+```
+
+We will first download the aggregate IBD data, and do a little table-munging:
+
+```{r}
+ibd_sum <-
+  read_tsv("http://tinyurl.com/simgen-ibd-sum") %>%
+  filter(distance > 0) %>%
+  select(sample1, sample2, total_ibd)
+```
+
+Let's also process the metadata again, this time adding a more fine-grained
+time binning:
+
+```{r}
+sf_metadata <- process_metadata(bin_step = 1000) %>%
+  filter(!is.na(longitude) & !is.na(latitude)) %>%
+  st_as_sf(crs = "EPSG:4326", coords = c("longitude", "latitude"))
+```
+
+---
+
+**Join the IBD data table with the (spatial!) table of metadata. This
+effectively also turns the IBD table into a spatial table, because it
+now also has spatial geometry columns for both `sample1` and also `sample2`:**
+
+```{r}
+sf_ibd <-
+  # take the aggregate IBD table
+  ibd_sum %>%
+  # join in spatial location and metadata of the Estonian sample1
+  inner_join(select(sf_metadata, sample, geometry, age_bin, country), by = join_by(sample1 == sample)) %>%
+  rename(point1 = geometry, time_bin1 = age_bin, country1 = country) %>%
+  # join in spatial location and metadata of the "source" second individual
+  inner_join(select(sf_metadata, sample, geometry, age_bin, country), by = join_by(sample2 == sample)) %>%
+  rename(point2 = geometry, time_bin2 = age_bin, country2 = country)
+```
+
+```{r}
+sf_ibd$link <- lapply(
+  1:nrow(sf_ibd),
+  function(i) {
+    st_cast(st_union(sf_ibd$point1[[i]], sf_ibd$point2[[i]], by_element = TRUE),
+            "LINESTRING")
+  }
+) %>% st_sfc()
+
+st_geometry(sf_ibd) <- "link"
+sf_ibd <- relocate(sf_ibd, sample1, sample2, total_ibd, link, country1, country2, time_bin1, time_bin2)
+st_crs(sf_ibd) <- st_crs(sf_metadata)
+```
+
+```{r}
+sf_ibd_target <- filter(sf_ibd, country1 == "Estonia")
+ggplot() +
+  geom_sf(data = sf_countries) +
+  geom_sf(data = sf_ibd_target, aes(color = country2)) +
+  coord_sf(xlim = c(-25, 70), ylim = c(30, 80)) +
+  guides(fill = "none") +
+  theme_bw() +
+  facet_wrap(~ time_bin2)
+```
+
