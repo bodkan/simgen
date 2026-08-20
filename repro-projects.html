@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Structuring (R) projects – Computational Population Genetics and Statistical Inference in R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./repro-quarto.html" rel="next">
+<link href="./tidy-viz.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./repro-projects.html">Reproducible computing</a></li><li class="breadcrumb-item"><a href="./repro-projects.html"><span class="chapter-title">Structuring (R) projects</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Computational Population Genetics and Statistical Inference in R</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./r-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">R language</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./r-bootcamp.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">R bootcamp</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Welcome to <em>tidyverse</em></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Introduction to <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-advanced.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">More <em>tidyverse</em> practice</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-viz.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Reproducible computing</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./repro-projects.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Structuring (R) projects</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./repro-quarto.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Quarto reports and slides</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Working with spatial data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./spatial-sf.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Plotting <em>tidy</em> spatial data</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simulations with <em>slendr</em></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Demographic models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-stats.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Tree-sequence statistics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simulation-based inference</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./inference-afs.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./handouts.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Cheatsheets and handouts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./handouts_r-bootcamp.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">R bootcamp</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./handouts_tidy-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Introduction to <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./handouts_tidy-viz.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./handouts_slendr.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Simulations with <em>slendr</em></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./acknowledgements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Acknowledgements</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true">
+ <span class="menu-text">Unfinished chapters</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-8" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-8" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-nonspatial-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Exploring PCA patterns</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-spatial-pca.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Spatial PCA</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-tracts-dating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Admixture tracts and dating</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-selection.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Natural selection</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./r-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Algorithmic thinking</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./repro-cli.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Command-line scripts</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-9" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-9" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./setup-tidyverse.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Installation – <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./setup-slendr.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Installation – <em>slendr</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./slides.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Slides</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#exercise-1-creating-a-formal-r-project" id="toc-exercise-1-creating-a-formal-r-project" class="nav-link" data-scroll-target="#exercise-1-creating-a-formal-r-project">Exercise 1: Creating a formal R project</a></li>
+  <li><a href="#exercise-2-seting-up-a-project-file-structure" id="toc-exercise-2-seting-up-a-project-file-structure" class="nav-link" data-scroll-target="#exercise-2-seting-up-a-project-file-structure">Exercise 2: Seting up a project file structure</a></li>
+  <li><a href="#exercise-3-building-an-example-reproducible-pipeline" id="toc-exercise-3-building-an-example-reproducible-pipeline" class="nav-link" data-scroll-target="#exercise-3-building-an-example-reproducible-pipeline">Exercise 3: Building an example reproducible pipeline</a>
+  <ul class="collapse">
+  <li><a href="#data-gathering" id="toc-data-gathering" class="nav-link" data-scroll-target="#data-gathering">1. Data gathering</a></li>
+  <li><a href="#data-processing" id="toc-data-processing" class="nav-link" data-scroll-target="#data-processing">2. Data processing</a></li>
+  <li><a href="#data-analysis" id="toc-data-analysis" class="nav-link" data-scroll-target="#data-analysis">3. Data analysis</a></li>
+  </ul></li>
+  <li><a href="#exercise-4-generating-other-results" id="toc-exercise-4-generating-other-results" class="nav-link" data-scroll-target="#exercise-4-generating-other-results">Exercise 4: Generating other results</a></li>
+  <li><a href="#exercise-5-adding-a-readme-file" id="toc-exercise-5-adding-a-readme-file" class="nav-link" data-scroll-target="#exercise-5-adding-a-readme-file">Exercise 5: Adding a README file</a></li>
+  <li><a href="#what-were-still-missing-theoratically" id="toc-what-were-still-missing-theoratically" class="nav-link" data-scroll-target="#what-were-still-missing-theoratically">What we’re still missing (theoratically)</a></li>
+  <li><a href="#closing-remarks" id="toc-closing-remarks" class="nav-link" data-scroll-target="#closing-remarks">Closing remarks</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./repro-projects.html">Reproducible computing</a></li><li class="breadcrumb-item"><a href="./repro-projects.html"><span class="chapter-title">Structuring (R) projects</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Structuring (R) projects</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>You’ve done a huge amount of programming already. Processing data, filtering data, annotating data, summarizing data, but also plotting data using the most powerful tool for scientific visualization <em>ggplot2</em>! I said it before but it’s worth repeating again—you have now learned 70% of all the tools you might need to do data science on a day-to-day basis using R. This is not an exaggeration.</p>
+<p>Sure, you might not remember everything, but remembering comes from repetition and practice. You’ve been exposed to the most important concepts, and you know where to come back for more information when needed later.</p>
+<hr>
+<p><strong>In this session on reproducibility, we will take things a bit easier than the earlier, programming-heavy sessions earlier.</strong></p>
+<p><strong>Instead of focusing on specific programming techniques and R functions, we’ll go through guidelines on how to organize (and run) computational projects on a practical basis—taking <em>what</em> you’ve learned, and learning <em>how</em> to do it in practice.</strong></p>
+<p>In this session your tasks will be to take bits of code from previous exercises on IBD and other data (currently scattered over multiple separate scripts and files, or maybe even nowhere!) and learn how to organize them in a structure suitable for maximizing reproducibility and effectiveness of doing computational research.</p>
+</section>
+<section id="exercise-1-creating-a-formal-r-project" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-1-creating-a-formal-r-project">Exercise 1: Creating a formal R project</h2>
+<p><strong>So far, you’ve worked in an “anonymous” RStudio session, with scripts saved somewhere on your filesystem, disconnected from the data, or with ad hoc interactions with an R console (i.e., with commands not saved anywhere).</strong> This is not how reproducible research should be done to be sustainable over weeks or months of working on a project.</p>
+<p><strong>To move forward, set up a formal R project and proper project structure by following the following steps:</strong></p>
+<ol type="1">
+<li><p>Click <code>File</code> <code>-&gt;</code> <code>New Project...</code></p></li>
+<li><p>In the new window, click on <code>New Directory</code> <code>-&gt;</code> <code>New Project</code></p></li>
+<li><p>Under <code>"Directory name"</code> type in <code>"simgen-project"</code> (the name of our course, and the directory where all project files will be stored). Pick where you would like to save that directory (this doesn’t matter, just put the project somewhere you can later find it). Check the <code>"Open in new session"</code> box, leave the other options related to “git” and “renv” unchecked.</p></li>
+<li><p>Then click on the “Create Project” button.</p></li>
+</ol>
+<p><strong>This will create a new RStudio window. Your original RStudio window (where you worked so far) is still open. The task for the following exercises will be to convert the (probably disorganized) bits of code into a “proper reproducible R project”.</strong></p>
+<p><strong>Notice the new <code>simgen-project.Rproj</code> file that is currently the only file in your project directory! We will come back to it soon.</strong></p>
+</section>
+<section id="exercise-2-seting-up-a-project-file-structure" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-2-seting-up-a-project-file-structure">Exercise 2: Seting up a project file structure</h2>
+<p>What makes for a good computational project structure? There are endless possibilities but a <strong>good guidelines are</strong>:</p>
+<ol type="1">
+<li><p><strong>Be consistent</strong> – put files that “belong together” in the same place (i.e., in the same directory). For example, an Excel table shouldn’t be saved in a directory with scripts, a PDF with a plot shouldn’t be in a directory with tables.</p></li>
+<li><p><strong>Be predictable</strong> – even a person unfamiliar with your project should be able to guess where is what just by looking at your folder. Remember, when you publish your paper or your thesis, you will have to provide all your data and scripts as supplementary materials, so others should be able to understand all of them!</p></li>
+<li><p><strong>Document everything</strong> – write a lot of <code># comments in code</code>, describing what different pieces of code do, and why you wrote things in a certain way. Your future self will thank you!</p></li>
+</ol>
+<hr>
+<p><strong>Now let’s set up an example computational project structure for our IBD data our ancient DNA metadata</strong> (we’ll leave the <span class="math inline">\(f_4\)</span>-ratio Neanderthal estimates for next chapter)<strong>, just like you would do this for a real study.</strong></p>
+<p><strong>Note:</strong> This is all just an example! Again, as long as you follow the guidelines numbered above, everything works!</p>
+<p><strong>In the <code>Files</code> pane of RStudio, click on <code>"New Folder"</code> and create the following directories in the “root of your project directory <code>simgen-project/</code>”:</strong></p>
+<ol type="1">
+<li><code>code/</code></li>
+<li><code>data/</code>, and within it create directories <code>raw/</code> and <code>processed/</code></li>
+<li><code>figures/</code></li>
+<li><code>results/</code></li>
+<li><code>reports/</code></li>
+</ol>
+<p><strong>Note:</strong> You can do all this manually, or you can play around with doing it using code with the incredibly useful function <code>?dir.create</code>! For instance, a single command to do all of the above could be the following. (If you’re curious about the <code>recursive = TRUE</code>, look at help of <code>?dir.create</code>.)</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"code/"</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data/raw"</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"data/processed"</span>, <span class="at">recursive =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"figures/"</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"results/"</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"reports/"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p><strong>When you hit the <code>"Refresh file listing"</code> circular arrow button in the top-right of the <code>"Files"</code> pane, you should now see all the directories you just created. Make sure you see them, and not just the <code>simgen-project.Rproj</code> file like before!</strong></p>
+</section>
+<section id="exercise-3-building-an-example-reproducible-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-3-building-an-example-reproducible-pipeline">Exercise 3: Building an example reproducible pipeline</h2>
+<p>Let’s get something out of the way first. <strong>Of course, if there are a million possible ways how to properly structure a computational project, there are infinite ways how a “reproducible research pipeline” should be actually organized.</strong></p>
+<p><strong>Obviously, all research projects are different</strong>, they focus on different kinds of data (archaeological data, ancient DNA sequences, linguistic data, field observation data, etc.), so naturally they will require different code which will have to be structured in different ways.</p>
+<p><strong>Still, there are some common workflows which practically every single computational scientific research study does:</strong></p>
+<ol type="1">
+<li><p><strong>Data gathering</strong> – in our IBD and metadata examples, this involved downloading data from the internet.</p></li>
+<li><p><strong>Data processing</strong> – in our case, this involved filtering the data, processing it to bin individuals based on their ages, joining IBD data with metadata, etc.</p></li>
+<li><p><strong>Data analysis</strong> – this involves computing summary statistics, creating figures, etc.</p></li>
+</ol>
+<p><strong>The dirty secret of many scientific research studies (especially in the “old days”) is that all of these steps are often clumped together in huge scripts, and its very difficult (even for the author) to sometimes tell where is what.</strong> This can be a big problem, especially if a bug needs to be fixed, a new step of a processing pipeline needs to be added, etc.</p>
+<p>It gets even worse, when after a long time you come back to a project and need to remember some details about where in your code is that one line that does something that needs changing!</p>
+<p><strong>Let’s demonstrate how you could organize your code in practice, and hopefully you’ll see how investing a bit more time and thinking into properly organizing code in your research project makes your life a lot easier in the long run</strong> (and much easier for everyone who might pick up your project later too).</p>
+<hr>
+<section id="data-gathering" class="level3">
+<h3 class="anchored" data-anchor-id="data-gathering">1. Data gathering</h3>
+<p><strong>Create a standalone R script (<code>File</code> <code>-&gt;</code> <code>New File</code> <code>-&gt;</code> <code>R Script</code>). Paste the following code to that script, and then save it as <code>01_download_data.R</code> in the root of your <code>simgen-project</code> project directory.</strong></p>
+<p><strong>Don’t copy it without skimming through it and understanding it!</strong> You should recognize these commands from our earlier exercises on <em>tidyverse</em>? Ideally, you’ve written those commands before yourself. That example code was a little messy and random, because it was structured as an <em>ad hoc</em> tutorial. What we’re doing here is showing how to organize computational research properly.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find the complete script <a href="https://github.com/bodkan/simgen/blob/main/files/repro/01_download_data.R">here</a>.</p>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>When you have your script <code>01_download_data.R</code>, run it by calling <code>source("01_download_data.R")</code> in your R console and observe what happens. You can also press Cmd/Ctrl + Shift + S — a very useful shortcut!</strong></p>
+<p><strong>Then, click through your <code>"Files"</code> panel and look in <code>data/raw</code> — do you see files that your new script should create?</strong></p>
+<p><strong>Note:</strong> Notice the <code>cat("some kind of message\n")</code> command in the script. This is extremely useful for printing log information about a (potentially) log running process. If you’re confused about what it does, write this into your R console: <code>cat("Hello friend!\n")</code>.</p>
+<hr>
+<p>Creating <code>01_download_data.R</code> is a first step towards reproducibility. Downloading of all data set now happens in a dedicated script, which means:</p>
+<ol type="1">
+<li>We only have to run it once, and have all data available in <code>data/raw</code> for later use.</li>
+<li>If we have to include a new data set to be included, we just edit that script <code>01_download_data.R</code> and run it again!</li>
+<li>Except for running the script top to bottom, we don’t do any “manual work”.</li>
+</ol>
+<p><strong>This doesn’t sound like much, but it’s absolutely crucial. Automation is the most important aspect of reproducible research. Unless something isn’t fully automated, it’s not reproducible.</strong></p>
+<p>Now let’s move to the next step!</p>
+<hr>
+</section>
+<section id="data-processing" class="level3">
+<h3 class="anchored" data-anchor-id="data-processing">2. Data processing</h3>
+<p><strong>Create a standalone R script (<code>File</code> <code>-&gt;</code> <code>New File</code> <code>-&gt;</code> <code>R Script</code>). Add the following code to that script, and then save it as <code>02_process_data.R</code> in the root of your <code>simgen-project</code> project directory.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find the complete script <a href="https://github.com/bodkan/simgen/blob/main/files/repro/02_process_data.R">here</a>.</p>
+</div>
+</div>
+</div>
+<p><strong>Again, please don’t just blindly copy it! Look at the script and try to recognize the commands from our earlier exercises on <em>tidyverse</em>.</strong> You ran all of this yourself, manually, command-by-command, in the R console.</p>
+<p><strong>When you have your script, close RStudio.</strong></p>
+<p>…</p>
+<p><em>Let’s pretend that some time passed, you’re done for the day and went home.</em></p>
+<p>…</p>
+<p><strong>Find the location of your <code>simgen-project</code> directory on your computer, go to that directory, and then double-click on the R project file <code>simgen-project.Rproj</code>. You’ll get your old session back, just like you left it (including history!</strong></p>
+<hr>
+<p><strong>Now press Cmd/Ctrl + Shift + S to run the processing script, and observe what happens! Then click through your <code>"Files"</code> panel and look in <code>data/processed</code> — do you see your files, process and tidy, ready for analysis?</strong></p>
+<hr>
+</section>
+<section id="data-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="data-analysis">3. Data analysis</h3>
+<p>Hopefully you’re now starting to get an idea about what a well-organized, reproducible pipeline means. It’s about structuring the directory where your project lives, and about partitioning your code into scripts which represent logical components of your project — from downloading data (and saving it to a particular storage location), and processing it (and again saving it to a proper storage location), and, finally, to answering research questions based on this data.</p>
+<p><strong>Your project structure should now look something like this. Notice that there are already data files present, not just directories:</strong></p>
+<pre><code>├── 01_download_data.R           # data fetching code
+├── 02_process_data.R            # data processing code
+├── code                         # directory for future custom functions
+├── data
+│   ├── processed                # processed / filter / cleaned data
+│   │   ├── ibd_segments.tsv
+│   │   ├── ibd_sum.tsv
+│   │   └── metadata.tsv
+│   └── raw                      # raw unprocessed data
+│       ├── ibd_segments.tsv
+│       └── metadata.tsv
+├── figures                      # location for PDF figures
+├── results                      # various other output data (tables, cache files, etc.)
+├── reports                      # location for slides and reports (next section!)
+└── simgen-project.Rproj</code></pre>
+<p><strong>You have implemented the first two steps of a data processing pipeline. Now it’s your job to implement additional components of the project pipeline, again using a couple of examples of what we’ve already done before, but this time properly integrating it into a nice and tidy package.</strong></p>
+<hr>
+<section id="generating-figures" class="level4">
+<h4 class="anchored" data-anchor-id="generating-figures">Generating figures</h4>
+<p><strong>Create a standalone R script called <code>03_plot_metadata.R</code>, which will:</strong></p>
+<ul>
+<li><p>Read the table in <code>data/processed/metadata.tsv</code> using <code>read_tsv()</code> function.</p></li>
+<li><p>Create the following figures using <em>ggplot2</em> package and the function <code>ggsave()</code> you’ve learned about earlier.</p></li>
+</ul>
+<ol type="1">
+<li><p>Count of samples in each <code>age_bin</code> of <code>metadata</code> (use <code>geom_bar()</code>).</p></li>
+<li><p>A histogram of <code>coverage</code> across different <code>age_bin</code> categories, only for individuals with <code>age &gt; 0</code> (i.e., ancient individuals), with one facet showing one histogram from a given <code>age_bin</code> category (use <code>geom_histogram()</code> and <code>facet_wrap()</code>).</p></li>
+</ol>
+<ul>
+<li>Save the figure(s) in the <code>figures/</code> directory (whether you save individual PDF for each figure, or put multiple figures into one PDF is up to you).</li>
+</ul>
+<p><strong>Note:</strong> Remember that you can use the function <code>ggsave()</code> to save <em>ggplot2</em> figures stored in normal R variables, or the <code>pdf()</code> &amp; <code>dev.off()</code> trick!</p>
+<p><strong>Hint:</strong> If you need help, we solved all of these in previous exercises.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find my solution <a href="https://github.com/bodkan/simgen/blob/main/files/repro/03_plot_metadata.R">here</a>.</p>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>Create a standalone R script called <code>04_plot_ibd_sharing.R</code>, which will:</strong></p>
+<ul>
+<li><p>Read the table in <code>data/processed/ibd_merged.tsv</code> using <code>read_tsv()</code> function.</p></li>
+<li><p>Filter the table to only <code>length &gt; 5</code> (segments longer than 5cM) and <code>time_pair == "present-day:present-day"</code> (only present-day humans).</p></li>
+<li><p>Create the following figures using <em>ggplot2</em> package and the function <code>ggsave()</code> you’ve learned about earlier, saving all of these figures into a single file <code>figures/ibd_sharing.pdf</code>:</p>
+<ul>
+<li><p>For each pair of continents <code>region_pair == "Europe:Europe"</code>, <code>region_pair == "America:America"</code>, <code>region_pair == "Asia:Asia"</code>, and <code>region_pair == "Africa:Africa"</code>, plot a histogram of lengths of IBD longer than 5 cM.</p></li>
+<li><p>Use <code>facet_wrap(~ country_pair)</code> to visualize each histogram for each country pair in its own facets.</p></li>
+<li><p>Therefore, your PDF should have four plots (one plot per page), with each plot having a number of histograms, one histogram per facet.</p></li>
+</ul></li>
+</ul>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find my solution <a href="https://github.com/bodkan/simgen/blob/main/files/repro/03_plot_ibd_sharing.R">here</a>.</p>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>Create a standalone R script called <code>05_plot_ibd_relatedness.R</code>, which will:</strong></p>
+<ul>
+<li><p>Read the table in <code>data/processed/ibd_sum.tsv</code> using <code>read_tsv()</code> function.</p></li>
+<li><p>Recreate that beautiful figure we made, showing a scatterplot of <code>total_ibd</code> against <code>n_ibd</code>, and highlighting which individuals are duplicated, who is a 1st degree relative, 2nd degree relative, etc.</p></li>
+<li><p>Save that figure to <code>figures/ibd_relatedness.pdf</code>.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find my solution <a href="https://github.com/bodkan/simgen/blob/main/files/repro/04_plot_ibd_relatedness.R">here</a>.</p>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="exercise-4-generating-other-results" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-4-generating-other-results">Exercise 4: Generating other results</h2>
+<p>Of course, the main output of our research is visualizations. But sometimes, a good old table is also very useful! Our papers often have both plots and tables.</p>
+<p>Just to pracice a little bit more, <strong>create a standalone R script called <code>06_sumarize_coverage.R</code>, which will:</strong></p>
+<ul>
+<li><p>Read the table in <code>data/processed/metadata.tsv</code> using <code>read_tsv()</code> function.</p></li>
+<li><p><code>filter()</code> the table to only <code>age &gt; 0</code> (only rows for ancient individuals) and <code>continent == "Europe"</code> (i.e., only aDNA European samples).</p></li>
+<li><p><code>summarize()</code> the rows to compute across grouping based on <code>country</code> and <code>age_bin</code> (remember <code>group_by()</code>?):</p>
+<ul>
+<li><code>avg_coverage</code> as a <code>mean()</code> of the <code>coverage</code> column,</li>
+<li><code>n_samples</code> as the <code>n()</code> number of rows.</li>
+</ul></li>
+<li><p>The rows should be sorted in a descending order by the column <code>n_samples</code>.</p></li>
+<li><p>Store the result of the <code>filter / group_by / summarize</code> <code>%&gt;%</code> pipeline as <code>df_summary</code>, and save the table using <code>write_tsv()</code> in a file called <code>results/coverage_summary.tsv</code>.</p></li>
+</ul>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>You can find my solution <a href="https://github.com/bodkan/simgen/blob/main/files/repro/06_summarize_coverage.R">here</a>.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-5-adding-a-readme-file" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-5-adding-a-readme-file">Exercise 5: Adding a README file</h2>
+<p>It’s a good idea for every project to have a README file at the root of the directory. Traditionally, this file is formatted in a <a href="https://www.markdownguide.org/basic-syntax/">Markdown</a> format, which makes it easy to read in plain text, but is easily visualized on the web (many websites such as GitHub and other data repositories render Markdown text beautifully).</p>
+<p><strong>Look up the basic syntax of <a href="https://www.markdownguide.org/basic-syntax/">Markdown formatting</a>, then create <code>File</code> <code>-&gt;</code> <code>New File</code> -&gt; <code>Markdown File</code> (not R Markdown file!). Then write a short list (again, take a look at the Markdown syntax and read how to create a list), which will describe, in one sentence:</strong></p>
+<ol type="1">
+<li>Which directories are in your project, and what they countain (briefly!)</li>
+<li>Which scripts you created and what they do.</li>
+<li>Which results are created (so far just figures), and which scripts created those results.</li>
+</ol>
+<p><strong>Hint:</strong> Try clicking the “Visual” button on top of your editing window. I personally don’t use it because I like to write Markdown in plain text, but it can be very helpful, because you can create lists and other formatting by clicking with the mouse, instead of having to type Markdown syntax manually.</p>
+<hr>
+<p><strong>Creating a README is an important practice of documenting computational projects. If anyone comes back to your project later (even you!) they will have a summary of what they project contains, what code it contains, and what that code does.</strong></p>
+<p><strong>This is infinitely easier than having to read code and decipher what it does!</strong></p>
+<p><strong>Always have a README file in your project root directory, especially when you publish it in a thesis or in a paper.</strong></p>
+</section>
+<section id="what-were-still-missing-theoratically" class="level2">
+<h2 class="anchored" data-anchor-id="what-were-still-missing-theoratically">What we’re still missing (theoratically)</h2>
+<p>Here are a couple of topics which can be extremely helpful for pushing reproducibility even further, but that we don’t have bandwidth to go through, unfortunately. I’m mentioning them in case you’d like to do more studying on your own, perhaps as you get further into your own research projects.</p>
+<p>I use all of these in my own work, but I consider them much more advanced topics. Our workshop focuses on the <em>fundamentals</em> of reproducible research. In this sense, you could do very much</p>
+<ol start="0" type="1">
+<li><p>Backups. Unless you use git actively (which solves the backup problem as a side-effect—see below), you need to back up regularly. Even right-clicking your <code>simgen-project</code> directory, archiving it in a zip file named like <code>"yyyy-mm-dd-simgen-project.zip"</code> regularly will get you through any trouble.</p></li>
+<li><p><a href="https://git-scm.com"><em>git</em></a> – an incredibly powerful version control system, which is also at the back end of the online code repository service <a href="https://github.com">GitHub</a>. This is the big one and probably the most important tool I’ve ever learned as a programmer. It would require an entire workshop on its own, unfortunately.</p></li>
+<li><p><a href="https://rstudio.github.io/renv/articles/renv.html"><em>renv</em></a> – an R package which allows you to lock the exact versions of R packages used in your project (and have anyone else restore those exact versions of packages at a later point).</p></li>
+<li><p><a href="https://books.ropensci.org/targets/"><em>targets</em></a> – an R package for building and orchestrating truly complex computational pipelines. For instance, it can track whether or not a particular function or piece of data has changed and, therefore, whether other components of a pipeline downstream from it need to be re-run (unlike our <code>01_download_data.R</code> or <code>02_process_data.R</code> scripts which need to be re-run in their entirety after each modification).</p></li>
+</ol>
+</section>
+<section id="closing-remarks" class="level2">
+<h2 class="anchored" data-anchor-id="closing-remarks">Closing remarks</h2>
+<p>Our workshop focuses primarily on the R programming language and various R packages useful for data analysis and plotting. Of course, real-world computational projects often rely on other programs and scripts written in traditional shell (like BASH) or Python. However, the same ideas apply, regardless of the exact language. In fact, in the sessions of population genomics and inference, we will see how everything fits very naturally in the overall structure we’ve established here.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./tidy-viz.html" class="pagination-link" aria-label="Visualization with _ggplot2_">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Visualization with <em>ggplot2</em></span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./repro-quarto.html" class="pagination-link" aria-label="Quarto reports and slides">
+        <span class="nav-page-text"><span class="chapter-title">Quarto reports and slides</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
