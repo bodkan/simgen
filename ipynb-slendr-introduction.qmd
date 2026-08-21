@@ -1,0 +1,177 @@
+---
+title: _slendr_ models and "direction of time"
+jupyter:
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+```{r}
+library(slendr)
+init_env()
+```
+
+
+
+#### Exercise: Creating a population assuming a forward direction of time
+
+Let's start with the simplest possible _slendr_ simulation possible—a simulation of the demographic history of a single population.
+
+First, **create an R variable `pop` containing a _slendr_ population (using the `population()` function) with the `name` "pop", at `time` 1 and a size `N` of 5000**.
+
+**Note:** At this moment, the `time` value has a completely arbitrary unit to be determined later. Additionally, unless otherwise specified, the size `N` will always indicate the "effective population size" $N_e$.
+
+**Execute your code which stores the population in the `pop` variable, then type out `pop` in your R console. What does the summary report back to you?**
+
+```{r}
+pop <- population("pop", time = 1, N = 5000)
+```
+
+```{r}
+print(pop)
+```
+
+#### Exercise: Compiling the model
+
+```{r}
+model <- compile_model(
+  populations = pop,
+  generation_time = 1,
+  direction = "forward",
+  simulation_length = 3000
+)
+```
+
+```{r}
+print(model)
+```
+
+```{r}
+plot_model(model)
+```
+
+#### Exercise: Specifying generation time and time units
+
+```{r}
+model <- compile_model(
+  populations = pop,
+  generation_time = 30,
+  direction = "forward",
+  simulation_length = 1000
+)
+```
+
+```{r}
+print(model)
+```
+
+```{r}
+plot_model(model)
+```
+
+#### Exercise: Backward direction of time
+
+It's very easy to undestand models specified in time units going forward. However, in many practical situation in population genomics (and especially whenever we deal with ancient DNA samples), times of events specified in units such as "years before the present" are much easier to program, read, and interpret.
+
+For instance, if we want to simulate a split of a lineage of anatomically modern humans from their chimpanzee relatives, it's much easier to say that it probably happened around six million years ago looking "backwards in time" and assuming that "present day" is counted at time 0, rather than having to recalculate all of these times now only into generations but also into generations going "forward" starting from a hypothetical time of 1 sometime in the past (like we did in the very first simulation above).
+
+```{r}
+pop <- population("pop", time = 1000, N = 5000)
+```
+
+```{r}
+print(pop)
+```
+
+```{r}
+model <- compile_model(
+  populations = pop,
+  generation_time = 1,
+  direction = "backward"
+)
+```
+
+```{r}
+print(model)
+```
+
+```{r}
+plot_model(model)
+```
+
+### Exercise: Resize events
+
+#### Immediate resizes
+
+```{r}
+pop <- population("pop", time = 1, N = 5000) %>% resize(N = 2000, time = 500, how = "step")
+```
+
+```{r}
+model <- compile_model(populations = pop, generation_time = 1, direction = "forward", simulation_length = 1000)
+plot_model(model)
+```
+
+#### Exponential resizes
+
+```{r}
+pop <- population("pop", time = 1, N = 5000) %>% resize(N = 15000, time = 400, end = 600, how = "exponential")
+```
+
+```{r}
+model <- compile_model(populations = pop, generation_time = 1, direction = "forward", simulation_length = 1000)
+plot_model(model)
+```
+
+### Exercise: Encoding gene flow (admixture, introgression)
+
+Of course, real-world populations don't just split from one another or change their size. A very common demographic process is gene flow (also called admixture or introgression in various context and different species).
+
+**Use the function `gene_flow()` to program admixture from population "p1" into population "p2" at starting at `time` 100, with an `end` at time `200`. Set the total `proportion` of "p1" ancestry in "p2" at 0.2** (i.e., 20% of the final "p2" population will be derived from "p1").
+
+```{r}
+p1 <- population("p1", time = 1, N = 5000) %>% resize(N = 15000, time = 400, end = 600, how = "exponential")
+p2 <- population("p2", time = 1, N = 5000) %>% resize(N = 15000, time = 400, end = 600, how = "exponential")
+```
+
+```{r}
+model <- compile_model(populations = pop, generation_time = 1, direction = "forward", simulation_length = 1000)
+plot_model(model)
+```
+
+**When you look at `?gene_flow` help page, you see that the function has a `rate` argument too. What does it do? Is there any way to get the same result (i.e., to encode the same gene-flow event) as you did just above, but using `rate` instead of `proportion`? When would you expect to use one or the other?**
+
+### Exercise: Serialized models on disk
+
+A very important part of _slendr_'s approach to modeling is to make simple things be trivially easy. This is largely why expressing even relatively complex models with _slendr_ requires so little code compared to the amount of programming needed with traditional powerful simulators such as [_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/), something you'll see (and hopefully appreciate!) when we get to programming larger models later.
+
+Still, sometimes it's useful to peek behind the curtain and see what exactly is going on inside _slendr_ and how it operates.
+
+**Type out the `model` object in the R console, paying attention to the description of the path. Use your operating system disk browsing program (Finder on macOS, File Explorer on Windows, or any other means of browsing files on other systems, such as the terminal shell) to see what files are hiding in that path.**
+
+```{r}
+list.files(model$path, full.names = TRUE)
+```
+
+```{r}
+print_file <- function(model, file) cat(readLines(file.path(model$path, file)))
+```
+
+```{r}
+print_file(model, "populations.tsv")
+```
+
+```{r}
+print_file(model, "time_units.txt")
+```
+
+```{r}
+print_file(model, "direction.txt")
+```
+
+```{r}
+print_file(model, "description.txt")
+```
+
+
