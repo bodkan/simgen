@@ -1,15 +1,15 @@
 # Installation -- _slendr_
 
-The chapters of the workbook focused on population genomics and population
-genomic simulations rely exclusive on the R package called
-[_slendr_](https://slendr.net) (plus an assortment of other
-useful R packages for data science, all of which will be automatically
-installed alongside _slendr_).
+The chapters of this book focused on population genomics and simulations rely
+exclusive on the R package called [_slendr_](https://slendr.net) (plus an
+assortment of other useful R packages for data science, all of which will be
+automatically installed alongside _slendr_).
 
-**Please don't hesitate to get in touch with me over email at
-`contact [snail sign] bodkan.net` if you run into any problems with this
-setup procedure or with anything else related to the workshop! You can also
-catch me whenever you see me in the teaching venue.**
+**Please don't hesitate to get in touch with me over email at `contact [snail
+sign] bodkan.net` if you run into any problems with this setup procedure or
+with anything else related to the workshop! If you're reading this in
+preparation for one of my teaching workshop, you can also catch me whenever you
+see me at the teaching venue.**
 
 ## Installation steps
 
@@ -20,10 +20,11 @@ install things on shared clusters or other HPC environments.
 :::
 
 1. I assume you already have [R](https://www.r-project.org) and
-[RStudio](https://posit.co/download/rstudio-desktop/) installed on your computer
-(any version will do).
+[RStudio](https://posit.co/download/rstudio-desktop/) installed on your
+computer (any version will do).
 
-2. Open RStudio and copy this into the R console to install the _slendr_ package:
+2. Open RStudio and copy this into the R console to install the _slendr_
+package:
 
 ```{r}
 #| eval: false
@@ -31,79 +32,32 @@ install.packages("slendr")
 ```
 
 ::: {.aside}
-**Note:** If you get an error during the installation, please copy-and-paste the
-entire output from this command and send it to me via email.
+
+**Note:** If you get an error during the installation, please copy-and-paste
+the entire output from this command and send it to me via email.
+
 :::
 
-3. After you have _slendr_ successfuly installed, create a dedicated Python
-environment which it internally uses for simulation and tree-sequence analysis
-by typing this into the R console again:
-
-```{r}
-#| eval: false
-Sys.setenv(CONDA_PLUGINS_AUTO_ACCEPT_TOS = "yes")
-
-slendr::setup_env(agree = TRUE)
-```
-
-If everything worked, you should get an optimistic message at the end of the
-entire procedure saying:
-
-```         
-======================================================================
-Python environment for slendr has been successfuly created, and the R
-interface to msprime, tskit, and pyslim modules has been activated.
-
-In future sessions, activate this environment by calling init_env().
-=======================================================================
-```
-
-::: {.callout-warning collapse="true"}
-#### Click here if running `setup_env()` fails
-
-If the `setup_env()` installation procedure above fails, try the following:
-
-1. Delete the failed installation attempt:
-
-```{r}
-#| eval: false
-slendr::clear_env(force = TRUE, all = TRUE)
-```
-
-2. Restart R by clicking (in RStudio) on `Session -> Restart R`.
-
-3. Try installing it again, this time using `pip` as a Python installation method
-(the default is `conda` which unfortunately fails fairly often):
-
-```{r}
-#| eval: false
-slendr::setup_env(agree = TRUE, pip = TRUE)
-```
+3. Paste this little testing simulation script into the R console to make sure
+that everything works correctly. Don't read too much into the meaning of the
+code, understanding (and being able to program) all this and more will be the
+point of our workshop.
 
 ::: {.aside}
-**Note:** If you still get an error during the installation, please copy-and-paste
-the entire output from this command and send it to me via email. Or just grab
-me whenever you see me in person!
-:::
 
-:::
+**Note:** If you managed to successfully run the steps 1-3 above, this
+simulation should finish running without any problems. If it does not work,
+then there's something strange going on. Please copy-and-paste the entire
+output this script produces in your R console (including the error) and send it
+to me via email.
 
-4. Paste this little testing _slendr_ simulation script into the R console to make
-sure that everything works correctly. Don't read too much into the meaning of the
-code, understanding (and being able to program) all this and more will be the point
-of our workshop.
-
-::: {.aside}
-**Note:** If you managed to successfully run the installation steps 1-3
-above, this simulation should finish running without any problems. If it does not work,
-then there's something strange going on. Please copy-and-paste the entire output this
-script produces in your R console (including the error) and send it to me via email.
 :::
 
 ```{r}
 #| collapse: true
 library(slendr)
-init_env()
+
+init_env(uv = TRUE)
 
 A <- population("popA", time = 8000, N = 1000)
 B <- population("popB", time = 4000, N = 1000, parent = A)
@@ -111,8 +65,8 @@ C <- population("popC", time = 4000, N = 1000, parent = A)
 D <- population("popD", time = 3000, N = 1000, parent = C)
 
 gf <- list(
-  gene_flow(from = B, to = D, start = 1000, end = 800, rate = 0.2),
-  gene_flow(from = C, to = D, start = 1000, end = 800, rate = 0.1)
+  gene_flow(from = B, to = D, start = 1000, end = 800, proportion = 0.2),
+  gene_flow(from = C, to = D, start = 1000, end = 800, proportion = 0.1)
 )
 
 model <- compile_model(
@@ -124,18 +78,18 @@ ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
 ts
 ```
 
-The outcome of this script should approximately match what you see above (minus some
-statistical noise manifesting in your numbers in the summary being slightly different).
+The outcome of this script should approximately match what you see above (minus
+some statistical noise manifesting in your numbers in the summary being
+slightly different).
 
+4. Installing a couple of bonus R packages
 
-5. Installing a couple of bonus R packages
+In order to be able to run my solutions to some of the exercises (particularly
+some more advanced optional bonus exercises), a couple of additional R packages
+might be useful. Feel free to only install those if you run into them at a
+later point.
 
-In order to be able to run my own solutions to some of the exercises (particularly
-some more advanced bonus exercises which will be entirely optional, and we very
-likely won't have time to go through during the short span of the worksop), a
-couple of additional R packages might be useful.
-
-You can install those like this:
+You can install those packages with this command:
 
 ```{r}
 #| eval: false
