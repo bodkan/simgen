@@ -14,9 +14,9 @@ slides: $(slides_html)
 handouts: $(handouts_qmd)
 
 $(rendered_dir)/slides_%.html: slides_%.qmd
-	mkdir -p $(rendered_dir)
 	#quarto publish quarto-pub --no-prompt --no-browser $<
 	quarto render $<
+	mkdir -p $(rendered_dir)
 	mv $(notdir $@) $(rendered_dir)
 	git checkout gh-pages; git add $@; git commit -m "Update $@"; git push; git checkout main
 
