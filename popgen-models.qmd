@@ -10,12 +10,12 @@ flows between them". For completeness (and for the time being), these models
 will be always neutral and will conform to Wright-Fisher assumptions
 (random-mating individuals, non-overlapping generations, no selection).
 
-**Hint:** If you ever get _really_ stuck on one of the exercises, take a look
+**If you ever get _really_ stuck on one of the exercises, take a look
 at solutions provided with each of them. The goal here is to learn things and
 get you comfortable with computer programming, not fight through endless
 frustration. That said, a little frustration is a necessary component of any
 learning process, so try not to look at the solutions automatically and
-immediately. Always take a stab at solving each exercise on your own first and
+immediately.** Always take a stab at solving each exercise on your own first and
 then, if you decide to look at my solution, try to understand my code on your
 own, step by step, before you run it by copying it into your R console.
 
@@ -207,13 +207,13 @@ can use simulate a tree sequence from a compiled _slendr_ `model`:
 #| code-fold: false
 ts <- msprime(
   model,
-  sequence_length = <length of sequence to simulate [as bp]>,
-  recombination_rate = <uniform recombination rate [per bp per generation]>
+  sequence_length = <length of sequence to simulate [in bp]>,
+  recombination_rate = <uniform recombination rate [in per bp per generation]>
 )
 ```
 
 You will be seeing this kind of pattern over and over again in this session, so
-it's a good idea to keep it in mind.
+it's a good idea to internalize this pattern.
 
 
 ---
@@ -223,8 +223,7 @@ engine and store it in a variable `ts` as shown right above. Set the parameters
 `sequence_length = 1e6` (length of the sequence in bp) and `recombination_rate
 = 1e-8` (crossover events per base pair per generation). Then experiment by
 running the same command but setting either `debug = TRUE` and `run = TRUE`.
-What do you think happens when you do that? Take a look at `?msprime` if you
-need a hint.**
+What happens when you do that? Take a look at `?msprime` if you need a hint.**
 
 ::: aside
 
@@ -257,15 +256,18 @@ For debugging of low-level technical issues (crashing _msprime_, crashing
 _slendr_, or both), it can be quite useful to instruct the `msprime()` function
 to print the command-line needed to run the simulation on the terminal using
 plain Python interpreter, without the involvement of R (this command-line can
-be long, so you might have to scroll horizontally in your browser):
+be long, so you might have to scroll horizontally in your browser to see the
+whole thing):
 
 ```{r}
 msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, run = FALSE)
 ```
 
-Similarly to the symbol `model`, whenever we from now on refer to `ts`, we will be talking about some simulated tree-sequence object stored in an R variable `ts`.
-
 :::
+
+Similarly to the symbol `model`, whenever we from now on refer to `ts`, we will
+be talking about some simulated tree-sequence object stored in an R variable
+`ts`.
 
 ## Exercise 4: Inspecting the tree sequence
 
@@ -429,14 +431,16 @@ nea_samples <- schedule_sampling(model, time = 60000, list(nea, 1))
 # But whatever the means you create the individual sampling schedules with, you
 # can always bind them all to a single table with the `rbind()` function
 schedule <- rbind(eur_samples, afr_samples, nea_samples)
+
+# This is then the final "recording schedule":
 schedule
 ```
 
 ---
 
-**Using the function `schedule_sampling` and with the help of `rbind` as
-shown in the previous code chunk, program the sampling of the following
-sample sets at given times, saving it to variable called `schedule`:**
+**Using the function `schedule_sampling` and with the help of `rbind` as shown
+in the previous code example, program the sampling of the following sample sets
+at given times:**
 
 | time  | population | \# individuals |
 |-------|:-----------|----------------|
@@ -455,13 +459,17 @@ present-day):**
 t <- seq(40000, 2000, by = -2000)
 ```
 
+**At the end, bind all individual schedules into a single variable `schedule`
+using the function `rbind()`. In total, this should give you a data frame
+containing the sampling schedule for the recording of of the genomes of 38
+simulated individuals. Verify that this is true by summing the numbers in the 
+`n` column of the final data frame `schedule`.**
+
+
 ::: aside
 **Note:** You can provide a vector variable (such as `t` in this example) as the
 `times =` argument of `schedule_sampling()`.
 :::
-
-**In total, this should give you a data frame containing the sampling schedule
-for the recording of of the genomes of 38 simulated individuals.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -509,10 +517,10 @@ visualizing it together with your `model` using the function `plot_model()`
 
 ::: aside
 
-**Note:** As you've seen above, the visualization is often a bit
-wonky and convoluted with overlapping elements and it can be even worse with
-samples added, but try to experiment with arguments to `plot_model` described
-above to make the plot a bit more helpful for sanity checking.
+**Note:** As you've seen above, the visualization is often a bit wonky and
+convoluted with overlapping elements and it can be even worse with samples
+added, but try to experiment with arguments to `plot_model` described above to
+make the plot a bit more helpful for sanity checking.
 
 :::
 
@@ -538,7 +546,7 @@ plot_model(model, sizes = FALSE, log = TRUE, samples = schedule)
 We now have both a compiled _slendr_ `model` and a well-defined sampling
 `schedule`, so let's finally simulate some data!
 
-**Use your combined sampling `schedule` and run a new tree-sequence simulation
+**Use your combined sampling `schedule` to run a new tree-sequence simulation
 from your model (again using the `msprime()` function), this time restricted to
 just those individuals scheduled for recording. You can do this by running the
 following command (note that this also overlays mutations over our genealogies,
@@ -575,7 +583,6 @@ If you're bothered by how long the simulation takes, feel free to call these two
 to 100% reproduce my results without any expensive computation:
 
 ```{r}
-#| eval: false
 url_path <- "https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees"
 ts_path <- tempfile()
 download.file(url_path, destfile = ts_path, mode = "wb")
@@ -612,9 +619,9 @@ better still, using the function `ts_samples()`.**
 
 ::: aside
 
-**Note:** When you think about it, it's actually quite astonishing how fast
-_msprime_ and _tskit_ are when dealing with such a huge amount of sequence
-data from tens of thousands of individuals on a simple laptop!
+**Note:** When you think about it, it's quite astonishing how fast _msprime_
+and _tskit_ are when dealing with such a huge amount of sequence data from tens
+of thousands of individuals on a normal laptop!
 
 :::
 
