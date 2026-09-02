@@ -1,4 +1,4 @@
-chapters := whoami r-bootcamp tidy-basics tidy-viz slendr
+chapters := r-bootcamp tidy-basics tidy-viz slendr
 
 rendered_dir := rendered
 
@@ -16,7 +16,7 @@ handouts: $(handouts_qmd)
 $(rendered_dir)/slides_%.html: slides_%.qmd
 	mkdir -p $(rendered_dir)
 	#quarto publish quarto-pub --no-prompt --no-browser $<
-	quarto render $< --no-prompt --no-browser
+	quarto render $<
 	git add $@; git commit -m "Update $@"; git push
 	mv $(notdir $@) $(rendered_dir)
 
