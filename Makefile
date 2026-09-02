@@ -14,7 +14,7 @@ handouts: $(handouts_qmd)
 slides_%.html: slides_%.qmd
 	#quarto publish quarto-pub --no-prompt --no-browser $<
 	quarto render $<
-	git checkout gh-pages; git add $@; git commit -m "Update $@"; git push; git checkout main
+	git add $@; git commit -m "Update $@"; git push
 
 handouts_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | grep -v '^---$$' > $@
