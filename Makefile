@@ -17,8 +17,8 @@ $(rendered_dir)/slides_%.html: slides_%.qmd
 	mkdir -p $(rendered_dir)
 	#quarto publish quarto-pub --no-prompt --no-browser $<
 	quarto render $<
-	git add $@; git commit -m "Update $@"; git push
 	mv $(notdir $@) $(rendered_dir)
+	git checkout gh-pages; git add $@; git commit -m "Update $@"; git push; git checkout main
 
 handouts_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | grep -v '^---$$' > $@
