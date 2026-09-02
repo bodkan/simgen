@@ -942,30 +942,20 @@ population history overview:
 <h2 class="anchored" data-anchor-id="gene-flow-admixture">Gene flow / admixture</h2>
 <p>We can schedule gene flow from <code>pop1</code> into <code>pop2</code> with:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> pop1, <span class="at">to =</span> pop2, <span class="at">start =</span> <span class="dv">2000</span>, <span class="at">end =</span> <span class="dv">2200</span>, <span class="at">rate =</span> <span class="fl">0.13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: The argument `rate` is about to be deprecated because of its confusing
-naming and behavior. If you want to specify the rate of migration per
-unit of time, please use the new argument `migration_rate`. If you want
-to specify the total amount of ancestry which the `to` population should
-received from the `from` population, use the new argument `proportion`
-(this corresponds to the original interpretation of the deprecated `rate`
-argument, and a simple replacement of `rate` with `proportion` will thus
-retain the original meaning of your code all).</code></pre>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> pop1, <span class="at">to =</span> pop2, <span class="at">start =</span> <span class="dv">2000</span>, <span class="at">end =</span> <span class="dv">2200</span>, <span class="at">proportion =</span> <span class="fl">0.13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
-<p><strong>Note:</strong> Here <code>rate = 0.13</code> means 13% migrants over the given time window will come from “pop1” into “pop2”.</p>
+<p><strong>Note:</strong> Here <code>proportion = 0.13</code> means 13% migrants over the given time window will come from “pop1” into “pop2”.</p>
 </div></div><div class="fragment">
 <p><br></p>
 <p>Multiple gene-flow events can be gathered in a list:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gene_flow</span>(<span class="at">from =</span> pop1, <span class="at">to =</span> pop2, <span class="at">start =</span> <span class="dv">500</span>, <span class="at">end =</span> <span class="dv">600</span>, <span class="at">rate =</span> <span class="fl">0.13</span>),</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gene_flow</span>(<span class="at">from =</span> ..., <span class="at">to =</span> ..., <span class="at">start =</span> ..., <span class="at">end =</span> ..., <span class="at">rate =</span> ...),</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gene_flow</span>(<span class="at">from =</span> pop1, <span class="at">to =</span> pop2, <span class="at">start =</span> <span class="dv">500</span>, <span class="at">end =</span> <span class="dv">600</span>, <span class="at">proportion =</span> <span class="fl">0.13</span>),</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gene_flow</span>(<span class="at">from =</span> ..., <span class="at">to =</span> ..., <span class="at">start =</span> ..., <span class="at">end =</span> ..., <span class="at">proportion =</span> ...),</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  ...</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </section>
@@ -975,12 +965,12 @@ retain the original meaning of your code all).</code></pre>
 <p>This is the final step before we can simulate data.</p>
 <p><br></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb20-2"><a href="#cb20-2"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
-<span id="cb20-3"><a href="#cb20-3"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,       <span class="co"># (converts the all times into generations)</span></span>
-<span id="cb20-4"><a href="#cb20-4"></a>  <span class="at">simulation_length =</span> <span class="dv">3000</span>,  <span class="co"># (number of generations to run the simulation for)</span></span>
-<span id="cb20-5"><a href="#cb20-5"></a>  <span class="at">direction =</span> <span class="st">"forward"</span>      <span class="co"># (not totally necessary but good practice)</span></span>
-<span id="cb20-6"><a href="#cb20-6"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb19-2"><a href="#cb19-2"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
+<span id="cb19-3"><a href="#cb19-3"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,       <span class="co"># (converts the all times into generations)</span></span>
+<span id="cb19-4"><a href="#cb19-4"></a>  <span class="at">simulation_length =</span> <span class="dv">3000</span>,  <span class="co"># (number of generations to run the simulation for)</span></span>
+<span id="cb19-5"><a href="#cb19-5"></a>  <span class="at">direction =</span> <span class="st">"forward"</span>      <span class="co"># (not totally necessary but good practice)</span></span>
+<span id="cb19-6"><a href="#cb19-6"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><br></p>
 <center>
@@ -993,13 +983,13 @@ retain the original meaning of your code all).</code></pre>
 <p>This is the final step before we can simulate data.</p>
 <p><br></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb21-2"><a href="#cb21-2"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
-<span id="cb21-3"><a href="#cb21-3"></a>  <span class="at">gene_flow =</span> gf,      <span class="co"># &lt;----- in case our model includes gene flow(s)</span></span>
-<span id="cb21-4"><a href="#cb21-4"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,</span>
-<span id="cb21-5"><a href="#cb21-5"></a>  <span class="at">simulation_length =</span> <span class="dv">3000</span>,</span>
-<span id="cb21-6"><a href="#cb21-6"></a>  <span class="at">direction =</span> <span class="st">"forward"</span></span>
-<span id="cb21-7"><a href="#cb21-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb20-2"><a href="#cb20-2"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
+<span id="cb20-3"><a href="#cb20-3"></a>  <span class="at">gene_flow =</span> gf,      <span class="co"># &lt;----- in case our model includes gene flow(s)</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,</span>
+<span id="cb20-5"><a href="#cb20-5"></a>  <span class="at">simulation_length =</span> <span class="dv">3000</span>,</span>
+<span id="cb20-6"><a href="#cb20-6"></a>  <span class="at">direction =</span> <span class="st">"forward"</span></span>
+<span id="cb20-7"><a href="#cb20-7"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><br></p>
 <center>
@@ -1010,7 +1000,7 @@ retain the original meaning of your code all).</code></pre>
 <h2 class="anchored" data-anchor-id="model-summary">Model summary</h2>
 <p>Typing the compiled <code>model</code> into R prints a brief summary:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>slendr 'model' object 
 --------------------- 
@@ -1022,7 +1012,7 @@ time units: generations
 total running length: 3000 time units
 model type: non-spatial
 
-configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpAgvDnD/file14e1a129f976b_slendr_model </code></pre>
+configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpnqSscW/file155e112b34228_slendr_model </code></pre>
 </div>
 </div>
 <p>This can be useful as a quick overview of the model we are working with. However, <strong>a better way to check a model is…</strong></p>
@@ -1030,7 +1020,7 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <section id="model-visualization" class="level2">
 <h2 class="anchored" data-anchor-id="model-visualization">Model visualization</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-layout-align="center">
 <div class="cell-output-display">
@@ -1051,31 +1041,31 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <section id="forward-time-units" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="forward-time-units">“Forward time units”</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>pop1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop1"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">1</span>)</span>
-<span id="cb25-2"><a href="#cb25-2"></a></span>
-<span id="cb25-3"><a href="#cb25-3"></a>pop2 <span class="ot">&lt;-</span></span>
-<span id="cb25-4"><a href="#cb25-4"></a>  <span class="fu">population</span>(<span class="st">"pop2"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">300</span>, <span class="at">parent =</span> pop1) <span class="sc">%&gt;%</span></span>
-<span id="cb25-5"><a href="#cb25-5"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">1000</span>)</span>
-<span id="cb25-6"><a href="#cb25-6"></a></span>
-<span id="cb25-7"><a href="#cb25-7"></a>pop3 <span class="ot">&lt;-</span></span>
-<span id="cb25-8"><a href="#cb25-8"></a>  <span class="fu">population</span>(<span class="st">"pop3"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">400</span>, <span class="at">parent =</span> pop2) <span class="sc">%&gt;%</span></span>
-<span id="cb25-9"><a href="#cb25-9"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">800</span>)</span>
-<span id="cb25-10"><a href="#cb25-10"></a></span>
-<span id="cb25-11"><a href="#cb25-11"></a>pop4 <span class="ot">&lt;-</span></span>
-<span id="cb25-12"><a href="#cb25-12"></a>  <span class="fu">population</span>(<span class="st">"pop4"</span>, <span class="at">N =</span> <span class="dv">1500</span>, <span class="at">time =</span> <span class="dv">500</span>, <span class="at">parent =</span> pop3) <span class="sc">%&gt;%</span></span>
-<span id="cb25-13"><a href="#cb25-13"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">700</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">1200</span>, <span class="at">end =</span> <span class="dv">2000</span>)</span>
-<span id="cb25-14"><a href="#cb25-14"></a></span>
-<span id="cb25-15"><a href="#cb25-15"></a>pop5 <span class="ot">&lt;-</span></span>
-<span id="cb25-16"><a href="#cb25-16"></a>  <span class="fu">population</span>(<span class="st">"pop5"</span>, <span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">600</span>, <span class="at">parent =</span> pop4) <span class="sc">%&gt;%</span></span>
-<span id="cb25-17"><a href="#cb25-17"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">50</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">900</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb25-18"><a href="#cb25-18"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">1000</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">1600</span>, <span class="at">end =</span> <span class="dv">2200</span>)</span>
-<span id="cb25-19"><a href="#cb25-19"></a></span>
-<span id="cb25-20"><a href="#cb25-20"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb25-21"><a href="#cb25-21"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
-<span id="cb25-22"><a href="#cb25-22"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,</span>
-<span id="cb25-23"><a href="#cb25-23"></a>  <span class="at">simulation_length =</span> <span class="dv">3000</span>, <span class="co"># forward-time sims need an explicit end</span></span>
-<span id="cb25-24"><a href="#cb25-24"></a>  <span class="at">direction =</span> <span class="st">"forward"</span></span>
-<span id="cb25-25"><a href="#cb25-25"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>pop1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop1"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">1</span>)</span>
+<span id="cb24-2"><a href="#cb24-2"></a></span>
+<span id="cb24-3"><a href="#cb24-3"></a>pop2 <span class="ot">&lt;-</span></span>
+<span id="cb24-4"><a href="#cb24-4"></a>  <span class="fu">population</span>(<span class="st">"pop2"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">300</span>, <span class="at">parent =</span> pop1) <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb24-6"><a href="#cb24-6"></a></span>
+<span id="cb24-7"><a href="#cb24-7"></a>pop3 <span class="ot">&lt;-</span></span>
+<span id="cb24-8"><a href="#cb24-8"></a>  <span class="fu">population</span>(<span class="st">"pop3"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">400</span>, <span class="at">parent =</span> pop2) <span class="sc">%&gt;%</span></span>
+<span id="cb24-9"><a href="#cb24-9"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">800</span>)</span>
+<span id="cb24-10"><a href="#cb24-10"></a></span>
+<span id="cb24-11"><a href="#cb24-11"></a>pop4 <span class="ot">&lt;-</span></span>
+<span id="cb24-12"><a href="#cb24-12"></a>  <span class="fu">population</span>(<span class="st">"pop4"</span>, <span class="at">N =</span> <span class="dv">1500</span>, <span class="at">time =</span> <span class="dv">500</span>, <span class="at">parent =</span> pop3) <span class="sc">%&gt;%</span></span>
+<span id="cb24-13"><a href="#cb24-13"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">700</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">1200</span>, <span class="at">end =</span> <span class="dv">2000</span>)</span>
+<span id="cb24-14"><a href="#cb24-14"></a></span>
+<span id="cb24-15"><a href="#cb24-15"></a>pop5 <span class="ot">&lt;-</span></span>
+<span id="cb24-16"><a href="#cb24-16"></a>  <span class="fu">population</span>(<span class="st">"pop5"</span>, <span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">600</span>, <span class="at">parent =</span> pop4) <span class="sc">%&gt;%</span></span>
+<span id="cb24-17"><a href="#cb24-17"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">50</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">900</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-18"><a href="#cb24-18"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">1000</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">1600</span>, <span class="at">end =</span> <span class="dv">2200</span>)</span>
+<span id="cb24-19"><a href="#cb24-19"></a></span>
+<span id="cb24-20"><a href="#cb24-20"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb24-21"><a href="#cb24-21"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
+<span id="cb24-22"><a href="#cb24-22"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,</span>
+<span id="cb24-23"><a href="#cb24-23"></a>  <span class="at">simulation_length =</span> <span class="dv">3000</span>, <span class="co"># forward-time sims need an explicit end</span></span>
+<span id="cb24-24"><a href="#cb24-24"></a>  <span class="at">direction =</span> <span class="st">"forward"</span></span>
+<span id="cb24-25"><a href="#cb24-25"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
@@ -1084,7 +1074,7 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <section id="forward-time-units-1" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="forward-time-units-1">“Forward time units”</h2>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model) <span class="co"># see time progressing from generation 1 forwards</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model) <span class="co"># see time progressing from generation 1 forwards</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -1100,31 +1090,31 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <section id="backward-time-units" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="backward-time-units">“Backward time units”</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>pop1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop1"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">30000</span>)</span>
-<span id="cb27-2"><a href="#cb27-2"></a></span>
-<span id="cb27-3"><a href="#cb27-3"></a>pop2 <span class="ot">&lt;-</span></span>
-<span id="cb27-4"><a href="#cb27-4"></a>  <span class="fu">population</span>(<span class="st">"pop2"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">27000</span>, <span class="at">parent =</span> pop1) <span class="sc">%&gt;%</span></span>
-<span id="cb27-5"><a href="#cb27-5"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">20000</span>)</span>
-<span id="cb27-6"><a href="#cb27-6"></a></span>
-<span id="cb27-7"><a href="#cb27-7"></a>pop3 <span class="ot">&lt;-</span></span>
-<span id="cb27-8"><a href="#cb27-8"></a>  <span class="fu">population</span>(<span class="st">"pop3"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">26000</span>, <span class="at">parent =</span> pop2) <span class="sc">%&gt;%</span></span>
-<span id="cb27-9"><a href="#cb27-9"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">22000</span>)</span>
-<span id="cb27-10"><a href="#cb27-10"></a></span>
-<span id="cb27-11"><a href="#cb27-11"></a>pop4 <span class="ot">&lt;-</span></span>
-<span id="cb27-12"><a href="#cb27-12"></a>  <span class="fu">population</span>(<span class="st">"pop4"</span>, <span class="at">N =</span> <span class="dv">1500</span>, <span class="at">time =</span> <span class="dv">25000</span>, <span class="at">parent =</span> pop3) <span class="sc">%&gt;%</span></span>
-<span id="cb27-13"><a href="#cb27-13"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">700</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">18000</span>, <span class="at">end =</span> <span class="dv">10000</span>)</span>
-<span id="cb27-14"><a href="#cb27-14"></a></span>
-<span id="cb27-15"><a href="#cb27-15"></a>pop5 <span class="ot">&lt;-</span></span>
-<span id="cb27-16"><a href="#cb27-16"></a>  <span class="fu">population</span>(<span class="st">"pop5"</span>, <span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">24000</span>, <span class="at">parent =</span> pop4) <span class="sc">%&gt;%</span></span>
-<span id="cb27-17"><a href="#cb27-17"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">50</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">21000</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb27-18"><a href="#cb27-18"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">1000</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">14000</span>, <span class="at">end =</span> <span class="dv">8000</span>)</span>
-<span id="cb27-19"><a href="#cb27-19"></a></span>
-<span id="cb27-20"><a href="#cb27-20"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb27-21"><a href="#cb27-21"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
-<span id="cb27-22"><a href="#cb27-22"></a>  <span class="at">generation_time =</span> <span class="dv">10</span> <span class="co"># (10 time units for each generation)</span></span>
-<span id="cb27-23"><a href="#cb27-23"></a>  <span class="co"># (we don't need to provide `simulation_length =` because</span></span>
-<span id="cb27-24"><a href="#cb27-24"></a>  <span class="co"># "backwards" models end at time 0 by default, i.e. "present-day")</span></span>
-<span id="cb27-25"><a href="#cb27-25"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>pop1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop1"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">30000</span>)</span>
+<span id="cb26-2"><a href="#cb26-2"></a></span>
+<span id="cb26-3"><a href="#cb26-3"></a>pop2 <span class="ot">&lt;-</span></span>
+<span id="cb26-4"><a href="#cb26-4"></a>  <span class="fu">population</span>(<span class="st">"pop2"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">27000</span>, <span class="at">parent =</span> pop1) <span class="sc">%&gt;%</span></span>
+<span id="cb26-5"><a href="#cb26-5"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">20000</span>)</span>
+<span id="cb26-6"><a href="#cb26-6"></a></span>
+<span id="cb26-7"><a href="#cb26-7"></a>pop3 <span class="ot">&lt;-</span></span>
+<span id="cb26-8"><a href="#cb26-8"></a>  <span class="fu">population</span>(<span class="st">"pop3"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">26000</span>, <span class="at">parent =</span> pop2) <span class="sc">%&gt;%</span></span>
+<span id="cb26-9"><a href="#cb26-9"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">22000</span>)</span>
+<span id="cb26-10"><a href="#cb26-10"></a></span>
+<span id="cb26-11"><a href="#cb26-11"></a>pop4 <span class="ot">&lt;-</span></span>
+<span id="cb26-12"><a href="#cb26-12"></a>  <span class="fu">population</span>(<span class="st">"pop4"</span>, <span class="at">N =</span> <span class="dv">1500</span>, <span class="at">time =</span> <span class="dv">25000</span>, <span class="at">parent =</span> pop3) <span class="sc">%&gt;%</span></span>
+<span id="cb26-13"><a href="#cb26-13"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">700</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">18000</span>, <span class="at">end =</span> <span class="dv">10000</span>)</span>
+<span id="cb26-14"><a href="#cb26-14"></a></span>
+<span id="cb26-15"><a href="#cb26-15"></a>pop5 <span class="ot">&lt;-</span></span>
+<span id="cb26-16"><a href="#cb26-16"></a>  <span class="fu">population</span>(<span class="st">"pop5"</span>, <span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">24000</span>, <span class="at">parent =</span> pop4) <span class="sc">%&gt;%</span></span>
+<span id="cb26-17"><a href="#cb26-17"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">50</span>, <span class="at">how =</span> <span class="st">"step"</span>, <span class="at">time =</span> <span class="dv">21000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb26-18"><a href="#cb26-18"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">1000</span>, <span class="at">how =</span> <span class="st">"exponential"</span>, <span class="at">time =</span> <span class="dv">14000</span>, <span class="at">end =</span> <span class="dv">8000</span>)</span>
+<span id="cb26-19"><a href="#cb26-19"></a></span>
+<span id="cb26-20"><a href="#cb26-20"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb26-21"><a href="#cb26-21"></a>  <span class="at">populations =</span> <span class="fu">list</span>(pop1, pop2, pop3, pop4, pop5),</span>
+<span id="cb26-22"><a href="#cb26-22"></a>  <span class="at">generation_time =</span> <span class="dv">10</span> <span class="co"># (10 time units for each generation)</span></span>
+<span id="cb26-23"><a href="#cb26-23"></a>  <span class="co"># (we don't need to provide `simulation_length =` because</span></span>
+<span id="cb26-24"><a href="#cb26-24"></a>  <span class="co"># "backwards" models end at time 0 by default, i.e. "present-day")</span></span>
+<span id="cb26-25"><a href="#cb26-25"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
@@ -1133,7 +1123,7 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <section id="backward-time-units-1" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="backward-time-units-1">“Backward time units”</h2>
 <div class="cell" data-layout-align="center">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model) <span class="co"># see time progressing from "year" 30000 backwards</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model) <span class="co"># see time progressing from "year" 30000 backwards</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -1164,7 +1154,7 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <div class="fragment">
 <p>They are designed to “understand” <em>slendr</em> <code>model</code>s, meaning that you can simulate data just with this command:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div class="fragment">
@@ -1254,19 +1244,9 @@ This means we can add mutations to <code>ts</code> <em>after</em> the simulation
 <section id="lets-go-back-to-our-example-model" class="level2">
 <h2 class="anchored" data-anchor-id="lets-go-back-to-our-example-model">Let’s go back to our example <code>model</code>…</h2>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-layout-align="center">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: The argument `rate` is about to be deprecated because of its confusing
-naming and behavior. If you want to specify the rate of migration per
-unit of time, please use the new argument `migration_rate`. If you want
-to specify the total amount of ancestry which the `to` population should
-received from the `from` population, use the new argument `proportion`
-(this corresponds to the original interpretation of the deprecated `rate`
-argument, and a simple replacement of `rate` with `proportion` will thus
-retain the original meaning of your code all).</code></pre>
-</div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -1281,17 +1261,17 @@ retain the original meaning of your code all).</code></pre>
 <p><br></p>
 <p>In our script we’ll have something like this:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb32-2"><a href="#cb32-2"></a><span class="fu">init_env</span>()</span>
-<span id="cb32-3"><a href="#cb32-3"></a></span>
-<span id="cb32-4"><a href="#cb32-4"></a><span class="co"># &lt;... population() definitions ...&gt;</span></span>
-<span id="cb32-5"><a href="#cb32-5"></a></span>
-<span id="cb32-6"><a href="#cb32-6"></a><span class="co"># &lt;... gene_flow() definition ...&gt;</span></span>
-<span id="cb32-7"><a href="#cb32-7"></a></span>
-<span id="cb32-8"><a href="#cb32-8"></a><span class="co"># &lt;... compile_model(...) ...&gt;</span></span>
-<span id="cb32-9"><a href="#cb32-9"></a>  </span>
-<span id="cb32-10"><a href="#cb32-10"></a>ts <span class="ot">&lt;-</span></span>
-<span id="cb32-11"><a href="#cb32-11"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">50e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb30-2"><a href="#cb30-2"></a><span class="fu">init_env</span>()</span>
+<span id="cb30-3"><a href="#cb30-3"></a></span>
+<span id="cb30-4"><a href="#cb30-4"></a><span class="co"># &lt;... population() definitions ...&gt;</span></span>
+<span id="cb30-5"><a href="#cb30-5"></a></span>
+<span id="cb30-6"><a href="#cb30-6"></a><span class="co"># &lt;... gene_flow() definition ...&gt;</span></span>
+<span id="cb30-7"><a href="#cb30-7"></a></span>
+<span id="cb30-8"><a href="#cb30-8"></a><span class="co"># &lt;... compile_model(...) ...&gt;</span></span>
+<span id="cb30-9"><a href="#cb30-9"></a>  </span>
+<span id="cb30-10"><a href="#cb30-10"></a>ts <span class="ot">&lt;-</span></span>
+<span id="cb30-11"><a href="#cb30-11"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">50e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="and-overlay-mutations-on-it" class="level2 page-columns page-full">
@@ -1299,18 +1279,18 @@ retain the original meaning of your code all).</code></pre>
 <p><br></p>
 <p>In our script we’ll have something like this:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb33-2"><a href="#cb33-2"></a><span class="fu">init_env</span>()</span>
-<span id="cb33-3"><a href="#cb33-3"></a></span>
-<span id="cb33-4"><a href="#cb33-4"></a><span class="co"># &lt;... population() definitions ...&gt;</span></span>
-<span id="cb33-5"><a href="#cb33-5"></a></span>
-<span id="cb33-6"><a href="#cb33-6"></a><span class="co"># &lt;... gene_flow() definition ...&gt;</span></span>
-<span id="cb33-7"><a href="#cb33-7"></a></span>
-<span id="cb33-8"><a href="#cb33-8"></a><span class="co"># &lt;... compile_model(...) ...&gt;</span></span>
-<span id="cb33-9"><a href="#cb33-9"></a>  </span>
-<span id="cb33-10"><a href="#cb33-10"></a>ts <span class="ot">&lt;-</span></span>
-<span id="cb33-11"><a href="#cb33-11"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">50e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb33-12"><a href="#cb33-12"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb31-2"><a href="#cb31-2"></a><span class="fu">init_env</span>()</span>
+<span id="cb31-3"><a href="#cb31-3"></a></span>
+<span id="cb31-4"><a href="#cb31-4"></a><span class="co"># &lt;... population() definitions ...&gt;</span></span>
+<span id="cb31-5"><a href="#cb31-5"></a></span>
+<span id="cb31-6"><a href="#cb31-6"></a><span class="co"># &lt;... gene_flow() definition ...&gt;</span></span>
+<span id="cb31-7"><a href="#cb31-7"></a></span>
+<span id="cb31-8"><a href="#cb31-8"></a><span class="co"># &lt;... compile_model(...) ...&gt;</span></span>
+<span id="cb31-9"><a href="#cb31-9"></a>  </span>
+<span id="cb31-10"><a href="#cb31-10"></a>ts <span class="ot">&lt;-</span></span>
+<span id="cb31-11"><a href="#cb31-11"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">50e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-12"><a href="#cb31-12"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
@@ -1339,7 +1319,7 @@ How do we work with this <code>ts</code> thing?
 <li>We can get individuals recorded in <code>ts</code> with <code>ts_samples()</code>:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">1</span>) <span class="co"># returns a data frame (one row here, for brevity)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">1</span>) <span class="co"># returns a data frame (one row here, for brevity)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -1352,7 +1332,7 @@ How do we work with this <code>ts</code> thing?
 <li>A shortcut <code>ts_names()</code> can also be useful:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">5</span>) <span class="co"># returns a vector of individuals' names</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">5</span>) <span class="co"># returns a vector of individuals' names</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "pop1_1" "pop1_2" "pop1_3" "pop1_4" "pop1_5"</code></pre>
 </div>
@@ -1363,12 +1343,12 @@ How do we work with this <code>ts</code> thing?
 <li>We can get a per-population list of individuals like this:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>) <span class="co"># returns a named list of such vectors</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>) <span class="co"># returns a named list of such vectors</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>$pop1
-[1] "pop1_510" "pop1_928" "pop1_757" "pop1_474" "pop1_945"</code></pre>
+[1] "pop1_152" "pop1_45"  "pop1_206" "pop1_807" "pop1_91" </code></pre>
 </div>
 </div>
 </div>
@@ -1393,15 +1373,15 @@ Let’s take a look at how it works in general…
 <h2 class="anchored" data-anchor-id="tskit-computation-option-1"><em>tskit</em> computation – option #1</h2>
 <p><strong>For a function which operates on one set of individuals</strong>, we can first get a vector of names to compute on like this:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># a random selection of names of three individuals in a tree sequence</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"popX_1"</span>, <span class="st">"popX_2"</span>, <span class="st">"popY_42"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># a random selection of names of three individuals in a tree sequence</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"popX_1"</span>, <span class="st">"popX_2"</span>, <span class="st">"popY_42"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="fragment">
 <p><br></p>
 <p>Then we can calculate the statistic of interest like this:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this computes nucleotide diversity in our set of individuals</span></span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>df_result <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(samples))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this computes nucleotide diversity in our set of individuals</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>df_result <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(samples))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 
@@ -1412,39 +1392,39 @@ Let’s take a look at how it works in general…
 <h2 class="anchored" data-anchor-id="tskit-computation-option-2"><em>tskit</em> computation – option #2</h2>
 <p>For a function operating on multiple sets of individuals, we want a list of vectors of names (one such vector per group):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># when we compute on multiple groups, it's a good idea to name them</span></span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">popX =</span> <span class="fu">c</span>(<span class="st">"popX_1"</span>, <span class="st">"popX_2"</span>, <span class="st">"popX_3"</span>),</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">popY =</span> <span class="fu">c</span>(<span class="st">"popY_1"</span>, <span class="st">"popY_2"</span>, <span class="st">"popY_3"</span>),</span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">popZ =</span> <span class="fu">c</span>(<span class="st">"popZ_1"</span>, <span class="st">"popZ_2"</span>)</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># when we compute on multiple groups, it's a good idea to name them</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">popX =</span> <span class="fu">c</span>(<span class="st">"popX_1"</span>, <span class="st">"popX_2"</span>, <span class="st">"popX_3"</span>),</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">popY =</span> <span class="fu">c</span>(<span class="st">"popY_1"</span>, <span class="st">"popY_2"</span>, <span class="st">"popY_3"</span>),</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">popZ =</span> <span class="fu">c</span>(<span class="st">"popZ_1"</span>, <span class="st">"popZ_2"</span>)</span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><br></p>
 <p>Then we use this list of vectors in the same way as before:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this computes a pairwise divergence between all three groups</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>df_result <span class="ot">&lt;-</span> <span class="fu">ts_divergence</span>(ts, <span class="at">sample_sets =</span> samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this computes a pairwise divergence between all three groups</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>df_result <span class="ot">&lt;-</span> <span class="fu">ts_divergence</span>(ts, <span class="at">sample_sets =</span> samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="tskit-computation-option-3" class="level2">
 <h2 class="anchored" data-anchor-id="tskit-computation-option-3"><em>tskit</em> computation – option #3</h2>
 <p>For something like <span class="math inline">\(f\)</span> statistics, the function arguments must be more precisely specified (here <code>A</code>, <code>B</code>, <code>C</code>, not <code>sample_sets</code>):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>df_result <span class="ot">&lt;-</span> <span class="fu">ts_f3</span>(</span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  ts,</span>
-<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">A =</span> <span class="fu">c</span>(<span class="st">"popX_1"</span>, <span class="st">"popX_2"</span>, <span class="st">"popX_3"</span>),</span>
-<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">B =</span> <span class="fu">c</span>(<span class="st">"popY_1"</span>, <span class="st">"popY_2"</span>, <span class="st">"popY_3"</span>),</span>
-<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">C =</span> <span class="fu">c</span>(<span class="st">"popZ_1"</span>, <span class="st">"popZ_2"</span>)</span>
-<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>df_result <span class="ot">&lt;-</span> <span class="fu">ts_f3</span>(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  ts,</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">A =</span> <span class="fu">c</span>(<span class="st">"popX_1"</span>, <span class="st">"popX_2"</span>, <span class="st">"popX_3"</span>),</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">B =</span> <span class="fu">c</span>(<span class="st">"popY_1"</span>, <span class="st">"popY_2"</span>, <span class="st">"popY_3"</span>),</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">C =</span> <span class="fu">c</span>(<span class="st">"popZ_1"</span>, <span class="st">"popZ_2"</span>)</span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="fragment">
 <p>Doing this manually can be annoying — <code>ts_names()</code> helps by preparing the list of names in the correct format:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get names of individuals in each population as a named list of vectors</span></span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="co"># use this list directly by specifying which vectors to take out</span></span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples<span class="sc">$</span>popX, <span class="at">B =</span> samples<span class="sc">$</span>popY, <span class="at">C =</span> samples<span class="sc">$</span>popZ)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get names of individuals in each population as a named list of vectors</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a><span class="co"># use this list directly by specifying which vectors to take out</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples<span class="sc">$</span>popX, <span class="at">B =</span> samples<span class="sc">$</span>popY, <span class="at">C =</span> samples<span class="sc">$</span>popZ)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </section>
@@ -1466,9 +1446,9 @@ Some examples on simulated data
 <div class="column" style="width:45%;">
 <p>Get a list of individuals in each population:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
-<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "pop1" "pop2"</code></pre>
 </div>
@@ -1477,7 +1457,7 @@ Some examples on simulated data
 <p><br></p>
 <p>We can index into the list via population name:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>samples<span class="sc">$</span>pop1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>samples<span class="sc">$</span>pop1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -1485,7 +1465,7 @@ Some examples on simulated data
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>samples<span class="sc">$</span>pop2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>samples<span class="sc">$</span>pop2</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -1499,13 +1479,13 @@ Some examples on simulated data
 <div class="fragment">
 <p>Compute nucleotide diversity (note the list <code>samples</code>):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 pop1  0.000402 
-2 pop2  0.0000645</code></pre>
+1 pop1  0.000394 
+2 pop2  0.0000754</code></pre>
 </div>
 </div>
 <p><br></p>
@@ -1520,8 +1500,8 @@ Some examples on simulated data
 <div class="column" style="width:45%;">
 <p>Get names of individuals:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>samples</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts)[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>samples</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] "pop_1" "pop_2" "pop_3" "pop_4" "pop_5"</code></pre>
 </div>
@@ -1529,10 +1509,10 @@ Some examples on simulated data
 <div class="fragment">
 <p>Compute the AFS:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(samples))</span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="co"># we skip the 1st item because it has a special meaning in tskit</span></span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>afs[<span class="sc">-</span><span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(samples))</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a><span class="co"># we skip the 1st item because it has a special meaning in tskit</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>afs[<span class="sc">-</span><span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] 3917 2151 1432  941  740  624  607  587  416  385</code></pre>
 </div>
@@ -1543,9 +1523,9 @@ Some examples on simulated data
 </div><div class="column" style="width:53%;">
 <div class="fragment">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs[<span class="sc">-</span><span class="dv">1</span>], <span class="at">type =</span> <span class="st">"b"</span>,</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"allele count bin"</span>,</span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"frequency"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs[<span class="sc">-</span><span class="dv">1</span>], <span class="at">type =</span> <span class="st">"b"</span>,</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"allele count bin"</span>,</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">ylab =</span> <span class="st">"frequency"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output-display">
@@ -1574,12 +1554,12 @@ More details on tree-sequences
 <p><br></p>
 <p>This simulates 2 <span class="math inline">\(\times\)</span> 10000 chromosomes of 100 Mb:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>(<span class="at">quiet =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="fl">100e6</span>, <span class="at">N =</span> <span class="dv">10000</span>)</span>
-<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(pop, <span class="at">generation_time =</span> <span class="dv">30</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
-<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>(<span class="at">quiet =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="fl">100e6</span>, <span class="at">N =</span> <span class="dv">10000</span>)</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(pop, <span class="at">generation_time =</span> <span class="dv">30</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
@@ -1690,7 +1670,7 @@ More details on tree-sequences
 <li>export genotypes to a VCF file:</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_vcf</span>(ts, <span class="at">path =</span> <span class="st">"path/to/a/file.vcf.gz"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_vcf</span>(ts, <span class="at">path =</span> <span class="st">"path/to/a/file.vcf.gz"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div class="fragment">
@@ -1698,7 +1678,7 @@ More details on tree-sequences
 <li>export genotypes in the EIGENSTRAT format:</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="at">prefix =</span> <span class="st">"path/to/eigenstrat/prefix"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="at">prefix =</span> <span class="st">"path/to/eigenstrat/prefix"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <div class="fragment">
@@ -1706,7 +1686,7 @@ More details on tree-sequences
 <li>access genotypes as a data frame:</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_genotypes</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_genotypes</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -1723,23 +1703,16 @@ More details on tree-sequences
 <section id="plan-for-the-rest-of-this-session" class="level2">
 <h2 class="anchored" data-anchor-id="plan-for-the-rest-of-this-session">Plan for the rest of this session</h2>
 <ol type="1">
-<li>Go to <a href="https://bodkan.net/simgen">bodkan.net/simgen</a></li>
-<li>Start with the chapter on <em>“Demographic models”</em></li>
+<li><p>Go to <a href="https://bodkan.net/simgen">bodkan.net/simgen</a></p></li>
+<li><p>Start with the section on <em>“Demographic models”</em></p></li>
+<li><p>Then, continue with the section on <em>“Tree-sequence statistics”</em></p></li>
 </ol>
-<ul>
-<li>Theme: building demographic models in <em>slendr</em></li>
-</ul>
-<ol start="3" type="1">
-<li>When you’re done, continue with <em>“Tree-sequence statistics”</em></li>
-</ol>
-<ul>
-<li>Theme: computing population genetic statistics with <em>slendr</em></li>
-</ul>
+<p>For convenience, you can refer to information from these slides using their single-page version under the <em>“Resources”</em> section.</p>
 <p>. . .</p>
 <p><br></p>
 <center>
 <h3 class="anchored">
-Don’t panic!
+Don’t rush and don’t panic!
 </h3>
 <p>The exercises are designed so that you all take home information useful for your current skills and knowledge.</p>
 </center>
