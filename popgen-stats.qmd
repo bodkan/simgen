@@ -7,16 +7,16 @@ In this session, you are going to build on top of the results from the previous
 models](https://bodkan.net/simgen/popgen-models.html). Specifically, you will
 learn how to compute population genetic statistics on _slendr_-simulated tree
 sequences using [its
-interface](https://www.slendr.net/reference/index.html#tree-sequence-statistics)
+interface](https://bodkan.github.io/slendr/reference/index.html#tree-sequence-statistics)
 to the _tskit_ Python module.
 
 ## Exercise 0 --- catching up
 
 **First, create a new R script `popgen-stats.R` and paste in the following
-code.** This is one of the possible solutions to the Exercise 1 of the session
-on building demographic models. It's easier if we all use it to be on the same
+code.** This is one of the possible solutions to Exercise 1 of the session on
+building demographic models. **It's easier if we all use it to be on the same
 page from now on, starting from the same model and the same simulated tree
-sequence:
+sequence:**
 
 ```{r}
 #| collapse: true
@@ -60,16 +60,13 @@ ts <-
 ```
 
 As a sanity check, let's use a couple of _tidyverse_ table-munging tricks to
-make sure the tree sequence does contain a set of sample which matches our
+make sure the tree sequence does contain a set of samples which matches our
 intended sampling schedule (particularly the time series of European
 individuals and the two Neanderthals):
 
 ```{r}
 # total number of recorded individuals in the tree sequence
 ts_samples(ts) %>% nrow
-
-# times of sampling of each recorded European individual
-ts_samples(ts) %>% filter(pop == "EUR") %>% pull(time)
 
 # times of sampling of each recorded Neanderthal
 ts_samples(ts) %>% filter(pop == "NEA") %>% pull(time)
@@ -102,7 +99,9 @@ should be the nucleotide diversity expected in the simulated populations.
 **Compute the nucleotide diversity in all populations using the _slendr_
 function
 [`ts_diversity()`](https://www.slendr.net/reference/ts_diversity.html#ref-examples)
-in your tree sequence `ts`. Do you get numbers that (relatively between all
+in your tree sequence `ts`. Add that command after your simulation code in your
+new script in `popgen-stats.R` (do this even in the following exercises, to
+keep everything in one place). Do you get numbers that (relatively between all
 populations) match what would expect from the model given the $N_e$ that you
 programmed for each of the lineages?** Check the figure created by the
 `plot_model(model)` command earlier to get a refresher.
@@ -145,8 +144,8 @@ plot_model(model)
 accepts a `ts` tree-sequence object as its first argument, with further arguments
 being either:
 
-- a vector of individual names representing a group of samples to
-compute a statistic on, or
+- a vector of individual names representing a group of samples to compute a
+statistic on,
 
 - a (named) list of such vectors (each element of that list for a group of
 samples with that name).
@@ -196,19 +195,18 @@ later whenever you need help to compute some statistic.
 ---
 
 **After you've computed nucleotide diversity per-population, compute it for
-each individual separately using the same function `ts_diversity()`** (which
-will in this setting give you the heterozygosity for each individual). **If you
-are familiar with plotting in R, visualize the individual-based
-heterozygosities across all populations.**
+each individual separately (so, not for whole populations across all
+individuals) using the same function `ts_diversity()`** (which will in this
+setting give you the heterozygosity for each individual). **If you are familiar
+with plotting in R, visualize the individual-based heterozygosities across all
+populations.**
 
 **Hint:** Following the previous hint on specifying individual names, you can
 do this by giving the `ts_diversity()` function a vector of names as
-`sample_sets =` (so not an R list of vectors like you did in the previous
-exercise). One way to make plotting of the result easy is to first get a table
-of all individuals using `pi_df <- ts_samples(ts)`. Then you can use
-`pi_df$name` as the parameter to `ts_diversity(ts, sample_sets = pi_df$name)`,
-and assign the `diversity` column values to `pi_df` as a new column (perhaps
-named `diversity` as well).
+`sample_sets =` instead of an R list of vectors like you did in the previous
+exercise. One way to make plotting of the result easy is to first get a table
+of all individuals using `pi_df <- ts_samples(ts)` and then add
+heterozygosities in each of those individuals as a new column.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -255,7 +253,7 @@ ggplot(pi_df, aes(pop, diversity, color = pop, group = pop)) +
 to compute genetic divergence between all pairs of populations. Similarly to
 the previous exercise, do you get results compatible with our demographic model
 in terms of the expectations given by the split times between the populations
-in the model? Is there any indication about Neanderthal introgression in our
+in the model? Is there any indication of Neanderthal introgression in our
 results (a bit of a spoiler for later)? What is missing to be able to
 confidently say something about this in this case?**
 
@@ -283,18 +281,19 @@ our model.
 We can also see that the EUR-NEA divergence is "slightly lower" than the
 AFR-NEA divergence, which could be due to NEA-EUR introgression, but we lack a
 means of doing statistical significance test in this simple model. This is not
-a big problem in a simulation, because we can more about seeing trends in our
-statistics of interests rather than about formal statistical tests, but
-something like jackknifing would be needed in a hypothetical empirical study.
+a big problem in a simulation because here we can more about investigating
+trends in our statistics of interests rather than about formal hypothesis
+testing, but something like jackknifing would be needed in a hypothetical
+empirical study.
 
 :::
 
 ## Exercise 3: Outgroup $f_3$ statistic
 
 **Use the function `ts_f3()` to compute the outgroup $f_3$ statistic between
-pairs of African-European, African-Neanderthal, and European-Neanderthal and a
-Chimpanzee outgroup. For instance, the first one can be computed as `ts_f3(ts,
-B = "AFR_1", C = "EUR_1", A = "CHIMP_1")`.**
+African-European, African-Neanderthal, and European-Neanderthal pairs versus a
+Chimpanzee outgroup. For instance, the first statistic can be computed as
+`ts_f3(ts, B = "AFR_1", C = "EUR_1", A = "CHIMP_1")`.**
 
 ::: aside
 
@@ -344,8 +343,8 @@ ts_f3(ts, B = sample_sets["EUR"], C = sample_sets["NEA"], A = "CHIMP_1")
 Again, it looks like the branch from the outgroup to the AFR-NEA split is a bit
 longer than the EUR-NEA split, which could be due to introgression, but unless
 we would do proper jackknifing, this can only be interpreted as a trend, not a
-formal test. As discussed above, in an empirical situation, we would get
-confidence intervals and Z-scores for these values.
+formal test. As briefly discussed above (and much more below), in an empirical
+situation, we would get confidence intervals and Z-scores for these values.
 
 :::
 
@@ -443,8 +442,7 @@ $f$-statistics are mathematically defined using branch lengths in trees and
 :::
 
 **Hint:** If you haven't learned this earlier, to solve this exercise, you want
-to compute and compare the values of these two statistics using the _slendr_
-function `ts_f4()`:
+to compute and compare the values of these two statistics:
 
 1. $f_4$(\<some African\>, \<another African\>; \<Neanderthal\>, \<Chimp\>)
 
@@ -456,6 +454,7 @@ by `ts_samples(ts)` (i.e. `"NEA_1"` could be used as a "representative"
 \<Neanderthal\> in those equations, similarly for `"CHIMP_1"` as the fourth
 sample in the $f_4$ quarted representing the outgroup).
 
+<!--
 To simplify things a lot, we can understand the above equations as comparing the
 counts of so-called BABA and ABBA allele patterns between the quarted of samples
 specified in the statistics:
@@ -463,6 +462,7 @@ specified in the statistics:
 $$
 f_4(<African>, <X>; <Neand.>, <Chimp>) = \frac{\#BABA - \#ABBA}{\#SNPs}
 $$
+-->
 
 The first $f_4$ statistic above is not expected to give values "too different"
 from 0 (even in case of Neanderthal introgression into Europeans) because we
@@ -510,12 +510,11 @@ abs(f4_alt$f4 / f4_null$f4)
 
 ... although this is not a real test of significance because we have no Z-score
 or standard error which would give us something like a p-value for the
-hypothesis test, this kind of based evaluation of statistical expectations and
-trends using simulations is extremely useful in research, because it allows us
-to test our ideas on ground-truth models. With empirical data, we rarely (if
-ever) know exactly what happened. With simulations, we always know which
-process generated the data (and how that process influences our statistics of
-interest).
+hypothesis test, this evaluation of statistical expectations and trends using
+simulations is extremely useful in research, because it allows us to test our
+ideas on ground-truth models. With empirical data, we rarely (if ever) know
+exactly what happened. With simulations, we always know which process generated
+the data and how that process could have influenced our statistics of interest.
 
 :::
 
@@ -528,10 +527,11 @@ interest).
 
 The fact that we don't get something equivalent to a p-value in these kinds of
 simulations is generally not a problem, because we're often interested in
-establishing a trend of a statistic under various conditions, and understanding
-when and how its _expected value_ behaves in a certain way.
-If statistical noise is a problem, we work around this by computing a
-statistic on multiple simulation replicates or even increasing the sample sizes.
+establishing a trend of a statistic under various conditions, and understand
+under which conditions and in which way its _expected value_ behaves in a
+certain way. If statistical noise is a problem, we work around this by
+computing a statistic on multiple simulation replicates or even increasing the
+sample sizes.
 
 ::: {.aside}
 **Note:** To see this in practice, you can check out a
@@ -554,11 +554,11 @@ did above. Let's increase the sample size a bit to see if a statistical
 pattern expected in $f_4$ statistic from our Neanderthal introgression model
 becomes more apparent.
 
-**Compute the first $f_4$ statistic (the baseline expectation between
-a pair of Africans) and the second $f_4$ statistic (comparing an African and
-a European), but this time on _all recorded Africans_ and _all recorded
-Europeans_, respectively. Plot the *distributions* of those two sets of
-statistics. This should remove lots of the uncertainty and make a statistical
+**Compute the first $f_4$ statistic (the baseline expectation between a pair of
+Africans) and the second $f_4$ statistic (comparing an African and a European),
+but this time on _all recorded Africans_ and _all recorded Europeans_,
+respectively. Plot the *distributions* of those two sets of statistics. This
+should remove most of the evolutionary stochastic noise and make a statistical
 trend stand out much more clearly.**
 
 **Hint:** Whenever you need to compute something for many things in sequence,
@@ -596,7 +596,7 @@ sample_sets$AFR # all Africans
 sample_sets$EUR # all Europeans
 ```
 
-Let's compute the f4 statistic for all Africans... 
+Let's compute the $f_4$ statistic for all Africans... 
 
 ```{r}
 f4_afr_list <- lapply(
@@ -658,18 +658,19 @@ paper](https://www.pnas.org/doi/full/10.1073/pnas.1814338116) and Figure 2 in
 
 **Your simulated tree sequence contains a time-series of European individuals
 over time. Use the _slendr_ function `ts_f4ratio()` to compute (and then plot,
-if you're familiar with data visualization in R) the proportion (commonly
-designated as `alpha`) of Neanderthal ancestry in Europe over time.** Use
-$f_4$-ratio statistic of the following form:
-
-**If a Neanderthal introgression happened at 3% tens of thousands of years ago,
-what would you expect the proportion to be in the present day? Lower? About the
-same?**
+if you're familiar with data visualization in R) the proportion of Neanderthal
+ancestry in Europe over time, commonly designated `alpha` in the literature.**
+Use $f_4$-ratio statistic of the following form:
 
 ```{r}
 #| eval: false
 ts_f4ratio(ts, X = <vector individual names>, A = "NEA_1", B = "NEA_2", C = "AFR_1", O = "CHIMP_1")
 ```
+
+**If a Neanderthal introgression happened at 3% tens of thousands of years ago,
+what would you expect the proportion to be in the present day? Lower? About the
+same?**
+
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -701,8 +702,8 @@ nea_ancestry %>%
 summary(lm(alpha ~ time, data = nea_ancestry))
 ```
 
-Assuming neutral drift, we don't expect the Neanderthal trajectory to change,
-even after tens of thousands of years.
+In conclusion, assuming neutral drift, we don't expect the Neanderthal
+trajectory to change, even after tens of thousands of years.
 
 :::
 
@@ -712,12 +713,13 @@ In the discussion about ADMIXTURE, you have heard about very different models
 giving exactly the same ADMIXTURE result (see Figure 2 in [this
 paper](https://www.nature.com/articles/s41467-018-05257-7/figures/2)).
 
-**Write a simulation script for each of the model topologies in the figure.
-Then use the function `ts_vcf()` to save a VCF file with genotypes from each of
-those models, convert those VCF files into a PLINK file format, and run
-ADMIXTURE to confirm the results of that paper.** Of course, the PLINK
-conversion and ADMIXTURE analysis is something you're going to have to do on
-the command-line, using the skills you've learned earlier in this course.
+**Write a simulation script for each of the three model topologies in the
+figure linked above. Then use the function `ts_vcf()` to save a VCF file with
+genotypes from each of those models, convert those VCF files into the PLINK
+file format, and run ADMIXTURE to confirm the results of that paper.** Of
+course, the PLINK conversion and ADMIXTURE analysis is something you're going
+to have to do on the command-line, using the skills you've learned earlier in
+this course.
 
 ## Exercise 10 (<u>hard bonus challenge</u>): How many unique f4 quartets are there?
 
@@ -727,8 +729,8 @@ arrangement of the "quartet". As a trivial example, an $f_3(A; B, C)$ and
 $f_3(A; C, B)$ will give you exactly the same value, and the same thing applies
 even to more complex $f$-statistics like $f_4$.
 
-**Use simulations to compute how many unique** $f_4$ values involving a single
-quartet are there.
+**Use simulations to compute how many unique $f_4$ values involving a single
+quartet are there.**
 
 **Hint:** Draw some trees to figure out why could that be true. Also, when
 computing `ts_f4()`, set `mode = "branch"` to avoid the effect of statistical
@@ -743,8 +745,10 @@ noise due to mutations.
 
 library(combinat)
 
-# These are the four samples we can create quartet combinations from
+# These are the four samples we can create quartet combinations from:
 quartet <- c("AFR_1", "EUR_1", "NEA_1", "CHIMP_1")
+
+# This is how we can generate all permutations:
 quartets <- permn(quartet)
 quartets
 
