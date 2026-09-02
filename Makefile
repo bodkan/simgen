@@ -24,4 +24,4 @@ handouts_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | grep -v '^---$$' > $@
 
 clean:
-	rm -rf  $(rendered_dir)
+	git checkout gh-pages; git rm -r $(rendered_dir); git commit -m "Clear slides"; git push; git checkout main
