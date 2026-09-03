@@ -1,4 +1,4 @@
-chapters := r-bootcamp tidy-basics tidy-viz slendr
+chapters := whoami r-bootcamp tidy-basics tidy-viz slendr
 
 slides_html := $(foreach chapter,$(chapters),slides_$(chapter).html)
 handouts_qmd := $(foreach chapter,$(chapters),handouts_$(chapter).qmd)
