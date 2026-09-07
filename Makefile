@@ -5,7 +5,7 @@ handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
 
 all: $(slides_html) $(handouts_html)
 	quarto publish gh-pages --no-prompt
-	rm slides_*.html handout_*.html
+	rm handout*.qmd slides_*.html handout_*.html
 
 %.html: %.qmd
 	quarto render $<
