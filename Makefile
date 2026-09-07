@@ -6,7 +6,7 @@ handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
 all: $(slides_html) $(handouts_html)
 	quarto publish gh-pages --no-prompt
 	git checkout gh-pages
-	mv tmp/ rendered/
+	rm -r rendered; mv tmp/ rendered/
 	git add rendered/
 	git commit -m "Add HTML files"
 	git push
