@@ -20,4 +20,4 @@ handouts_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | grep -v '^---$$' > $@
 
 clean:
-	git rm $(slides_html); git add $(slides_html); git commit -m "Clear slides"; git push
+	rm -rf *_files *.rmarkdown
