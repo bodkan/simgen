@@ -14,4 +14,4 @@ handout_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | sed 's/^### handout //g' > $@
 
 clean:
-	rm -rf *_files *.rmarkdown
+	rm -rf *_files *.rmarkdown site_libs *.html
