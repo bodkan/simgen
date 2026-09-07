@@ -8,12 +8,10 @@ $(shell mkdir -p rendered)
 all: $(slides_html) $(handouts_html)
 	quarto publish gh-pages --no-prompt
 	git checkout gh-pages
-	git checkout main -- rendered/
 	git add rendered/
 	git commit -m "Add HTML files"
 	git push
 	git checkout main
-	rm -r rendered/
 
 slides: $(slides_html)
 handouts: $(handouts_html)
