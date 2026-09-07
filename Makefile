@@ -13,7 +13,6 @@ slides: $(slides_html)
 handouts: $(handouts_qmd)
 
 slides_%.html: slides_%.qmd
-	#quarto publish quarto-pub --no-prompt --no-browser $<
 	quarto render $<
 
 handouts_%.qmd: slides_%.qmd
