@@ -3,14 +3,9 @@ chapters := whoami r-bootcamp tidy-basics tidy-viz slendr
 slides_html := $(foreach chapter,$(chapters),slides_$(chapter).html)
 handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
 
-all: slides handouts book
-
-book: $(slides_html) $(handouts_html)
+all: $(slides_html) $(handouts_html)
 	quarto publish gh-pages --no-prompt
 	rm slides_*.html handout_*.html
-
-slides: $(slides_html)
-handouts: $(handouts_html)
 
 %.html: %.qmd
 	quarto render $<
