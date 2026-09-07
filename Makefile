@@ -15,6 +15,9 @@ all: $(slides_html) $(handouts_html)
 	git checkout main
 	rm -r rendered/
 
+slides: $(slides_html)
+handouts: $(handouts_html)
+
 rendered/%.html: %.qmd
 	quarto render $< --output $(notdir $@)
 	mv $(notdir $@) $@
