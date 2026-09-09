@@ -1,0 +1,95 @@
+# Comparing the statistical power of $F_{ST}$ versus $f_3$
+
+Let's look at the equations behind $F_{ST}$ and $f_3$ statistics as measures
+of differentiation between two populations:
+
+Based on these equations, would you expect one of them to be more robust to
+$N_e$ differences between those populations? In other words, if you were
+interested in measuring how far in the past the populations began
+differentiating, would both of them give you a reliable answer, regardless of
+the $N_e$ of those populations?
+
+Let's confirm this using simulations again.
+
+```{r}
+#| message: false
+library(slendr)
+init_env()
+
+library(dplyr)
+library(ggplot2)
+library(purrr)
+```
+
+```{r}
+outgroup <- population("outgroup", N = 1000, time = 1)
+X <- population("X", N = 1000, time = 3000, parent = outgroup)
+Y <- population("Y", N = 1000, time = 3000, parent = outgroup)
+
+model <- compile_model(list(outgroup, X, Y), generation_time = 1, simulation_length = 10000)
+
+plot_model(model, proportions = TRUE)
+
+ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+```{r}
+samples <- ts_names(ts, split = "pop")
+
+value_fst <- ts_fst(ts, sample_sets = samples[c("X", "Y")])$Fst
+value_f3 <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])$f3
+
+result <- data.frame(stat = c(value_f3, value_fst))
+result$Ne <- 1000
+
+result
+```
+
+```{r}
+simulate_fst_f3 <- function(Ne) {
+  outgroup <- population("outgroup", N = Ne, time = 1)
+  X <- population("X", N = Ne, time = 3000, parent = outgroup)
+  Y <- population("Y", N = Ne, time = 3000, parent = outgroup)
+  
+  model <- compile_model(list(outgroup, X, Y), generation_time = 1, simulation_length = 10000)
+  
+  plot_model(model, proportions = TRUE)
+  
+  ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  samples <- ts_names(ts, split = "pop")
+  
+  value_fst <- ts_fst(ts, sample_sets = samples[c("X", "Y")])$Fst
+  value_f3 <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])$f3
+
+  result <- data.frame(statistic = c("Fst", "f3"), value = c(value_fst, value_f3))
+  result$Ne <- Ne
+  
+  result
+}
+```
+
+```{r}
+Ne_steps <- c(100, seq(from = 500, to = 10000, by = 500))
+Ne_steps
+```
+
+```{r}
+result <- map_dfr(Ne_steps, simulate_fst_f3)
+```
+
+```{r}
+ggplot(result, aes(Ne, value, color = statistic)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~ statistic, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 45)) +
+  ggtitle("Fst and f3 for X-Y split at 3000 generations ago, assuming given Ne")
+```
+
+Conclusion: unlike $F_{ST}$, the $f_3$ statistic appears to be an unbiased
+estimator of the population divergence with respect to $N_e$ of the two
+lineages!
+
