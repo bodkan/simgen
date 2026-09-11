@@ -15,7 +15,7 @@ book: $(slides_html) $(handouts_html)
 
 %.html: %.qmd
 	quarto render $< --output $(notdir $@)
-	mkdir -p tmp; mv $@ tmp
+	mkdir -p rendered; mv $@ rendered
 
 handout_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | sed 's/^### handout //g' > $@
