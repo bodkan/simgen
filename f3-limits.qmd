@@ -1,0 +1,255 @@
+# "Outgroup" $f_3$
+
+```{r}
+library(slendr)
+init_env()
+
+library(dplyr)   # manipulating tabular data
+library(ggplot2) # data visualization
+library(purrr)   # convenient looping functions
+```
+
+Whenever we want to evaluate the behavior of some statistic of interest under a
+range of demographic scenarios and across different model parameters, it's
+always useful to first establish a skeleton structure with concrete values of
+model parameters, before we wrap it in a dedicated function.
+
+Let's do this here too.
+
+```{r}
+tsplit <- 5000
+
+outgroup <- population("outgroup", N = 1000, time = 10000)
+X <- population("X", N = 1000, time = tsplit, parent = outgroup)
+Y <- population("Y", N = 1000, time = tsplit, parent = outgroup)
+
+model <- compile_model(list(outgroup, X, Y), generation_time = 1)
+
+plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE)
+```
+
+```{r}
+compute_outgroup_f3 <- function(tsplit) {
+    outgroup <- population("outgroup", N = 1000, time = 10000)
+    X <- population("X", N = 1000, time = tsplit, parent = outgroup)
+    Y <- population("Y", N = 1000, time = tsplit, parent = outgroup)
+    
+    model <- compile_model(list(outgroup, X, Y), generation_time = 1)
+
+    ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+    samples <- ts_names(ts, split = "pop")
+    
+    ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"]) %>% mutate(tsplit = tsplit)
+}
+```
+
+```{r}
+compute_outgroup_f3(tsplit = 1000)
+```
+
+```{r}
+compute_outgroup_f3(tsplit = 2000)
+```
+
+```{r}
+compute_outgroup_f3(tsplit = 5000)
+```
+
+```{r}
+f3_outgroup <- map_dfr(seq(1, 10000, by = 1000), compute_outgroup_f3)
+```
+
+```{r}
+head(f3_outgroup)
+```
+
+```{r}
+ggplot(f3_outgroup, aes(tsplit, f3)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  coord_cartesian(xlim = c(0, 10000))
+```
+
+# "Admixture" $f_3$
+
+Now let's explore the application of the $f_3$ statistic in its other common
+use, which is an admixture test. To do this, you will need to expand our
+baseline population model a little bit.
+
+In our model, we still keep the population `outgroup`, but the `X` and `Y`
+population now merge at a time `tmix` to form a population `mix`. Note that due
+to the way in which _slendr_ currently implements population merges, you will
+first need to program the split of `mix` from  `X` at time `tmix - 1`, followed
+at time `tmix` (i.e., immediately in the following generation) by admixture from
+`U` at some defined proportion `proportion`. To approximate the idea of a
+population merge as closely as possible within the constraints of the _slendr_
+interface, program this admixture event so that it ends after a single
+generation (i.e., it should end at time `tmix + 1`).
+
+```{r}
+library(slendr)
+init_env()
+
+library(dplyr)   # manipulating tabular data
+library(ggplot2) # data visualization
+library(purrr)   # convenient looping functions
+```
+
+```{r}
+tmix <- 2000
+prop <- 0.1
+Ne <- 5000
+
+outgroup <- population("outgroup", N = 5000, time = 10000)
+x <- population("x", N = 5000, time = 5000, parent = outgroup)
+y <- population("y", N = 5000, time = 5000, parent = outgroup)
+mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
+
+gf <- gene_flow(from = y, to = mix, start = tmix, end = tmix - 1, proportion = prop)
+
+model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
+
+plot_model(model, order = c("outgroup", "x", "mix", "y"), proportions = TRUE)
+```
+
+#### Exercise
+
+Before we start digging into the limitations of the $f_3$ statistic as a metric
+for admixture detection, let's first create a self-contained function which
+generalizes our baseline model across three main parameters of interest: the
+admixture time `tmix`, the admixture proportion `prop`, and the effective
+population size of the admixed population `Ne`:
+
+```{r}
+compute_admix_f3 <- function(tmix, prop, Ne) {
+  outgroup <- population("outgroup", N = 5000, time = 10000)
+  x <- population("x", N = 5000, time = 5000, parent = outgroup)
+  y <- population("y", N = 5000, time = 5000, parent = outgroup)
+  mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
+
+  gf <- gene_flow(from = y, to = mix, start = tmix, end = tmix - 1, proportion = prop)
+  
+  model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
+
+  schedule <- schedule_sampling(model, times = 0, list(x, 5), list(y, 5), list(mix, 25))
+
+  ts <- msprime(model, sequence_length = 25e6, recombination_rate = 1e-8, samples = schedule) %>%
+    ts_mutate(1e-8)
+
+  samples <- ts_names(ts, split = "pop")
+
+  ts_f3(ts, A = samples["mix"], B = samples["x"], C = samples["y"]) %>%
+    mutate(tmix = tmix, prop = prop, Ne = Ne)
+}
+```
+
+```{r}
+compute_admix_f3(tmix = 2000, prop = 0.2, Ne = 10000)
+```
+
+```{r}
+compute_admix_f3(tmix = 1000, prop = 0.2, Ne = 10000)
+```
+
+```{r}
+compute_admix_f3(tmix = 1, prop = 0.2, Ne = 10000)
+```
+
+```{r}
+f3_tmix1 <- map_dfr(seq(1, 1500, by = 100), compute_admix_f3, prop = 0.2, Ne = 5000)
+```
+
+```{r}
+ggplot(f3_tmix1, aes(tmix, f3)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) +
+  coord_cartesian(xlim = c(0, 1500))
+```
+
+From the trend presented by the trajectory of expected $f_3$ values as a
+function of the admixture time, we can see that the statistic appears to loose
+power to detect admixture around 1000 generations "before present" (BP).
+
+**Under which conditions would the $f_3$ statistic gain more power?**
+
+#### Exercise
+
+Fix the `tadmix` parameter to 1000 generations B.P. (a value at which our
+previous simulation suggests $f_3$ starts losing statistical power) and `Ne` at
+5000, and then **evaluate a range of admixture proportions `prop` between 0% and
+50% gene flow. Does $f_3$ pick up the admixture signal for any of these
+admixture proportions? What does it mean for the ability of $f_3$ to detect gene
+flow in our models in general?**
+
+```{r}
+f3_prop <- map_dfr(seq(0, 0.5, by = 0.025), compute_admix_f3, tmix = 1000, Ne = 5000)
+```
+
+```{r}
+ggplot(f3_prop, aes(prop, f3)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) +
+  coord_cartesian(xlim = c(0, 0.5))
+```
+
+#### Exercise
+
+**Similarly to how you investigated the detection power of $f_3$ as a function
+of admixture proportion for a given value of `tmix = 1000` in the previous
+exercise, repeat this analysis, but now changing the `Ne` of the mixing
+population and leaving the `prop` parameter fixed at `prop = 0.2`. What do you
+conclude based on this analysis? Does `Ne` have an impact on the $f_3$ admixture
+detection? If it does, why? (Look at equation XYZ.)**
+
+```{r}
+f3_Ne <- map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.2)
+```
+
+```{r}
+ggplot(f3_Ne, aes(Ne, f3)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(se = FALSE, color = "black", size = 0.5) +
+  coord_cartesian(xlim = c(1000, 20000))
+```
+
+In conclusion, we can confirm that the amount of drift (represented by the `Ne`
+parameter) really is what determines whether or not can $f_3$ detect admixture
+for a given model (represented by a fixed `tmix` time and `prop` admixture
+proportion). In fact, once we reach a certain size of the admixed population,
+the $f_3$ value reaches a stable level below zero.
+
+#### Exercise (extra challenge)
+
+```{r}
+f3_Ne <- bind_rows(
+  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.1),
+  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.2),
+  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.3),
+  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.4),
+  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.5)
+)
+```
+
+```{r}
+ggplot(f3_Ne, aes(Ne, f3, color = factor(prop), group = factor(prop))) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(se = FALSE, size = 0.5) +
+  coord_cartesian(xlim = c(1000, 20000))
+```
+
+By comparing the relative position of these $f_3$ curves with respect to the
+baseline null value of zero, we can see that increasing `Ne` of the admixed
+population (and, consequently, decreasing the amount of drift in that population
+post admixture) increases the statistical power of $f_3$ to detect admixture
+even as the admixture proportion `prop` decreases.
+
+# Exercises
+
+- amount of SNPs and amount of sequence vs Zscore & CI
+
+
