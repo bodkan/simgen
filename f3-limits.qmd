@@ -36,7 +36,8 @@ compute_outgroup_f3 <- function(tsplit) {
     
     model <- compile_model(list(outgroup, X, Y), generation_time = 1)
 
-    ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+    ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>% ts_mutate(mutation_rate = 1e-8)
+
     samples <- ts_names(ts, split = "pop")
     
     ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"]) %>% mutate(tsplit = tsplit)
@@ -66,7 +67,7 @@ head(f3_outgroup)
 ```{r}
 ggplot(f3_outgroup, aes(tsplit, f3)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 0.5) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   coord_cartesian(xlim = c(0, 10000))
 ```
@@ -134,13 +135,11 @@ compute_admix_f3 <- function(tmix, prop, Ne) {
 
   schedule <- schedule_sampling(model, times = 0, list(x, 5), list(y, 5), list(mix, 25))
 
-  ts <- msprime(model, sequence_length = 25e6, recombination_rate = 1e-8, samples = schedule) %>%
-    ts_mutate(1e-8)
+  ts <- msprime(model, sequence_length = 25e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
 
   samples <- ts_names(ts, split = "pop")
 
-  ts_f3(ts, A = samples["mix"], B = samples["x"], C = samples["y"]) %>%
-    mutate(tmix = tmix, prop = prop, Ne = Ne)
+  ts_f3(ts, A = samples["mix"], B = samples["x"], C = samples["y"]) %>% mutate(tmix = tmix, prop = prop, Ne = Ne)
 }
 ```
 
@@ -164,7 +163,7 @@ f3_tmix1 <- map_dfr(seq(1, 1500, by = 100), compute_admix_f3, prop = 0.2, Ne = 5
 ggplot(f3_tmix1, aes(tmix, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
   coord_cartesian(xlim = c(0, 1500))
 ```
 
@@ -191,7 +190,7 @@ f3_prop <- map_dfr(seq(0, 0.5, by = 0.025), compute_admix_f3, tmix = 1000, Ne = 
 ggplot(f3_prop, aes(prop, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
   coord_cartesian(xlim = c(0, 0.5))
 ```
 
@@ -212,7 +211,7 @@ f3_Ne <- map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, pro
 ggplot(f3_Ne, aes(Ne, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(se = FALSE, color = "black", size = 0.5) +
+  geom_smooth(se = FALSE, color = "black", linewidth = 0.5) +
   coord_cartesian(xlim = c(1000, 20000))
 ```
 
@@ -238,7 +237,7 @@ f3_Ne <- bind_rows(
 ggplot(f3_Ne, aes(Ne, f3, color = factor(prop), group = factor(prop))) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(se = FALSE, size = 0.5) +
+  geom_smooth(se = FALSE, linewidth = 0.5) +
   coord_cartesian(xlim = c(1000, 20000))
 ```
 
