@@ -1,0 +1,71 @@
+# $f_4$ test of gene flow
+
+```{r}
+library(slendr)
+init_env()
+
+library(dplyr)   # manipulating tabular data
+library(ggplot2) # data visualization
+library(cowplot) # composing plots into panels
+library(purrr)   # convenient looping functions
+```
+
+```{r}
+simulate_f4 <- function(model, W, X, Y, Z, nreps, mode = "branch") {
+  schedule_list <- lapply(
+    c(W, X, Y, Z),
+    function(x) schedule_sampling(model, times = 0, list(model$populations[[x]], 10))
+  )
+  schedule <- do.call(rbind, schedule_list)
+
+  replicates <- seq_len(nreps)
+
+  f4_list <- lapply(replicates, function(rep_i) {
+    ts <- msprime(model, sequence_length = 20e6, recombination_rate = 1e-8, schedule = schedule)
+    samples <- ts_names(ts, split = "pop")
+    ts_f4(ts, W = samples[W], X = samples[X], Y = samples[Y], Z = samples[Z], mode = mode)
+  })
+
+  f4 <- do.call(rbind, f4_list)
+  f4$statistic <- paste0("f4(", paste(W, X, Y, Z, sep = ","), ")")
+  f4$rep <- replicates
+
+  f4
+}
+```
+
+```{r}
+p1 <- population("p1", time = 4000, N = 1000)
+p2 <- population("p2", time = 3000, N = 1000, parent = p1)
+p3 <- population("p3", time = 2000, N = 1000, parent = p2)
+p4 <- population("p4", time = 1000, N = 1000, parent = p3)
+
+model <- compile_model(list(p1, p2, p3, p4), generation_time = 1)
+
+plot_model(model)
+```
+
+```{r}
+scenarios <- rbind(
+  simulate_f4(model, W = "p4", X = "p3", Y = "p2", Z = "p1", nreps = 20),
+  simulate_f4(model, W = "p4", X = "p1", Y = "p3", Z = "p2", nreps = 20),
+  simulate_f4(model, W = "p4", X = "p2", Y = "p4", Z = "p1", nreps = 20)
+)
+```
+
+
+```{r}
+plot_grid(
+
+plot_model(model),
+
+ggplot(scenarios, aes(statistic, f4)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red"),
+
+nrow = 2
+
+)
+```
+
