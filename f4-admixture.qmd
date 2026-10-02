@@ -10,16 +10,16 @@ library(cowplot) # composing plots into panels
 library(purrr)   # convenient looping functions
 ```
 
+## f4 as a measure of overlapping paths
+
 ```{r}
 p1 <- population("p1", time = 4000, N = 1000)
 p2 <- population("p2", time = 3000, N = 1000, parent = p1)
 p3 <- population("p3", time = 2000, N = 1000, parent = p2)
 p4 <- population("p4", time = 1000, N = 1000, parent = p3)
 
-model <- compile_model(list(p1, p2, p3, p4), generation_time = 1)
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
 schedule <- schedule_sampling(model, times = 0, list(p1, 10), list(p2, 10), list(p3, 10), list(p4, 10))
-
-plot_model(model, schedule = schedule)
 ```
 
 ```{r}
@@ -29,17 +29,15 @@ scenarios <- ts_replicate(n = 10, {
   s <- ts_names(model, split = "pop", schedule = schedule)
 
   s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"], mode = "branch")
-  s2 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p3"], Z = s["p2"], mode = "branch")
-  s3 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p4"], Z = s["p1"], mode = "branch")
+  s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"], mode = "branch")
+  s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"], mode = "branch")
 
   bind_rows(s1, s2, s3)
 })
-```
 
-```{r}
-plot_grid(
+p_model1 <- plot_grid(
 
-plot_model(model, schedule = schedule),
+plot_model(model, schedule = schedule, proportions = TRUE),
 
 ggplot(scenarios, aes(paste(W, X, Y, Z), f4)) +
   geom_boxplot() +
@@ -49,5 +47,105 @@ ggplot(scenarios, aes(paste(W, X, Y, Z), f4)) +
 nrow = 2
 
 )
+```
+
+## f4 as a measure of gene flow
+
+### Branch length overlap as a measure of directionality
+
+#### Base model
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+
+library(slendr)
+init_env()
+
+outgroup <- population("outgroup", time = 7000000, N = 10000)
+
+altai    <- population("Altai",    time = 6000000, N =  1000, parent = outgroup)
+vindija  <- population("Vindija",  time =  200000, N =  1000, parent = altai)
+
+san      <- population("San",      time =  600000, N = 10000, parent = altai)
+mbuti    <- population("Mbuti",    time =  350000, N = 10000, parent = san)
+yoruba   <- population("Yoruba",   time =  220000, N = 10000, parent = mbuti)
+dinka    <- population("Dinka",    time =  150000, N = 15000, parent = yoruba)
+
+nonafr   <- population("nonafr",   time =   70000, N = 3000,  parent = dinka)
+```
+
+#### Neanderthal -> MH and MH -> Neanderthal gene-flow models
+
+```{r}
+model1 <- compile_model(
+  populations = list(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),
+  gene_flow = gene_flow(from = vindija, to = nonafr, proportion = 0.03, start = 55000, end = 50000),
+  generation_time = 30
+)
+schedule1 <- schedule_sampling(model1, times = 0, list("all", 5))
+
+model2 <- compile_model(
+  populations = list(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),
+  gene_flow = gene_flow(from = nonafr, to = vindija, proportion = 0.03, start = 55000, end = 50000),
+  generation_time = 30
+)
+schedule2 <- schedule_sampling(model2, times = 0, list("all", 5))
+```
+
+```{r}
+plot_grid(
+  plot_model(model1, proportions = TRUE, log = TRUE),
+  plot_model(model2, proportions = TRUE, log = TRUE)
+)
+```
+
+```{r}
+result1 <- ts_replicate(
+  n = 10,
+  {
+    ts1 <- msprime(model1, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule1) %>% ts_mutate(1e-8)
+    
+    samples <- ts_names(ts1, split = "pop")
+    
+    bind_rows(
+      ts_f4(ts1, W = samples["San"],    X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
+      ts_f4(ts1, W = samples["Mbuti"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
+      ts_f4(ts1, W = samples["Yoruba"], X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
+      ts_f4(ts1, W = samples["Dinka"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"])
+    )
+  }
+) %>% mutate(direction = "Nea -> MH")
+```
+
+```{r}
+result2 <- ts_replicate(
+  n = 10,
+  {
+    ts2 <- msprime(model2, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule1) %>% ts_mutate(1e-8)
+    
+    samples <- ts_names(ts2, split = "pop")
+    
+    bind_rows(
+      ts_f4(ts2, W = samples["San"],    X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
+      ts_f4(ts2, W = samples["Mbuti"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
+      ts_f4(ts2, W = samples["Yoruba"], X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
+      ts_f4(ts2, W = samples["Dinka"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"])
+    )
+  }
+) %>% mutate(direction = "MH -> Nea")
+```
+
+```{r}
+result <- rbind(result1, result2)
+```
+
+```{r}
+ggplot(result, aes(W, f4)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  facet_wrap(~ direction)
 ```
 
