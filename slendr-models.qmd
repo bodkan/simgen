@@ -5,17 +5,165 @@ library(slendr)
 init_env()
 ```
 
+## Encoding demographic models
+
+### Forward direction of time
+
+**Encode the demographic model in the following diagram using the basic _slendr_
+components (`population()`, `gene_flow()`, `compile_model()`) and then compile
+it using the function `compile_model()`, storing it in the `model` variable.
+Then use the function `plot_model()` to visualize the model as we have
+encoded, verifying it visually.**
+
+**Note:** The time units are specified in the forward direction, so you will
+need to specify the length of the simulation using the `simulation_length`
+argument of `compile_model()`.
+
+```{r}
+library(slendr)
+init_env()
+
+p1 <- population("p1", time = 1, N = 1000)
+p2 <- population("p2", time = 1000, N = 1000, parent = p1)
+p3 <- population("p3", time = 2000, N = 1000, parent = p2)
+p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+
+gf <- gene_flow(from = p2, to = p3, start = 3200, end = 3500, proportion = 0.1)
+
+model <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1, simulation_length = 4000
+)
+
+plot_model(model, proportions = TRUE)
+```
+
+```{r}
+#| echo: false
+fmodel <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1, simulation_length = 4000
+)
+```
+
+
+---
+
+**What happens when you don't specify the `simulation_length` argument of
+the `compile_model()` function? Do you get an error if you leave out this
+argument? Why?**
+
+```{r}
+#| error: true
+model <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1
+)
+```
+
+Notice that we did not yet run any (potentially computationally costly)
+simulation and _slendr_ gave us an informative error message as soon as it
+encountered a potential error in our code. This is a very strong argument
+for building our _slendr_ models step by step, executing individual commands
+one after another, "conversing" with the R console in a way which lets _slendr_
+catch our mistakes as early as possible.
+
+This is opposed to the other way of working, in which we would first write an
+entire (potentially very long) script and having trouble identifying where
+and how we made a mistake.
+
+---
+
+### Backward direction of time
+
+**As a practice for how does _slendr_ allow flexibility with direction of time
+specification, try to convert your model into using "backward" direction of
+time (i.e., the model will implicitly end at time 0 --- "the present day",
+and start at the appropriate "time ago"). Again, visualize the final `model`
+using the `plot_model()` function, which should get you (visually) exactly
+the same plot.**
+
+**In the previous exercise, leaving out the `simulation_length` argument
+resulted in an error. What happens when you leave it out this time?**
+
+**What happens when you set it to a number that is shorter than the indended
+duration of the model in the schematic at the beginning, like setting
+`simulation_length = 1200`? What would this imply about our programmed model?**
+
+```{r}
+library(slendr)
+init_env()
+
+p1 <- population("p1", time = 4000, N = 1000)
+p2 <- population("p2", time = 3000, N = 1000, parent = p1)
+p3 <- population("p3", time = 2000, N = 1000, parent = p2)
+p4 <- population("p4", time = 1000, N = 1000, parent = p3)
+
+gf <- gene_flow(from = p2, to = p3, start = 800, end = 500, proportion = 0.1)
+
+model <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1
+)
+
+plot_model(model, proportions = TRUE)
+```
+
+Indeed, both forward and backward models give the same figure (except for the
+"direction" of time units along the y-axis):
+
+```{r}
+#| echo: false
+bmodel <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1
+)
+
+cowplot::plot_grid(plot_model(fmodel), plot_model(bmodel))
+```
+
+As we can see in our solution, leaving out `simulation_length = 4000` did not
+give an error this time because models encoded in "backward time units"
+naturally end at time 0 (i.e., "the present day"). This means that setting
+this argument works, but is redundant:
+
+```{r}
+model <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1, simulation_length = 4000
+)
+```
+
+On the other hand, if we do set it to a smaller number, we effectively
+"truncate" the duration of the model. This is relatively rare, but it could be
+useful in some circumstances, so it's worth mentioning here:
+
+```{r}
+model <- compile_model(
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
+  generation_time = 1, simulation_length = 1200
+)
+
+plot_model(model)
+```
+
 
 
 #### Exercise: Creating a population assuming a forward direction of time
 
-Let's start with the simplest possible _slendr_ simulation possible—a simulation of the demographic history of a single population.
+Let's start with the simplest possible _slendr_ simulation possible—a simulation
+of the demographic history of a single population.
 
-First, **create an R variable `pop` containing a _slendr_ population (using the `population()` function) with the `name` "pop", at `time` 1 and a size `N` of 5000**.
+First, **create an R variable `pop` containing a _slendr_ population (using the
+`population()` function) with the `name` "pop", at `time` 1 and a size `N` of
+5000**.
 
-**Note:** At this moment, the `time` value has a completely arbitrary unit to be determined later. Additionally, unless otherwise specified, the size `N` will always indicate the "effective population size" $N_e$.
+**Note:** At this moment, the `time` value has a completely arbitrary unit to be
+determined later. Additionally, unless otherwise specified, the size `N` will
+always indicate the "effective population size" $N_e$.
 
-**Execute your code which stores the population in the `pop` variable, then type out `pop` in your R console. What does the summary report back to you?**
+**Execute your code which stores the population in the `pop` variable, then type
+out `pop` in your R console. What does the summary report back to you?**
 
 ```{r}
 pop <- population("pop", time = 1, N = 5000)
