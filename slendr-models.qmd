@@ -5,19 +5,26 @@ library(slendr)
 init_env()
 ```
 
-## Encoding demographic models
+## Programming _slendr_ demographic models
 
-### Forward direction of time
+### Exercise: Forward direction of time
 
 **Encode the demographic model in the following diagram using the basic _slendr_
 components (`population()`, `gene_flow()`, `compile_model()`) and then compile
 it using the function `compile_model()`, storing it in the `model` variable.
-Then use the function `plot_model()` to visualize the model as we have
-encoded, verifying it visually.**
+Each time you write a line with a _slendr_ R command, execute it in your R
+console by pressing Ctrl (or Cmd)+Enter, and then type out the name of the
+variable with a given component (a population object, or the `model` model) in
+the console and inspect the summary. When you finished writing the entire model,
+use the function `plot_model()` to visualize the model as we have encoded,
+verifying it visually.**
 
 **Note:** The time units are specified in the forward direction, so you will
 need to specify the length of the simulation using the `simulation_length`
 argument of `compile_model()`.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
 library(slendr)
@@ -46,12 +53,16 @@ fmodel <- compile_model(
 )
 ```
 
+:::
 
 ---
 
 **What happens when you don't specify the `simulation_length` argument of
 the `compile_model()` function? Do you get an error if you leave out this
 argument? Why?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
 #| error: true
@@ -72,23 +83,24 @@ This is opposed to the other way of working, in which we would first write an
 entire (potentially very long) script and having trouble identifying where
 and how we made a mistake.
 
+:::
+
 ---
 
-### Backward direction of time
+### Exercise: Backward direction of time
 
-**As a practice for how does _slendr_ allow flexibility with direction of time
-specification, try to convert your model into using "backward" direction of
-time (i.e., the model will implicitly end at time 0 --- "the present day",
-and start at the appropriate "time ago"). Again, visualize the final `model`
-using the `plot_model()` function, which should get you (visually) exactly
-the same plot.**
+Unlike most other simulation frameworks, _slendr_ gives us a lot of
+flexibility in how to encode the time units of our models, or even the
+direction of time used by our models.
 
-**In the previous exercise, leaving out the `simulation_length` argument
-resulted in an error. What happens when you leave it out this time?**
+**To see how this works, try to convert your model into using "backward"
+direction of time (i.e., the model will implicitly end at time 0 --- "the
+present day", and start at the appropriate "time ago"). Again, visualize the
+final `model` using the `plot_model()` function, which should get you (visually)
+exactly the same plot.**
 
-**What happens when you set it to a number that is shorter than the indended
-duration of the model in the schematic at the beginning, like setting
-`simulation_length = 1200`? What would this imply about our programmed model?**
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
 library(slendr)
@@ -109,8 +121,9 @@ model <- compile_model(
 plot_model(model, proportions = TRUE)
 ```
 
-Indeed, both forward and backward models give the same figure (except for the
-"direction" of time units along the y-axis):
+Indeed, when we compare both figures side by side, both forward and backward
+models give the same figure (except for the "direction" of time units along the
+y-axis):
 
 ```{r}
 #| echo: false
@@ -119,8 +132,21 @@ bmodel <- compile_model(
   generation_time = 1
 )
 
-cowplot::plot_grid(plot_model(fmodel), plot_model(bmodel))
+cowplot::plot_grid(
+  plot_model(fmodel) + ggplot2::ggtitle("Forward time direction"),
+  plot_model(bmodel) + ggplot2::ggtitle("Backward time direction")
+)
 ```
+
+:::
+
+---
+
+**In the previous exercise, leaving out the `simulation_length` argument
+resulted in an error. What happens when you leave it out this time?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 As we can see in our solution, leaving out `simulation_length = 4000` did not
 give an error this time because models encoded in "backward time units"
@@ -133,6 +159,17 @@ model <- compile_model(
   generation_time = 1, simulation_length = 4000
 )
 ```
+
+:::
+
+---
+
+**What happens when you set this argument to a number that is shorter than the
+intended duration of the model in the schematic at the beginning, like setting
+`simulation_length = 1200`? What would this imply about our programmed model?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 On the other hand, if we do set it to a smaller number, we effectively
 "truncate" the duration of the model. This is relatively rare, but it could be
@@ -147,12 +184,24 @@ model <- compile_model(
 plot_model(model)
 ```
 
+:::
 
+---
 
-#### Exercise: Creating a population assuming a forward direction of time
+#### Exercise: Understanding common _slendr_ errors
 
-Let's start with the simplest possible _slendr_ simulation possible—a simulation
-of the demographic history of a single population.
+As noted above, _slendr_ is designed around interactive use, executing little
+bits of code at a time, making sure that potential errors are caught as soon
+as we make them, rather than after spending lots of time programming long
+simulation scripts.
+
+However, software errors often confuse new programmers, especially because most
+errors represent completely trivial typos and unintended mistakes rather than
+conceptual issues with our model's logic. This is why it's a good idea to
+spend a few moments to study the most common errors recognize why they occur in
+isolated, controlled settings.
+
+---
 
 First, **create an R variable `pop` containing a _slendr_ population (using the
 `population()` function) with the `name` "pop", at `time` 1 and a size `N` of
@@ -171,25 +220,6 @@ pop <- population("pop", time = 1, N = 5000)
 
 ```{r}
 print(pop)
-```
-
-#### Exercise: Compiling the model
-
-```{r}
-model <- compile_model(
-  populations = pop,
-  generation_time = 1,
-  direction = "forward",
-  simulation_length = 3000
-)
-```
-
-```{r}
-print(model)
-```
-
-```{r}
-plot_model(model)
 ```
 
 #### Exercise: Specifying generation time and time units
