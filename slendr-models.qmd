@@ -23,8 +23,34 @@ verifying it visually.**
 need to specify the length of the simulation using the `simulation_length`
 argument of `compile_model()`.
 
+**Note:** At this moment, the `time` value has a completely arbitrary unit to be
+determined later. Additionally, unless otherwise specified, the size `N` will
+always indicate the "effective population size" $N_e$.
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+As always, we start our new script by loading _slendr_ itself and activating
+its environment:
+
+```{r}
+library(slendr)
+init_env()
+```
+
+We begin by creating the first population, called p1, storing it in a variable
+with the same name. When we execute this line and type `p1` in the R console,
+we get an informative summary. Especially when building very complex models
+with _slendr_, it pays of to build them like this, one command at a time, always
+making sure that what we are programming matches what we want to program!
+
+```{r}
+p1 <- population("p1", time = 1, N = 1000)
+
+p1
+```
+
+Here is, then, the complete solution:
 
 ```{r}
 library(slendr)
@@ -188,7 +214,7 @@ plot_model(model)
 
 ---
 
-#### Exercise: Understanding common _slendr_ errors
+### Exercise: Understanding a few common _slendr_ errors
 
 As noted above, _slendr_ is designed around interactive use, executing little
 bits of code at a time, making sure that potential errors are caught as soon
@@ -201,26 +227,105 @@ conceptual issues with our model's logic. This is why it's a good idea to
 spend a few moments to study the most common errors recognize why they occur in
 isolated, controlled settings.
 
+--
+
+First, let's do a bit of a setup using things you already know.
+
+**Create an R variable `pop` containing a _slendr_ population (using the
+`population()` function) with the name "pA", at time 1 and with the $N_e$ of
+5000. Then, create a population "pB" of the same size, which splits from "pA" at
+time 100.**.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+pA <- population("pA", time = 1, N = 5000)
+pB <- population("pB", time = 100, N = 5000, parent = pA)
+```
+
+:::
+
+When you do this, _slendr_ automatically infers that you intend to specify
+time in your model flowing in the forward direction (i.e., times of events
+move from smaller numbers to larger numbers). Not only that, from this point
+on, _slendr_ also enforces all following demographic events to follow this
+time direction!
+
+**To test how this works, try to create a third population named "pC", which
+splits from "pB" at time 80. What does _slendr_ do when you do this? What's the
+closest appropriate value of pC's split time which would be consistent with
+_slendr_'s assumptions for this example model?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+We get an error because in the context of the model so far (pA starting
+at time 1 and pB splitting from it at time 100), pC would effectively split
+at an earlier time than it's parent!
+
+```{r}
+#| error: true
+pC <- population("pC", time = 80, N = 5000, parent = pB)
+```
+
+We can see that even setting the split time of pC to time 100 doesn't work,
+because _slendr_ enforces that a population can only split from its parent
+population at the time the latter already exists in the model:
+
+```{r}
+#| error: true
+pC <- population("pC", time = 100, N = 5000, parent = pB)
+```
+
+In other words, the earliest that pC can split is time 101:
+
+```{r}
+pC <- population("pC", time = 101, N = 5000, parent = pB)
+```
+
+:::
+
 ---
 
-First, **create an R variable `pop` containing a _slendr_ population (using the
-`population()` function) with the `name` "pop", at `time` 1 and a size `N` of
-5000**.
+**As another example, let's look at `gene_flow(), which programs gene flow
+between two populations represented by two R variables. Let's say that we try to
+program a 42% gene flow from `pA` to `pC` starting at time 200 and ending at
+time 150, or a gene flow starting at time 150 and ending at time 200? Given the
+assumptions that _slendr_ makes about the intended direction of time units in
+our model, which of those two calls to `gene_flow()` will give error and why?**
 
-**Note:** At this moment, the `time` value has a completely arbitrary unit to be
-determined later. Additionally, unless otherwise specified, the size `N` will
-always indicate the "effective population size" $N_e$.
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
-**Execute your code which stores the population in the `pop` variable, then type
-out `pop` in your R console. What does the summary report back to you?**
+Programming gene flow starting at time 200 and ending at time 150 effectively
+implies a backward direction of time. This isn't a problem, necessarily,
+except that the information about histories of pA and pC populations (actually,
+only the pC population! can you tell why?) makes _slendr_'s `gene_flow()`
+function enforce a forward direction of time.
 
 ```{r}
-pop <- population("pop", time = 1, N = 5000)
+#| error: true
+gf <- gene_flow(from = pA, to = pC, proportion = 0.42, start = 200, end = 150)
 ```
 
+The second version works, of course, for the same reason:
+
 ```{r}
-print(pop)
+#| error: true
+gf <- gene_flow(from = pA, to = pC, proportion = 0.42, start = 150, end = 200)
 ```
+
+:::
+
+---
+
+**Note:** There are other cases in which even the enforcement of model
+consistency described above still allows broken models to be programmed, which
+is why `compile_model()` provides yet another set of sanity checks. But we will
+leave those aside for now. If you end up running into these issues, this
+exercise has already equipped you to understand why _slendr_ sometimes gives
+errors and how to interpret them to fix your models.
 
 #### Exercise: Specifying generation time and time units
 
