@@ -1,11 +1,17 @@
-# _slendr_ models and "direction of time"
+# Programming _slendr_ demographic models
+
+Remember that every _slendr_ script for every exercise will begin with these two
+lines of code:
 
 ```{r}
 library(slendr)
 init_env()
 ```
 
-## Programming _slendr_ demographic models
+**Note:** For the time being, let's assume that each number indicating a time or
+duration of some demographic event automatically implies times expressed in
+units of generations, specified by integer numbers. We will discuss units of
+time in _slendr_ in a later exercise.
 
 ### Exercise: Forward direction of time
 
@@ -57,15 +63,15 @@ library(slendr)
 init_env()
 
 p1 <- population("p1", time = 1, N = 1000)
-p2 <- population("p2", time = 1000, N = 1000, parent = p1)
-p3 <- population("p3", time = 2000, N = 1000, parent = p2)
-p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+p2 <- population("p2", time = 100, N = 1000, parent = p1)
+p3 <- population("p3", time = 200, N = 1000, parent = p2)
+p4 <- population("p4", time = 300, N = 1000, parent = p3)
 
-gf <- gene_flow(from = p2, to = p3, start = 3200, end = 3500, proportion = 0.1)
+gf <- gene_flow(from = p2, to = p3, start = 320, end = 350, proportion = 0.1)
 
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
-  generation_time = 1, simulation_length = 4000
+  generation_time = 1, simulation_length = 400
 )
 
 plot_model(model, proportions = TRUE)
@@ -75,7 +81,7 @@ plot_model(model, proportions = TRUE)
 #| echo: false
 fmodel <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
-  generation_time = 1, simulation_length = 4000
+  generation_time = 1, simulation_length = 400
 )
 ```
 
@@ -132,12 +138,12 @@ exactly the same plot.**
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 4000, N = 1000)
-p2 <- population("p2", time = 3000, N = 1000, parent = p1)
-p3 <- population("p3", time = 2000, N = 1000, parent = p2)
-p4 <- population("p4", time = 1000, N = 1000, parent = p3)
+p1 <- population("p1", time = 400, N = 1000)
+p2 <- population("p2", time = 300, N = 1000, parent = p1)
+p3 <- population("p3", time = 200, N = 1000, parent = p2)
+p4 <- population("p4", time = 100, N = 1000, parent = p3)
 
-gf <- gene_flow(from = p2, to = p3, start = 800, end = 500, proportion = 0.1)
+gf <- gene_flow(from = p2, to = p3, start = 80, end = 50, proportion = 0.1)
 
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
@@ -174,7 +180,7 @@ resulted in an error. What happens when you leave it out this time?**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-As we can see in our solution, leaving out `simulation_length = 4000` did not
+As we can see in our solution, leaving out `simulation_length = 400` did not
 give an error this time because models encoded in "backward time units"
 naturally end at time 0 (i.e., "the present day"). This means that setting
 this argument works, but is redundant:
@@ -182,7 +188,7 @@ this argument works, but is redundant:
 ```{r}
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
-  generation_time = 1, simulation_length = 4000
+  generation_time = 1, simulation_length = 400
 )
 ```
 
@@ -204,7 +210,7 @@ useful in some circumstances, so it's worth mentioning here:
 ```{r}
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
-  generation_time = 1, simulation_length = 1200
+  generation_time = 1, simulation_length = 120
 )
 
 plot_model(model)
@@ -214,7 +220,7 @@ plot_model(model)
 
 ---
 
-### Exercise: Understanding a few common _slendr_ errors
+### Exercise: Understanding common _slendr_ errors
 
 As noted above, _slendr_ is designed around interactive use, executing little
 bits of code at a time, making sure that potential errors are caught as soon
@@ -327,56 +333,76 @@ leave those aside for now. If you end up running into these issues, this
 exercise has already equipped you to understand why _slendr_ sometimes gives
 errors and how to interpret them to fix your models.
 
-#### Exercise: Specifying generation time and time units
+### Exercise: Customization of time units
+
+For more theoretical or general models, specifying time in generations going
+forward (or backward) is generally enough. However, in more empirical settings,
+encoding times in other units can be quite handy. For instance, imagine you work
+with ancient DNA samples assigned with radiocarbon dates which use units of
+"years before the present". Having to manually convert such times into
+generations can get quite frustrating and cumbersome quickly, both when
+programming models and when analyzing simulated sequence data.
+
+This is where the `generation_time` argument of `compile_model()` comes
+in---with this argument, we instruct _slendr_ on how should the various "genetic
+time numbers" in our model code interpreted as "real-world numbers". Additionally,
+there's another optional argument called `time_units` which we can use to
+give the numbers an explicit description.
+
+---
+
+**Create a new script `slendr-models-human.qmd` script so that the time units
+can be interpreted as "years before present (BP)", using the human generation
+time of 30 years. Then visualize the model to make sure you've programmed
+everything correctly.**
+
+**Hint:** You will want to modify the times of all demographic events in your
+model---originally in units of generations---so that they are effectively
+30-times larger (so that the times represent human generation times), and make them
+run from larger values to smaller values (so that they represent units "years before present (BP)"). Finally, for clarity, you might want to use the `time_units` argument of
+`compile_model()` to give the units this description.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
 ```{r}
+library(slendr)
+init_env()
+
+p1 <- population("p1", time = 12000, N = 1000)
+p2 <- population("p2", time = 9000, N = 1000, parent = p1)
+p3 <- population("p3", time = 6000, N = 1000, parent = p2)
+p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+
+gf <- gene_flow(from = p2, to = p3, start = 2400, end = 1500, proportion = 0.1)
+
 model <- compile_model(
-  populations = pop,
+  populations = list(p1, p2, p3, p4), gene_flow = gf,
   generation_time = 30,
-  direction = "forward",
-  simulation_length = 1000
+  time_units = "years before present"
 )
+
+plot_model(model, proportions = TRUE)
 ```
 
-```{r}
-print(model)
-```
+Again, when we compare this model to the very first model (which used time units of generations
+running forward in time), we see that they are completely identical---only the presentation
+changes (giving us much more convenience), but the population genetics theory underlying this model remains the same!
 
-```{r}
-plot_model(model)
-```
+:::
 
-#### Exercise: Backward direction of time
+---
 
-It's very easy to undestand models specified in time units going forward. However, in many practical situation in population genomics (and especially whenever we deal with ancient DNA samples), times of events specified in units such as "years before the present" are much easier to program, read, and interpret.
-
-For instance, if we want to simulate a split of a lineage of anatomically modern humans from their chimpanzee relatives, it's much easier to say that it probably happened around six million years ago looking "backwards in time" and assuming that "present day" is counted at time 0, rather than having to recalculate all of these times now only into generations but also into generations going "forward" starting from a hypothetical time of 1 sometime in the past (like we did in the very first simulation above).
-
-```{r}
-pop <- population("pop", time = 1000, N = 5000)
-```
-
-```{r}
-print(pop)
-```
-
-```{r}
-model <- compile_model(
-  populations = pop,
-  generation_time = 1,
-  direction = "backward"
-)
-```
-
-```{r}
-print(model)
-```
-
-```{r}
-plot_model(model)
-```
 
 ### Exercise: Resize events
+
+Of course, populations in traditional demographic models in evolutionary and
+population genetics don't just split and mix---they also experience population
+bottlenecks, population expansions, contractions, etc. The means to program
+these demographic events is through the function `resize()`.
+
+These events generally come in two variants, which we can call "step" resizes or
+exponential resizes.
 
 #### Immediate resizes
 
@@ -418,7 +444,10 @@ plot_model(model)
 
 **When you look at `?gene_flow` help page, you see that the function has a `rate` argument too. What does it do? Is there any way to get the same result (i.e., to encode the same gene-flow event) as you did just above, but using `rate` instead of `proportion`? When would you expect to use one or the other?**
 
-### Exercise: Serialized models on disk
+### Optional exercise: Serialized models on disk
+
+_Feel free to skip this exercise, unless you managed to run through everything
+quickly and want to learn about _slendr_ internals!_
 
 A very important part of _slendr_'s approach to modeling is to make simple things be trivially easy. This is largely why expressing even relatively complex models with _slendr_ requires so little code compared to the amount of programming needed with traditional powerful simulators such as [_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/), something you'll see (and hopefully appreciate!) when we get to programming larger models later.
 
