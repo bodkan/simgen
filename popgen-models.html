@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.10.19">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -12,10 +12,13 @@
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -76,10 +79,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -109,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -460,28 +463,27 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>(<span class="at">uv =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="do">## Python virtual environment for slendr has been activated.</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># chimpanzee outgroup</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>chimp <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"CHIMP"</span>, <span class="at">time =</span> <span class="fl">7e6</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># two populations of anatomically modern humans: Africans and Europeans</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>afr <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"AFR"</span>, <span class="at">parent =</span> chimp, <span class="at">time =</span> <span class="fl">6e6</span>, <span class="at">N =</span> <span class="dv">15000</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>eur <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"EUR"</span>, <span class="at">parent =</span> afr, <span class="at">time =</span> <span class="fl">60e3</span>, <span class="at">N =</span> <span class="dv">3000</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Neanderthal population splitting at 600 ky ago from modern humans</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># (becomes extinct by 40 ky ago, as indicated by the `remove` argument)</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>nea <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"NEA"</span>, <span class="at">parent =</span> afr, <span class="at">time =</span> <span class="fl">600e3</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">remove =</span> <span class="fl">40e3</span>)</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Neanderthal introgression event (3% admixture between 55-50 kya)</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> nea, <span class="at">to =</span> eur, <span class="at">proportion =</span> <span class="fl">0.03</span>, <span class="at">start =</span> <span class="dv">55000</span>, <span class="at">end =</span> <span class="dv">50000</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># compile the entire model into a single slendr R object</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(chimp, nea, afr, eur),</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> gf,</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">30</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># chimpanzee outgroup</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>chimp <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"CHIMP"</span>, <span class="at">time =</span> <span class="fl">7e6</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># two populations of anatomically modern humans: Africans and Europeans</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>afr <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"AFR"</span>, <span class="at">parent =</span> chimp, <span class="at">time =</span> <span class="fl">6e6</span>, <span class="at">N =</span> <span class="dv">15000</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>eur <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"EUR"</span>, <span class="at">parent =</span> afr, <span class="at">time =</span> <span class="fl">60e3</span>, <span class="at">N =</span> <span class="dv">3000</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Neanderthal population splitting at 600 ky ago from modern humans</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># (becomes extinct by 40 ky ago, as indicated by the `remove` argument)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>nea <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"NEA"</span>, <span class="at">parent =</span> afr, <span class="at">time =</span> <span class="fl">600e3</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">remove =</span> <span class="fl">40e3</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Neanderthal introgression event (3% admixture between 55-50 kya)</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> nea, <span class="at">to =</span> eur, <span class="at">proportion =</span> <span class="fl">0.03</span>, <span class="at">start =</span> <span class="dv">55000</span>, <span class="at">end =</span> <span class="dv">50000</span>)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># compile the entire model into a single slendr R object</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(chimp, nea, afr, eur),</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> gf,</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">30</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -720,7 +722,7 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">run =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>/Users/mp/Library/Caches/R/reticulate/uv/cache/archive-v0/RcGibFeHKop-IKkB/bin/python /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmp7VBk0y/file96bf1e2ddd1f_slendr_model/script.py --seed 1141949589 --model /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmp7VBk0y/file96bf1e2ddd1f_slendr_model --sequence-length 1000000 --recombination-rate 1e-08 --sampling-schedule /var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T//Rtmp7VBk0y/file96bf50f007b1   --coalescent_only --path path_to_a_trees_file.trees </code></pre>
+<pre><code>/Users/mp/Library/Caches/R/reticulate/uv/cache/archive-v0/v5GGVVv9cQ7f0bJA/bin/python /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpsA339P/file8c0a5125695_slendr_model/script.py --seed 1303193141 --model /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpsA339P/file8c0a5125695_slendr_model --sequence-length 1000000 --recombination-rate 1e-08 --sampling-schedule /var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T//RtmpsA339P/file8c0a38e99393   --coalescent_only --path path_to_a_trees_file.trees </code></pre>
 </div>
 </div>
 </div>
@@ -751,7 +753,7 @@ window.Quarto = {
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │      9,428║
+║Trees          │      9,299║
 ╟───────────────┼───────────╢
 ║Sequence Length│  1,000,000║
 ╟───────────────┼───────────╢
@@ -764,7 +766,7 @@ window.Quarto = {
 ╔═══════════╤═══════╤═════════╤════════════╗
 ║Table      │Rows   │Size     │Has Metadata║
 ╠═══════════╪═══════╪═════════╪════════════╣
-║Edges      │129,526│  4.0 MiB│          No║
+║Edges      │129,105│  3.9 MiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
 ║Individuals│ 23,000│628.9 KiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
@@ -772,7 +774,7 @@ window.Quarto = {
 ╟───────────┼───────┼─────────┼────────────╢
 ║Mutations  │      0│ 16 Bytes│          No║
 ╟───────────┼───────┼─────────┼────────────╢
-║Nodes      │100,757│  2.7 MiB│          No║
+║Nodes      │100,753│  2.7 MiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
 ║Populations│      4│341 Bytes│         Yes║
 ╟───────────┼───────┼─────────┼────────────╢
@@ -807,7 +809,7 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_table</span>(ts, <span class="st">"nodes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 100,757 × 5
+<pre><code># A tibble: 100,753 × 5
    node_id    ind_id pop_id  time time_tskit
      &lt;int&gt; &lt;int[1d]&gt;  &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt;
  1       0         0      1     0          0
@@ -820,24 +822,24 @@ window.Quarto = {
  8       7         3      1     0          0
  9       8         4      1     0          0
 10       9         4      1     0          0
-# ℹ 100,747 more rows</code></pre>
+# ℹ 100,743 more rows</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_table</span>(ts, <span class="st">"edges"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 129,526 × 5
+<pre><code># A tibble: 129,105 × 5
       id child parent  left   right
    &lt;dbl&gt; &lt;int&gt;  &lt;int&gt; &lt;dbl&gt;   &lt;dbl&gt;
- 1     0  2640  46000     0 1000000
- 2     1 29617  46000     0 1000000
- 3     2 33497  46001     0 1000000
- 4     3 39329  46001     0 1000000
- 5     4 36358  46002     0 1000000
- 6     5 38695  46002     0 1000000
- 7     6 34176  46003     0 1000000
- 8     7 38067  46003     0 1000000
- 9     8  1356  46004     0 1000000
-10     9 20502  46004     0 1000000
-# ℹ 129,516 more rows</code></pre>
+ 1     0 43042  46000     0 1000000
+ 2     1 45253  46000     0 1000000
+ 3     2  3719  46001     0 1000000
+ 4     3 20317  46001     0 1000000
+ 5     4 32782  46002     0 1000000
+ 6     5 39562  46002     0 1000000
+ 7     6 40573  46003     0 1000000
+ 8     7 45599  46003     0 1000000
+ 9     8 36452  46004     0 1000000
+10     9 38076  46004     0 1000000
+# ℹ 129,095 more rows</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_table</span>(ts, <span class="st">"individuals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1170,40 +1172,6 @@ window.Quarto = {
 <span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(url_path, <span class="at">destfile =</span> ts_path, <span class="at">mode =</span> <span class="st">"wb"</span>)</span>
 <span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_read</span>(<span class="at">file =</span> ts_path, <span class="at">model =</span> model)</span>
 <span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>╔═══════════════════════════╗
-║TreeSequence               ║
-╠═══════════════╤═══════════╣
-║Trees          │    296,344║
-╟───────────────┼───────────╢
-║Sequence Length│      1e+08║
-╟───────────────┼───────────╢
-║Time Units     │generations║
-╟───────────────┼───────────╢
-║Sample Nodes   │         76║
-╟───────────────┼───────────╢
-║Total Size     │   85.6 MiB║
-╚═══════════════╧═══════════╝
-╔═══════════╤═════════╤═════════╤════════════╗
-║Table      │Rows     │Size     │Has Metadata║
-╠═══════════╪═════════╪═════════╪════════════╣
-║Edges      │1,056,225│ 32.2 MiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Individuals│       38│  1.1 KiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Migrations │        0│  8 Bytes│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Mutations  │  667,406│ 23.6 MiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Nodes      │  219,251│  5.9 MiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Populations│        4│341 Bytes│         Yes║
-╟───────────┼─────────┼─────────┼────────────╢
-║Provenances│        2│  5.7 KiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Sites      │  665,198│ 15.9 MiB│          No║
-╚═══════════╧═════════╧═════════╧════════════╝</code></pre>
-</div>
 </div>
 <!-- ```{r} -->
 <!-- #| echo: false -->
@@ -1235,71 +1203,71 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <p>Inspect the (<em>tskit</em>/Python-based) summary of the new tree sequence (note the much smaller number of “sample nodes”!):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │    296,344║
+║Trees          │      9,299║
 ╟───────────────┼───────────╢
-║Sequence Length│      1e+08║
+║Sequence Length│  1,000,000║
 ╟───────────────┼───────────╢
 ║Time Units     │generations║
 ╟───────────────┼───────────╢
-║Sample Nodes   │         76║
+║Sample Nodes   │     46,000║
 ╟───────────────┼───────────╢
-║Total Size     │   85.6 MiB║
+║Total Size     │    8.5 MiB║
 ╚═══════════════╧═══════════╝
-╔═══════════╤═════════╤═════════╤════════════╗
-║Table      │Rows     │Size     │Has Metadata║
-╠═══════════╪═════════╪═════════╪════════════╣
-║Edges      │1,056,225│ 32.2 MiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Individuals│       38│  1.1 KiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Migrations │        0│  8 Bytes│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Mutations  │  667,406│ 23.6 MiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Nodes      │  219,251│  5.9 MiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Populations│        4│341 Bytes│         Yes║
-╟───────────┼─────────┼─────────┼────────────╢
-║Provenances│        2│  5.7 KiB│          No║
-╟───────────┼─────────┼─────────┼────────────╢
-║Sites      │  665,198│ 15.9 MiB│          No║
-╚═══════════╧═════════╧═════════╧════════════╝</code></pre>
+╔═══════════╤═══════╤═════════╤════════════╗
+║Table      │Rows   │Size     │Has Metadata║
+╠═══════════╪═══════╪═════════╪════════════╣
+║Edges      │129,105│  3.9 MiB│          No║
+╟───────────┼───────┼─────────┼────────────╢
+║Individuals│ 23,000│628.9 KiB│          No║
+╟───────────┼───────┼─────────┼────────────╢
+║Migrations │      0│  8 Bytes│          No║
+╟───────────┼───────┼─────────┼────────────╢
+║Mutations  │      0│ 16 Bytes│          No║
+╟───────────┼───────┼─────────┼────────────╢
+║Nodes      │100,753│  2.7 MiB│          No║
+╟───────────┼───────┼─────────┼────────────╢
+║Populations│      4│341 Bytes│         Yes║
+╟───────────┼───────┼─────────┼────────────╢
+║Provenances│      1│  3.0 KiB│          No║
+╟───────────┼───────┼─────────┼────────────╢
+║Sites      │      0│ 16 Bytes│          No║
+╚═══════════╧═══════╧═════════╧════════════╝</code></pre>
 </div>
 </div>
 <p>Get the table of all recorded samples in the tree sequence;</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 38 × 3
-   name   time pop  
-   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
- 1 NEA_1 70000 NEA  
- 2 EUR_1 40000 EUR  
- 3 NEA_2 40000 NEA  
- 4 EUR_2 38000 EUR  
- 5 EUR_3 36000 EUR  
- 6 EUR_4 34000 EUR  
- 7 EUR_5 32000 EUR  
- 8 EUR_6 30000 EUR  
- 9 EUR_7 28000 EUR  
-10 EUR_8 26000 EUR  
-# ℹ 28 more rows</code></pre>
+<pre><code># A tibble: 23,000 × 3
+   name    time pop  
+   &lt;chr&gt;  &lt;dbl&gt; &lt;chr&gt;
+ 1 AFR_1     10 AFR  
+ 2 AFR_2     10 AFR  
+ 3 AFR_3     10 AFR  
+ 4 AFR_4     10 AFR  
+ 5 AFR_5     10 AFR  
+ 6 AFR_6     10 AFR  
+ 7 AFR_7     10 AFR  
+ 8 AFR_8     10 AFR  
+ 9 AFR_9     10 AFR  
+10 AFR_10    10 AFR  
+# ℹ 22,990 more rows</code></pre>
 </div>
 </div>
 <p>We can also put some <em>tidyverse</em> skills to use and compute the count of individuals at different time points:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span></span>
-<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_group =</span> <span class="fu">if_else</span>(time <span class="sc">==</span> <span class="dv">0</span>, <span class="st">"present-day"</span>, <span class="st">"ancient"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(pop, age_group) <span class="sc">%&gt;%</span></span>
-<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(age_group, pop, n)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_group =</span> <span class="fu">if_else</span>(time <span class="sc">==</span> <span class="dv">0</span>, <span class="st">"present-day"</span>, <span class="st">"ancient"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(pop, age_group) <span class="sc">%&gt;%</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(age_group, pop, n)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`summarise()` has regrouped the output.
 ℹ Summaries were computed grouped by pop and age_group.
@@ -1309,15 +1277,13 @@ window.Quarto = {
   (`?dplyr::dplyr_by`) instead.</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 3
-# Groups:   pop [4]
-  age_group   pop       n
-  &lt;chr&gt;       &lt;chr&gt; &lt;int&gt;
-1 present-day AFR       5
-2 present-day CHIMP     1
-3 ancient     EUR      20
-4 present-day EUR      10
-5 ancient     NEA       2</code></pre>
+<pre><code># A tibble: 3 × 3
+# Groups:   pop [3]
+  age_group pop       n
+  &lt;chr&gt;     &lt;chr&gt; &lt;int&gt;
+1 ancient   AFR   15000
+2 ancient   CHIMP  5000
+3 ancient   EUR    3000</code></pre>
 </div>
 </div>
 </div>

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.10.19">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -12,10 +12,13 @@
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -76,10 +79,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5ccb035bea26c1e21f80f44cf7c27909.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -109,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -426,19 +429,20 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>(<span class="at">quiet =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"files/popgen/popgen_utils.R"</span>))</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>popA <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popA"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>popB <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popB"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popA)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>popC <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popC"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popA)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(popA, popB, popC), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">3000</span>, <span class="dv">0</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">200</span>),</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">list</span>(popA, <span class="dv">10</span>), <span class="fu">list</span>(popB, <span class="dv">10</span>), <span class="fu">list</span>(popC, <span class="dv">10</span>))</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">samples =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## The `quiet` argument of `init_env()` has been deprecated (the function is now "quiet" by default).</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"files/popgen/popgen_utils.R"</span>))</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>popA <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popA"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>popB <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popB"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popA)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>popC <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"popC"</span>, <span class="at">time =</span> <span class="dv">1500</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> popA)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(popA, popB, popC), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">3000</span>, <span class="dv">0</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">200</span>),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">list</span>(popA, <span class="dv">10</span>), <span class="fu">list</span>(popB, <span class="dv">10</span>), <span class="fu">list</span>(popC, <span class="dv">10</span>))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">samples =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -486,10 +490,15 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># First run a normal msprime simulation creating a tree-sequence object, then</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># directly pipe it into a function which adds (neutral!) mutations to it</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>ts_nomuts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">samples =</span> schedule, <span class="at">sequence_length =</span> <span class="fl">50e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">random_seed =</span> <span class="dv">1702182272</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Notice we have no mutations on the tree sequence, just as before...</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>ts_nomuts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>ts_nomuts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">samples =</span> schedule, <span class="at">sequence_length =</span> <span class="fl">50e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">random_seed =</span> <span class="dv">1702182272</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The `samples =` argument is now deprecated in favor of `schedule =`
+to avoid frequent clumsiness in downstream statistical code.
+Your code will keep working for the foreseeable future but when
+you get a chance, please update it accordingly.</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Notice we have no mutations on the tree sequence, just as before...</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ts_nomuts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
@@ -524,10 +533,10 @@ window.Quarto = {
 ║Sites      │      0│ 16 Bytes│          No║
 ╚═══════════╧═══════╧═════════╧════════════╝</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_mutate</span>(ts_nomuts, <span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ... but we have them now!</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_mutate</span>(ts_nomuts, <span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ... but we have them now!</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
@@ -551,7 +560,7 @@ window.Quarto = {
 ╟───────────┼───────┼─────────┼────────────╢
 ║Migrations │      0│  8 Bytes│          No║
 ╟───────────┼───────┼─────────┼────────────╢
-║Mutations  │168,942│  6.0 MiB│          No║
+║Mutations  │168,912│  6.0 MiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
 ║Nodes      │ 92,209│  2.5 MiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
@@ -559,14 +568,14 @@ window.Quarto = {
 ╟───────────┼───────┼─────────┼────────────╢
 ║Provenances│      2│  6.2 KiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
-║Sites      │168,667│  4.0 MiB│          No║
+║Sites      │168,608│  4.0 MiB│          No║
 ╚═══════════╧═══════╧═════════╧════════════╝</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the table of individuals (and process it a bit for tidier plotting later)</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">pop =</span> <span class="fu">factor</span>(pop, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"popA"</span>, <span class="st">"popB"</span>, <span class="st">"popC"</span>)))</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Count how many individuals do we have for each population</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>samples <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop) <span class="sc">%&gt;%</span> <span class="fu">count</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the table of individuals (and process it a bit for tidier plotting later)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">pop =</span> <span class="fu">factor</span>(pop, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"popA"</span>, <span class="st">"popB"</span>, <span class="st">"popC"</span>)))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Count how many individuals do we have for each population</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>samples <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop) <span class="sc">%&gt;%</span> <span class="fu">count</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 2
 # Groups:   pop [3]
@@ -585,7 +594,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="part-3-converting-a-tree-sequence-into-eigenstrat">Part 3: Converting a tree sequence into EIGENSTRAT</h2>
 <p>The function to use for converting a tree-sequence object we have in R (in our exercises the thing we usually had in the <code>ts</code> variable) to disk in form of genotypes in the EIGENSTRAT format is called <code>ts_eigenstrat()</code>. The standard way to call it (but see <code>?ts_eigenstrat</code> for more options) is like this:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="at">prefix =</span> <span class="st">"path/to/a/desired/EIGENSTRAT/prefix"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="at">prefix =</span> <span class="st">"path/to/a/desired/EIGENSTRAT/prefix"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Which creates three files <code>.ind</code>, <code>.snp</code>, and <code>.geno</code> as: - <code>path/to/a/desired/EIGENSTRAT/prefix.ind</code>, - <code>path/to/a/desired/EIGENSTRAT/prefix.snp</code>, and - <code>path/to/a/desired/EIGENSTRAT/prefix.geno</code>,</p>
 <p>just as you would expect for any EIGENSTRAT file.</p>
@@ -603,9 +612,9 @@ window.Quarto = {
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="st">"files/popgen/ABC_all"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="st">"files/popgen/ABC_all"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>171 multiallelic sites (0.101% out of 168667 total) detected and removed</code></pre>
+<pre><code>210 multiallelic sites (0.125% out of 168608 total) detected and removed</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>EIGENSTRAT object
@@ -626,19 +635,19 @@ components:
 <p>Years ago I developed a small R package to help me with <span class="math inline">\(f\)</span>-statistics based projects using the ADMIXTOOLS software (which operates on data in the EIGENSTRAT file format), called <a href="https://bodkan.net/admixr/">admixr</a></p>
 <p><strong>Use the following code to examine one of the EIGENSTRAT data sets you’ve just created. Just look at the results and see if they make sense in terms of what you’ve learned about this in earlier lectures.</strong></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(admixr)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>eigen <span class="ot">&lt;-</span> <span class="fu">eigenstrat</span>(<span class="st">"&lt;prefix of a trio of EIGENSTRAT .ind/.snp/.geno files"</span>)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print out a summary of the EIGENSTRAT data</span></span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>eigen</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .ind file as a table into R</span></span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="fu">read_ind</span>(eigen)</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .snp file as a table into R</span></span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">read_snp</span>(eigen)</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .geno file as a table into R</span></span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="fu">read_geno</span>(eigen)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(admixr)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>eigen <span class="ot">&lt;-</span> <span class="fu">eigenstrat</span>(<span class="st">"&lt;prefix of a trio of EIGENSTRAT .ind/.snp/.geno files"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print out a summary of the EIGENSTRAT data</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>eigen</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .ind file as a table into R</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="fu">read_ind</span>(eigen)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .snp file as a table into R</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="fu">read_snp</span>(eigen)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .geno file as a table into R</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="fu">read_geno</span>(eigen)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
@@ -653,19 +662,19 @@ components:
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(admixr)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>eigen <span class="ot">&lt;-</span> <span class="fu">eigenstrat</span>(<span class="st">"files/popgen/ABC_all"</span>)</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print out a summary of the EIGENSTRAT data</span></span>
-<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>eigen</span>
-<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .ind file as a table into R</span></span>
-<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="fu">read_ind</span>(eigen)</span>
-<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .snp file as a table into R</span></span>
-<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="fu">read_snp</span>(eigen)</span>
-<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .geno file as a table into R</span></span>
-<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="fu">read_geno</span>(eigen)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(admixr)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>eigen <span class="ot">&lt;-</span> <span class="fu">eigenstrat</span>(<span class="st">"files/popgen/ABC_all"</span>)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Print out a summary of the EIGENSTRAT data</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>eigen</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .ind file as a table into R</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a><span class="fu">read_ind</span>(eigen)</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .snp file as a table into R</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a><span class="fu">read_snp</span>(eigen)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Read the .geno file as a table into R</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a><span class="fu">read_geno</span>(eigen)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -679,19 +688,19 @@ components:
 <li>Plot PCA while coloring each individual by their population assignment:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"path/to/prefix"</span>, <span class="sc">&lt;</span>tree sequence used to create EIGENSTRAT<span class="sc">&gt;</span>, <span class="at">color_by =</span> <span class="st">"pop"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"path/to/prefix"</span>, <span class="sc">&lt;</span>tree sequence used to create EIGENSTRAT<span class="sc">&gt;</span>, <span class="at">color_by =</span> <span class="st">"pop"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <ol start="2" type="1">
 <li>Plot PCA while coloring each individual by their time of sampling:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"path/to/prefix"</span>, <span class="sc">&lt;</span>tree sequence used to create EIGENSTRAT<span class="sc">&gt;</span>, <span class="at">color_by =</span> <span class="st">"time"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"path/to/prefix"</span>, <span class="sc">&lt;</span>tree sequence used to create EIGENSTRAT<span class="sc">&gt;</span>, <span class="at">color_by =</span> <span class="st">"time"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <ol start="3" type="1">
 <li>By default, the function plots PC 1 vs PC 2, but you can customize things by providing an optional argument <code>pc =</code> like this:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"path/to/prefix"</span>, <span class="sc">&lt;</span>tree sequence used to create EIGENSTRAT<span class="sc">&gt;</span>, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"path/to/prefix"</span>, <span class="sc">&lt;</span>tree sequence used to create EIGENSTRAT<span class="sc">&gt;</span>, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Use the provided <code>plot_pca()</code> function to run PCA based on genotypes for all recorded individuals that you just converted as EIGENSTRAT <code>"files/popgen/ABC_all"</code> from the <code>ts</code> tree sequence. Visualize PC 1 vs PC 2 by first ccolor each individual by their population label (<code>color_by = "pop"</code>) then by the time of their sampling (<code>color_by = "time"</code>).</strong></p>
 <p><strong>Does the PCA of PC 1 vs PC 2 capture the relationship between all individuals across the populations <em>and across time</em>?</strong></p>
@@ -708,7 +717,7 @@ components:
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was not found. Generating it now (this might take a moment)...</code></pre>
 </div>
@@ -719,7 +728,7 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -752,9 +761,9 @@ components:
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  We can see that the overall shape of the demographic model tree is now nicely</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="co"># reflected in the PCA shape</span></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#  We can see that the overall shape of the demographic model tree is now nicely</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># reflected in the PCA shape</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -765,7 +774,7 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -776,7 +785,7 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -787,7 +796,7 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">4</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -798,8 +807,8 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Things are getting progressively wilder! </span></span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Things are getting progressively wilder! </span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -810,7 +819,7 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -821,8 +830,8 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ...</span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"pop"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -833,7 +842,7 @@ components:
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_pca</span>(<span class="st">"files/popgen/ABC_all"</span>, ts, <span class="at">color_by =</span> <span class="st">"time"</span>, <span class="at">pc =</span> <span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>PCA cache for the given EIGENSTRAT data was found. Loading it to save computational time...</code></pre>
 </div>
@@ -862,23 +871,23 @@ components:
 <h3 class="anchored" data-anchor-id="bonus-1-tree-sequence-simplification-and-eigenstrat-conversion">Bonus 1: Tree-sequence simplification and EIGENSTRAT conversion</h3>
 <p>One of our goals in this exercise was to investigate how does the shape of a PCA look like based on the sampling of individuals across populations and also across time – all of that from the <em>same</em> demographic history. In order to do that, we need to be able to select only a defined subset of individuals from a given tree sequence. Which brings us to the last tree-sequence processing function in <em>slendr</em> callsed <code>ts_simplify()</code>. Implemented on top of the <code>simplify()</code> method in <em>tskit</em>, it has a very simple interface:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>ts_small <span class="ot">&lt;-</span> <span class="fu">ts_simplify</span>(ts_big, <span class="at">simplify_to =</span> <span class="fu">c</span>(<span class="sc">&lt;</span>subset of individuals as a vector<span class="sc">&gt;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>ts_small <span class="ot">&lt;-</span> <span class="fu">ts_simplify</span>(ts_big, <span class="at">simplify_to =</span> <span class="fu">c</span>(<span class="sc">&lt;</span>subset of individuals as a vector<span class="sc">&gt;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>This function call creates a <em>new tree sequence</em>, which is smaller and only contains a those individuals whose names were specified in <code>simplify_to =</code> (again, we’re talking about the “symbolic names” of individuals, such as “NEA_1”, “AFR_42”, etc., not integer numbers of <em>tskit</em> nodes).</p>
 <p>Whenever you want to create smaller subsets of a large tree sequence, it is often helpful to work with the table of all individuals in the original tree sequence, because it contains every individual’s <code>name</code>, <code>pop</code> assignment and the <code>time</code> in which it lived, so let’s save it for further use now:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 310</code></pre>
 </div>
 </div>
 <p>For instance, we can get only individuals from “popB” and “popC” sampled at the present using this code:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>subset <span class="ot">&lt;-</span> <span class="fu">filter</span>(samples, pop <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"popB"</span>, <span class="st">"popC"</span>), time <span class="sc">==</span> <span class="dv">0</span>)</span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(subset)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>subset <span class="ot">&lt;-</span> <span class="fu">filter</span>(samples, pop <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"popB"</span>, <span class="st">"popC"</span>), time <span class="sc">==</span> <span class="dv">0</span>)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(subset)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 20</code></pre>
 </div>
@@ -897,9 +906,9 @@ components:
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>ts_BC0 <span class="ot">&lt;-</span> <span class="fu">ts_simplify</span>(ts, <span class="at">simplify_to =</span> subset<span class="sc">$</span>name)</span>
-<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts_BC0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>ts_BC0 <span class="ot">&lt;-</span> <span class="fu">ts_simplify</span>(ts, <span class="at">simplify_to =</span> subset<span class="sc">$</span>name)</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts_BC0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 20 × 3
    name     time pop  
