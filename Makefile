@@ -6,7 +6,6 @@ handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
 all: $(slides_html) $(handouts_html)
 	quarto publish gh-pages --no-prompt
 	git checkout gh-pages
-	rm -rf rendered; mv tmp/ rendered/
 	git add rendered/
 	git commit -m "Add HTML files"
 	git push
@@ -21,4 +20,4 @@ handout_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | sed 's/^### handout //g' > $@
 
 clean:
-	rm -rf *_files *.rmarkdown site_libs *.html tmp/ rendered/
+	rm -rf *_files *.rmarkdown site_libs *.html rendered/
