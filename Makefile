@@ -7,7 +7,7 @@ all: $(slides_html) $(handouts_html)
 	quarto publish gh-pages --no-prompt
 	git checkout gh-pages
 	git add rendered/
-	git commit -m "Add HTML files"
+	git commit -m "Add rendered HTML slides"
 	git push
 	git checkout main
 
