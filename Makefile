@@ -9,7 +9,6 @@ all: $(slides_html) $(handouts_html)
 	git add rendered/
 	git commit -m "Add HTML files"
 	git push
-	git checkout .DS_Store
 	git checkout main
 
 %.html: %.qmd
