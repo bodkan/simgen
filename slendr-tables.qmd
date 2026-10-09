@@ -1,0 +1,57 @@
+
+
+The genius of the tree-sequence data structure rests on its elegant table-based
+implementation (much more information on that is
+[here](https://tskit.dev/tskit/docs/stable/data-model.html)). _slendr_ isn't
+really designed to run complex low-level manipulations of tree-sequence data
+(like iterating over individual trees, mutations on those trees, etc.) as its
+strength lies in the convenient interface to population genetic statistical
+functions implemented by _tskit_, but it does contain a couple of functions
+which can be useful for inspecting the lower-level nature of a tree sequence.
+Let's look at some of them right now.
+
+**Use the `ts_table` function to inspect the low-level table-based
+representation of a tree sequence. Take a look at `?ts_table` manual page to
+learn how to use this function. How many nodes does it have, and how many
+edges? Does the tree sequence contain any mutations? If not, why, and how can
+we even do any population genetics with data without any mutations?** As you're
+answering these questions, take a look at at the [following
+figure](https://tskit.dev/tutorials/_images/693660726ad4851fe5c0a4d04264dc4e79a2f042cc657a10e46395f13caccb75.svg)
+(this was made from a different tree sequence than you have, but that's
+alright) to help you relate the information in the individual tables (node
+table, edge table, etc.) to your tree sequence.
+
+::: aside
+
+**Note:** This exercise will not teach you much about how are simulations of
+tree sequences helpful for your research, but it should convince you that the
+final product of a _slendr_ simulation really is a data structure encoding the
+full extent of a genomic variation in your sample (either simulated or
+empirical). You don't have to study these tables in detail, this is just to
+remind you that they are always there, under the hood.
+
+:::
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+The _slendr_ helper function `ts_table()` accepts two arguments: the first one
+is a tree-sequence object `ts`, the second indicates which of the tree-sequence
+tables we want to inspect:
+
+```{r}
+ts_table(ts, "nodes")
+ts_table(ts, "edges")
+ts_table(ts, "individuals")
+```
+
+We didn't simulate any mutations, so we only have genealogies for now:
+
+```{r}
+ts_table(ts, "mutations")
+ts_table(ts, "sites")
+```
+
+:::
+
+---

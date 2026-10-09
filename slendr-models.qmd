@@ -67,7 +67,7 @@ p2 <- population("p2", time = 100, N = 1000, parent = p1)
 p3 <- population("p3", time = 200, N = 1000, parent = p2)
 p4 <- population("p4", time = 300, N = 1000, parent = p3)
 
-gf <- gene_flow(from = p2, to = p3, start = 320, end = 350, proportion = 0.1)
+gf <- gene_flow(from = p2, to = p3, start = 270, end = 300, proportion = 0.1)
 
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
@@ -143,7 +143,7 @@ p2 <- population("p2", time = 300, N = 1000, parent = p1)
 p3 <- population("p3", time = 200, N = 1000, parent = p2)
 p4 <- population("p4", time = 100, N = 1000, parent = p3)
 
-gf <- gene_flow(from = p2, to = p3, start = 80, end = 50, proportion = 0.1)
+gf <- gene_flow(from = p2, to = p3, start = 140, end = 110, proportion = 0.1)
 
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
@@ -375,7 +375,7 @@ p2 <- population("p2", time = 9000, N = 1000, parent = p1)
 p3 <- population("p3", time = 6000, N = 1000, parent = p2)
 p4 <- population("p4", time = 3000, N = 1000, parent = p3)
 
-gf <- gene_flow(from = p2, to = p3, start = 2400, end = 1500, proportion = 0.1)
+gf <- gene_flow(from = p2, to = p3, start = 4200, end = 3300, proportion = 0.1)
 
 model <- compile_model(
   populations = list(p1, p2, p3, p4), gene_flow = gf,
@@ -393,7 +393,7 @@ the population genetics theory underlying this model remains the same!
 
 ```{r}
 cowplot::plot_grid(
-  plot_model(model, proportions = TRUE) + ggplot2::ggtitle("'years before present"),
+  plot_model(model) + ggplot2::ggtitle("'years before present"),
   plot_model(fmodel) + ggplot2::ggtitle("Forward time direction"),
   plot_model(bmodel) + ggplot2::ggtitle("Backward time direction"),
   nrow = 1
@@ -417,8 +417,11 @@ exponential resizes.
 
 #### Immediate resizes
 
+We can implement immediate step resize events simply by providing the new size
+`N` and the time at which the resize event should occur:
+
 ```{r}
-pop <- population("pop", time = 1, N = 5000) %>% resize(N = 2000, time = 500, how = "step")
+pop <- population("pop", time = 1, N = 5000) %>% resize(N = 2000, time = 500)
 ```
 
 ```{r}
@@ -428,14 +431,28 @@ plot_model(model)
 
 #### Exponential resizes
 
+If we need to implement exponential resize event (either exponential increase or
+decrease of population size), we provide the new size `N`, the time at which the
+resizing should start and also the time at which it should `end`. From this
+information, _slendr_ is able to interpolate the resizes needed at each time
+point in order to simulate the gradual exponential change.
+
 ```{r}
-pop <- population("pop", time = 1, N = 5000) %>% resize(N = 15000, time = 400, end = 600, how = "exponential")
+pop <- population("pop", time = 1, N = 5000) %>% resize(N = 15000, time = 400, end = 600)
 ```
 
 ```{r}
 model <- compile_model(populations = pop, generation_time = 1, direction = "forward", simulation_length = 1000)
 plot_model(model)
 ```
+
+::: aside
+
+**Note:** The visualization of the exponential is a bit wonky in that it makes
+things look like a gradual linear change---apologies for that! This will be
+fixed in a future _slendr_ version.
+
+:::
 
 ### Exercise: Encoding gene flow (admixture, introgression)
 
@@ -453,18 +470,31 @@ model <- compile_model(populations = pop, generation_time = 1, direction = "forw
 plot_model(model)
 ```
 
-**When you look at `?gene_flow` help page, you see that the function has a `rate` argument too. What does it do? Is there any way to get the same result (i.e., to encode the same gene-flow event) as you did just above, but using `rate` instead of `proportion`? When would you expect to use one or the other?**
+**When you look at `?gene_flow` help page, you see that the function has a
+`rate` argument too. What does it do? Is there any way to get the same result
+(i.e., to encode the same gene-flow event) as you did just above, but using
+`rate` instead of `proportion`? When would you expect to use one or the other?**
 
 ### Optional exercise: Serialized models on disk
 
 _Feel free to skip this exercise, unless you managed to run through everything
 quickly and want to learn about _slendr_ internals!_
 
-A very important part of _slendr_'s approach to modeling is to make simple things be trivially easy. This is largely why expressing even relatively complex models with _slendr_ requires so little code compared to the amount of programming needed with traditional powerful simulators such as [_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/), something you'll see (and hopefully appreciate!) when we get to programming larger models later.
+A very important part of _slendr_'s approach to modeling is to make simple
+things be trivially easy. This is largely why expressing even relatively complex
+models with _slendr_ requires so little code compared to the amount of
+programming needed with traditional powerful simulators such as
+[_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/),
+something you'll see (and hopefully appreciate!) when we get to programming
+larger models later.
 
 Still, sometimes it's useful to peek behind the curtain and see what exactly is going on inside _slendr_ and how it operates.
 
-**Type out the `model` object in the R console, paying attention to the description of the path. Use your operating system disk browsing program (Finder on macOS, File Explorer on Windows, or any other means of browsing files on other systems, such as the terminal shell) to see what files are hiding in that path.**
+**Type out the `model` object in the R console, paying attention to the
+description of the path. Use your operating system disk browsing program (Finder
+on macOS, File Explorer on Windows, or any other means of browsing files on
+other systems, such as the terminal shell) to see what files are hiding in that
+path.**
 
 ```{r}
 list.files(model$path, full.names = TRUE)
@@ -488,6 +518,30 @@ print_file(model, "direction.txt")
 
 ```{r}
 print_file(model, "description.txt")
+```
+
+## Catch up --- completel solution
+
+```{r}
+library(slendr)
+init_env()
+
+p1 <- population("p1", time = 12000, N = 1000)
+p2 <- population("p2", time = 9000, N = 1000, parent = p1)
+p3 <- population("p3", time = 6000, N = 1000, parent = p2) %>%
+  resize(N = 100, time = 1800) %>%
+  resize(N = 2000, time = 1000)
+p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+
+gf <- gene_flow(from = p2, to = p3, start = 4200, end = 3300, proportion = 0.1)
+
+model <- compile_model(
+    populations = list(p1, p2, p3, p4), gene_flow = gf,
+    generation_time = 30,
+    time_units = "years before present"
+)
+
+plot_model(model, proportions = TRUE)
 ```
 
 
