@@ -17,7 +17,7 @@ p3 <- population("p3", time = 6000, N = 1000, parent = p2) %>%
   resize(N = 2000, time = 1000)
 p4 <- population("p4", time = 3000, N = 1000, parent = p3)
 
-gf <- gene_flow(from = p2, to = p3, start = 4200, end = 3300, proportion = 0.1)
+gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2200, proportion = 0.1)
 
 model <- compile_model(
     populations = list(p1, p2, p3, p4), gene_flow = gf,
@@ -359,30 +359,55 @@ combined together into a single sampling schedule.
 
 ---
 
-**Type 
-**If you type the variable `pop_schedule` in the R console, you will see that
-this function returns a plain data frame (just try it).** As such, we can
-create multiple of such schedules (of arbitrary complexity and granularity) and
-then bind them together into a single sampling schedule with a single line of
-code, like this (all this code might look overwhelming, but try to read it line
-by line):
+**Type the `schedule` variable in your R console. What do you see? Why did I say
+that multiple schedules can be easily combined? And how could we combine them?**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+The output of any `schedule_sampling()` function is a plain old data frame! It
+contains a bunch of information we used in the `schedule_sampling()` call
+(population names, times, etc.), plus a bunch more additional data which is
+currently irrelevant.
 
 ```{r}
-# Note that the `times =` argument of the `schedule_sampling()` function can be
-# a vector of times like here...
-ancient_times <- c(40000, 30000, 20000, 10000)
-eur_samples <- schedule_sampling(model, times = ancient_times, list(eur, 1))
-
-# ... but also just a single number like here
-afr_samples <- schedule_sampling(model, times = 0, list(afr, 1))
-nea_samples <- schedule_sampling(model, time = 60000, list(nea, 1))
-
-# But whatever the means you create the individual sampling schedules with, you
-# can always bind them all to a single table with the `rbind()` function
-schedule <- rbind(eur_samples, afr_samples, nea_samples)
-
-# This is then the final "recording schedule":
 schedule
+```
+
+Normally we don't ever have to look at this data (unless something goes wrong
+with the sampling, like when a bug in _slendr_ is encountered), but knowing the
+format of the schedule means we can easily combine multiple schedules using
+standard functions such as `rbind()` (included in base R) or `bind_rows()`
+(included in the _tidyverse_ package _dplyr_).
+
+:::
+
+---
+
+In the following chapters, we will be working on implementing many real-world
+scenarios from widely established research in population genomics, particularly
+those from the field ancient DNA field. Naturally, in cases like this, we need
+to be able to simulate sequences of "ancient" individuals as well as various
+"present-day" reference panels.
+
+In preparation for these complex exercises, **implement the following sampling
+schedules (saving each of them in dedicated, appropriately-named variables),
+then bind them together using the function `bind_rows()` mentioned in the
+solution to the previous exercise, and simulate a tree sequence `ts` with this
+complex schedule, modifying your solution script accordingly.**
+
+| time \n(years B.P.) | population | \# individuals | interpretation
+|-------|:-----------|----------------|----------------|
+| 0 | p1        | 1              | outgroup individual
+|   | p2        | 1              | admixture source
+| 0 | p3      | 1              | time-series of ancient individuals
+| 0 | p4        | 10              |  reference individuals
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+
 ```
 
 ---
@@ -391,13 +416,6 @@ schedule
 in the previous code example, program the sampling of the following sample sets
 at given times:**
 
-| time  | population | \# individuals |
-|-------|:-----------|----------------|
-| 70000 | nea        | 1              |
-| 40000 | nea        | 1              |
-| 0     | chimp      | 1              |
-| 0     | afr        | 5              |
-| 0     | eur        | 10             |
 
 
 **Then, schedule the sampling of a single `eur` individual at each of the
@@ -426,6 +444,7 @@ simulated individuals. Verify that this is true by summing the numbers in the
 First we scheduled the sampling of two Neanderthals at 70kya and 40kya:
 
 ```{r}
+#| eval: false
 nea_samples <- schedule_sampling(model, times = c(70000, 40000), list(nea, 1))
 nea_samples # (this function produces a plain old data frame!)
 ```
@@ -433,6 +452,7 @@ nea_samples # (this function produces a plain old data frame!)
 Then we schedule one Chimpanzee sample, 5 African samples, and 10 European samples:
 
 ```{r}
+#| eval: false
 present_samples <- schedule_sampling(model, times = 0, list(chimp, 1), list(afr, 5), list(eur, 10))
 ```
 
@@ -440,6 +460,7 @@ Then we also schedule the recording of one European sample between 50kya and
 2kya, every 2000 years:
 
 ```{r}
+#| eval: false
 times <- seq(40000, 2000, by = -2000)
 emh_samples <- schedule_sampling(model, times, list(eur, 1))
 ```
@@ -448,6 +469,7 @@ Because those functions produce nothing but a data frame, we can bind
 individual sampling schedules together at the end:
 
 ```{r}
+#| eval: false
 schedule <- rbind(nea_samples, present_samples, emh_samples)
 schedule
 ```
@@ -455,6 +477,7 @@ schedule
 Let's verify we scheduled the recording of genomes of everyone we needed:
 
 ```{r}
+#| eval: false
 sum(schedule$n)
 ```
 
