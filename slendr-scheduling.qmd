@@ -1,11 +1,43 @@
 # Simulating data and encoding sampling events
 
+## Catch up
+
+The exercises in this chapter will pick up from where we left of in the chapter
+on building _slendr_ demographic models. To catch up, feel free to use the
+following script as a basis for what's coming up next:
+
+```{r}
+library(slendr)
+init_env()
+
+p1 <- population("p1", time = 12000, N = 1000)
+p2 <- population("p2", time = 9000, N = 1000, parent = p1)
+p3 <- population("p3", time = 6000, N = 1000, parent = p2) %>%
+  resize(N = 100, time = 1800) %>%
+  resize(N = 2000, time = 1000)
+p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+
+gf <- gene_flow(from = p2, to = p3, start = 4200, end = 3300, proportion = 0.1)
+
+model <- compile_model(
+    populations = list(p1, p2, p3, p4), gene_flow = gf,
+    generation_time = 30,
+    time_units = "years before present"
+)
+
+plot_model(model, proportions = TRUE)
+```
+
+:::
+
 ### Exercise: Simulating genomic data
 
-Once you have compiled a _slendr_ model and stored it in a variable, we can
+Once we have compiled a _slendr_ model and stored it in a variable, we can
 finally simulate data from it. By default, a simulation from a _slendr_ model
 always produces a [tree-sequence](https://tskit.dev/tutorials/what_is.html)
-object as a result.
+object as a result. We'll explore the tree-sequence concept in a bit more detail
+later, but for now we can treat it as a black box which somehow "magically"
+stores genomic variation of a set of individuals.
 
 ::: aside
 
@@ -26,14 +58,24 @@ using any of the available software methods as well.
 There are two simulation engines built into _slendr_ implemented by functions
 `msprime()` and `slim()`. For traditional, non-spatial, neutral demographic
 models, the `msprime()` engine is much more efficient, so we'll be using that
-for the time being. However, from a population genetics theoretical perspective,
-both simulation functions will give you the same results for any given compiled
-_slendr_ model (up to some level of stochastic noise). The alternative engine
-implemented by the `slim()` function plays an important role for spatial
-simulations and for simulations of natural selection.
+for the time being. However, it's worth noting that from the perspective of
+population genetics theory, both simulation functions will give you practicalyl
+the same results for any given compiled _slendr_ model (up to some level of
+stochastic noise).
+
+::: aside
+
+**Note:** The alternative engine implemented by the `slim()` function plays an
+important role for spatial simulations and for simulations of natural selection
+--- these are the primary two reasons why it's included in _slendr_ in the first
+place.
+
+:::
 
 As we discussed in the introduction, here's how you can use simulate a tree
-sequence from a compiled _slendr_ `model`:
+sequence from a compiled _slendr_ `model`. You will be seeing this kind of
+pattern over and over again, so it's worth keeping it in mind any time you will
+be simulating data going forward.
 
 ```{r}
 #| eval: false
@@ -45,14 +87,13 @@ ts <- msprime(
 )
 ```
 
-You will be seeing this kind of pattern over and over again.
-
 ---
 
 **Simulate a tree sequence from your compiled `model` using the `msprime()`
-engine and store it in a variable `ts` as shown right above. Set the parameters
-`sequence_length = 1e6` (length of the sequence in bp) and `recombination_rate
-= 1e-8` (crossover events per base pair per generation).**
+engine and store it in a variable `ts` as shown in the snippet of code right
+above. Set the parameters `sequence_length = 1e6` (length of the sequence in bp)
+and `recombination_rate = 1e-8` (crossover events per base pair per
+generation).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -67,30 +108,39 @@ ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
 
 :::
 
-Similarly to the symbol `model`, whenever we from now on refer to `ts`, we will
-be talking about some simulated tree-sequence object stored in an R variable
-`ts`.
-
-## Exercise: Inspecting the tree sequence
-
-As we will see throughout the entire rest of this course, _slendr_ makes it
-possible to compute a wide array of popular population genetic statistics using
-its R interface to the [Python module
-_tskit_](https://tskit.dev/tskit/docs/stable/python-api.html).
-
-**Type out the `ts` object in the terminal --- what do you see? Try to relate
+**Now type out the `ts` object in the console --- what do you see? Try to relate
 some of the information in the presented summary to our overview discussion of
-tree sequences.**
+tree sequences. For instance, what are the "nodes" and "edges"? What's the
+difference between "samples" and "individuals"? How many "trees" does the tree
+sequence have, and how many "mutations" are stored in it?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-You should get a summary of a tree-sequence object with some lower-level
-technical details about the genomic sequence which it encodes:
+Evaluating the `ts` variable in the R console should give you a summary of a
+tree-sequence object with some lower-level technical details about the genomic
+sequence which it encodes:
 
 ```{r}
 ts
 ```
+
+For instance, our tree sequence contains genomic information for `{r}
+ts$num_individuals`, each of them diploid. This makes for `{r}ts$num_samples`
+samples in total, where a "sample" is a "node" in a tree sequence representing
+one haplotype (i.e., one chromosome) of a simulated individual. All other
+"nodes" (of which there are many, many more) represent ancestral haplotypes of
+these recorded individuals for which we generally have only a part of their
+genomic information---a sequence information which made it through recombination
+to some of the recorded samples.
+
+:::
+
+::: aside
+
+**Note:** Similarly to the symbol `model`, whenever we from now on refer to
+`ts`, we will be talking about some simulated tree-sequence object stored in an
+R variable `ts`.
 
 :::
 
@@ -115,27 +165,57 @@ and `ts_mutate()` in your models.
 
 :::
 
+Here's the general pattern of how we simulate genomic data with _slendr_
+including mutations:
+
 ```{r}
-ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
-  ts_mutate(mutation_rate = 1e-)
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
 ```
+
+We can see that, indeed, the tree sequence now has `{r} ts$num_mutations`
+mutations in it.
 
 ---
 
-There are also two important _slendr_ functions called `ts_samples()` (which
-retrieves the "symbolic names" and dates of all recorded individuals at the end
-of a simulation) and `ts_nodes()`. **You can run them simply as
-`ts_samples(ts)` and `ts_nodes(ts)`. How many individuals (i.e. diploid
-samples) are in your tree sequence as you simulated it? How is the result of
-`ts_nodes()` different from `ts_samples()`?**
+## Exercise: working with "samples"
+
+If we are to use tree-sequence data for efficient computation of relevant
+population genomic statistics, we need a way to refer to individuals and
+populations. For this purpose, _slendr_ provides three important functions:
+`ts_samples()`, `ts_names()`, and `ts_nodes()`.
+
+At the bare minimum, these functions accept the tree sequence `ts` as their
+first argument (i.e., can be run such as `ts_samples(ts)`)**.
+
+---
+
+**Run each of these three functions on your `ts` tree sequence, then try
+answering these questions:**
+
+- How many individuals are in your tree sequence based on these functions?
+
+- How is the result of `ts_nodes()` different from `ts_samples()`?
+
+- What are the `time` values of recorded individuals based on the information in
+these tables?
+
+- Are the `time` values the same in both?
+
+- How many individuals in total are in the tree sequence based on these two
+functions, and how many of them are in each population? Why do you get the
+numbers you got, given the model which you programmed and simulated?
+
+- How does `ts_names()` differ from the two table-producing functions?
+
+**Use your _tidyverse_ knowledge to play around with the output of `ts_samples()` and `ts_nodes()` to answer these questions.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-We can see that our tree sequence contains a massive number of individuals. Too
-many, in fact --- we recorded every single individual alive at the end of our
-simulation, which is something we're unlikely to be ever lucky enough to have,
-regardless of which species we study.
+`ts_samples()` gives us a small metadata table with recorded individuals' names,
+populations, and times:
 
 ```{r}
 #| message: false
@@ -146,47 +226,140 @@ library(dplyr)
 ts_samples(ts) %>% group_by(pop) %>% summarize(n = n())
 ```
 
-The function `ts_nodes()` returns a table similar to the one produced by
-`ts_table(ts, "nodes")` above, except that it contains additional _slendr_
-metadata (names of individuals belonging to each node, spatial coordinates of
-nodes for spatial models, etc.). This makes it a bit more useful for analyzing
-tree-sequence data than the "low-level" functions, if that's something you ever
-need to do.
+`ts_nodes()` gives us a much larger table about tree-sequence nodes, which
+includes not only information about recorded individuals chromosomes (one node,
+or chromosome, for each), meaning that we get two rows of the table for each
+individual:
 
 ```{r}
-ts_nodes(ts) %>% head(5)
+ts_nodes(ts)
+
+ts_nodes(ts) %>% filter(name == "p1_42")
 ```
-:::
 
-## Exercise 5: Scheduling sampling events
+Additionally, the table also contains information about the recorded
+individuals' ancestral (unsampled) haplotypes, i.e. individuals who lived in
+their genealogical history, but whose complete genomic information we no longer
+have (because they mostl likely passed only a subset of their genomes to the
+individuals which we simulated or sequenced):
 
-In the table produced by `ts_samples()` in the previous exercise, you saw that
-the tree sequence we simulated recorded "everyone" living at the end of the
-simulation which amounted to a few tens of thousands of individuals. However,
-unless we're very lucky, it's extremely unlikely that we'll ever have a
-sequence of every single individual in a population that we study. To get a
-little closer to the scale of the genomic data that we usually work with on a
-day-to-day basis (and to avoid wasting computational resources on unnecessarily
-massive simulations), we can restrict our simulation to only record a subset of
-individuals.
+```{r}
+ts_nodes(ts) %>% filter(time > 0)
+```
 
-We can precisely define which individuals (from which populations, and at which
-times) should be recorded in a tree sequence using the _slendr_ function
-`schedule_sampling()`. For instance, in our `model` of introgression, we have
-created _slendr_ populations stored in variables `eur` and `afr`, and we can
-include the recording of the genomes of five individuals from both of those
-populations at times 10000 (years ago) and 0 (present-day) in our model with
-the following code:
+```{r}
+library(ggplot2)
+
+cowplot::plot_grid(ts_nodes(ts) %>%
+  filter(is.na(name)) %>% 
+  ggplot(aes(time)) +
+  geom_histogram() +
+  scale_x_continuous(labels = scales::comma) +
+    scale_x_log10() +
+  facet_wrap(~is.na(name), scales = "free_x"),
+  plot_model(model))
+```
+
+## Exercise: Scheduling sampling events
+
+We can see that our tree sequence contains a massive number of individuals. Too
+many, in fact --- we recorded every single individual alive at the end of our
+simulation, which is something we're unlikely to be ever lucky enough to have,
+regardless of which species we study.
+
+To get closer to the scale of the genomic data that we usually work with, we can
+restrict our simulation to only record a subset of individuals---we do this
+using a process called "scheduling of recorded individuals" implemented by the
+_slendr_ function `schedule_sampling()`. Simply speaking, this is a
+functionality of _slendr_ which precisely defines which individuals will be
+recorded in the tree sequence while ignoring everyone else.
+
+The function follows the structure in the following snippet, representing
+another very useful pattern worth keeping in mind going forward:
 
 ```{r}
 #| eval: false
-pop_schedule <- schedule_sampling(
-  model,                     # the model to record genomes from
-  times = c(10000, 0),       # times at which to record genomes
-  list(eur, 5), list(afr, 5) # which populations and how many genomes to record
+schedule <- schedule_sampling(
+  <compiled slendr model>,
+  times = <numbers representing times of recording>,
+  list(<population>, <number of samples to record>),
+  list(<population>, <number of samples to record>)
+  [... etc. ]
 )
 ```
 
+We then use this `schedule` object in a standard `msprime()` function call,
+setting it as the argument of the same name, i.e. like this:
+
+```{r}
+#| eval: false
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+---
+
+**To get an idea about what this function does in practice, modify the command
+which simulates the `ts` object in your script according to the snippet above,
+but include a schedule for recording 5 individuals from each of the four
+populations. When you run a new simulation and type the `ts` object name into
+your console, do you see a change? Use your knowledge of `ts_samples()` and some
+_tidyverse_ table processing to inspect the recorded individuals.**
+
+**Hint:** To make this easier to see, maybe keep the original simulation command
+in your script (the one without the `schedule`) but modify it to create a
+variable `ts_big` instead.
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+```{r}
+schedule <- schedule_sampling(
+  model,
+  times = 0,
+  list(p1, 5), list(p2, 5), list(p3, 5), list(p4, 5)
+)
+
+# new (smaller) tree-sequence recording
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+# original simulation command (note the missing schedule)
+ts_big <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+# see that the new tree sequence is much smaller (even its memory footprint)
+ts
+ts_big
+
+ts_samples(ts)
+ts_samples(ts_big)
+
+ts_samples(ts) %>% group_by(pop) %>% tally()
+ts_samples(ts_big) %>% group_by(pop) %>% tally()
+```
+
+:::
+
+::: aside
+
+**Note:** In order to make recording of smaller number of individuals from a (potentially huge) number of population easier, `schedule_sampling()` supports a shortcut of `list("all", <number>)` which records the given number of individuals from every population in the model at the given time.
+
+:::
+
+## Exercise: Composing complex recording schedules
+
+What if we need to simulate different number of individuals from different
+populations at very specific times? Doing this with a single call to
+`schedule_sampling()` is not possible. Luckily, multiple schedules can be easily
+combined together into a single sampling schedule.
+
+---
+
+**Type 
 **If you type the variable `pop_schedule` in the R console, you will see that
 this function returns a plain data frame (just try it).** As such, we can
 create multiple of such schedules (of arbitrary complexity and granularity) and
