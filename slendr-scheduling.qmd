@@ -184,10 +184,9 @@ mutations in it.
 If we are to use tree-sequence data for efficient computation of relevant
 population genomic statistics, we need a way to refer to individuals and
 populations. For this purpose, _slendr_ provides three important functions:
-`ts_samples()`, `ts_names()`, and `ts_nodes()`.
-
-At the bare minimum, these functions accept the tree sequence `ts` as their
-first argument (i.e., can be run such as `ts_samples(ts)`)**.
+`ts_samples()`, `ts_names()`, and `ts_nodes()`. At the bare minimum, these
+functions accept the tree sequence `ts` as their first argument (i.e., can be
+run such as `ts_samples(ts)`).
 
 ---
 
@@ -259,6 +258,8 @@ cowplot::plot_grid(ts_nodes(ts) %>%
   facet_wrap(~is.na(name), scales = "free_x"),
   plot_model(model))
 ```
+
+:::
 
 ## Exercise: Scheduling sampling events
 
@@ -391,187 +392,226 @@ to be able to simulate sequences of "ancient" individuals as well as various
 "present-day" reference panels.
 
 In preparation for these complex exercises, **implement the following sampling
-schedules (saving each of them in dedicated, appropriately-named variables),
-then bind them together using the function `bind_rows()` mentioned in the
-solution to the previous exercise, and simulate a tree sequence `ts` with this
-complex schedule, modifying your solution script accordingly.**
+schedule. You will have to figure out how many individual schedules you'll have
+to create using `schedule_sampling()`, then bind them together using the
+function `bind_rows()` mentioned in the solution to the previous exercise. Then,
+simulate a tree sequence `ts` with this new complex schedule, modifying your
+current solution script accordingly.**
 
-| time \n(years B.P.) | population | \# individuals | interpretation
-|-------|:-----------|----------------|----------------|
-| 0 | p1        | 1              | outgroup individual
-|   | p2        | 1              | admixture source
-| 0 | p3      | 1              | time-series of ancient individuals
-| 0 | p4        | 10              |  reference individuals
+| time (years B.P.) | population | samples at each time | interpretation
+|-------------------|:-----------|--------------|----------------|
+| 0                 | p1         | 1            | outgroup
+| 0                 | p2         | 1            | admixture source
+| from 5kya, every 1k years | p3       | 5            | time-series of ancient individuals
+| 0                 | p4         | 10           | panel of reference individuals
+
+**Hint:** You can provide a vector of numbers as the `times =` argument of
+`schedule_sampling()`. See the help page for `?schedule_sampling` for more
+information.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-```{r}
+It looks like we have effectively two groups of sampling events determined by
+the times indicated in the first column: sampling of individuals in the
+"present-day" (i.e., at time 0) and sampling of individuals in the past. So
+let's leverage that to create two sampling schedules, "modern" and "ancient":
 
+Scheduling of modern individuals:
+
+```{r}
+modern <- schedule_sampling(model, times = 0, list(p1, 1), list(p2, 1), list(p4, 10))
 ```
+
+Scheduling of ancient individuals:
+
+```{r}
+ancient_times <- seq(5000, 1000, by = -1000)
+ancient_times
+
+ancient <- schedule_sampling(model, times = ancient_times, list(p3, 5))
+```
+
+We can then create a single sampling schedulie like this:
+
+```{r}
+schedule <- rbind(modern, ancient)
+```
+
+And use it in our simulation just like we showed above:
+
+```{r}
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+Let's verify that we got the correct number of individuals:
+
+```{r}
+ts_samples(ts) %>% group_by(pop, time) %>% tally
+```
+
+:::
 
 ---
 
-**Using the function `schedule_sampling` and with the help of `rbind` as shown
-in the previous code example, program the sampling of the following sample sets
-at given times:**
+## Exercise: Scheduling the sampling of named individuals
 
+Sometimes, we don't just want to record a given set of "anonymous" individuals,
+but we want to be able to work with unique, named individuals. This can be
+especially helpful when we want to reconstruct a particular scenario in some
+specific archeological context (for instance, we want to work with some very
+precious archaeological sample, such as the "Altai Neanderthal").
 
+We can do so by calling `schedule_sampling()` in a slightly modified way which
+doesn't use the normal syntax `list(<population>, <number>)`, to record a given
+number of individuals from the given population, but instead uses the format of
+`list(<population>, 1, "<name of the individual>")`.
 
-**Then, schedule the sampling of a single `eur` individual at each of the
-following times (i.e., every two thousand years between 40 kya and the
-present-day):**
+---
 
-```{r}
-t <- seq(40000, 2000, by = -2000)
-```
-
-**At the end, bind all individual schedules into a single variable `schedule`
-using the function `rbind()`. In total, this should give you a data frame
-containing the sampling schedule for the recording of of the genomes of 38
-simulated individuals. Verify that this is true by summing the numbers in the 
-`n` column of the final data frame `schedule`.**
-
-
-::: aside
-**Note:** You can provide a vector variable (such as `t` in this example) as the
-`times =` argument of `schedule_sampling()`.
-:::
+**Use this format to modify your sampling schedule (for instance, based on
+combining two sampling schedules called `modern` and `ancient`) to implement a
+unique sampling event which will give the one representative individual of the
+admixture source population the name `"source_ind"` and the outgroup individual
+will be named `"outgroup_ind"`. Then create a new combined sampling `schedule`
+again, and verify that you got the new samples in a new simulated tree sequence
+`ts`.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-First we scheduled the sampling of two Neanderthals at 70kya and 40kya:
+We'll be more succint now (see the full explanation to the `modern` and `ancient`
+schedules in the solution to the previous exercise):
 
 ```{r}
-#| eval: false
-nea_samples <- schedule_sampling(model, times = c(70000, 40000), list(nea, 1))
-nea_samples # (this function produces a plain old data frame!)
+outgroup <- schedule_sampling(model, times = 0, list(p1, 1, "outgroup_ind"))
+source<- schedule_sampling(model, times = 0, list(p2, 1, "source_ind"))
+modern <- schedule_sampling(model, times = 0, list(p1, 1), list(p4, 10))
+ancient <- schedule_sampling(model, times = seq(5000, 1000, by = -1000), list(p3, 5))
+
+schedule <- bind_rows(outgroup, source, modern, ancient)
 ```
 
-Then we schedule one Chimpanzee sample, 5 African samples, and 10 European samples:
+Now we can simulate a new tree sequence with more specifically named
+individuals:
 
 ```{r}
-#| eval: false
-present_samples <- schedule_sampling(model, times = 0, list(chimp, 1), list(afr, 5), list(eur, 10))
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
 ```
 
-Then we also schedule the recording of one European sample between 50kya and
-2kya, every 2000 years:
+And verify that we did everything correctly by inspecting the table of the
+contents of the tree sequence:
+
 
 ```{r}
-#| eval: false
-times <- seq(40000, 2000, by = -2000)
-emh_samples <- schedule_sampling(model, times, list(eur, 1))
-```
-
-Because those functions produce nothing but a data frame, we can bind
-individual sampling schedules together at the end:
-
-```{r}
-#| eval: false
-schedule <- rbind(nea_samples, present_samples, emh_samples)
-schedule
-```
-
-Let's verify we scheduled the recording of genomes of everyone we needed:
-
-```{r}
-#| eval: false
-sum(schedule$n)
+ts_samples(ts) %>% print(n = Inf)
 ```
 
 :::
 
-**Then, verify the correctness of your overall sampling `schedule` by
-visualizing it together with your `model` using the function `plot_model()`
-(take a look at its manpage `?plot_model` to see how to do this).**
+---
+
+**You may have noticed that `plot_model()` has a number of optional arguments.
+One of them is called `schedule` and it accepts a sampling schedule (such as the
+one you just created) as its input. Use your `model` and sampling `schedule` to
+visualize your model.**
+
+This functionality can be useful as an additional validation of your modeling
+scripts, so always remember to use this for sanity checking your simulations
+(after all, a picture can be worth more than <strike>thousand words</strike>
+dozens of lines of code)!
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's is the model on its own:
+
+```{r}
+plot_model(model)
+```
+
+Here is the model with sampling numbers overlaid on top:
+
+```{r}
+plot_model(model, schedule = schedule)
+```
+
+:::
 
 ::: aside
 
 **Note:** As you've seen above, the visualization is often a bit wonky and
-convoluted with overlapping elements and it can be even worse with samples
-added, but try to experiment with arguments to `plot_model` described above to
-make the plot a bit more helpful for sanity checking.
+convoluted with overlapping elements, so don't be too frustrated if the results
+of your `plot_model()` visualizations are not too pretty. The function has been
+designed as a validation and troubleshooting tool, rather than a tool to create
+publication-ready figures.
 
 :::
 
-```{r}
-#| eval: false
-plot_model(model, samples = schedule)
-```
 
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+<!-- ## Exercise 6: Simulating a defined set of individuals -->
 
-```{r}
-plot_model(model, sizes = FALSE, samples = schedule)
-```
+<!-- We now have both a compiled _slendr_ `model` and a well-defined sampling -->
+<!-- `schedule`, so let's finally simulate some data! -->
 
-```{r}
-plot_model(model, sizes = FALSE, log = TRUE, samples = schedule)
-```
-:::
+<!-- **Use your combined sampling `schedule` to run a new tree-sequence simulation -->
+<!-- from your model (again using the `msprime()` function), this time restricted to -->
+<!-- just those individuals scheduled for recording. You can do this by running the -->
+<!-- following command (note that this also overlays mutations over our genealogies, -->
+<!-- which is something we didn't do before).** This will give you a new -->
+<!-- tree-sequence object stored in the `ts` variable. -->
 
-## Exercise 6: Simulating a defined set of individuals
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- ts <- -->
+<!--   msprime( -->
+<!--     model, sequence_length = 100e6, recombination_rate = 1e-8,  -->
+<!--     samples = schedule -->
+<!--   ) %>% -->
+<!--   ts_mutate(mutation_rate = 1e-8) -->
+<!-- ``` -->
 
-We now have both a compiled _slendr_ `model` and a well-defined sampling
-`schedule`, so let's finally simulate some data!
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- #### Click to see the solution -->
 
-**Use your combined sampling `schedule` to run a new tree-sequence simulation
-from your model (again using the `msprime()` function), this time restricted to
-just those individuals scheduled for recording. You can do this by running the
-following command (note that this also overlays mutations over our genealogies,
-which is something we didn't do before).** This will give you a new
-tree-sequence object stored in the `ts` variable.
+<!-- The command below will likely take a few minutes to run, so feel free to go -->
+<!-- down from 100 Mb sequence_length to even 10Mb (it doesn't matter much). -->
+<!-- (The `random_seed =` argument is there for reproducibility purposes.) -->
 
-```{r}
-#| eval: false
-ts <-
-  msprime(
-    model, sequence_length = 100e6, recombination_rate = 1e-8, 
-    samples = schedule
-  ) %>%
-  ts_mutate(mutation_rate = 1e-8)
-```
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-The command below will likely take a few minutes to run, so feel free to go
-down from 100 Mb sequence_length to even 10Mb (it doesn't matter much).
-(The `random_seed =` argument is there for reproducibility purposes.)
-
-```{r}
-#| eval: false
-ts <-
-  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>%
-  ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439)
-# Time difference of 2.141642 mins
-```
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- ts <- -->
+<!--   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>% -->
+<!--   ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439) -->
+<!-- # Time difference of 2.141642 mins -->
+<!-- ``` -->
 
 
-If you're bothered by how long the simulation takes, feel free to call these two lines
-to 100% reproduce my results without any expensive computation:
+<!-- If you're bothered by how long the simulation takes, feel free to call these two lines -->
+<!-- to 100% reproduce my results without any expensive computation: -->
 
-```{r}
-#| eval: false
-url_path <- "https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees"
-ts_path <- tempfile()
-download.file(url_path, destfile = ts_path, mode = "wb")
-ts <- ts_read(file = ts_path, model = model)
-ts
-```
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- url_path <- "https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees" -->
+<!-- ts_path <- tempfile() -->
+<!-- download.file(url_path, destfile = ts_path, mode = "wb") -->
+<!-- ts <- ts_read(file = ts_path, model = model) -->
+<!-- ts -->
+<!-- ``` -->
 
-```{r}
-#| echo: false
-#| eval: false
-# We can save a tree sequence object using a slendr function `ts_write` (this
-# can be useful if we want to save the results of a simulation for later use).
-if (dir.exists(here::here("files/popgen"))) {
-  ts_write(ts, here::here("files/popgen/introgression.trees"))
-}
-```
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- #| eval: false -->
+<!-- # We can save a tree sequence object using a slendr function `ts_write` (this -->
+<!-- # can be useful if we want to save the results of a simulation for later use). -->
+<!-- if (dir.exists(here::here("files/popgen"))) { -->
+<!--   ts_write(ts, here::here("files/popgen/introgression.trees")) -->
+<!-- } -->
+<!-- ``` -->
 
 <!-- ```{r} -->
 <!-- #| echo: false -->
@@ -582,49 +622,13 @@ if (dir.exists(here::here("files/popgen"))) {
 <!-- } -->
 <!-- ``` -->
 
-:::
+<!-- ::: -->
 
----
+<!-- ::: aside -->
 
-**Verify that your simulated `ts` object really does contain only the
-explicitly recorded samples, either by typing `ts` into the R console or,
-better still, using the function `ts_samples()`.**
+<!-- **Note:** When you think about it, it's quite astonishing how fast _msprime_ -->
+<!-- and _tskit_ are when dealing with such a huge amount of sequence data from tens -->
+<!-- of thousands of individuals on a normal laptop! -->
 
-::: aside
+<!-- ::: -->
 
-**Note:** When you think about it, it's quite astonishing how fast _msprime_
-and _tskit_ are when dealing with such a huge amount of sequence data from tens
-of thousands of individuals on a normal laptop!
-
-:::
-
-::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
-
-Inspect the (_tskit_/Python-based) summary of the new tree sequence
-(note the much smaller number of "sample nodes"!):
-
-```{r}
-ts
-```
-
-Get the table of all recorded samples in the tree sequence;
-
-```{r}
-ts_samples(ts)
-```
-
-We can also put some _tidyverse_ skills to use and compute the count of
-individuals at different time points:
-
-```{r}
-library(dplyr)
-
-ts_samples(ts) %>%
-  mutate(age_group = if_else(time == 0, "present-day", "ancient")) %>%
-  group_by(pop, age_group) %>%
-  summarize(n = n()) %>%
-  select(age_group, pop, n)
-```
-
-:::
