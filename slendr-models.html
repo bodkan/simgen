@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Programming slendr demographic models – Computational Population Genomics and Inference in R</title>
+<title>Building slendr models – Computational Population Genomics and Inference in R</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -152,7 +152,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slendr-models.html">Modeling with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./slendr-models.html"><span class="chapter-title">Programming <em>slendr</em> demographic models</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slendr-models.html">Modeling with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./slendr-models.html"><span class="chapter-title">Building <em>slendr</em> models</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -236,12 +236,12 @@ window.Quarto = {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slendr-models.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Programming <em>slendr</em> demographic models</span></a>
+  <a href="./slendr-models.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Building <em>slendr</em> models</span></a>
   </div>
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./slendr-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Simulating data and encoding sampling events</span></a>
+  <a href="./slendr-scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Simulating genomic data</span></a>
   </div>
 </li>
       </ul>
@@ -415,8 +415,7 @@ window.Quarto = {
   <li><a href="#exercise-understanding-common-slendr-errors" id="toc-exercise-understanding-common-slendr-errors" class="nav-link" data-scroll-target="#exercise-understanding-common-slendr-errors">Exercise: Understanding common <em>slendr</em> errors</a></li>
   <li><a href="#exercise-customization-of-time-units" id="toc-exercise-customization-of-time-units" class="nav-link" data-scroll-target="#exercise-customization-of-time-units">Exercise: Customization of time units</a></li>
   <li><a href="#exercise-resize-events" id="toc-exercise-resize-events" class="nav-link" data-scroll-target="#exercise-resize-events">Exercise: Resize events</a></li>
-  <li><a href="#exercise-encoding-gene-flow-admixture-introgression" id="toc-exercise-encoding-gene-flow-admixture-introgression" class="nav-link" data-scroll-target="#exercise-encoding-gene-flow-admixture-introgression">Exercise: Encoding gene flow (admixture, introgression)</a></li>
-  <li><a href="#optional-exercise-serialized-models-on-disk" id="toc-optional-exercise-serialized-models-on-disk" class="nav-link" data-scroll-target="#optional-exercise-serialized-models-on-disk">Optional exercise: Serialized models on disk</a></li>
+  <li><a href="#exercise-encoding-gene-flow-events" id="toc-exercise-encoding-gene-flow-events" class="nav-link" data-scroll-target="#exercise-encoding-gene-flow-events">Exercise: Encoding gene-flow events</a></li>
   <li><a href="#catch-up" id="toc-catch-up" class="nav-link" data-scroll-target="#catch-up">Catch up</a></li>
   </ul>
 </nav>
@@ -424,9 +423,9 @@ window.Quarto = {
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slendr-models.html">Modeling with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./slendr-models.html"><span class="chapter-title">Programming <em>slendr</em> demographic models</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./slendr-models.html">Modeling with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./slendr-models.html"><span class="chapter-title">Building <em>slendr</em> models</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-title">Programming <em>slendr</em> demographic models</span></h1>
+<h1 class="title"><span class="chapter-title">Building <em>slendr</em> models</span></h1>
 </div>
 
 
@@ -871,8 +870,8 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 <p><strong>Note:</strong> The visualization of the exponential is a bit wonky in that it makes things look like a gradual linear change—apologies for that! This will be fixed in a future <em>slendr</em> version.</p>
 </div></div></section>
 </section>
-<section id="exercise-encoding-gene-flow-admixture-introgression" class="level3">
-<h3 class="anchored" data-anchor-id="exercise-encoding-gene-flow-admixture-introgression">Exercise: Encoding gene flow (admixture, introgression)</h3>
+<section id="exercise-encoding-gene-flow-events" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-encoding-gene-flow-events">Exercise: Encoding gene-flow events</h3>
 <p>Of course, real-world populations don’t just split from one another or change their size. A very common demographic process is gene flow (also called admixture or introgression in various context and different species).</p>
 <p><strong>Use the function <code>gene_flow()</code> to program admixture from population “p1” into population “p2” at starting at <code>time</code> 100, with an <code>end</code> at time <code>200</code>. Set the total <code>proportion</code> of “p1” ancestry in “p2” at 0.2</strong> (i.e., 20% of the final “p2” population will be derived from “p1”).</p>
 <div class="cell">
@@ -902,54 +901,6 @@ implies an instantaneous step change.</code></pre>
 </div>
 <p><strong>When you look at <code>?gene_flow</code> help page, you see that the function has a <code>rate</code> argument too. What does it do? Is there any way to get the same result (i.e., to encode the same gene-flow event) as you did just above, but using <code>rate</code> instead of <code>proportion</code>? When would you expect to use one or the other?</strong></p>
 </section>
-<section id="optional-exercise-serialized-models-on-disk" class="level3">
-<h3 class="anchored" data-anchor-id="optional-exercise-serialized-models-on-disk">Optional exercise: Serialized models on disk</h3>
-<p><em>Feel free to skip this exercise, unless you managed to run through everything quickly and want to learn about <em>slendr</em> internals!</em></p>
-<p>A very important part of <em>slendr</em>’s approach to modeling is to make simple things be trivially easy. This is largely why expressing even relatively complex models with <em>slendr</em> requires so little code compared to the amount of programming needed with traditional powerful simulators such as <a href="https://tskit.dev/msprime/"><em>msprime</em></a> and <a href="https://messerlab.org/slim/">SLiM</a>, something you’ll see (and hopefully appreciate!) when we get to programming larger models later.</p>
-<p>Still, sometimes it’s useful to peek behind the curtain and see what exactly is going on inside <em>slendr</em> and how it operates.</p>
-<p><strong>Type out the <code>model</code> object in the R console, paying attention to the description of the path. Use your operating system disk browsing program (Finder on macOS, File Explorer on Windows, or any other means of browsing files on other systems, such as the terminal shell) to see what files are hiding in that path.</strong></p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(model<span class="sc">$</span>path, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/checksums.tsv"      
- [2] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/description.txt"    
- [3] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/direction.txt"      
- [4] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/generation_time.txt"
- [5] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/length.txt"         
- [6] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/orig_length.txt"    
- [7] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/populations.tsv"    
- [8] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/ranges.rds"         
- [9] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/resizes.tsv"        
-[10] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/script.py"          
-[11] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/script.slim"        
-[12] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpu5KG0q/file955e30fa05cf_slendr_model/time_units.txt"     </code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>print_file <span class="ot">&lt;-</span> <span class="cf">function</span>(model, file) <span class="fu">cat</span>(<span class="fu">readLines</span>(<span class="fu">file.path</span>(model<span class="sc">$</span>path, file)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"populations.tsv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>pop parent  N   tsplit_gen  tsplit_orig tremove_gen tremove_orig    pop_id  parent_id pop   __pop_is_ancestor   5000    1   1   -1  -1  0   -1</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"time_units.txt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>generations</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"direction.txt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>forward</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"description.txt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-</section>
 <section id="catch-up" class="level2">
 <h2 class="anchored" data-anchor-id="catch-up">Catch up</h2>
 <p>If you want to just catch up to the point at which this section would conclude, here is the version of our simulation script at the end of the final exercise</p>
@@ -966,29 +917,29 @@ implies an instantaneous step change.</code></pre>
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
-<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">12000</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
-<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">9000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p1)</span>
-<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">6000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2) <span class="sc">%&gt;%</span></span>
-<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">1800</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2000</span>, <span class="at">time =</span> <span class="dv">1000</span>)</span>
-<span id="cb41-9"><a href="#cb41-9" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
-<span id="cb41-10"><a href="#cb41-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-11"><a href="#cb41-11" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p2, <span class="at">to =</span> p3, <span class="at">start =</span> <span class="dv">3000</span>, <span class="at">end =</span> <span class="dv">2200</span>, <span class="at">proportion =</span> <span class="fl">0.1</span>)</span>
-<span id="cb41-12"><a href="#cb41-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-13"><a href="#cb41-13" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb41-14"><a href="#cb41-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">gene_flow =</span> gf,</span>
-<span id="cb41-15"><a href="#cb41-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation_time =</span> <span class="dv">30</span>,</span>
-<span id="cb41-16"><a href="#cb41-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_units =</span> <span class="st">"years before present"</span></span>
-<span id="cb41-17"><a href="#cb41-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb41-18"><a href="#cb41-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb41-19"><a href="#cb41-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">12000</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">9000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p1)</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">6000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2) <span class="sc">%&gt;%</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">1800</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2000</span>, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p2, <span class="at">to =</span> p3, <span class="at">start =</span> <span class="dv">3000</span>, <span class="at">end =</span> <span class="dv">2200</span>, <span class="at">proportion =</span> <span class="fl">0.1</span>)</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">gene_flow =</span> gf,</span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation_time =</span> <span class="dv">30</span>,</span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_units =</span> <span class="st">"years before present"</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="slendr-models_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="slendr-models_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -996,6 +947,40 @@ implies an instantaneous step change.</code></pre>
 </div>
 </div>
 </div>
+<!-- ### Optional exercise: Serialized models on disk -->
+<!-- _Feel free to skip this exercise, unless you managed to run through everything -->
+<!-- quickly and want to learn about _slendr_ internals!_ -->
+<!-- A very important part of _slendr_'s approach to modeling is to make simple -->
+<!-- things be trivially easy. This is largely why expressing even relatively complex -->
+<!-- models with _slendr_ requires so little code compared to the amount of -->
+<!-- programming needed with traditional powerful simulators such as -->
+<!-- [_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/), -->
+<!-- something you'll see (and hopefully appreciate!) when we get to programming -->
+<!-- larger models later. -->
+<!-- Still, sometimes it's useful to peek behind the curtain and see what exactly is going on inside _slendr_ and how it operates. -->
+<!-- **Type out the `model` object in the R console, paying attention to the -->
+<!-- description of the path. Use your operating system disk browsing program (Finder -->
+<!-- on macOS, File Explorer on Windows, or any other means of browsing files on -->
+<!-- other systems, such as the terminal shell) to see what files are hiding in that -->
+<!-- path.** -->
+<!-- ```{r} -->
+<!-- list.files(model$path, full.names = TRUE) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- print_file <- function(model, file) cat(readLines(file.path(model$path, file))) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- print_file(model, "populations.tsv") -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- print_file(model, "time_units.txt") -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- print_file(model, "direction.txt") -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- print_file(model, "description.txt") -->
+<!-- ``` -->
 
 
 </section>
@@ -1408,8 +1393,8 @@ implies an instantaneous step change.</code></pre>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./slendr-scheduling.html" class="pagination-link" aria-label="Simulating data and encoding sampling events">
-        <span class="nav-page-text"><span class="chapter-title">Simulating data and encoding sampling events</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./slendr-scheduling.html" class="pagination-link" aria-label="Simulating genomic data">
+        <span class="nav-page-text"><span class="chapter-title">Simulating genomic data</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
