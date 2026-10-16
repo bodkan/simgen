@@ -83,10 +83,10 @@ model <- compile_model(
 # Schedule the sampling from four European populations roughly before their
 # disappearance (or before the end of the simulation)
 schedule <- rbind(
-  schedule_sampling(model, times = 0, list(eur, 50)),
-  schedule_sampling(model, times = 6000, list(ehg, 50)),
-  schedule_sampling(model, times = 4000, list(ana, 50)),
-  schedule_sampling(model, times = 2500, list(yam, 50))
+  schedule_recording(model, times = 0, list(eur, 50)),
+  schedule_recording(model, times = 6000, list(ehg, 50)),
+  schedule_recording(model, times = 4000, list(ana, 50)),
+  schedule_recording(model, times = 2500, list(yam, 50))
 )
 ```
 
@@ -139,7 +139,7 @@ ts # no mutations!
 :::
 
 **Inspect the table of all individuals recorded in our tree sequence using
-the function `ts_samples()`, making sure we have all the individuals scheduled
+the function `ts_recorded()`, making sure we have all the individuals scheduled
 for tree-sequence recording.** (Again, there's no such a thing as too many
 sanity checks when doing research!)
 
@@ -147,10 +147,10 @@ sanity checks when doing research!)
 #### Click to see the solution
 
 ```{r}
-ts_samples(ts)
+ts_recorded(ts)
 
 library(dplyr)
-ts_samples(ts) %>% group_by(pop, time) %>% tally
+ts_recorded(ts) %>% group_by(pop, time) %>% tally
 ```
 :::
 
@@ -170,7 +170,7 @@ for some general guidance.**
 #### Click to see the solution
 
 ```{r}
-samples <- ts_names(ts, split = "pop")
+samples <- ts_names(ts, split = TRUE)
 samples
 
 # Compute genome-wide Tajima's D for each population -- note that we don't
@@ -553,7 +553,7 @@ visualization of the demographic model above)?**
 #### Click to see the solution
 
 ```{r}
-samples <- ts_names(ts, split = "pop")
+samples <- ts_names(ts, split = TRUE)
 samples
 
 # Overall Tajima's D across the 10Mb sequence still doesn't reveal any significant

@@ -10,12 +10,10 @@ following script as a basis for what's coming up next:
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 12000, N = 1000)
-p2 <- population("p2", time = 9000, N = 1000, parent = p1)
-p3 <- population("p3", time = 6000, N = 1000, parent = p2) %>%
-  resize(N = 100, time = 1800) %>%
-  resize(N = 2000, time = 1000)
-p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+p1 <- population("p1", time = 12000, N = 10000)
+p2 <- population("p2", time = 9000, N = 2000, parent = p1)
+p3 <- population("p3", time = 6000, N = 5000, parent = p2)
+p4 <- population("p4", time = 3000, N = 2000, parent = p3)
 
 gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2200, proportion = 0.1)
 
@@ -184,9 +182,9 @@ mutations in it.
 If we are to use tree-sequence data for efficient computation of relevant
 population genomic statistics, we need a way to refer to individuals and
 populations. For this purpose, _slendr_ provides three important functions:
-`ts_samples()`, `ts_names()`, and `ts_nodes()`. At the bare minimum, these
+`ts_recorded()`, `ts_names()`, and `ts_nodes()`. At the bare minimum, these
 functions accept the tree sequence `ts` as their first argument (i.e., can be
-run such as `ts_samples(ts)`).
+run such as `ts_recorded(ts)`).
 
 ---
 
@@ -195,7 +193,7 @@ answering these questions:**
 
 - How many individuals are in your tree sequence based on these functions?
 
-- How is the result of `ts_nodes()` different from `ts_samples()`?
+- How is the result of `ts_nodes()` different from `ts_recorded()`?
 
 - What are the `time` values of recorded individuals based on the information in
 these tables?
@@ -208,21 +206,21 @@ numbers you got, given the model which you programmed and simulated?
 
 - How does `ts_names()` differ from the two table-producing functions?
 
-**Use your _tidyverse_ knowledge to play around with the output of `ts_samples()` and `ts_nodes()` to answer these questions.**
+**Use your _tidyverse_ knowledge to play around with the output of `ts_recorded()` and `ts_nodes()` to answer these questions.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-`ts_samples()` gives us a small metadata table with recorded individuals' names,
+`ts_recorded()` gives us a small metadata table with recorded individuals' names,
 populations, and times:
 
 ```{r}
 #| message: false
-ts_samples(ts)
-ts_samples(ts) %>% nrow()
+ts_recorded(ts)
+ts_recorded(ts) %>% nrow()
 
 library(dplyr)
-ts_samples(ts) %>% group_by(pop) %>% summarize(n = n())
+ts_recorded(ts) %>% group_by(pop) %>% summarize(n = n())
 ```
 
 `ts_nodes()` gives us a much larger table about tree-sequence nodes, which
@@ -271,7 +269,7 @@ regardless of which species we study.
 To get closer to the scale of the genomic data that we usually work with, we can
 restrict our simulation to only record a subset of individuals---we do this
 using a process called "scheduling of recorded individuals" implemented by the
-_slendr_ function `schedule_sampling()`. Simply speaking, this is a
+_slendr_ function `schedule_recording()`. Simply speaking, this is a
 functionality of _slendr_ which precisely defines which individuals will be
 recorded in the tree sequence while ignoring everyone else.
 
@@ -280,7 +278,7 @@ another very useful pattern worth keeping in mind going forward:
 
 ```{r}
 #| eval: false
-schedule <- schedule_sampling(
+schedule <- schedule_recording(
   <compiled slendr model>,
   times = <numbers representing times of recording>,
   list(<population>, <number of samples to record>),
@@ -305,7 +303,7 @@ ts <-
 which simulates the `ts` object in your script according to the snippet above,
 but include a schedule for recording 5 individuals from each of the four
 populations. When you run a new simulation and type the `ts` object name into
-your console, do you see a change? Use your knowledge of `ts_samples()` and some
+your console, do you see a change? Use your knowledge of `ts_recorded()` and some
 _tidyverse_ table processing to inspect the recorded individuals.**
 
 **Hint:** To make this easier to see, maybe keep the original simulation command
@@ -316,7 +314,7 @@ variable `ts_big` instead.
 #### Click to see the solution
 
 ```{r}
-schedule <- schedule_sampling(
+schedule <- schedule_recording(
   model,
   times = 0,
   list(p1, 5), list(p2, 5), list(p3, 5), list(p4, 5)
@@ -336,18 +334,18 @@ ts_big <-
 ts
 ts_big
 
-ts_samples(ts)
-ts_samples(ts_big)
+ts_recorded(ts)
+ts_recorded(ts_big)
 
-ts_samples(ts) %>% group_by(pop) %>% tally()
-ts_samples(ts_big) %>% group_by(pop) %>% tally()
+ts_recorded(ts) %>% group_by(pop) %>% tally()
+ts_recorded(ts_big) %>% group_by(pop) %>% tally()
 ```
 
 :::
 
 ::: aside
 
-**Note:** In order to make recording of smaller number of individuals from a (potentially huge) number of population easier, `schedule_sampling()` supports a shortcut of `list("all", <number>)` which records the given number of individuals from every population in the model at the given time.
+**Note:** In order to make recording of smaller number of individuals from a (potentially huge) number of population easier, `schedule_recording()` supports a shortcut of `list("all", <number>)` which records the given number of individuals from every population in the model at the given time.
 
 :::
 
@@ -355,7 +353,7 @@ ts_samples(ts_big) %>% group_by(pop) %>% tally()
 
 What if we need to simulate different number of individuals from different
 populations at very specific times? Doing this with a single call to
-`schedule_sampling()` is not possible. Luckily, multiple schedules can be easily
+`schedule_recording()` is not possible. Luckily, multiple schedules can be easily
 combined together into a single sampling schedule.
 
 ---
@@ -366,8 +364,8 @@ that multiple schedules can be easily combined? And how could we combine them?**
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-The output of any `schedule_sampling()` function is a plain old data frame! It
-contains a bunch of information we used in the `schedule_sampling()` call
+The output of any `schedule_recording()` function is a plain old data frame! It
+contains a bunch of information we used in the `schedule_recording()` call
 (population names, times, etc.), plus a bunch more additional data which is
 currently irrelevant.
 
@@ -393,7 +391,7 @@ to be able to simulate sequences of "ancient" individuals as well as various
 
 In preparation for these complex exercises, **implement the following sampling
 schedule. You will have to figure out how many individual schedules you'll have
-to create using `schedule_sampling()`, then bind them together using the
+to create using `schedule_recording()`, then bind them together using the
 function `bind_rows()` mentioned in the solution to the previous exercise. Then,
 simulate a tree sequence `ts` with this new complex schedule, modifying your
 current solution script accordingly.**
@@ -406,7 +404,7 @@ current solution script accordingly.**
 | 0                 | p4         | 10           | panel of reference individuals
 
 **Hint:** You can provide a vector of numbers as the `times =` argument of
-`schedule_sampling()`. See the help page for `?schedule_sampling` for more
+`schedule_recording()`. See the help page for `?schedule_recording` for more
 information.
 
 ::: {.callout-note collapse="true" icon=false}
@@ -420,7 +418,7 @@ let's leverage that to create two sampling schedules, "modern" and "ancient":
 Scheduling of modern individuals:
 
 ```{r}
-modern <- schedule_sampling(model, times = 0, list(p1, 1), list(p2, 1), list(p4, 10))
+modern <- schedule_recording(model, times = 0, list(p1, 1), list(p2, 1), list(p4, 10))
 ```
 
 Scheduling of ancient individuals:
@@ -429,7 +427,7 @@ Scheduling of ancient individuals:
 ancient_times <- seq(5000, 1000, by = -1000)
 ancient_times
 
-ancient <- schedule_sampling(model, times = ancient_times, list(p3, 5))
+ancient <- schedule_recording(model, times = ancient_times, list(p3, 5))
 ```
 
 We can then create a single sampling schedulie like this:
@@ -449,7 +447,7 @@ ts <-
 Let's verify that we got the correct number of individuals:
 
 ```{r}
-ts_samples(ts) %>% group_by(pop, time) %>% tally
+ts_recorded(ts) %>% group_by(pop, time) %>% tally
 ```
 
 :::
@@ -464,7 +462,7 @@ especially helpful when we want to reconstruct a particular scenario in some
 specific archeological context (for instance, we want to work with some very
 precious archaeological sample, such as the "Altai Neanderthal").
 
-We can do so by calling `schedule_sampling()` in a slightly modified way which
+We can do so by calling `schedule_recording()` in a slightly modified way which
 doesn't use the normal syntax `list(<population>, <number>)`, to record a given
 number of individuals from the given population, but instead uses the format of
 `list(<population>, 1, "<name of the individual>")`.
@@ -486,10 +484,10 @@ We'll be more succint now (see the full explanation to the `modern` and `ancient
 schedules in the solution to the previous exercise):
 
 ```{r}
-outgroup <- schedule_sampling(model, times = 0, list(p1, 1, "outgroup_ind"))
-source<- schedule_sampling(model, times = 0, list(p2, 1, "source_ind"))
-modern <- schedule_sampling(model, times = 0, list(p1, 1), list(p4, 10))
-ancient <- schedule_sampling(model, times = seq(5000, 1000, by = -1000), list(p3, 5))
+outgroup <- schedule_recording(model, times = 0, list(p1, 1, "outgroup_ind"))
+source<- schedule_recording(model, times = 0, list(p2, 1, "source_ind"))
+modern <- schedule_recording(model, times = 0, list(p1, 1), list(p4, 10))
+ancient <- schedule_recording(model, times = seq(5000, 1000, by = -1000), list(p3, 5))
 
 schedule <- bind_rows(outgroup, source, modern, ancient)
 ```
@@ -508,7 +506,7 @@ contents of the tree sequence:
 
 
 ```{r}
-ts_samples(ts) %>% print(n = Inf)
+ts_recorded(ts) %>% print(n = Inf)
 ```
 
 :::
@@ -558,12 +556,10 @@ publication-ready figures.
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 12000, N = 1000)
-p2 <- population("p2", time = 9000, N = 1000, parent = p1)
-p3 <- population("p3", time = 6000, N = 1000, parent = p2) %>%
-  resize(N = 100, time = 1800) %>%
-  resize(N = 2000, time = 1000)
-p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+p1 <- population("p1", time = 12000, N = 10000)
+p2 <- population("p2", time = 9000, N = 2000, parent = p1)
+p3 <- population("p3", time = 6000, N = 5000, parent = p2)
+p4 <- population("p4", time = 3000, N = 2000, parent = p3)
 
 gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2200, proportion = 0.1)
 
@@ -573,10 +569,10 @@ model <- compile_model(
     time_units = "years before present"
 )
 
-outgroup <- schedule_sampling(model, times = 0, list(p1, 1, "outgroup_ind"))
-source<- schedule_sampling(model, times = 0, list(p2, 1, "source_ind"))
-modern <- schedule_sampling(model, times = 0, list(p1, 1), list(p4, 10))
-ancient <- schedule_sampling(model, times = seq(5000, 1000, by = -1000), list(p3, 5))
+outgroup <- schedule_recording(model, times = 0, list(p1, 1, "outgroup_ind"))
+source<- schedule_recording(model, times = 0, list(p2, 1, "source_ind"))
+modern <- schedule_recording(model, times = 0, list(p1, 1), list(p4, 10))
+ancient <- schedule_recording(model, times = seq(5000, 1000, by = -1000), list(p3, 5))
 
 schedule <- bind_rows(outgroup, source, modern, ancient)
 

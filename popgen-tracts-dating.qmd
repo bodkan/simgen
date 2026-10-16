@@ -40,8 +40,8 @@ gf <- gene_flow(from = popX, to = popY, rate = 0.2, start = 800, end = 799)
 model <- compile_model(list(popZ, popX, popY), generation_time = 1, gene_flow = gf)
 
 schedule <- rbind(
-  schedule_sampling(model, times = seq(1500, 0, by = -100), list(popY, 50)),
-  schedule_sampling(model, times = 0, list(popX, 10), list(popZ, 10))
+  schedule_recording(model, times = seq(1500, 0, by = -100), list(popY, 50)),
+  schedule_recording(model, times = 0, list(popX, 10), list(popZ, 10))
 )
 
 # Use the function plot_model() to make sure that the model and the sampling schedule
@@ -57,7 +57,7 @@ library(ggplot2)
 tracts <- ts_tracts(ts, census = 800)
 tracts
 
-sample_times <- ts_samples(ts) %>% select(name, time)
+sample_times <- ts_recorded(ts) %>% select(name, time)
 
 # adding haplotype ID and time (automatically done by the dev slendr)
 tracts <- tracts %>% dplyr::group_by(name) %>% dplyr::mutate(haplotype = dplyr::dense_rank(node_id)) %>% dplyr::ungroup() %>% inner_join(sample_times) 

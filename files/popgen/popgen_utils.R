@@ -63,7 +63,7 @@ plot_pca <- function(prefix, ts, pc = c(1, 2), model = c("map", "tree"),
   if (length(pc) != 2)
     stop("The 'pc' argument of 'plot_pca' must be an integer vector of length two", call. = FALSE)
 
-  samples <- ts_samples(ts) #%>% mutate(pop = factor(pop, levels = c("popA", "popB", "popC")))
+  samples <- ts_recorded(ts) #%>% mutate(pop = factor(pop, levels = c("popA", "popB", "popC")))
 
   return <- match.arg(return)
   color_by <- match.arg(color_by)
@@ -203,7 +203,7 @@ landscape_sampling <- function(model, n) {
     n <- rep(n, 10)
     names(n) <- paste0("p", 1:10)
   }
-  schedule <- schedule_sampling(model, times = model$orig_length,
+  schedule <- schedule_recording(model, times = model$orig_length,
                                 list(model$populations$p1, n[["p1"]]),
                                 list(model$populations$p2, n[["p2"]]),
                                 list(model$populations$p3, n[["p3"]]),

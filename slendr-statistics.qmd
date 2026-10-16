@@ -5,24 +5,22 @@ single script, developing small self-contained pipelines).
 
 ## Introduction
 
-In this session, you are going to build on top of the results from previous
-chapters on programming demographic models and simulating tree-sequence data
-from recorded simulated individuals. Specifically, you will learn how to compute
-population genetic statistics using _slendr_'s interface to tree-sequence module
-called _tskit_.
+In this session, you will learn how to compute population genetic statistics
+from tree sequences simulated from _slendr_ models, using its interface to the
+tree-sequence module called _tskit_.
 
-Computing tree-sequence statistics on some sets of populations or individuals
-from those populations requires us to specify _what_ should exactly be computed
-and _how_. For instance, which particular individuals (generally referred to by
-their names) should the computation be performed? If multiple individuals should
-be grouped together for a particular computation, how do we define this
-grouping?
+Computing tree-sequence statistics on populations or individuals populations
+requires a specification of _what_ should exactly be computed and _how_. For
+instance, which particular individuals (referred to by their names) should a
+computation be performed? If multiple individuals should be grouped together for
+a particular computation, how do we define this grouping?
 
-You will be working through a set of instructive exercises from the most
-fundamental concepts of population genomics. They've been designed to both help
-you get the necessary technicalities under your belt, while being fun as little
-popgen puzzles on their own, demonstrating various important features and
-caveats of popular statistical methods of population genomics.
+In order to learn all the operations needed to do this, you will be working
+through a set of exercises focused on the most fundamental concepts of
+population genomics. They've been designed to help you get the necessary
+technicalities under your belt while serving as little popgen puzzles on their
+own, regardless of your level of experience (or lack thereof) of population
+genetic theory.
 
 ## TODO --- ideas
 
@@ -37,25 +35,16 @@ https://en.wikipedia.org/wiki/Watterson_estimator:
 
 
 
-
-
-
-
-
 ## Catch up
 
 ```{r}
-library(dplyr)
-
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 12000, N = 1000)
-p2 <- population("p2", time = 9000, N = 1000, parent = p1)
-p3 <- population("p3", time = 6000, N = 1000, parent = p2) %>%
-  resize(N = 100, time = 1800) %>%
-  resize(N = 2000, time = 1000)
-p4 <- population("p4", time = 3000, N = 1000, parent = p3)
+p1 <- population("p1", time = 12000, N = 10000)
+p2 <- population("p2", time = 9000, N = 2000, parent = p1)
+p3 <- population("p3", time = 6000, N = 5000, parent = p2)
+p4 <- population("p4", time = 3000, N = 2000, parent = p3)
 
 gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2200, proportion = 0.1)
 
@@ -65,7 +54,7 @@ model <- compile_model(
     time_units = "years before present"
 )
 
-schedule <- schedule_sampling(model, times = 0, list("each", 10))
+schedule <- schedule_recording(model, times = 0, list("each", 10))
 
 plot_model(model, proportions = TRUE, schedule = schedule)
 
@@ -73,8 +62,6 @@ ts <-
   msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 ```
-
-
 
 
 
@@ -94,15 +81,74 @@ referring to individual names.
 **Start by adding this to your script. A variable such as `samples` will
 
 
+```{r}
+inds <- ts_names(ts)
+inds
+```
+
+```{r}
+inds <- ts_names(ts, split = TRUE)
+inds
+```
+
+```{r}
+inds$p1
+```
+
+```{r}
+inds["p1"]
+```
+
+```{r}
+inds[["p1"]]
+```
 
 
 
+## Exercise: Computing nucleotide diversity
 
+The simplest possible specification of individual names / groups.
+
+The simplest possible thing we can do is to provide the name of a single
+individual:
+
+```{r}
+ts_diversity(ts, sample_sets = "p1_1")
+```
+
+Note that this is the same thing as this (because a single value in R is the
+same thing as a vector of length one):
+
+```{r}
+ts_diversity(ts, sample_sets = c("p1_1"))
+```
+
+```{r}
+"single_value" == c("single_value")
+```
+
+
+Diversity within a group of individuals:
+
+```{r}
+ts_diversity(ts, sample_sets = c("p1_1", "p1_2", "p1_3"))
+ts_diversity(ts, sample_sets = list(c("p1_1", "p1_2", "p1_3")))
+ts_diversity(ts, sample_sets = list(p1_subset = c("p1_1", "p1_2", "p1_3")))
+```
+
+```{r}
+ts_divergence(ts, sample_sets = inds["p1"])
+```
 
 
 
 
 ## Exercise: Segregating sites and sequencing effort
+
+Motivation: Single model, repeated computation on a subset of tree-sequence samples.
+
+What if you wanted to get a good idea of a genetic diversity in your population,
+or another summary statistic?
 
 ```{r}
 library(dplyr)
@@ -142,6 +188,93 @@ ggplot(df, aes(size, diversity)) + geom_point() + scale_x_log10()
 
 
 
+## Exercise: Tajima's D
+
+Motivation: computing replicates
+
+**Simulate a single Tajima's D value from a single tree sequence.**
+
+Single population model:
+
+```{r}
+library(slendr)
+init_env()
+
+pop <- population("pop", time = 1000, N = 1000)
+model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+
+ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE))
+```
+
+Problem: from a single replicate, it's impossible to know. We must first
+establish a null distribution:
+
+```{r}
+library(slendr)
+init_env()
+
+tajima_const <- ts_replicate(
+  n = 10,
+  {
+    pop <- population("constant", time = 1000, N = 5000)
+    model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+    
+    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
+  }
+)
+
+tajima_const
+```
+
+```{r}
+tajima_bottle <- ts_replicate(
+  n = 10,
+  {
+    pop <- population("bottleneck", time = 1000, N = 5000) %>%
+      resize(N = 2500, time = 100)
+    model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+    
+    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
+  }
+)
+```
+
+```{r}
+tajima_exp <- ts_replicate(
+  n = 10,
+  {
+    pop <- population("expansion", time = 1000, N = 5000) %>%
+      resize(N = 10000, time = 100)
+    model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+    
+    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
+  }
+)
+```
+
+```{r}
+tajima <- bind_rows(tajima_const, tajima_bottle, tajima_exp)
+```
+
+
+
+```{r}
+ggplot(tajima, aes(set, D)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+```
+
+
+
 
 
 
@@ -150,13 +283,26 @@ ggplot(df, aes(size, diversity)) + geom_point() + scale_x_log10()
 ## Exercise: Allele frequency spectrum
 
 ```{r}
-samples <- ts_names(ts, split = "pop")
+samples <- ts_names(ts, split = TRUE)
 
 plot(ts_afs(ts, sample_sets = samples["p1"]), type = "l", col = "lightblue")
 lines(ts_afs(ts, sample_sets = samples["p2"]), type = "l", col = "darkgreen")
 lines(ts_afs(ts, sample_sets = samples["p3"]), type = "l", col = "orange")
 lines(ts_afs(ts, sample_sets = samples["p4"]), type = "l", col = "purple")
 ```
+
+
+
+
+
+
+
+
+
+# Exercise: $F_{ST}$ losing power with $N_e$
+
+
+
 
 
 
@@ -184,7 +330,7 @@ with (slendr tree-sequence statistic functions generally operate with this kind
 of structure):
 
 ```{r}
-sample_sets <- ts_names(ts, split = "pop")
+sample_sets <- ts_names(ts, split = TRUE)
 sample_sets
 ```
 
@@ -219,7 +365,7 @@ statistic on,
 samples with that name).
 
 Although you can get all the above information by processing the table produced
-by the `ts_samples()` function, _slendr_ provides a useful helper function
+by the `ts_recorded()` function, _slendr_ provides a useful helper function
 `ts_names()` which only returns the names of individuals as a vector 
 (or a named list of such vectors, one vector per population as shown below).
 
@@ -236,7 +382,7 @@ which can be immediately used as the `sample_sets =` argument mentioned in the
 **Hint** above:
 
 ```{r}
-ts_names(ts, split = "pop")
+ts_names(ts, split = TRUE)
 ```
 
 As you can see, this command returned a normal R list, with each element
@@ -245,7 +391,7 @@ use standard R named-list indexing to get subsets of individuals like this:
 
 ```{r}
 # this saves the named list of individual samples into a variable `names`
-names <- ts_names(ts, split = "pop")
+names <- ts_names(ts, split = TRUE)
 
 # this is how we can then access the names of all recorded Neanderthals
 names["NEA"]
@@ -273,7 +419,7 @@ populations.**
 do this by giving the `ts_diversity()` function a vector of names as
 `sample_sets =` instead of an R list of vectors like you did in the previous
 exercise. One way to make plotting of the result easy is to first get a table
-of all individuals using `pi_df <- ts_samples(ts)` and then add
+of all individuals using `pi_df <- ts_recorded(ts)` and then add
 heterozygosities in each of those individuals as a new column.
 
 ::: {.callout-note collapse="true" icon=false}
@@ -289,7 +435,7 @@ heterozygosities as a new column:
 
 ```{r}
 # get the table of all sample individuals
-pi_df <- ts_samples(ts)
+pi_df <- ts_recorded(ts)
 pi_df
 
 # this is how we get names of all these individuals
@@ -335,7 +481,7 @@ for each vector of individual names in that list).
 
 ```{r}
 # again, we can first extract the list of names of individuals in each population
-names_list <- ts_names(ts, split = "pop")
+names_list <- ts_names(ts, split = TRUE)
 
 # then we use this list in `ts_divergence()` to compute pairwise divergence values
 div_df <- ts_divergence(ts, sample_sets = names_list)
@@ -518,7 +664,7 @@ to compute and compare the values of these two statistics:
 
 here `<individual>` can be the name of any individual recorded in your
 tree sequence, such as names you saw as `name` column in the table returned
-by `ts_samples(ts)` (i.e. `"NEA_1"` could be used as a "representative"
+by `ts_recorded(ts)` (i.e. `"NEA_1"` could be used as a "representative"
 \<Neanderthal\> in those equations, similarly for `"CHIMP_1"` as the fourth
 sample in the $f_4$ quarted representing the outgroup).
 
@@ -658,7 +804,7 @@ This gives us list of vectors of the names of all individuals in each
 population...
 
 ```{r}
-sample_sets <- ts_names(ts, split = "pop")
+sample_sets <- ts_names(ts, split = TRUE)
 # ... which we can then access like this
 sample_sets$AFR # all Africans
 sample_sets$EUR # all Europeans
@@ -745,7 +891,7 @@ same?**
 
 ```{r}
 # Extract table with names and times of sampled Europeans (ancient and present day)
-eur_inds <- ts_samples(ts) %>% filter(pop == "EUR")
+eur_inds <- ts_recorded(ts) %>% filter(pop == "EUR")
 eur_inds
 
 # Compute f4-ration statistic (this will take ~30s) -- note that we can provide

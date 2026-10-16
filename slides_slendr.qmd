@@ -1226,16 +1226,16 @@ Allele-frequecy spectrum, $\pi$, $f$-statistics, $F_{ST}$, Tajima's D, etc.
 
 ## Extracting names of recorded samples
 
-1. We can get individuals recorded in `ts` with `ts_samples()`:
+1. We can get individuals recorded in `ts` with `ts_recorded()`:
 
 ```{r}
 #| eval: false
-ts_samples(ts) %>% head(1) # returns a data frame (one row here, for brevity)
+ts_recorded(ts) %>% head(1) # returns a data frame (one row here, for brevity)
 ```
 
 ```{r}
 #| echo: false
-ts_samples(ts) %>% as.data.frame %>% head(1)
+ts_recorded(ts) %>% as.data.frame %>% head(1)
 ```
 
 ::: {.fragment}
@@ -1253,12 +1253,12 @@ ts_names(ts) %>% head(5) # returns a vector of individuals' names
 
 ```{r}
 #| eval: false
-ts_names(ts, split = "pop") # returns a named list of such vectors
+ts_names(ts, split = TRUE) # returns a named list of such vectors
 ```
 
 ```{r}
 #| echo: false
-ts_names(ts, split = "pop") %>% lapply(sample, 5) %>% .[1]
+ts_names(ts, split = TRUE) %>% lapply(sample, 5) %>% .[1]
 ```
 
 :::
@@ -1399,7 +1399,7 @@ the list of names in the correct format:
 ```{r}
 #| eval: false
 # get names of individuals in each population as a named list of vectors
-samples <- ts_names(ts, split = "pop")
+samples <- ts_names(ts, split = TRUE)
 
 # use this list directly by specifying which vectors to take out
 ts_f3(ts, A = samples$popX, B = samples$popY, C = samples$popZ)
@@ -1466,7 +1466,7 @@ set.seed(42)
 Get a list of individuals in each population:
 
 ```{r}
-samples <- ts_names(ts, split = "pop")
+samples <- ts_names(ts, split = TRUE)
 
 names(samples)
 ```
@@ -1714,7 +1714,7 @@ ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, random_se
 
 # make a tiny example simplified tree sequence
 
-ts_tiny <- ts_samples(ts) %>% sample_n(4) %>% pull(name) %>% ts_simplify(ts, simplify_to = .)
+ts_tiny <- ts_recorded(ts) %>% sample_n(4) %>% pull(name) %>% ts_simplify(ts, simplify_to = .)
 
 # extract tree #1 as an ape tree and also a tskit tree
 

@@ -49,14 +49,14 @@ model <- compile_model(
 )
 
 # sampling of two Neanderthals at 70kya and 40kya
-nea_samples <- schedule_sampling(model, times = c(70000, 40000), list(nea, 1))
+nea_samples <- schedule_recording(model, times = c(70000, 40000), list(nea, 1))
 
 # sampling one Chimpanzee sample, 5 African samples, and 10 European samples
-present_samples <- schedule_sampling(model, times = 0, list(chimp, 1), list(afr, 5), list(eur, 10))
+present_samples <- schedule_recording(model, times = 0, list(chimp, 1), list(afr, 5), list(eur, 10))
 
 # sampling one European sample between 40kya and 2kya, every 2000 years
 times <- seq(40000, 2000, by = -2000)
-emh_samples <- schedule_sampling(model, times, list(eur, 1))
+emh_samples <- schedule_recording(model, times, list(eur, 1))
 
 # binding all sampling schedules together
 schedule <- rbind(nea_samples, present_samples, emh_samples)
@@ -75,13 +75,13 @@ individuals and the two Neanderthals):
 
 ```{r}
 # total number of recorded individuals in the tree sequence
-ts_samples(ts) %>% nrow
+ts_recorded(ts) %>% nrow
 
 # times of sampling of each recorded Neanderthal
-ts_samples(ts) %>% filter(pop == "NEA") %>% pull(time)
+ts_recorded(ts) %>% filter(pop == "NEA") %>% pull(time)
 
 # count of individuals in each population
-ts_samples(ts) %>%
+ts_recorded(ts) %>%
   mutate(age_group = if_else(time == 0, "present-day", "ancient")) %>%
   group_by(pop, age_group) %>%
   summarize(n = n()) %>%
@@ -125,7 +125,7 @@ with (slendr tree-sequence statistic functions generally operate with this kind
 of structure):
 
 ```{r}
-sample_sets <- ts_names(ts, split = "pop")
+sample_sets <- ts_names(ts, split = TRUE)
 sample_sets
 ```
 
@@ -160,7 +160,7 @@ statistic on,
 samples with that name).
 
 Although you can get all the above information by processing the table produced
-by the `ts_samples()` function, _slendr_ provides a useful helper function
+by the `ts_recorded()` function, _slendr_ provides a useful helper function
 `ts_names()` which only returns the names of individuals as a vector 
 (or a named list of such vectors, one vector per population as shown below).
 
@@ -177,7 +177,7 @@ which can be immediately used as the `sample_sets =` argument mentioned in the
 **Hint** above:
 
 ```{r}
-ts_names(ts, split = "pop")
+ts_names(ts, split = TRUE)
 ```
 
 As you can see, this command returned a normal R list, with each element
@@ -186,7 +186,7 @@ use standard R named-list indexing to get subsets of individuals like this:
 
 ```{r}
 # this saves the named list of individual samples into a variable `names`
-names <- ts_names(ts, split = "pop")
+names <- ts_names(ts, split = TRUE)
 
 # this is how we can then access the names of all recorded Neanderthals
 names["NEA"]
@@ -214,7 +214,7 @@ populations.**
 do this by giving the `ts_diversity()` function a vector of names as
 `sample_sets =` instead of an R list of vectors like you did in the previous
 exercise. One way to make plotting of the result easy is to first get a table
-of all individuals using `pi_df <- ts_samples(ts)` and then add
+of all individuals using `pi_df <- ts_recorded(ts)` and then add
 heterozygosities in each of those individuals as a new column.
 
 ::: {.callout-note collapse="true" icon=false}
@@ -230,7 +230,7 @@ heterozygosities as a new column:
 
 ```{r}
 # get the table of all sample individuals
-pi_df <- ts_samples(ts)
+pi_df <- ts_recorded(ts)
 pi_df
 
 # this is how we get names of all these individuals
@@ -276,7 +276,7 @@ for each vector of individual names in that list).
 
 ```{r}
 # again, we can first extract the list of names of individuals in each population
-names_list <- ts_names(ts, split = "pop")
+names_list <- ts_names(ts, split = TRUE)
 
 # then we use this list in `ts_divergence()` to compute pairwise divergence values
 div_df <- ts_divergence(ts, sample_sets = names_list)
@@ -459,7 +459,7 @@ to compute and compare the values of these two statistics:
 
 here `<individual>` can be the name of any individual recorded in your
 tree sequence, such as names you saw as `name` column in the table returned
-by `ts_samples(ts)` (i.e. `"NEA_1"` could be used as a "representative"
+by `ts_recorded(ts)` (i.e. `"NEA_1"` could be used as a "representative"
 \<Neanderthal\> in those equations, similarly for `"CHIMP_1"` as the fourth
 sample in the $f_4$ quarted representing the outgroup).
 
@@ -599,7 +599,7 @@ This gives us list of vectors of the names of all individuals in each
 population...
 
 ```{r}
-sample_sets <- ts_names(ts, split = "pop")
+sample_sets <- ts_names(ts, split = TRUE)
 # ... which we can then access like this
 sample_sets$AFR # all Africans
 sample_sets$EUR # all Europeans
@@ -686,7 +686,7 @@ same?**
 
 ```{r}
 # Extract table with names and times of sampled Europeans (ancient and present day)
-eur_inds <- ts_samples(ts) %>% filter(pop == "EUR")
+eur_inds <- ts_recorded(ts) %>% filter(pop == "EUR")
 eur_inds
 
 # Compute f4-ration statistic (this will take ~30s) -- note that we can provide
