@@ -37,31 +37,24 @@ https://en.wikipedia.org/wiki/Watterson_estimator:
 
 ## Preparation
 
-Let's start with the following script as a basis.
+Let's start with the following script as a basis. Take a look at the code and use
+the visualization of the model to get an idea of what it does.
 
 ```{r}
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 12000, N = 10000)
-p2 <- population("p2", time = 9000, N = 2000, parent = p1)
-p3 <- population("p3", time = 6000, N = 5000, parent = p2)
-p4 <- population("p4", time = 3000, N = 2000, parent = p3)
-
-gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2100, proportion = 0.1)
+p1 <- population("p1", time = 1, N = 5000)
 
 model <- compile_model(
-    populations = list(p1, p2, p3, p4), gene_flow = gf,
-    generation_time = 30,
-    time_units = "years before present"
+  populations = p1,
+  generation_time = 1, simulation_length = 1000
 )
 
-schedule <- schedule_recording(model, times = 0, list("each", 10))
-
-plot_model(model, proportions = TRUE, schedule = schedule)
+plot_model(model, proportions = TRUE)
 
 ts <-
-  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
   ts_mutate(mutation_rate = 1e-8)
 ```
 
@@ -84,35 +77,50 @@ referring to individual names.
 
 
 ```{r}
-inds <- ts_names(ts)
-inds
+samples <- ts_names(ts)
+samples
 ```
 
 ```{r}
-inds <- ts_names(ts, split = TRUE)
-inds
+samples <- ts_names(ts, split = TRUE)
+samples
 ```
 
 ```{r}
-inds$p1
+samples$p1
 ```
 
 ```{r}
-inds["p1"]
+samples["p1"]
 ```
 
 ```{r}
-inds[["p1"]]
+samples[["p1"]]
 ```
+
+
+
+
+
+
+
 
 
 
 ## Exercise: Computing nucleotide diversity
 
-The simplest possible specification of individual names / groups.
+Let's start practicing how to compute tree-sequence summary statistics with
+the simplest possible computation imaginable: computing a single summary
+statistic from a single population, such as nucleotide diversity.
 
 The simplest possible thing we can do is to provide the name of a single
-individual:
+individual. Given that you know that nucleotide diversity quantifies the
+average number of nucleotide variants per site between two DNA sequences
+across all possible combinations of pairs in a sample from a population,
+what metric is it equivalent to if you compute `ts_diversity()` on a
+single simulated individual (i.e., on its two chromosomes)?
+
+Answer is that we get heterozygosity:
 
 ```{r}
 ts_diversity(ts, sample_sets = "p1_1")
@@ -138,9 +146,169 @@ ts_diversity(ts, sample_sets = list(c("p1_1", "p1_2", "p1_3")))
 ts_diversity(ts, sample_sets = list(p1_subset = c("p1_1", "p1_2", "p1_3")))
 ```
 
+---
+
+The model which you programmed implies what should be the nucleotide diversity
+expected in the simulated population. **Compute the nucleotide diversity in all
+populations using `ts_diversity()`. Do you get numbers that (relatively between
+all populations) match what would expect from the model you programmed?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
 ```{r}
-ts_divergence(ts, sample_sets = inds["p1"])
+samples <- ts_names(ts, split = TRUE)
 ```
+
+```{r}
+df <- ts_diversity(ts, samples)
+df
+```
+
+$\theta = 4 N_e \mu$
+
+$N_e = \frac{\theta}{4 \mu}$
+
+```{r}
+df$Ne <- pi_df$diversity / (4 * 1e-8)
+
+df
+```
+
+
+
+
+
+
+
+
+
+
+## Exercise: Generalizing the simulation
+
+```{r}
+pi_constant <- function(Ne) {
+  p1 <- population("p1", time = 1, N = Ne)
+  
+  model <- compile_model(
+    populations = p1,
+    generation_time = 1, simulation_length = 1000
+  )
+  
+  schedule <- schedule_recording(model, times = 1000, list(p1, 10))
+  
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+
+  samples <- ts_names(ts, split = TRUE)
+  
+  df <- ts_diversity(ts, samples)
+
+  # add annotation for downstream analyses
+  df$Ne_true <- Ne
+  
+  # compute the estimated Ne from the data based on the equation:
+  #   theta = 4 * mutation_rate * Ne => Ne = theta / (4 * mutation_rate)
+  df$Ne_estimated <- df$diversity / (4 * 1e-8)
+  
+  df
+}
+```
+
+```{r}
+pi_constant(1000)
+pi_constant(3000)
+pi_constant(10000)
+```
+
+```{r}
+library(purrr)
+
+df_constant <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), pi_constant)
+
+ggplot(df_constant, aes(Ne_true, Ne_estimated)) +
+  geom_point() +
+  geom_abline(slope = 1, color = "red", linetype = "dashed")
+```
+
+
+
+## Exercise: Comparing multiple models
+
+**Start with $N_e$ of 5000, then introduce a bottleneck using the function
+`resize()` which will se the size of the population to the given value `Ne` at
+time 800.**
+
+```{r}
+pi_resize <- function(Ne) {
+  p1 <-
+    population("p1", time = 1, N = 5000) %>% 
+    resize(N = Ne, time = 500)
+  
+  model <- compile_model(
+    populations = p1,
+    generation_time = 1, simulation_length = 1000
+  )
+  
+  schedule <- schedule_recording(model, times = 1000, list(p1, 10))
+  
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+
+  samples <- ts_names(ts, split = TRUE)
+  
+  df <- ts_diversity(ts, samples)
+
+  # add annotation for downstream analyses
+  df$Ne_true <- Ne
+  
+  # compute the estimated Ne from the data based on the equation:
+  #   theta = 4 * mutation_rate * Ne => Ne = theta / (4 * mutation_rate)
+  df$Ne_estimated <- df$diversity / (4 * 1e-8)
+  
+  df
+}
+```
+
+
+```{r}
+library(purrr)
+
+df_resize <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), pi_resize)
+
+ggplot(df_resize, aes(Ne_true, Ne_estimated)) +
+  geom_point() +
+  geom_hline(yintercept = 5000, color = "red", linetype = "dashed") +
+  ylim(1000, 10000)
+```
+
+
+
+
+## Exercise: controlling stochasticity
+
+
+```{r}
+ts_replicate(
+  10,
+  {
+    ts <-
+      msprime(model, sequence_length = 50e6, recombination_rate = 1e-8, schedule = schedule) %>%
+      ts_mutate(mutation_rate = 1e-8)
+    pi_df <- ts_diversity(ts, samples)
+    pi_df$Ne <- pi_df$diversity / (4 * 1e-8)
+    pi_df
+  }
+)
+```
+
+
+
+
+
+
 
 
 
@@ -301,7 +469,7 @@ lines(ts_afs(ts, sample_sets = samples["p4"]), type = "l", col = "purple")
 
 
 
-# Exercise: $F_{ST}$ losing power with $N_e$
+## Exercise: $F_{ST}$ losing power with $N_e$
 
 
 
