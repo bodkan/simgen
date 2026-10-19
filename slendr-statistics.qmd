@@ -186,28 +186,21 @@ df
 
 ## Exercise: Generalizing the simulation
 
+Let's first abstract away the computation of $\pi$ and the inference of $N_e$.
+By extracting the relevant code into a dedicated, self-contained function, we
+reduce duplication of code and, by extension, the potential for introducing
+hard-to-trace bugs in our scripts.
+
 ```{r}
-pi_constant <- function(Ne) {
-  p1 <- population("p1", time = 1, N = Ne)
-  
-  model <- compile_model(
-    populations = p1,
-    generation_time = 1, simulation_length = 1000
-  )
-  
-  schedule <- schedule_recording(model, times = 1000, list(p1, 10))
-  
+compute_pi <- function(model) {
   ts <-
-    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
     ts_mutate(mutation_rate = 1e-8)
 
   samples <- ts_names(ts, split = TRUE)
   
   df <- ts_diversity(ts, samples)
 
-  # add annotation for downstream analyses
-  df$Ne_true <- Ne
-  
   # compute the estimated Ne from the data based on the equation:
   #   theta = 4 * mutation_rate * Ne => Ne = theta / (4 * mutation_rate)
   df$Ne_estimated <- df$diversity / (4 * 1e-8)
@@ -217,9 +210,31 @@ pi_constant <- function(Ne) {
 ```
 
 ```{r}
-pi_constant(1000)
-pi_constant(3000)
-pi_constant(10000)
+compute_pi(model)
+```
+
+```{r}
+run_constant <- function(Ne) {
+  p1 <- population("p1", time = 1, N = Ne)
+  
+  model <- compile_model(
+    populations = p1,
+    generation_time = 1, simulation_length = 1000
+  )
+  
+  df <- compute_pi(model)
+
+  # add annotation for downstream analyses
+  df$Ne_true <- Ne
+
+  df
+}
+```
+
+```{r}
+run_constant(1000)
+run_constant(3000)
+run_constant(10000)
 ```
 
 ```{r}
@@ -229,8 +244,16 @@ df_constant <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), pi_
 
 ggplot(df_constant, aes(Ne_true, Ne_estimated)) +
   geom_point() +
-  geom_abline(slope = 1, color = "red", linetype = "dashed")
+  geom_abline(slope = 1, color = "red", linetype = "dashed") +
+  ggtitle("True Ne vs Ne estimated from nucleotide diversity (constant model)")
 ```
+
+
+
+
+
+
+
 
 
 
@@ -241,33 +264,30 @@ ggplot(df_constant, aes(Ne_true, Ne_estimated)) +
 time 800.**
 
 ```{r}
+p1 <- population("p1", time = 1, N = 5000) %>% resize(N = 500, time = 500)
+
+model <- compile_model(
+  populations = p1,
+  generation_time = 1, simulation_length = 1000
+)
+
+plot_model(model, proportions = TRUE)
+```
+
+```{r}
 pi_resize <- function(Ne) {
-  p1 <-
-    population("p1", time = 1, N = 5000) %>% 
-    resize(N = Ne, time = 500)
+  p1 <- population("p1", time = 1, N = 5000) %>%  resize(N = Ne, time = 500)
   
   model <- compile_model(
     populations = p1,
     generation_time = 1, simulation_length = 1000
   )
   
-  schedule <- schedule_recording(model, times = 1000, list(p1, 10))
-  
-  ts <-
-    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
-    ts_mutate(mutation_rate = 1e-8)
-
-  samples <- ts_names(ts, split = TRUE)
-  
-  df <- ts_diversity(ts, samples)
+  df <- compute_pi(model)
 
   # add annotation for downstream analyses
   df$Ne_true <- Ne
-  
-  # compute the estimated Ne from the data based on the equation:
-  #   theta = 4 * mutation_rate * Ne => Ne = theta / (4 * mutation_rate)
-  df$Ne_estimated <- df$diversity / (4 * 1e-8)
-  
+
   df
 }
 ```
@@ -281,30 +301,38 @@ df_resize <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), pi_re
 ggplot(df_resize, aes(Ne_true, Ne_estimated)) +
   geom_point() +
   geom_hline(yintercept = 5000, color = "red", linetype = "dashed") +
-  ylim(1000, 10000)
+  ggtitle("True Ne vs Ne estimated from nucleotide diversity (bottleneck model)") +
+  ylim(0, 10000)
 ```
 
 
 
 
-## Exercise: controlling stochasticity
+
+
+
+
+
+
+
+
+
+## Exercise: Allele frequency spectrum
+
+```{r}
+samples <- ts_names(ts, split = TRUE)
+
+plot(ts_afs(ts, sample_sets = samples["p1"]), type = "l", col = "lightblue")
+lines(ts_afs(ts, sample_sets = samples["p2"]), type = "l", col = "darkgreen")
+lines(ts_afs(ts, sample_sets = samples["p3"]), type = "l", col = "orange")
+lines(ts_afs(ts, sample_sets = samples["p4"]), type = "l", col = "purple")
+```
+
 
 
 ```{r}
-ts_replicate(
-  10,
-  {
-    ts <-
-      msprime(model, sequence_length = 50e6, recombination_rate = 1e-8, schedule = schedule) %>%
-      ts_mutate(mutation_rate = 1e-8)
-    pi_df <- ts_diversity(ts, samples)
-    pi_df$Ne <- pi_df$diversity / (4 * 1e-8)
-    pi_df
-  }
-)
+
 ```
-
-
 
 
 
@@ -353,6 +381,37 @@ ggplot(df, aes(size, diversity)) + geom_point() + scale_x_continuous()
 
 ggplot(df, aes(size, diversity)) + geom_point() + scale_x_log10()
 ```
+
+
+
+
+
+
+
+
+## Exercise: controlling stochasticity
+
+
+```{r}
+ts_replicate(
+  10,
+  {
+    ts <-
+      msprime(model, sequence_length = 50e6, recombination_rate = 1e-8, schedule = schedule) %>%
+      ts_mutate(mutation_rate = 1e-8)
+    pi_df <- ts_diversity(ts, samples)
+    pi_df$Ne <- pi_df$diversity / (4 * 1e-8)
+    pi_df
+  }
+)
+```
+
+
+
+
+
+
+
 
 
 
@@ -442,25 +501,6 @@ ggplot(tajima, aes(set, D)) +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 ```
-
-
-
-
-
-
-
-
-## Exercise: Allele frequency spectrum
-
-```{r}
-samples <- ts_names(ts, split = TRUE)
-
-plot(ts_afs(ts, sample_sets = samples["p1"]), type = "l", col = "lightblue")
-lines(ts_afs(ts, sample_sets = samples["p2"]), type = "l", col = "darkgreen")
-lines(ts_afs(ts, sample_sets = samples["p3"]), type = "l", col = "orange")
-lines(ts_afs(ts, sample_sets = samples["p4"]), type = "l", col = "purple")
-```
-
 
 
 
