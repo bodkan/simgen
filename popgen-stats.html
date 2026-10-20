@@ -482,14 +482,14 @@ window.Quarto = {
 <span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"># sampling of two Neanderthals at 70kya and 40kya</span></span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>nea_samples <span class="ot">&lt;-</span> <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">70000</span>, <span class="dv">40000</span>), <span class="fu">list</span>(nea, <span class="dv">1</span>))</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>nea_samples <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="fu">c</span>(<span class="dv">70000</span>, <span class="dv">40000</span>), <span class="fu">list</span>(nea, <span class="dv">1</span>))</span>
 <span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"># sampling one Chimpanzee sample, 5 African samples, and 10 European samples</span></span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>present_samples <span class="ot">&lt;-</span> <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(chimp, <span class="dv">1</span>), <span class="fu">list</span>(afr, <span class="dv">5</span>), <span class="fu">list</span>(eur, <span class="dv">10</span>))</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>present_samples <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(chimp, <span class="dv">1</span>), <span class="fu">list</span>(afr, <span class="dv">5</span>), <span class="fu">list</span>(eur, <span class="dv">10</span>))</span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co"># sampling one European sample between 40kya and 2kya, every 2000 years</span></span>
 <span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>times <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">40000</span>, <span class="dv">2000</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">2000</span>)</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>emh_samples <span class="ot">&lt;-</span> <span class="fu">schedule_sampling</span>(model, times, <span class="fu">list</span>(eur, <span class="dv">1</span>))</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>emh_samples <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, times, <span class="fu">list</span>(eur, <span class="dv">1</span>))</span>
 <span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="co"># binding all sampling schedules together</span></span>
 <span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(nea_samples, present_samples, emh_samples)</span>
@@ -503,17 +503,17 @@ window.Quarto = {
 <p>As a sanity check, let’s use a couple of <em>tidyverse</em> table-munging tricks to make sure the tree sequence does contain a set of samples which matches our intended sampling schedule (particularly the time series of European individuals and the two Neanderthals):</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># total number of recorded individuals in the tree sequence</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> nrow</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> nrow</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 38</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># times of sampling of each recorded Neanderthal</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(pop <span class="sc">==</span> <span class="st">"NEA"</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(time)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(pop <span class="sc">==</span> <span class="st">"NEA"</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(time)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 70000 40000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># count of individuals in each population</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_group =</span> <span class="fu">if_else</span>(time <span class="sc">==</span> <span class="dv">0</span>, <span class="st">"present-day"</span>, <span class="st">"ancient"</span>)) <span class="sc">%&gt;%</span></span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(pop, age_group) <span class="sc">%&gt;%</span></span>
 <span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
@@ -561,7 +561,7 @@ window.Quarto = {
 <p><strong>Population-based nucleotide diversity:</strong></p>
 <p>Let’s first get a named list of individuals in each group we want to be working with (slendr tree-sequence statistic functions generally operate with this kind of structure):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sample_sets <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>sample_sets <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>sample_sets</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$AFR
@@ -613,7 +613,7 @@ $NEA
 <li><p>a vector of individual names representing a group of samples to compute a statistic on,</p></li>
 <li><p>a (named) list of such vectors (each element of that list for a group of samples with that name).</p></li>
 </ul>
-<p>Although you can get all the above information by processing the table produced by the <code>ts_samples()</code> function, <em>slendr</em> provides a useful helper function <code>ts_names()</code> which only returns the names of individuals as a vector (or a named list of such vectors, one vector per population as shown below).</p>
+<p>Although you can get all the above information by processing the table produced by the <code>ts_recorded()</code> function, <em>slendr</em> provides a useful helper function <code>ts_names()</code> which only returns the names of individuals as a vector (or a named list of such vectors, one vector per population as shown below).</p>
 <p>When you call it directly, you get a plain vector of individual names:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -628,7 +628,7 @@ $NEA
 </div>
 <p>This is not super helpful, unless we want to compute some statistic for <em>everyone</em> in the tree sequence, regardless of their population assignment. A bit more useful is to call the function like this, because it will produce a result which can be immediately used as the <code>sample_sets =</code> argument mentioned in the <strong>Hint</strong> above:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$AFR
 [1] "AFR_1" "AFR_2" "AFR_3" "AFR_4" "AFR_5"
@@ -649,7 +649,7 @@ $NEA
 <p>As you can see, this command returned a normal R list, with each element containing a vector of individual names in a population. This means that we can use standard R named-list indexing to get subsets of individuals like this:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this saves the named list of individual samples into a variable `names`</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>names <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>names <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># this is how we can then access the names of all recorded Neanderthals</span></span>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>names[<span class="st">"NEA"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -673,7 +673,7 @@ $NEA
 <p>Many of the following exercises will use these kinds of tricks to instruct various <em>slendr</em> / <em>tskit</em> functions to compute statistics on subsets of all individuals sub-sampled in this way, so you can refer back to this <strong>Hint</strong> later whenever you need help to compute some statistic.</p>
 <hr>
 <p><strong>After you’ve computed nucleotide diversity per-population, compute it for each individual separately (so, not for whole populations across all individuals) using the same function <code>ts_diversity()</code></strong> (which will in this setting give you the heterozygosity for each individual). <strong>If you are familiar with plotting in R, visualize the individual-based heterozygosities across all populations.</strong></p>
-<p><strong>Hint:</strong> Following the previous hint on specifying individual names, you can do this by giving the <code>ts_diversity()</code> function a vector of names as <code>sample_sets =</code> instead of an R list of vectors like you did in the previous exercise. One way to make plotting of the result easy is to first get a table of all individuals using <code>pi_df &lt;- ts_samples(ts)</code> and then add heterozygosities in each of those individuals as a new column.</p>
+<p><strong>Hint:</strong> Following the previous hint on specifying individual names, you can do this by giving the <code>ts_diversity()</code> function a vector of names as <code>sample_sets =</code> instead of an R list of vectors like you did in the previous exercise. One way to make plotting of the result easy is to first get a table of all individuals using <code>pi_df &lt;- ts_recorded(ts)</code> and then add heterozygosities in each of those individuals as a new column.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -691,7 +691,7 @@ $NEA
 <p>For convenience, we first get a table of all individuals (which of course contains also their names) and in the next step, we’ll just add their heterozygosities as a new column:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the table of all sample individuals</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>pi_df <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts)</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>pi_df <span class="ot">&lt;-</span> <span class="fu">ts_recorded</span>(ts)</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>pi_df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 38 × 3
@@ -777,7 +777,7 @@ $NEA
 <div class="callout-body-container callout-body">
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># again, we can first extract the list of names of individuals in each population</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>names_list <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>names_list <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="co"># then we use this list in `ts_divergence()` to compute pairwise divergence values</span></span>
 <span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>div_df <span class="ot">&lt;-</span> <span class="fu">ts_divergence</span>(ts, <span class="at">sample_sets =</span> names_list)</span>
@@ -945,7 +945,7 @@ A).\)</span></p>
 <li><p><span class="math inline">\(f_4\)</span>(&lt;some African&gt;, &lt;another African&gt;; &lt;Neanderthal&gt;, &lt;Chimp&gt;)</p></li>
 <li><p><span class="math inline">\(f_4\)</span>(&lt;some African&gt;, &lt;a test European&gt;; &lt;Neanderthal&gt;, &lt;Chimp&gt;),</p></li>
 </ol>
-<p>here <code>&lt;individual&gt;</code> can be the name of any individual recorded in your tree sequence, such as names you saw as <code>name</code> column in the table returned by <code>ts_samples(ts)</code> (i.e.&nbsp;<code>"NEA_1"</code> could be used as a “representative” &lt;Neanderthal&gt; in those equations, similarly for <code>"CHIMP_1"</code> as the fourth sample in the <span class="math inline">\(f_4\)</span> quarted representing the outgroup).</p>
+<p>here <code>&lt;individual&gt;</code> can be the name of any individual recorded in your tree sequence, such as names you saw as <code>name</code> column in the table returned by <code>ts_recorded(ts)</code> (i.e.&nbsp;<code>"NEA_1"</code> could be used as a “representative” &lt;Neanderthal&gt; in those equations, similarly for <code>"CHIMP_1"</code> as the fourth sample in the <span class="math inline">\(f_4\)</span> quarted representing the outgroup).</p>
 <!--
 To simplify things a lot, we can understand the above equations as comparing the
 counts of so-called BABA and ABBA allele patterns between the quarted of samples
@@ -1042,7 +1042,7 @@ $$
 <div class="callout-body-container callout-body">
 <p>This gives us list of vectors of the names of all individuals in each population…</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>sample_sets <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>sample_sets <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ... which we can then access like this</span></span>
 <span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>sample_sets<span class="sc">$</span>AFR <span class="co"># all Africans</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1125,7 +1125,7 @@ $$
 <div class="callout-body-container callout-body">
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract table with names and times of sampled Europeans (ancient and present day)</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>eur_inds <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(pop <span class="sc">==</span> <span class="st">"EUR"</span>)</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>eur_inds <span class="ot">&lt;-</span> <span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(pop <span class="sc">==</span> <span class="st">"EUR"</span>)</span>
 <span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>eur_inds</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 30 × 3

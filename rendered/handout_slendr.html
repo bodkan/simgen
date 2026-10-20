@@ -2883,7 +2883,7 @@ time units: generations
 total running length: 3000 time units
 model type: non-spatial
 
-configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmpy9fXpP/filea5f66c61e8a3_slendr_model </code></pre>
+configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpdDDtUG/file1767f1a73da46_slendr_model </code></pre>
 </div>
 </div>
 <p>This can be useful as a quick overview of the model we are working with. However, <strong>a better way to check a model is…</strong></p>
@@ -3242,10 +3242,10 @@ How do we work with this <code>ts</code> thing?
 <section id="extracting-names-of-recorded-samples" class="level2">
 <h2 class="anchored" data-anchor-id="extracting-names-of-recorded-samples">Extracting names of recorded samples</h2>
 <ol type="1">
-<li>We can get individuals recorded in <code>ts</code> with <code>ts_samples()</code>:</li>
+<li>We can get individuals recorded in <code>ts</code> with <code>ts_recorded()</code>:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">1</span>) <span class="co"># returns a data frame (one row here, for brevity)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="dv">1</span>) <span class="co"># returns a data frame (one row here, for brevity)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -3269,12 +3269,12 @@ How do we work with this <code>ts</code> thing?
 <li>We can get a per-population list of individuals like this:</li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">&quot;pop&quot;</span>) <span class="co"># returns a named list of such vectors</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>) <span class="co"># returns a named list of such vectors</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>$pop1
-[1] &quot;pop1_866&quot; &quot;pop1_53&quot;  &quot;pop1_368&quot; &quot;pop1_356&quot; &quot;pop1_457&quot;</code></pre>
+[1] &quot;pop1_838&quot; &quot;pop1_750&quot; &quot;pop1_392&quot; &quot;pop1_345&quot; &quot;pop1_660&quot;</code></pre>
 </div>
 </div>
 </div>
@@ -3347,7 +3347,7 @@ Let’s take a look at how it works in general…
 <p>Doing this manually can be annoying — <code>ts_names()</code> helps by preparing the list of names in the correct format:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get names of individuals in each population as a named list of vectors</span></span>
-<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">&quot;pop&quot;</span>)</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a><span class="co"># use this list directly by specifying which vectors to take out</span></span>
 <span id="cb72-5"><a href="#cb72-5" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples<span class="sc">$</span>popX, <span class="at">B =</span> samples<span class="sc">$</span>popY, <span class="at">C =</span> samples<span class="sc">$</span>popZ)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -3372,7 +3372,7 @@ Some examples on simulated data
 <div class="column" style="width:45%;">
 <p>Get a list of individuals in each population:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">&quot;pop&quot;</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -3410,8 +3410,8 @@ Some examples on simulated data
 <pre><code># A tibble: 2 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 pop1  0.000393 
-2 pop2  0.0000643</code></pre>
+1 pop1  0.000394 
+2 pop2  0.0000503</code></pre>
 </div>
 </div>
 <p><br></p>

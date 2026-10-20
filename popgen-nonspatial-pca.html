@@ -460,7 +460,7 @@ window.Quarto = {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(popA, popB, popC), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">3000</span>, <span class="dv">0</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">200</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">3000</span>, <span class="dv">0</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">200</span>),</span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">list</span>(popA, <span class="dv">10</span>), <span class="fu">list</span>(popB, <span class="dv">10</span>), <span class="fu">list</span>(popC, <span class="dv">10</span>))</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">samples =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -495,7 +495,7 @@ window.Quarto = {
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ... then add (neutral!) mutations to it</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_mutate</span>(ts_nomuts, <span class="at">mutation_rate =</span> ...)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>With that out of the way, <strong>simulate a tree sequence from the popA/popB/popC <code>model</code> above, which will be 50 Mb (50e6) long, with a recombination rate 1e-8, and overlay mutations on it at a rate 1e-8. Check that it has mutations either by typing out <code>ts</code> in the console and looking for a “Mutations” section of the summary, or by using the function <code>ts_table(ts, "mutations")</code>. Then count how many individuals you have recorded for each population using the table produced by <code>ts_samples()</code>.</strong></p>
+<p>With that out of the way, <strong>simulate a tree sequence from the popA/popB/popC <code>model</code> above, which will be 50 Mb (50e6) long, with a recombination rate 1e-8, and overlay mutations on it at a rate 1e-8. Check that it has mutations either by typing out <code>ts</code> in the console and looking for a “Mutations” section of the summary, or by using the function <code>ts_table(ts, "mutations")</code>. Then count how many individuals you have recorded for each population using the table produced by <code>ts_recorded()</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -581,7 +581,7 @@ you get a chance, please update it accordingly.</code></pre>
 ╟───────────┼───────┼─────────┼────────────╢
 ║Migrations │      0│  8 Bytes│          No║
 ╟───────────┼───────┼─────────┼────────────╢
-║Mutations  │168,199│  5.9 MiB│          No║
+║Mutations  │168,844│  6.0 MiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
 ║Nodes      │ 92,209│  2.5 MiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
@@ -589,11 +589,11 @@ you get a chance, please update it accordingly.</code></pre>
 ╟───────────┼───────┼─────────┼────────────╢
 ║Provenances│      2│  6.2 KiB│          No║
 ╟───────────┼───────┼─────────┼────────────╢
-║Sites      │167,935│  4.0 MiB│          No║
+║Sites      │168,554│  4.0 MiB│          No║
 ╚═══════════╧═══════╧═════════╧════════════╝</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the table of individuals (and process it a bit for tidier plotting later)</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">pop =</span> <span class="fu">factor</span>(pop, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"popA"</span>, <span class="st">"popB"</span>, <span class="st">"popC"</span>)))</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">pop =</span> <span class="fu">factor</span>(pop, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"popA"</span>, <span class="st">"popB"</span>, <span class="st">"popC"</span>)))</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Count how many individuals do we have for each population</span></span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>samples <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop) <span class="sc">%&gt;%</span> <span class="fu">count</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -635,7 +635,7 @@ you get a chance, please update it accordingly.</code></pre>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="st">"files/popgen/ABC_all"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>177 multiallelic sites (0.105% out of 167935 total) detected and removed</code></pre>
+<pre><code>207 multiallelic sites (0.123% out of 168554 total) detected and removed</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>EIGENSTRAT object
@@ -897,7 +897,7 @@ components:
 <p>This function call creates a <em>new tree sequence</em>, which is smaller and only contains a those individuals whose names were specified in <code>simplify_to =</code> (again, we’re talking about the “symbolic names” of individuals, such as “NEA_1”, “AFR_42”, etc., not integer numbers of <em>tskit</em> nodes).</p>
 <p>Whenever you want to create smaller subsets of a large tree sequence, it is often helpful to work with the table of all individuals in the original tree sequence, because it contains every individual’s <code>name</code>, <code>pop</code> assignment and the <code>time</code> in which it lived, so let’s save it for further use now:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_samples</span>(ts)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_recorded</span>(ts)</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(samples)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -913,7 +913,7 @@ components:
 <pre><code>[1] 20</code></pre>
 </div>
 </div>
-<p>You know that the table of samples contains the <code>name</code> of each individual, which you can access as <code>subset$name</code>. <strong>Use the <code>ts_simplify()</code> function to create a new tree sequence called <code>ts_BC0</code> which contains only this subset of individuals. Check that it really does contain only the defined subset of individuals using <code>ts_samples(ts_BC0)</code>.</strong></p>
+<p>You know that the table of samples contains the <code>name</code> of each individual, which you can access as <code>subset$name</code>. <strong>Use the <code>ts_simplify()</code> function to create a new tree sequence called <code>ts_BC0</code> which contains only this subset of individuals. Check that it really does contain only the defined subset of individuals using <code>ts_recorded(ts_BC0)</code>.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -929,7 +929,7 @@ components:
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>ts_BC0 <span class="ot">&lt;-</span> <span class="fu">ts_simplify</span>(ts, <span class="at">simplify_to =</span> subset<span class="sc">$</span>name)</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts_BC0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts_BC0)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 20 × 3
    name     time pop  

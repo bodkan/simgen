@@ -492,10 +492,10 @@ window.Quarto = {
 <span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Schedule the sampling from four European populations roughly before their</span></span>
 <span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="co"># disappearance (or before the end of the simulation)</span></span>
 <span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
-<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(eur, <span class="dv">50</span>)),</span>
-<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">6000</span>, <span class="fu">list</span>(ehg, <span class="dv">50</span>)),</span>
-<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">4000</span>, <span class="fu">list</span>(ana, <span class="dv">50</span>)),</span>
-<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_sampling</span>(model, <span class="at">times =</span> <span class="dv">2500</span>, <span class="fu">list</span>(yam, <span class="dv">50</span>))</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(eur, <span class="dv">50</span>)),</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">6000</span>, <span class="fu">list</span>(ehg, <span class="dv">50</span>)),</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">4000</span>, <span class="fu">list</span>(ana, <span class="dv">50</span>)),</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">2500</span>, <span class="fu">list</span>(yam, <span class="dv">50</span>))</span>
 <span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>Next, visualize the demographic model.</strong> If you did a bit of work in human population genetics, you might recognize it as a very simplified model of demographic history of Europe over the past 50 thousand years or so. As you can see, we are recording 50 individuals from four populations – for Europeans we sample 50 individuals at “present-day”, for the remaining populations we’re recording 50 individuals just before their disappearance. Also note that there’s quite a bit of gene-flow! This was an important thing we’ve learned about human history in the past 10 years or so – everyone is mixed with pretty much everyone, there isn’t (and never was) anything as a “pure population”.</p>
@@ -528,7 +528,7 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p><strong>Inspect the table of all individuals recorded in our tree sequence using the function <code>ts_samples()</code>, making sure we have all the individuals scheduled for tree-sequence recording.</strong> (Again, there’s no such a thing as too many sanity checks when doing research!)</p>
+<p><strong>Inspect the table of all individuals recorded in our tree sequence using the function <code>ts_recorded()</code>, making sure we have all the individuals scheduled for tree-sequence recording.</strong> (Again, there’s no such a thing as too many sanity checks when doing research!)</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -542,10 +542,10 @@ window.Quarto = {
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_samples</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop, time) <span class="sc">%&gt;%</span> tally</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop, time) <span class="sc">%&gt;%</span> tally</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -564,7 +564,7 @@ window.Quarto = {
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>samples</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute genome-wide Tajima's D for each population -- note that we don't</span></span>
@@ -851,7 +851,7 @@ window.Quarto = {
 <div id="callout-11" class="callout-11-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="st">"pop"</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>samples</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Overall Tajima's D across the 10Mb sequence still doesn't reveal any significant</span></span>
