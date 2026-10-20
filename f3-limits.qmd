@@ -1,5 +1,15 @@
 # "Outgroup" $f_3$
 
+::: aside
+
+**Note:** The $f_3$ statistic is traditionally expressed as $f_3(A, B; C)$,
+where C represents the outgroup. Unfortunately, in _tskit_ the outgroup is
+named A, with B and C being the pair of samples from which we trace the length
+of branches towards the outgroup, so the statistic is interpreted as $f_3(B, C;
+A).$
+
+:::
+
 ```{r}
 library(slendr)
 init_env()
@@ -71,6 +81,85 @@ ggplot(f3_outgroup, aes(tsplit, f3)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
   coord_cartesian(xlim = c(0, 10000))
 ```
+
+
+
+## Exercise: `mode = "branch"` vs `mode = "site"`
+
+**Repeat the exercise 3 by setting `mode = "site"` in the `ts_f3()` function
+calls** (this is actually the default behavior of all _slendr_ tree-sequence
+based _tskit_ functions). This will switch the _tskit_ computation to using
+mutation counts along each branch of the tree sequence, rather than using
+branch length themselves. **Why might the branch-based computation be a bit
+better if what we're after is investigating the expected values of statistics
+under some model?**
+
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+See [this
+tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy)
+(and particularly the directly linked section) for explanation.
+
+:::
+
+
+
+
+## Exercise: $f_3$ statistic as a linear combination of $f_2$ statistics
+
+You might have learned that any complex $f$-statistic can be expressed as a
+linear combination of multiple $f_2$ statistics (which represent simple branch
+length separating two lineages). **Verify that this is the case by looking up
+equation *(20b)* in [this amazing
+paper](https://academic.oup.com/genetics/article/202/4/1485/5930214) and
+computing an $f_3$ statistic for any arbitrary trio of individuals of your
+choosing using such linear combination of $f_2$ statistics.**
+
+**Hint:** Here's that equation in a schematic form
+
+```
+      f3(A, B; C) = f2(A, C) + f2(B, C) - f2(A, B) / 2
+```
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+# standard f3
+ts_f3(ts, B = "AFR_1", C = "AFR_2", A = "CHIMP_1")
+
+# a "homemade" f3 statistic as a linear combination of f2 statistics
+# f3(A, B; C) = f2(A, C) + f2(B, C) - f2(A, B) / 2
+homemade_f3 <- (
+  ts_f2(ts, A = "AFR_1", B = "CHIMP_1")$f2 +
+  ts_f2(ts, A = "AFR_2", B = "CHIMP_1")$f2 -
+  ts_f2(ts, A = "AFR_1", B = "AFR_2")$f2
+) / 2
+
+homemade_f3
+```
+
+You can see that the `ts_f3()` implementation gives basically the same value as
+our "homemade" implementation based on a linear combination of $f_2$
+statistics, just as predicted by the underlying math.
+
+:::
+
+
+
+
+
+
+
+## Exercise: $F_{ST}$ losing power with $N_e$
+
+
+
+
+
+
 
 # "Admixture" $f_3$
 
