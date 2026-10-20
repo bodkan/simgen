@@ -214,7 +214,7 @@ compute_pi(model)
 ```
 
 ```{r}
-run_constant <- function(Ne) {
+simulate_constant <- function(Ne) {
   p1 <- population("p1", time = 1, N = Ne)
   
   model <- compile_model(
@@ -240,7 +240,7 @@ run_constant(10000)
 ```{r}
 library(purrr)
 
-df_constant <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), pi_constant)
+df_constant <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_constant)
 
 ggplot(df_constant, aes(Ne_true, Ne_estimated)) +
   geom_point() +
@@ -275,7 +275,7 @@ plot_model(model, proportions = TRUE)
 ```
 
 ```{r}
-pi_resize <- function(Ne) {
+simulate_bottleneck <- function(Ne) {
   p1 <- population("p1", time = 1, N = 5000) %>%  resize(N = Ne, time = 500)
   
   model <- compile_model(
@@ -296,9 +296,9 @@ pi_resize <- function(Ne) {
 ```{r}
 library(purrr)
 
-df_resize <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), pi_resize)
+df_bottleneck <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_bottleneck)
 
-ggplot(df_resize, aes(Ne_true, Ne_estimated)) +
+ggplot(df_bottleneck, aes(Ne_true, Ne_estimated)) +
   geom_point() +
   geom_hline(yintercept = 5000, color = "red", linetype = "dashed") +
   ggtitle("True Ne vs Ne estimated from nucleotide diversity (bottleneck model)") +
