@@ -232,17 +232,17 @@ simulate_constant <- function(Ne) {
 ```
 
 ```{r}
-run_constant(1000)
-run_constant(3000)
-run_constant(10000)
+simulate_const(1000)
+simulate_const(3000)
+simulate_const(10000)
 ```
 
 ```{r}
 library(purrr)
 
-df_constant <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_constant)
+df_constant <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_const)
 
-ggplot(df_constant, aes(Ne_true, Ne_estimated)) +
+ggplot(df_const, aes(Ne_true, Ne_estimated)) +
   geom_point() +
   geom_abline(slope = 1, color = "red", linetype = "dashed") +
   ggtitle("True Ne vs Ne estimated from nucleotide diversity (constant model)")
@@ -275,7 +275,7 @@ plot_model(model, proportions = TRUE)
 ```
 
 ```{r}
-simulate_bottleneck <- function(Ne) {
+simulate_bottle <- function(Ne) {
   p1 <- population("p1", time = 1, N = 5000) %>%  resize(N = Ne, time = 500)
   
   model <- compile_model(
@@ -296,9 +296,9 @@ simulate_bottleneck <- function(Ne) {
 ```{r}
 library(purrr)
 
-df_bottleneck <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_bottleneck)
+df_bottleneck <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_bottle)
 
-ggplot(df_bottleneck, aes(Ne_true, Ne_estimated)) +
+ggplot(df_bottle, aes(Ne_true, Ne_estimated)) +
   geom_point() +
   geom_hline(yintercept = 5000, color = "red", linetype = "dashed") +
   ggtitle("True Ne vs Ne estimated from nucleotide diversity (bottleneck model)") +
