@@ -1,0 +1,86 @@
+# Natural selection
+
+## Exercise: Tajima's D
+
+Motivation: computing replicates
+
+**Simulate a single Tajima's D value from a single tree sequence.**
+
+Single population model:
+
+```{r}
+library(slendr)
+init_env()
+
+pop <- population("pop", time = 1000, N = 1000)
+model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
+
+ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE))
+```
+
+Problem: from a single replicate, it's impossible to know. We must first
+establish a null distribution:
+
+```{r}
+library(slendr)
+init_env()
+
+tajima_const <- ts_replicate(
+  n = 10,
+  {
+    pop <- population("constant", time = 1000, N = 5000)
+    model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+    
+    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
+  }
+)
+
+tajima_const
+```
+
+```{r}
+tajima_bottle <- ts_replicate(
+  n = 10,
+  {
+    pop <- population("bottleneck", time = 1000, N = 5000) %>%
+      resize(N = 2500, time = 100)
+    model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+    
+    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
+  }
+)
+```
+
+```{r}
+tajima_exp <- ts_replicate(
+  n = 10,
+  {
+    pop <- population("expansion", time = 1000, N = 5000) %>%
+      resize(N = 10000, time = 100)
+    model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+    
+    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
+  }
+)
+```
+
+```{r}
+tajima <- bind_rows(tajima_const, tajima_bottle, tajima_exp)
+```
+
+
+
+```{r}
+ggplot(tajima, aes(set, D)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+```

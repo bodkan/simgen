@@ -1,3 +1,87 @@
+# Multi-population statistics
+
+
+
+
+
+
+## Exercise: controlling stochasticity
+
+
+```{r}
+ts_replicate(
+  10,
+  {
+    ts <-
+      msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+      ts_mutate(mutation_rate = 1e-8)
+    pi_df <- ts_diversity(ts, ts_names(ts))
+    pi_df$Ne <- pi_df$diversity / (4 * 1e-8)
+    pi_df
+  }
+)
+```
+
+
+
+
+
+
+
+
+
+
+## Exercise: Recap on R lists and vectors
+
+Let's start by doing a bit of a setup. Every time you'll want to compute some
+population genomic measure with _slendr_ on your simulated data ($f4$-statistic,
+Tajima's D, IBD segments, or any of the many others), you will need a way to
+refer to entities to compute on. The way we do this with _slendr_ is by
+referring to individual names.
+
+**Start by adding this to your script. The variable `samples` will be used to
+refer to individuals, define subsets, etc.**
+
+```{r}
+samples <- ts_names(ts, split = TRUE)
+```
+
+---
+
+Now let's work on a couple of basic vector- and list-based operations in R, which
+we will be using all the time. If you need a recap, you can scroll through the
+introductory "R bootcamp" chapter, particularly sections and exercises relevant
+for subsetting and indexing into vectors and lists in R.
+
+**What is the type of the data stored in the `samples` variable? How is the
+output of `ts_names(ts)` different from `ts_names(ts, split = TRUE)`? How many
+names of individuals does it contain?**
+
+Our `samples` variable contains a vector of the type `"character"`, but it is
+stored. But itAs of now,
+it contains the names of `{r} length(samples)` individuals.
+
+```{r}
+class(samples)
+```
+
+```{r}
+samples$p1
+```
+
+```{r}
+samples["p1"]
+```
+
+```{r}
+samples[["p1"]]
+```
+
+
+
+
+
+
 # "Outgroup" $f_3$
 
 ::: aside

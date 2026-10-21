@@ -56,47 +56,11 @@ plot_model(model, proportions = TRUE)
 ts <-
   msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
   ts_mutate(mutation_rate = 1e-8)
-```
 
-
-
-
-
-
-
-
-## Exercise: Recap on R lists and vectors
-
-Let's start by doing a bit of a setup. Every time you'll want to compute some
-population genomic measure with _slendr_ on your simulated data ($f4$-statistic,
-Tajima's D, IBD segments, or any of the many others), you will need a way to
-refer to entities to compute on. The way we do this with _slendr_ is by
-referring to individual names.
-
-**Start by adding this to your script. A variable such as `samples` will
-
-
-```{r}
 samples <- ts_names(ts)
-samples
 ```
 
-```{r}
-samples <- ts_names(ts, split = TRUE)
-samples
-```
 
-```{r}
-samples$p1
-```
-
-```{r}
-samples["p1"]
-```
-
-```{r}
-samples[["p1"]]
-```
 
 
 
@@ -109,16 +73,16 @@ samples[["p1"]]
 
 ## Exercise: Computing nucleotide diversity
 
-Let's start practicing how to compute tree-sequence summary statistics with
-the simplest possible computation imaginable: computing a single summary
-statistic from a single population, such as nucleotide diversity.
+Let's start practicing how to compute tree-sequence summary statistics with the
+simplest possible computation imaginable: computing a single summary statistic
+from a single population, such as nucleotide diversity.
 
 The simplest possible thing we can do is to provide the name of a single
-individual. Given that you know that nucleotide diversity quantifies the
-average number of nucleotide variants per site between two DNA sequences
-across all possible combinations of pairs in a sample from a population,
-what metric is it equivalent to if you compute `ts_diversity()` on a
-single simulated individual (i.e., on its two chromosomes)?
+individual. Given that you know that nucleotide diversity quantifies the average
+number of nucleotide variants per site between two DNA sequences across all
+possible combinations of pairs in a sample from a population, what metric is it
+equivalent to if you compute `ts_diversity()` on a single simulated individual
+(i.e., on its two chromosomes)?
 
 Answer is that we get heterozygosity:
 
@@ -157,11 +121,7 @@ all populations) match what would expect from the model you programmed?**
 ### Click to see the solution
 
 ```{r}
-samples <- ts_names(ts, split = TRUE)
-```
-
-```{r}
-df <- ts_diversity(ts, samples)
+df <- ts_diversity(ts, list(all = samples))
 df
 ```
 
@@ -197,9 +157,9 @@ compute_pi <- function(model) {
     msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
     ts_mutate(mutation_rate = 1e-8)
 
-  samples <- ts_names(ts, split = TRUE)
+  samples <- ts_names(ts)
   
-  df <- ts_diversity(ts, samples)
+  df <- ts_diversity(ts, list(all = samples))
 
   # compute the estimated Ne from the data based on the equation:
   #   theta = 4 * mutation_rate * Ne => Ne = theta / (4 * mutation_rate)
@@ -293,6 +253,17 @@ simulate_bottle <- function(Ne) {
 }
 ```
 
+We can see that even a drastic population bottleneck such as the one we
+programmed does not actually reduce the observed levels of nucleotide diversity
+that much! As a result, our $N_e$ estimate is very wrong---we consistently
+estimate it at the level of 5000 (i.e., the size prior to the bottleneck),
+regardless of the true size of the population after the bottleneck.
+
+IWhat this means that estimating $N_e$ from nucleotide diversity (which is very
+often done in population genetics) only works reliably in a population which has
+reached a long-term stable effective size.
+
+We will see about a more robust method to do this in a later exercise.
 
 ```{r}
 library(ggplot2)
@@ -409,32 +380,6 @@ ggplot(df, aes(factor(subset_n), diversity)) + geom_boxplot()
 
 
 
-## Exercise: controlling stochasticity
-
-
-```{r}
-ts_replicate(
-  10,
-  {
-    ts <-
-      msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
-      ts_mutate(mutation_rate = 1e-8)
-    pi_df <- ts_diversity(ts, ts_names(ts))
-    pi_df$Ne <- pi_df$diversity / (4 * 1e-8)
-    pi_df
-  }
-)
-```
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -442,110 +387,27 @@ ts_replicate(
 ## Exercise: Allele frequency spectrum
 
 ```{r}
-samples <- ts_names(ts, split = TRUE)
-
-plot(ts_afs(ts, sample_sets = samples["p1"]), type = "l", col = "lightblue")
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Exercise: Tajima's D
-
-Motivation: computing replicates
-
-**Simulate a single Tajima's D value from a single tree sequence.**
-
-Single population model:
-
-```{r}
-library(slendr)
-init_env()
-
-pop <- population("pop", time = 1000, N = 1000)
-model <- compile_model(pop, generation_time = 1, direction = "backward")
-
-ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
-
-ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE))
-```
-
-Problem: from a single replicate, it's impossible to know. We must first
-establish a null distribution:
-
-```{r}
-library(slendr)
-init_env()
-
-tajima_const <- ts_replicate(
-  n = 10,
-  {
-    pop <- population("constant", time = 1000, N = 5000)
-    model <- compile_model(pop, generation_time = 1, direction = "backward")
-
-    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
-    
-    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
-  }
-)
-
-tajima_const
+subset <- sample(samples, 50)
 ```
 
 ```{r}
-tajima_bottle <- ts_replicate(
-  n = 10,
-  {
-    pop <- population("bottleneck", time = 1000, N = 5000) %>%
-      resize(N = 2500, time = 100)
-    model <- compile_model(pop, generation_time = 1, direction = "backward")
+afs <- ts_afs(ts, sample_sets = list(subset))
 
-    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
-    
-    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
-  }
-)
-```
-
-```{r}
-tajima_exp <- ts_replicate(
-  n = 10,
-  {
-    pop <- population("expansion", time = 1000, N = 5000) %>%
-      resize(N = 10000, time = 100)
-    model <- compile_model(pop, generation_time = 1, direction = "backward")
-
-    ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
-    
-    ts_tajima(ts, sample_sets = ts_names(ts, split = TRUE), mode = "branch")
-  }
-)
-```
-
-```{r}
-tajima <- bind_rows(tajima_const, tajima_bottle, tajima_exp)
+plot(afs, type = "l", col = "lightblue", xlab = "allele frequency", ylab = "count")
 ```
 
 
 
-```{r}
-ggplot(tajima, aes(set, D)) +
-  geom_boxplot() +
-  geom_jitter() +
-  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
-```
+
+
+
+
+
+
+
+
+
+
 
 :::
 
