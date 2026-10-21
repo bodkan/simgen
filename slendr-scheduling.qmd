@@ -3,8 +3,9 @@
 ## Preparation
 
 The exercises in this chapter will pick up from where we left of in the chapter
-on building _slendr_ demographic models. To catch up, feel free to use the
-following script as a basis for what's coming up next:
+on building _slendr_ demographic models. **To make sure we're all on the same
+page and that we can start from the same point and the same model, feel free to
+use the following script as a basis for what's coming up next:**
 
 ```{r}
 library(slendr)
@@ -163,6 +164,9 @@ and `ts_mutate()` in your models.
 
 :::
 
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
 Here's the general pattern of how we simulate genomic data with _slendr_
 including mutations:
 
@@ -173,7 +177,14 @@ ts <-
 ```
 
 We can see that, indeed, the tree sequence now has `{r} ts$num_mutations`
-mutations in it.
+mutations in it:
+
+```{r}
+ts
+```
+
+
+:::
 
 ---
 
@@ -188,25 +199,22 @@ run such as `ts_recorded(ts)`).
 
 ---
 
-**Run each of these three functions on your `ts` tree sequence, then try
-answering these questions:**
+**Try answering these questions by running these three functions and inspecting
+their outputs (using some _tidyverse_ table manipulation functions might be
+useful for this):**
 
 - How many individuals are in your tree sequence based on these functions?
 
 - How is the result of `ts_nodes()` different from `ts_recorded()`?
 
-- What are the `time` values of recorded individuals based on the information in
-these tables?
-
-- Are the `time` values the same in both?
+- What are the `time` values of recorded individuals based on the information
+produced by these two functions? Are the `time` values the same in both?
 
 - How many individuals in total are in the tree sequence based on these two
 functions, and how many of them are in each population? Why do you get the
 numbers you got, given the model which you programmed and simulated?
 
 - How does `ts_names()` differ from the two table-producing functions?
-
-**Use your _tidyverse_ knowledge to play around with the output of `ts_recorded()` and `ts_nodes()` to answer these questions.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -243,6 +251,8 @@ individuals which we simulated or sequenced):
 ```{r}
 ts_nodes(ts) %>% filter(time > 0)
 ```
+
+**TODO:**
 
 ```{r}
 library(ggplot2)
@@ -551,6 +561,9 @@ publication-ready figures.
 
 ## Catch up
 
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
 ```{r}
 library(slendr)
 init_env()
@@ -582,83 +595,9 @@ ts <-
   ts_mutate(mutation_rate = 1e-8)
 ```
 
+:::
 
 <!-- ## Exercise 6: Simulating a defined set of individuals -->
 
-<!-- We now have both a compiled _slendr_ `model` and a well-defined sampling -->
-<!-- `schedule`, so let's finally simulate some data! -->
 
-<!-- **Use your combined sampling `schedule` to run a new tree-sequence simulation -->
-<!-- from your model (again using the `msprime()` function), this time restricted to -->
-<!-- just those individuals scheduled for recording. You can do this by running the -->
-<!-- following command (note that this also overlays mutations over our genealogies, -->
-<!-- which is something we didn't do before).** This will give you a new -->
-<!-- tree-sequence object stored in the `ts` variable. -->
-
-<!-- ```{r} -->
-<!-- #| eval: false -->
-<!-- ts <- -->
-<!--   msprime( -->
-<!--     model, sequence_length = 100e6, recombination_rate = 1e-8,  -->
-<!--     samples = schedule -->
-<!--   ) %>% -->
-<!--   ts_mutate(mutation_rate = 1e-8) -->
-<!-- ``` -->
-
-<!-- ::: {.callout-note collapse="true" icon=false} -->
-<!-- #### Click to see the solution -->
-
-<!-- The command below will likely take a few minutes to run, so feel free to go -->
-<!-- down from 100 Mb sequence_length to even 10Mb (it doesn't matter much). -->
-<!-- (The `random_seed =` argument is there for reproducibility purposes.) -->
-
-<!-- ```{r} -->
-<!-- #| eval: false -->
-<!-- ts <- -->
-<!--   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, samples = schedule, random_seed = 1269258439) %>% -->
-<!--   ts_mutate(mutation_rate = 1e-8, random_seed = 1269258439) -->
-<!-- # Time difference of 2.141642 mins -->
-<!-- ``` -->
-
-
-<!-- If you're bothered by how long the simulation takes, feel free to call these two lines -->
-<!-- to 100% reproduce my results without any expensive computation: -->
-
-<!-- ```{r} -->
-<!-- #| eval: false -->
-<!-- url_path <- "https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees" -->
-<!-- ts_path <- tempfile() -->
-<!-- download.file(url_path, destfile = ts_path, mode = "wb") -->
-<!-- ts <- ts_read(file = ts_path, model = model) -->
-<!-- ts -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- #| echo: false -->
-<!-- #| eval: false -->
-<!-- # We can save a tree sequence object using a slendr function `ts_write` (this -->
-<!-- # can be useful if we want to save the results of a simulation for later use). -->
-<!-- if (dir.exists(here::here("files/popgen"))) { -->
-<!--   ts_write(ts, here::here("files/popgen/introgression.trees")) -->
-<!-- } -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- #| echo: false -->
-<!-- #| eval: false -->
-<!-- if (dir.exists(here::here("files/popgen"))) { -->
-<!--   model <- read_model(here::here("files/popgen/introgression")) -->
-<!--   ts <- ts_read(file = here::here("files/popgen/introgression.trees"), model = model) -->
-<!-- } -->
-<!-- ``` -->
-
-<!-- ::: -->
-
-<!-- ::: aside -->
-
-<!-- **Note:** When you think about it, it's quite astonishing how fast _msprime_ -->
-<!-- and _tskit_ are when dealing with such a huge amount of sequence data from tens -->
-<!-- of thousands of individuals on a normal laptop! -->
-
-<!-- ::: -->
 

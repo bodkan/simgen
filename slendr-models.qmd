@@ -584,48 +584,62 @@ plot_model(model, proportions = TRUE)
 
 
 
-<!-- ### Optional exercise: Serialized models on disk -->
+### Optional exercise: Serialized models on disk
 
-<!-- _Feel free to skip this exercise, unless you managed to run through everything -->
-<!-- quickly and want to learn about _slendr_ internals!_ -->
+Feel free to skip this exercise, unless you managed to run through everything
+quickly and want to learn about _slendr_ internals!
 
-<!-- A very important part of _slendr_'s approach to modeling is to make simple -->
-<!-- things be trivially easy. This is largely why expressing even relatively complex -->
-<!-- models with _slendr_ requires so little code compared to the amount of -->
-<!-- programming needed with traditional powerful simulators such as -->
-<!-- [_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/), -->
-<!-- something you'll see (and hopefully appreciate!) when we get to programming -->
-<!-- larger models later. -->
+A very important part of _slendr_'s approach to modeling is to make simple
+things be trivially easy. This is largely why expressing even relatively complex
+models with _slendr_ requires so little code compared to the amount of
+programming needed with traditional powerful simulators.
 
-<!-- Still, sometimes it's useful to peek behind the curtain and see what exactly is going on inside _slendr_ and how it operates. -->
+Still, sometimes it's useful to peek behind the curtain and see what exactly is going on inside _slendr_ and how it operates.
 
-<!-- **Type out the `model` object in the R console, paying attention to the -->
-<!-- description of the path. Use your operating system disk browsing program (Finder -->
-<!-- on macOS, File Explorer on Windows, or any other means of browsing files on -->
-<!-- other systems, such as the terminal shell) to see what files are hiding in that -->
-<!-- path.** -->
+---
 
-<!-- ```{r} -->
-<!-- list.files(model$path, full.names = TRUE) -->
-<!-- ``` -->
+**Type out the `model` object in the R console, paying attention to the
+description of the path where it's been compiled. Use your operating system disk
+browsing program (Finder on macOS, File Explorer on Windows, or any other means
+of browsing files on other systems, such as the terminal shell) to see what
+files are hiding in that path. Given the model we've programmed so far, pay
+particular attention to `populations.tsv` and `geneflow.tsv`. What format do
+those files have? Can you deciper the meaning of the information they store by
+comparing it to your own model R code? What is stored in the file `script.py`?**
 
-<!-- ```{r} -->
-<!-- print_file <- function(model, file) cat(readLines(file.path(model$path, file))) -->
-<!-- ``` -->
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
 
-<!-- ```{r} -->
-<!-- print_file(model, "populations.tsv") -->
-<!-- ``` -->
+Here's how we can see the files in the model path:
 
-<!-- ```{r} -->
-<!-- print_file(model, "time_units.txt") -->
-<!-- ``` -->
+```{r}
+list.files(model$path, full.names = TRUE)
+```
 
-<!-- ```{r} -->
-<!-- print_file(model, "direction.txt") -->
-<!-- ``` -->
+To keep everything inside R, let's create a tiny R helper function to use for
+inspecting the files:
 
-<!-- ```{r} -->
-<!-- print_file(model, "description.txt") -->
-<!-- ``` -->
+```{r}
+print_file <- function(model, file) cat(readLines(file.path(model$path, file)))
+```
 
+And here are the most relevant files:
+
+```{r}
+print_file(model, "populations.tsv")
+```
+
+```{r}
+print_file(model, "geneflow.tsv")
+```
+
+```{r}
+print_file(model, "direction.txt")
+```
+
+```{r}
+print_file(model, "orig_length.tsv")
+print_file(model, "length.tsv")
+```
+
+:::
