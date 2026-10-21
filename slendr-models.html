@@ -423,7 +423,10 @@ window.Quarto = {
   <li><a href="#exercise-resize-events" id="toc-exercise-resize-events" class="nav-link" data-scroll-target="#exercise-resize-events">Exercise: Resize events</a></li>
   <li><a href="#exercise-programming-gene-flow" id="toc-exercise-programming-gene-flow" class="nav-link" data-scroll-target="#exercise-programming-gene-flow">Exercise: Programming gene-flow</a></li>
   </ul></li>
-  <li><a href="#catch-up" id="toc-catch-up" class="nav-link" data-scroll-target="#catch-up">Catch up</a></li>
+  <li><a href="#catch-up" id="toc-catch-up" class="nav-link" data-scroll-target="#catch-up">Catch up</a>
+  <ul class="collapse">
+  <li><a href="#optional-exercise-serialized-models-on-disk" id="toc-optional-exercise-serialized-models-on-disk" class="nav-link" data-scroll-target="#optional-exercise-serialized-models-on-disk">Optional exercise: Serialized models on disk</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -1029,42 +1032,83 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 </div>
 </div>
 </div>
-<!-- ### Optional exercise: Serialized models on disk -->
-<!-- _Feel free to skip this exercise, unless you managed to run through everything -->
-<!-- quickly and want to learn about _slendr_ internals!_ -->
-<!-- A very important part of _slendr_'s approach to modeling is to make simple -->
-<!-- things be trivially easy. This is largely why expressing even relatively complex -->
-<!-- models with _slendr_ requires so little code compared to the amount of -->
-<!-- programming needed with traditional powerful simulators such as -->
-<!-- [_msprime_](https://tskit.dev/msprime/) and [SLiM](https://messerlab.org/slim/), -->
-<!-- something you'll see (and hopefully appreciate!) when we get to programming -->
-<!-- larger models later. -->
-<!-- Still, sometimes it's useful to peek behind the curtain and see what exactly is going on inside _slendr_ and how it operates. -->
-<!-- **Type out the `model` object in the R console, paying attention to the -->
-<!-- description of the path. Use your operating system disk browsing program (Finder -->
-<!-- on macOS, File Explorer on Windows, or any other means of browsing files on -->
-<!-- other systems, such as the terminal shell) to see what files are hiding in that -->
-<!-- path.** -->
-<!-- ```{r} -->
-<!-- list.files(model$path, full.names = TRUE) -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- print_file <- function(model, file) cat(readLines(file.path(model$path, file))) -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- print_file(model, "populations.tsv") -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- print_file(model, "time_units.txt") -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- print_file(model, "direction.txt") -->
-<!-- ``` -->
-<!-- ```{r} -->
-<!-- print_file(model, "description.txt") -->
-<!-- ``` -->
+<section id="optional-exercise-serialized-models-on-disk" class="level3">
+<h3 class="anchored" data-anchor-id="optional-exercise-serialized-models-on-disk">Optional exercise: Serialized models on disk</h3>
+<p>Feel free to skip this exercise, unless you managed to run through everything quickly and want to learn about <em>slendr</em> internals!</p>
+<p>A very important part of <em>slendr</em>’s approach to modeling is to make simple things be trivially easy. This is largely why expressing even relatively complex models with <em>slendr</em> requires so little code compared to the amount of programming needed with traditional powerful simulators.</p>
+<p>Still, sometimes it’s useful to peek behind the curtain and see what exactly is going on inside <em>slendr</em> and how it operates.</p>
+<hr>
+<p><strong>Type out the <code>model</code> object in the R console, paying attention to the description of the path where it’s been compiled. Use your operating system disk browsing program (Finder on macOS, File Explorer on Windows, or any other means of browsing files on other systems, such as the terminal shell) to see what files are hiding in that path. Given the model we’ve programmed so far, pay particular attention to <code>populations.tsv</code> and <code>geneflow.tsv</code>. What format do those files have? Can you deciper the meaning of the information they store by comparing it to your own model R code? What is stored in the file <code>script.py</code>?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s how we can see the files in the model path:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(model<span class="sc">$</span>path, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/checksums.tsv"      
+ [2] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/description.txt"    
+ [3] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/direction.txt"      
+ [4] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/geneflow.tsv"       
+ [5] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/generation_time.txt"
+ [6] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/length.txt"         
+ [7] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/orig_length.txt"    
+ [8] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/populations.tsv"    
+ [9] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/ranges.rds"         
+[10] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/resizes.tsv"        
+[11] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/script.py"          
+[12] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/script.slim"        
+[13] "/private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpvEzvhD/file5ea73b47b804_slendr_model/time_units.txt"     </code></pre>
+</div>
+</div>
+<p>To keep everything inside R, let’s create a tiny R helper function to use for inspecting the files:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>print_file <span class="ot">&lt;-</span> <span class="cf">function</span>(model, file) <span class="fu">cat</span>(<span class="fu">readLines</span>(<span class="fu">file.path</span>(model<span class="sc">$</span>path, file)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>And here are the most relevant files:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"populations.tsv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>pop parent  N   tsplit_gen  tsplit_orig tremove_gen tremove_orig    pop_id  parent_id p1    __pop_is_ancestor   1000    1   12000   -1  -1  0   -1 p2   p1  1000    101 9000    -1  -1  1   0 p3    p2  1000    201 6000    -1  -1  2   1 p4    p3  1000    301 3000    -1  -1  3   2</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"geneflow.tsv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>from    to  proportion  overlap tstart_gen  tstart_orig tend_gen    tend_orig   from_id to_id p2    p3  0.1 0   301 3000    331 2100    1   2</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"direction.txt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>backward</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"orig_length.txt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>12000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"length.txt"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>400</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
