@@ -84,14 +84,14 @@ model1 <- compile_model(
   gene_flow = gene_flow(from = vindija, to = nonafr, proportion = 0.03, start = 55000, end = 50000),
   generation_time = 30
 )
-schedule1 <- schedule_recording(model1, times = 0, list("all", 5))
+schedule1 <- schedule_recording(model1, times = 0, list("each", 5))
 
 model2 <- compile_model(
   populations = list(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),
   gene_flow = gene_flow(from = nonafr, to = vindija, proportion = 0.03, start = 55000, end = 50000),
   generation_time = 30
 )
-schedule2 <- schedule_recording(model2, times = 0, list("all", 5))
+schedule2 <- schedule_recording(model2, times = 0, list("each", 5))
 ```
 
 ```{r}
@@ -226,6 +226,7 @@ Compute the difference in the amount of allele sharing between two African
 individuals and a Neanderthal:
 
 ```{r}
+#| eval: false
 f4_null <- ts_f4(ts, W = "AFR_1", X = "AFR_2", Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
 f4_null
 ```
@@ -234,6 +235,7 @@ Compute the difference in the amount of allele sharing between an African
 individual vs European individual and a Neanderthal:
 
 ```{r}
+#| eval: false
 f4_alt <- ts_f4(ts, W = "AFR_1", X = "EUR_1", Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
 f4_alt
 ```
@@ -244,6 +246,7 @@ negative than the first test, indicating that a European in our test carries
 of no introgression established by the comparison to an African ...
 
 ```{r}
+#| eval: false
 abs(f4_alt$f4 / f4_null$f4)
 ```
 
@@ -329,6 +332,7 @@ This gives us list of vectors of the names of all individuals in each
 population...
 
 ```{r}
+#| eval: false
 sample_sets <- ts_names(ts, split = TRUE)
 # ... which we can then access like this
 sample_sets$AFR # all Africans
@@ -338,6 +342,7 @@ sample_sets$EUR # all Europeans
 Let's compute the $f_4$ statistic for all Africans... 
 
 ```{r}
+#| eval: false
 f4_afr_list <- lapply(
   sample_sets$AFR,
   function(x) ts_f4(ts, W = "AFR_1", X = x, Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
@@ -352,6 +357,7 @@ f4_eur_list <- lapply(
 Bind each list of data frames into a single data frame:
 
 ```{r}
+#| eval: false
 f4_afr <- do.call(rbind, f4_afr_list)
 f4_eur <- do.call(rbind, f4_eur_list)
 
@@ -366,6 +372,7 @@ f4_results <- rbind(f4_afr, f4_eur)
 Now we can visualize the results:
 
 ```{r}
+#| eval: false
 f4_results %>%
   ggplot(aes(pop, f4, color = pop)) +
   geom_boxplot() +
@@ -415,6 +422,7 @@ same?**
 ### Click to see the solution
 
 ```{r}
+#| eval: false
 # Extract table with names and times of sampled Europeans (ancient and present day)
 eur_inds <- ts_recorded(ts) %>% filter(pop == "EUR")
 eur_inds
@@ -468,6 +476,7 @@ noise due to mutations.
 ### Click to see the solution
 
 ```{r}
+#| eval: false
 # # install a combinatorics R package
 # install.packages("combinat")
 
