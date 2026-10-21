@@ -4,6 +4,7 @@ slides_html := $(foreach chapter,$(chapters),slides_$(chapter).html)
 handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
 
 all: $(slides_html) $(handouts_html)
+	git add *.qmd; git commit -m "Update .qmd files"; git push
 	quarto publish gh-pages --no-prompt
 	git checkout gh-pages
 	git add rendered/
