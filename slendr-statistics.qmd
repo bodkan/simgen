@@ -37,17 +37,20 @@ https://en.wikipedia.org/wiki/Watterson_estimator:
 
 ## Preparation
 
-Let's start with the following script as a basis. Take a look at the code and use
-the visualization of the model to get an idea of what it does.
+**Let's start with the following script as a basis. Save this as `TODO.R`, then
+read through it and understand what it's going to do (generally, that's the best
+practice for learning how to understand code quickly). When you do that, run the
+entire script and inspect the produced visualization of the model to get a
+confirmation of your idea.**
 
 ```{r}
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 1, N = 5000)
+pop <- population("pop", time = 1, N = 5000)
 
 model <- compile_model(
-  populations = p1,
+  populations = pop,
   generation_time = 1, simulation_length = 1000
 )
 
@@ -87,14 +90,14 @@ equivalent to if you compute `ts_diversity()` on a single simulated individual
 Answer is that we get heterozygosity:
 
 ```{r}
-ts_diversity(ts, sample_sets = "p1_1")
+ts_diversity(ts, sample_sets = "pop_1")
 ```
 
 Note that this is the same thing as this (because a single value in R is the
 same thing as a vector of length one):
 
 ```{r}
-ts_diversity(ts, sample_sets = c("p1_1"))
+ts_diversity(ts, sample_sets = c("pop_1"))
 ```
 
 ```{r}
@@ -105,9 +108,9 @@ ts_diversity(ts, sample_sets = c("p1_1"))
 Diversity within a group of individuals:
 
 ```{r}
-ts_diversity(ts, sample_sets = c("p1_1", "p1_2", "p1_3"))
-ts_diversity(ts, sample_sets = list(c("p1_1", "p1_2", "p1_3")))
-ts_diversity(ts, sample_sets = list(p1_subset = c("p1_1", "p1_2", "p1_3")))
+ts_diversity(ts, sample_sets = c("pop_1", "pop_2", "pop_3"))
+ts_diversity(ts, sample_sets = list(c("pop_1", "pop_2", "pop_3")))
+ts_diversity(ts, sample_sets = list(pop_subset = c("pop_1", "pop_2", "pop_3")))
 ```
 
 ---
@@ -146,6 +149,20 @@ df
 
 ## Exercise: Generalizing the simulation
 
+Custom functions are absolutely critical for efficient, reproducible science.
+They eliminate copy-pasted bug-prone code and make it much easier to explore
+ideas, test parameters, and explore various models. In this workshop, you'll
+soon see how often I force you to write custom functions---hopefully, by the end
+you will appreciate why I did this!
+
+To practice the concept of custom functions, let's start with something very easy.
+
+Doing this work must seem like extra unnecessary bother. After all, you're
+effectively writing _even more code_! But the pay off comes later, as you will
+see.
+
+The first instinct when a need to re-run an analysis with different parameters, or with different data, etc., is to just make a copy of your original script, and work from that, modifying the copied script and so on. This works, but is usually the wrong approach.
+
 Let's first abstract away the computation of $\pi$ and the inference of $N_e$.
 By extracting the relevant code into a dedicated, self-contained function, we
 reduce duplication of code and, by extension, the potential for introducing
@@ -175,10 +192,10 @@ compute_pi(model)
 
 ```{r}
 simulate_const <- function(Ne) {
-  p1 <- population("p1", time = 1, N = Ne)
+  pop <- population("pop", time = 1, N = Ne)
   
   model <- compile_model(
-    populations = p1,
+    populations = pop,
     generation_time = 1, simulation_length = 1000
   )
   
@@ -220,15 +237,29 @@ ggplot(df_const, aes(Ne_true, Ne_estimated)) +
 
 ## Exercise: Comparing multiple models
 
-**Start with $N_e$ of 5000, then introduce a bottleneck using the function
-`resize()` which will se the size of the population to the given value `Ne` at
-time 800.**
+Let's suppose we want to see how robust our statistic of interest (in this toy
+example, nucleotide divertisity, $\pi$) is to a choice of the underlying
+demographic model. In the previous exercise, we worked with using $\pi$ to
+estimate the effective population size of a population under study ($N_e$) and
+verified that it works very well for a model of a long-term constant population size.
+
+How about when we introduce a bottleneck into our model? How well does our $N_e$
+estimate work in such case?
+
+---
+
+**Build a new model of a single population "pop", again starting with $N_e$ of
+5000, then introduce a bottleneck using the function `resize()` which will set
+the size of the population to the given value `Ne` at time 800. You can again
+start by writing a couple of lines of code implementing such model, perhaps
+setting the bottleneck to $N_e$ of 500, and once you have it, wrap it around in
+a function `simulate_bottle(Ne)`, just like you did in the previous exercise.**
 
 ```{r}
-p1 <- population("p1", time = 1, N = 5000) %>% resize(N = 500, time = 500)
+pop <- population("pop", time = 1, N = 5000) %>% resize(N = 500, time = 500)
 
 model <- compile_model(
-  populations = p1,
+  populations = pop,
   generation_time = 1, simulation_length = 1000
 )
 
@@ -237,10 +268,10 @@ plot_model(model, proportions = TRUE)
 
 ```{r}
 simulate_bottle <- function(Ne) {
-  p1 <- population("p1", time = 1, N = 5000) %>%  resize(N = Ne, time = 500)
+  pop <- population("pop", time = 1, N = 5000) %>%  resize(N = Ne, time = 500)
   
   model <- compile_model(
-    populations = p1,
+    populations = pop,
     generation_time = 1, simulation_length = 1000
   )
   
@@ -259,7 +290,7 @@ that much! As a result, our $N_e$ estimate is very wrong---we consistently
 estimate it at the level of 5000 (i.e., the size prior to the bottleneck),
 regardless of the true size of the population after the bottleneck.
 
-IWhat this means that estimating $N_e$ from nucleotide diversity (which is very
+What this means that estimating $N_e$ from nucleotide diversity (which is very
 often done in population genetics) only works reliably in a population which has
 reached a long-term stable effective size.
 
@@ -295,13 +326,82 @@ ggplot(df_bottle, aes(Ne_true, Ne_estimated)) +
 ## Exercise: Allele frequency spectrum
 
 ```{r}
-subset <- sample(samples, 50)
-```
+library(slendr)
+init_env()
 
-```{r}
+pop <- population("pop", time = 1, N = 1000)
+model <- compile_model(populations = pop, generation_time = 1, simulation_length = 1000)
+
+ts <-
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+subset <- sample(ts_names(ts), 20)
+
 afs <- ts_afs(ts, sample_sets = list(subset))
 
 plot(afs, type = "l", col = "lightblue", xlab = "allele frequency", ylab = "count")
+```
+
+```{r}
+library(slendr)
+init_env()
+
+afs_const <- function(Ne) {
+  pop <- population("pop", time = 1, N = Ne)
+  model <- compile_model(populations = pop, generation_time = 1, simulation_length = 1000)
+  
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  subset <- sample(ts_names(ts), 10)
+  
+  afs <- ts_afs(ts, sample_sets = list(subset))
+  
+  data.frame(
+    Ne = Ne,
+    bin = 1:length(afs),
+    freq = afs
+  )
+}
+```
+
+```{r}
+afs <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), afs_const)
+
+ggplot(afs, aes(bin, freq, color = factor(Ne))) + geom_line()
+```
+
+
+```{r}
+library(slendr)
+init_env()
+
+afs_bottle <- function(Ne) {
+  pop <- population("pop", time = 1, N = 5000) %>%  resize(N = Ne, time = 500)
+  model <- compile_model(populations = pop, generation_time = 1, simulation_length = 1000)
+  
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  subset <- sample(ts_names(ts), 10)
+  
+  afs <- ts_afs(ts, sample_sets = list(subset))
+  
+  data.frame(
+    Ne = Ne,
+    bin = 1:length(afs),
+    freq = afs
+  )
+}
+```
+
+```{r}
+afs <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), afs_bottle)
+
+ggplot(afs, aes(bin, freq, color = factor(Ne))) + geom_line()
 ```
 
 
@@ -329,22 +429,22 @@ library(ggplot2)
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 1000, N = 1000)
-model <- compile_model(p1, generation_time = 1, direction = "backward")
+pop <- population("pop", time = 1000, N = 1000)
+model <- compile_model(pop, generation_time = 1, direction = "backward")
 ts <- msprime(model, sequence_length = 20e6, recombination_rate = 1e-8) %>% ts_mutate(1e-8)
 
-ts_segregating(ts, sample_sets = "p1_1")
-ts_segregating(ts, sample_sets = c("p1_1", "p1_2"))
-ts_segregating(ts, sample_sets = c("p1_1", "p1_2", "p1_3"))
+ts_segregating(ts, sample_sets = "pop_1")
+ts_segregating(ts, sample_sets = c("pop_1", "pop_2"))
+ts_segregating(ts, sample_sets = c("pop_1", "pop_2", "pop_3"))
 
 # oh no, a mistake, we forgot to group this
-ts_segregating(ts, sample_sets = list(group = "p1_1"))
-ts_segregating(ts, sample_sets = list(group = c("p1_1", "p1_2")))
-ts_segregating(ts, sample_sets = list(group = c("p1_1", "p1_2", "p1_3")))
+ts_segregating(ts, sample_sets = list(group = "pop_1"))
+ts_segregating(ts, sample_sets = list(group = c("pop_1", "pop_2")))
+ts_segregating(ts, sample_sets = list(group = c("pop_1", "pop_2", "pop_3")))
 
-paste0("p1_", 1:3)
+paste0("pop_", 1:3)
 
-ts_segregating(ts, sample_sets = list(group = paste0("p1_", 1:5)))
+ts_segregating(ts, sample_sets = list(group = paste0("pop_", 1:5)))
 
 subset_segsites <- function(ts, i) {
   subset <- sample(ts_names(ts), i)
