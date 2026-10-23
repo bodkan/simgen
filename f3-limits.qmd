@@ -178,7 +178,50 @@ ggplot(f3_outgroup, aes(tsplit, f3)) +
 
 
 
+
 ## Exercise: `mode = "branch"` vs `mode = "site"`
+
+
+In the `ts` summary, you probably noticed there are no mutations! As we will see
+later, the magic of tree sequences allows us to compute nearly any conceivable
+population genetic statistic even without mutations. That said, particularly for
+exploring statistics computed by various third-party software outside of R,
+having mutations can be often useful.
+
+**Modify the part of your script which simulates the `ts` object, adding a `%>%
+  ts_mutate(mutation_rate = 1e-8)` after the `msprime(...)` function call. After
+you execute this new command and type `ts` in the R console to inspect the
+summary, you should see that mutations have been added.**
+  
+  ::: aside
+
+**Note:** Even though mutations are generally not needed, there's almost never
+any huge downside to adding them, so I recommend you always use both `msprime()`
+and `ts_mutate()` in your models.
+
+:::
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's the general pattern of how we simulate genomic data with _slendr_
+including mutations:
+  
+  ```{r}
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+We can see that, indeed, the tree sequence now has `{r} ts$num_mutations`
+mutations in it:
+  
+  ```{r}
+ts
+```
+
+
+:::
 
 **Repeat the exercise 3 by setting `mode = "site"` in the `ts_f3()` function
 calls** (this is actually the default behavior of all _slendr_ tree-sequence
