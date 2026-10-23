@@ -141,7 +141,7 @@ downside to adding them, so I recommend you always use both `msprime()` and
 
 
 
-## Exercise: Computing nucleotide diversity
+## Exercise: Within-group(s) statistics
 
 The simplest possible computation we can do is to compute a statistic from a
 single population. As an example, let's look at [nucleotide diversity
@@ -243,31 +243,163 @@ ts_diversity(ts, sample_sets = list(pop_subset = c("pop_1", "pop_2", "pop_3")))
 
 ---
 
-The model which you programmed implies what should be the nucleotide diversity
-expected in the simulated population. **Compute the nucleotide diversity in all
-populations using `ts_diversity()`. Do you get numbers that (relatively between
-all populations) match what would expect from the model you programmed?**
+Of course, you can compute any statistic not only for one group of individuals,
+but for multiple of them. What result such computation produces depends on
+whether we're computing so-called ["one-way"](https://tskit.dev/tskit/docs/stable/stats.html#sec-stats-sample-sets-one-way)
+statistics (which are computed within groups, like nucleotide diversity here) or ["multi-way"](https://tskit.dev/tskit/docs/stable/stats.html#multi-way-methods)
+statistic (which are computed between groups, like $F_{ST}$). For now we'll stay with 
+one-way statistics.
+
+**To make the "one-way" statistic concept clear, let's practice this. Instead of
+computing `ts_diversity()` for a single group of individuals (like "pop_1" and
+"pop_2" above), compute this using a single `ts_diversity()` command on multiple
+subsets of individuals of increasing sizes (let's say groups of 1, 2, 5, 10, 500
+1000, and finally all individuals). Do you expect the same value of nucleotide
+diversity? And why?**
+
+**Hint:** You can obtain a random subset of a larger set of elements using the
+built-in R function `sample()`. Take a look at `?sample` manual page if you need
+more help.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
+Let's first generate the subsets of individuals of different sizes. We have
+a number of options:
+
+1. We could do it "manually" like this:
+
 ```{r}
-df <- ts_diversity(ts, list(all = samples))
+# first get all names of all individuals recorded in the tree sequence
+all_inds <- ts_names(ts)
+
+# then manually create all subset names
+subsets <- list(
+  sample(all_inds, 1),
+  sample(all_inds, 2),
+  sample(all_inds, 5),
+  sample(all_inds, 10),
+  sample(all_inds, 500),
+  sample(all_inds, 1000),
+  all_inds
+)
+```
+
+2. Alternatively, we could do it more succinctly using this R pattern:
+
+```{r}
+# first get the desired sizes of all subsets
+sizes <- c(1, 2, 5, 10, 500, 1000, length(all_inds))
+
+# then iterate over those sizes, and applying the sample() function to each
+subsets <- lapply(sizes, sample, x = all_inds)
+# let's also add names to the groups based on their sizes, for easier reference
+names(subsets) <- sizes
+```
+
+Either way, these commands give us a list of vector of appropriate lengths,
+which we can verify like this. It's very useful to do these sanity checks as
+your working on your programs, always making sure that what you want to do
+_actually_ matches reality:
+
+```{r}
+# apple the length() function to each element of the list
+sapply(subsets, length)
+```
+
+Now we can finally compute nucleotide diversity in each of those groups of
+individuals:
+
+```{r}
+ts_diversity(ts, subsets)
+```
+
+Perhaps not surprisingly, we don't see much difference. After all, this is
+expected, because there is only one true (and normally unknown) value of
+nucleotide diversity of the entire population. What changes when we compute this
+statistic on subsets of different sizes is the stochastic noise.
+
+We'll see a bit more on how to control (and quantify) the noise using simulations
+a little bit later.
+
+:::
+
+
+
+
+
+
+
+
+
+
+## Exercise: Benchmarking estimates
+
+In practical research, we often use different software methods or statistics to
+estimate some value of interest. In our context---to use a very simple toy
+example to demonstrate a simulation-based approach in a familiar context---let's
+look at a measure of the population size called effective population size, or
+$N_e$.
+
+From a bit of [background theory of population
+genetics](https://en.wikipedia.org/wiki/Effective_population_size#Empirical_measurements),
+we know that we can obtain an estimate of $N_e$ from nucleotide diversity, which
+we just computed. Specifically, neutral theory of molecular evolution posits
+that an idealised diploid population will have a pairwise nucleotide diversity
+equal to
+
+$$\theta = 4 N_e \mu,$$
+
+where $\mu$ is the mutation rate. Using simple algebra, this gives us an estimate
+for $N_e$ in the form of
+
+$$N_e = \frac{\theta}{4 \mu}.$$
+
+How well does this estimator perform under different scenarios?
+
+::: aside
+
+If you're familiar with population genetics, this has all sorts of obvious
+answers, but let's demonstrate how we can benchmark this using simulations,
+hopefully establishing a useful _slendr_ recipe which you will be able to use
+very often in all kinds of contexts (some of the more complex ones will be
+demonstrated later in this workshop).
+
+:::
+ 
+
+**Start by computing a data frame `df` containing the nucleotide diversity
+value for every single individual in your tree sequence. Then, use the equation
+above establishing how to estimate $N_e$ from nucleotide diversity to
+add a new column `Ne` to this data frame containing the $N_e$ inferred
+from this model. Do you get the correct value?**
+
+**Hint:** Remember that you know the true $N_e$ in your model --- it's the `N`
+value in your simulation script! That's the most powerful thing about
+simulations --- they allow you to establish a ground truth, and benchmark
+various methods agains it!
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Let's get the data frame with the value of $\pi$ first:
+
+```{r}
+df <- ts_diversity(ts, list(all = ts_names(ts)))
 df
 ```
 
-$\theta = 4 N_e \mu$
-
-$N_e = \frac{\theta}{4 \mu}$
+Then add the inferred $N_e$ according to the equation above:
 
 ```{r}
 df$Ne <- df$diversity / (4 * 1e-8)
-
 df
 ```
 
 :::
 
+Of course, benchmarking any method based on a single simulation of a single
+number doesn't make sense --- so now let's move things one step forward.
 
 
 
