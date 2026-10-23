@@ -80,20 +80,29 @@ When you typed `ts` in your R console earlier, you may have noticed a strange
 thing --- although `msprime()` simulated genomic data, there are no mutations!
 How can this be?
 
+::: {.callout-note collapse="true" icon=false}
+#### See the `ts` summary
+
+Here's the summary of the `ts` object simulated from the script above---notice
+the "Mutations" field in the table below:
+
 ```{r}
 ts
 ```
+
+:::
 
 As we will see later, the magic of tree sequences allows us to compute any
 population genetic statistic without mutations. That said, particularly for
 exploring statistics computed by various third-party software outside of R (and
 for comparing simulations to these software methods), having mutations is often
-useful.
+useful. Here's how we can make that happen.
 
 ---
 
 **Modify the part of your script `slendr_statistics_single.R` by "piping" the
-output of the `msprime()` function to `ts_mutate(mutation_rate = 1e-8)`. After
+output of the `msprime()` function to `ts_mutate(mutation_rate = 1e-8)`
+(remember the `%>%` "pipe operator" introduced in the earlier chapters). After
 you execute this new command and type `ts` in the R console to inspect the
 summary, you should see that mutations have been added.**
   
@@ -135,28 +144,34 @@ downside to adding them, so I recommend you always use both `msprime()` and
 ## Exercise: Computing nucleotide diversity
 
 The simplest possible computation we can do is to compute a statistic from a
-single population. As an example, let's look at [nucleotide diversity,
-$\pi$](https://en.wikipedia.org/wiki/Nucleotide_diversity), implemented by
-a _slendr_ function `ts_diversity()`.
+single population. As an example, let's look at [nucleotide diversity
+$\pi$](https://en.wikipedia.org/wiki/Nucleotide_diversity), implemented by a
+_slendr_ function `ts_diversity()`.
 
-**If you look at it's help page under `?ts_diversity`, you will see that it
-accepts several arguments---for now let's focus on the first two, `ts =` (which
-is obviously a tree-sequence object, such as the one produced by the `msprime()`
-engine) and `sample_sets =`. When you read the definition of
-[$\pi$](https://en.wikipedia.org/wiki/Nucleotide_diversity), knowing that
+If you look at its help page under `?ts_diversity`, you will see that it accepts
+several arguments---for now let's focus on the first two, `ts =` (which is
+obviously a tree-sequence object, such as the one produced by the `msprime()`
+engine) and `sample_sets =`.
+
+**When you read the definition of [nucleotide
+diversity](https://en.wikipedia.org/wiki/Nucleotide_diversity), knowing that
 _slendr_ simulates diploids, how would you interpret the output of
-`ts_diversity()` when you compute on a single simulated individual, such as
-"pop_1"?**
+`ts_diversity()` when you compute in on a single simulated individual, such as
+the indivdual with the name "pop_1"?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-Answer is that we get that individual's heterozygosity---the proportion of their
-genome carrying heterozygous sites:
+The answer is that we get that individual's heterozygosity---the proportion of
+their genome carrying heterozygous sites:
 
 ```{r}
 ts_diversity(ts, sample_sets = "pop_1")
 ```
+
+<!-- ```{r} -->
+<!-- sum((ts_genotypes(ts)[, c("pop_1_chr1", "pop_1_chr2")] %>% rowSums()) == 1) / ts$sequence_length -->
+<!-- ``` -->
 
 Note that this is the same thing as the following command:
 
@@ -181,6 +196,16 @@ length("single_value")
 **Now run the following three commands. They look extremely similar, right? Do
 they produce the same value? If not, how do you interpret them?**
 
+(It turns out that patterns like these are very important for computing any kind
+of tree-sequence statistic with _slendr_, so it very much pays off to think
+about this, even though this looks trivial and nit-picky!)
+
+```{r}
+#| output: false
+ts_diversity(ts, sample_sets = c("pop_1", "pop_42"))
+ts_diversity(ts, sample_sets = list(c("pop_1", "pop_42")))
+ts_diversity(ts, sample_sets = list(pop_subset = c("pop_1", "pop_42")))
+```
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -190,13 +215,30 @@ individuals' names to a statistic which operates within a given group of samples
 simply computes that statistic as if each individual was its own sample:
 
 ```{r}
-ts_diversity(ts, sample_sets = c("pop_1", "pop_2", "pop_3"))
+ts_diversity(ts, sample_sets = c("pop_1", "pop_2"))
+```
+
+The second command features the same vector of names, but wrapped in `list()`.
+This is how you can instruct _slendr_ to treat a given set of individuals as
+a group---and in this case, compute a statistic for the group as a whole. In this
+context, this command computes the nucleotide diversity within the given sample
+of two individuals from the whole population "pop":
+
+```{r}
 ts_diversity(ts, sample_sets = list(c("pop_1", "pop_2", "pop_3")))
+```
+
+Notice that _slendr_ assigned this "anonymous" group of individuals the name "set_1".
+Because these default names can be confusing in more complex computations of more
+complex statistics, you can optionally specify the name of your group by providing
+the set of individuals as a named list instead (see the R bootcamp chapter in case
+you need a refresher on named lists and similar topics):
+
+```{r}
 ts_diversity(ts, sample_sets = list(pop_subset = c("pop_1", "pop_2", "pop_3")))
 ```
 
-Diversity within
-a group of individuals:
+:::
 
 
 ---
