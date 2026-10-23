@@ -141,7 +141,7 @@ downside to adding them, so I recommend you always use both `msprime()` and
 
 
 
-## Exercise: Within-group(s) statistics
+## Exercise: Within-group(s) statistics --- nucleotide diversity
 
 The simplest possible computation we can do is to compute a statistic from a
 single population. As an example, let's look at [nucleotide diversity
@@ -333,7 +333,7 @@ a little bit later.
 
 
 
-## Exercise: Benchmarking estimates
+## Exercise: Parameter estimation --- $N_e$
 
 In practical research, we often use different software methods or statistics to
 estimate some value of interest. In our context---to use a very simple toy
@@ -368,11 +368,11 @@ demonstrated later in this workshop).
 :::
  
 
-**Start by computing a data frame `df` containing the nucleotide diversity
-value for every single individual in your tree sequence. Then, use the equation
-above establishing how to estimate $N_e$ from nucleotide diversity to
-add a new column `Ne` to this data frame containing the $N_e$ inferred
-from this model. Do you get the correct value?**
+**Start by computing a data frame `df` containing the nucleotide diversity value
+for every single individual in your tree sequence. Then, use the equation above
+establishing how to estimate $N_e$ from nucleotide diversity to add a new column
+`Ne_estimated` to this data frame containing the $N_e$ inferred from this model.
+Do you get the correct value?**
 
 **Hint:** Remember that you know the true $N_e$ in your model --- it's the `N`
 value in your simulation script! That's the most powerful thing about
@@ -392,7 +392,7 @@ df
 Then add the inferred $N_e$ according to the equation above:
 
 ```{r}
-df$Ne <- df$diversity / (4 * 1e-8)
+df$Ne_estimated <- df$diversity / (4 * 1e-8)
 df
 ```
 
@@ -400,6 +400,8 @@ df
 
 Of course, benchmarking any method based on a single simulation of a single
 number doesn't make sense --- so now let's move things one step forward.
+
+
 
 
 
@@ -418,15 +420,70 @@ script, modify it a bunch of times, and re-run the modifications as needed. This
 works, but is almost always the wrong approach. The correct way to do this is to
 generalize our code into a self-contained function.
 
+Let's break this down into individual steps (in software engineering, this
+process of modifying code and improving it is called
+["refactoring"](https://en.wikipedia.org/wiki/Code_refactoring)).
+
 ---
 
-Let's first abstract away the computation of $\pi$ and the inference of $N_e$.
-By extracting the relevant code into a dedicated, self-contained function, we
-reduce duplication of code and, by extension, the potential for introducing
-hard-to-trace bugs in our scripts.
+**First, save your script `slendr_statistics_single.R` into a new file
+called `slendr_statistics_Ne.R`. We'll be working on our improvements in this
+new file.**
+
+---
+
+**Then, program a function called `sim_constant`, which will accept a single
+argument `Ne_true`, and will "wrap around" the following bits of code:**
+
+1. **the _slendr_ demographic model code which compiles the `model` object,
+
+2. **the command simulating a `ts` object from the given `model`,
+
+3. **the commands creating the `df` data frame with nucleotide diversity,**
+
+4. **the inference of `Ne_estimated` from nucleotide diversity,**
+
+5. **adding a column to `df` called `Ne_true` and assigning it the `Ne_true`
+argument of your function.**
+
+**Your function should return this `df` object as its output.**
+
+**When you're done, the code doing 1.-4. above should be gone from your script,
+entirely replaced by this function.**
+
+**Hint:** If you need help, you can use the following template
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the template
 
 ```{r}
-compute_pi <- function(model) {
+#| eval: false
+sim_constant <- function(model) {
+  # move the bits of code doing 1.-4. inside this function
+
+  return(df)
+}
+```
+
+:::
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Here's how my entire `slendr_statistics_Ne.R` looks like:
+
+```{r}
+library(slendr)
+init_env()
+
+sim_constant <- function(Ne_true) {
+  pop <- population("pop", time = 1, N = Ne_true)
+  
+  model <- compile_model(
+    populations = pop,
+    generation_time = 1, simulation_length = 1000
+  )
+
   ts <-
     msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
     ts_mutate(mutation_rate = 1e-8)
@@ -435,47 +492,62 @@ compute_pi <- function(model) {
   
   df <- ts_diversity(ts, list(all = samples))
 
-  # compute the estimated Ne from the data based on the equation:
-  #   theta = 4 * mutation_rate * Ne => Ne = theta / (4 * mutation_rate)
   df$Ne_estimated <- df$diversity / (4 * 1e-8)
+
+  df$Ne_true <- Ne_true
   
   df
 }
 ```
 
-```{r}
-compute_pi(model)
-```
+:::
+
+---
+
+**To test your function, restart your R session (in RStudio go to `Session ->
+Restart R`), then run your entire script. Then, test your function in the R
+console by running it for different values of $N_e$ (for instance, type
+`sim_constant(100)`, sim_constant(1234)`, `sim_constant(20000)`, etc.). Each of
+your function calls should produce a data frame with the appropriate value of
+$\pi$ and the estimated $N_e$.**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
 
 ```{r}
-simulate_const <- function(Ne) {
-  pop <- population("pop", time = 1, N = Ne)
-  
-  model <- compile_model(
-    populations = pop,
-    generation_time = 1, simulation_length = 1000
-  )
-  
-  df <- compute_pi(model)
-
-  # add annotation for downstream analyses
-  df$Ne_true <- Ne
-
-  df
-}
+sim_constant(Ne_true = 100)
+sim_constant(Ne_true = 1234)
+sim_constant(Ne_true = 20000)
 ```
 
-```{r}
-simulate_const(1000)
-simulate_const(3000)
-simulate_const(10000)
-```
+:::
+
+---
+
+Doing all this extra programming work might seem like unnecessary bother. After
+all, by writing the function, you've basically written _even more code_! But the
+pay off comes later, as you will see. Custom functions are absolutely critical
+for efficient, reproducible science. They eliminate copy-pasted bug-prone code
+and make it much easier to explore ideas, test parameters, and explore various
+models. In this workshop, you'll soon see how often I force you to write custom
+functions---hopefully, by the end you will appreciate why I did this!
+
+
+
+
+
+
+
+
+
+
+## Exercise: Benchmarking across parameters
 
 ```{r}
 library(ggplot2)
 library(purrr)
 
-df_const <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), simulate_const)
+df_const <- map_dfr(c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000), sim_constant)
 
 ggplot(df_const, aes(Ne_true, Ne_estimated)) +
   geom_point() +
@@ -486,14 +558,24 @@ ggplot(df_const, aes(Ne_true, Ne_estimated)) +
 
 
 
+This is probably the best example of how to use these kinds of simulations in
+practice. Again, nucleotide diverisity-based $N_e$ estimation and its
+benchmarking across a range of parameters really is a toy example, but this idea
+extends to many other settings:
 
-Doing all this extra work might seem like unnecessary bother. After all, you're
-effectively writing _even more code_ now! But the pay off comes later, as you
-will see. Custom functions are absolutely critical for efficient, reproducible
-science. They eliminate copy-pasted bug-prone code and make it much easier to
-explore ideas, test parameters, and explore various models. In this workshop,
-you'll soon see how often I force you to write custom functions---hopefully, by
-the end you will appreciate why I did this!
+- benchmarking of IBD accuracy across different gene-flow scenarios
+
+- validating  qpAdm inference results for various possible admixture graphs
+
+- testing the robustness of local ancestry inference methods (LAI) and admixture dating inference as a function of admixture times and proportions
+
+- understanding how PCA differs for different sample sizes from different populations
+
+... and many others. All of these things are something you'll be able to play
+with in the freeform sessions at the end, but for now, let's carry on!
+
+
+
 
 
 
