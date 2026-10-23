@@ -1,35 +1,34 @@
-# Computing summary statistics
+# Computing statistics
 
-**TODO:** Add a reminder on how to work (i.e., build upon previous code in a
-single script, developing small self-contained pipelines).
 
-## Introduction
 
-In this session, you will learn how to compute population genetic statistics
-from tree sequences simulated from _slendr_ models, using its interface to the
-tree-sequence module called _tskit_.
 
-Computing tree-sequence statistics on populations or individuals populations
-requires a specification of _what_ should exactly be computed and _how_. For
-instance, which particular individuals (referred to by their names) should a
-computation be performed? If multiple individuals should be grouped together for
-a particular computation, how do we define this grouping?
 
-In order to learn all the operations needed to do this, you will be working
-through a set of exercises focused on the most fundamental concepts of
-population genomics. They've been designed to help you get the necessary
-technicalities under your belt while serving as little popgen puzzles on their
-own, regardless of your level of experience (or lack thereof) of population
-genetic theory.
 
-## TODO --- ideas
 
-https://en.wikipedia.org/wiki/Watterson_estimator:
 
-> "However, the estimator can be biased by population structure. For example,
-> theta is downwardly biased in an exponentially growing population. It can also
-> be biased by violation of the infinite-sites mutational model; multiple point
-> mutations at a single site will downwardly bias the estimate."
+
+Computing population genetic statistics requires a specification of _what_
+should be computed and _how_. Which individuals should a computation be
+performed on? If multiple individuals should be grouped together, how do we
+define these groups?
+
+This chapter will teach you how to do this with _slendr_ by guiding you through
+exercises focused on the most fundamental concepts of population genomics. The
+focus will be less on teach you how these concepts work (you might be already be
+quite familiar with) and more to give you the opportunity to learn the
+technicalities of R and _slendr_ in a familiar context.
+
+That said, the exercises have designed to provide interesting puzzles to
+showcase the usefulness of simulation-based exploration even in (seemingly)
+basic scenarios and applications, so that even readers relatively well familiar
+with population genomics will appreciate a new perspective on familiar topics.
+
+
+
+
+
+
 
 
 
@@ -37,13 +36,15 @@ https://en.wikipedia.org/wiki/Watterson_estimator:
 
 ## Preparation
 
-**Let's start with the following script as a basis. Save this as `TODO.R`, then
-read through it and understand what it's going to do (generally, that's the best
-practice for learning how to understand code quickly). When you do that, run the
-entire script and inspect the produced visualization of the model to get a
-confirmation of your idea.**
+
+**Let's start with the following single-population model to keep things as
+simple as possible. Look through the code to understand what it does, then save
+it as `slendr_statistics_single.R`. Run the entire script and inspect the
+produced visualization to make sure your understanding is correct.**
 
 ```{r}
+#| output: false
+#| collapse: true
 library(slendr)
 init_env()
 
@@ -51,14 +52,13 @@ pop <- population("pop", time = 1, N = 5000)
 
 model <- compile_model(
   populations = pop,
-  generation_time = 1, simulation_length = 1000
+  generation_time = 1,
+  simulation_length = 1000
 )
 
-plot_model(model, proportions = TRUE)
+plot_model(model)
 
-ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
-  ts_mutate(mutation_rate = 1e-8)
+ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8)
 
 samples <- ts_names(ts)
 ```
@@ -74,44 +74,130 @@ samples <- ts_names(ts)
 
 
 
+## Exercise: Adding mutations
+
+When you typed `ts` in your R console earlier, you may have noticed a strange
+thing --- although `msprime()` simulated genomic data, there are no mutations!
+How can this be?
+
+```{r}
+ts
+```
+
+As we will see later, the magic of tree sequences allows us to compute any
+population genetic statistic without mutations. That said, particularly for
+exploring statistics computed by various third-party software outside of R (and
+for comparing simulations to these software methods), having mutations is often
+useful.
+
+---
+
+**Modify the part of your script `slendr_statistics_single.R` by "piping" the
+output of the `msprime()` function to `ts_mutate(mutation_rate = 1e-8)`. After
+you execute this new command and type `ts` in the R console to inspect the
+summary, you should see that mutations have been added.**
+  
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's the general pattern of how we simulate genomic data with _slendr_
+including mutations:
+  
+```{r}
+ts <-
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+We can see that, indeed, the tree sequence now has `{r} ts$num_mutations`
+mutations in it:
+  
+```{r}
+ts
+```
+
+:::
+
+Even though mutations are generally not needed, there's almost never any huge
+downside to adding them, so I recommend you always use both `msprime()` and
+`ts_mutate()` in your models.
+
+
+
+
+
+
+
+
+
+
+
 ## Exercise: Computing nucleotide diversity
 
-Let's start practicing how to compute tree-sequence summary statistics with the
-simplest possible computation imaginable: computing a single summary statistic
-from a single population, such as nucleotide diversity.
+The simplest possible computation we can do is to compute a statistic from a
+single population. As an example, let's look at [nucleotide diversity,
+$\pi$](https://en.wikipedia.org/wiki/Nucleotide_diversity), implemented by
+a _slendr_ function `ts_diversity()`.
 
-The simplest possible thing we can do is to provide the name of a single
-individual. Given that you know that nucleotide diversity quantifies the average
-number of nucleotide variants per site between two DNA sequences across all
-possible combinations of pairs in a sample from a population, what metric is it
-equivalent to if you compute `ts_diversity()` on a single simulated individual
-(i.e., on its two chromosomes)?
+**If you look at it's help page under `?ts_diversity`, you will see that it
+accepts several arguments---for now let's focus on the first two, `ts =` (which
+is obviously a tree-sequence object, such as the one produced by the `msprime()`
+engine) and `sample_sets =`. When you read the definition of
+[$\pi$](https://en.wikipedia.org/wiki/Nucleotide_diversity), knowing that
+_slendr_ simulates diploids, how would you interpret the output of
+`ts_diversity()` when you compute on a single simulated individual, such as
+"pop_1"?**
 
-Answer is that we get heterozygosity:
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Answer is that we get that individual's heterozygosity---the proportion of their
+genome carrying heterozygous sites:
 
 ```{r}
 ts_diversity(ts, sample_sets = "pop_1")
 ```
 
-Note that this is the same thing as this (because a single value in R is the
-same thing as a vector of length one):
+Note that this is the same thing as the following command:
 
 ```{r}
 ts_diversity(ts, sample_sets = c("pop_1"))
 ```
 
+Because in R, a single value is the same thing as a vector of length one (this
+might seem like a bit of curious trivia but it's good to keep in mind):
+
 ```{r}
 "single_value" == c("single_value")
+
+length(c("single_value"))
+length("single_value")
 ```
 
+:::
 
-Diversity within a group of individuals:
+---
+
+**Now run the following three commands. They look extremely similar, right? Do
+they produce the same value? If not, how do you interpret them?**
+
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+The first command is supposed to demonstrate that specifying a vector of
+individuals' names to a statistic which operates within a given group of samples
+simply computes that statistic as if each individual was its own sample:
 
 ```{r}
 ts_diversity(ts, sample_sets = c("pop_1", "pop_2", "pop_3"))
 ts_diversity(ts, sample_sets = list(c("pop_1", "pop_2", "pop_3")))
 ts_diversity(ts, sample_sets = list(pop_subset = c("pop_1", "pop_2", "pop_3")))
 ```
+
+Diversity within
+a group of individuals:
+
 
 ---
 
