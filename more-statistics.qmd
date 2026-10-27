@@ -85,7 +85,6 @@ The variation `ts_names(ts, split = TRUE)` gives us a (named!) list of vectors,
 one for each population.
 
 ```{r}
-#| eval: false
 samples <- ts_names(ts, split = TRUE)
 class(samples)
 ```
@@ -188,7 +187,7 @@ Here's the content of the script `outgroup_f3.R`:
 library(slendr)
 init_env()
 
-compute_outgroup_f3 <- function(tsplit) {
+simulate_outgroup_f3 <- function(tsplit) {
   outgroup <- population("outgroup", N = 1000, time = 10000)
   X <- population("X", N = 1000, time = tsplit, parent = outgroup)
   Y <- population("Y", N = 1000, time = tsplit, parent = outgroup)
@@ -200,12 +199,12 @@ compute_outgroup_f3 <- function(tsplit) {
   ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
-    samples <- ts_names(ts, split = TRUE)
-    
-    df <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])
-    df$tsplit <- tsplit
-    
-    return(df)
+  samples <- ts_names(ts, split = TRUE)
+  
+  df <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])
+  df$tsplit <- tsplit
+  
+  return(df)
 }
 ```
 
@@ -227,15 +226,16 @@ definition.**
 Let's test the function first:
 
 ```{r}
-compute_outgroup_f3(tsplit = 1000)
-compute_outgroup_f3(tsplit = 2000)
-compute_outgroup_f3(tsplit = 5000)
+simulate_outgroup_f3(tsplit = 1000)
+simulate_outgroup_f3(tsplit = 2000)
+simulate_outgroup_f3(tsplit = 5000)
 ```
 
 Now we can run it on a grid of parameter values:
 
 ```{r}
-f3_outgroup <- map_dfr(seq(1, 10000, by = 1000), compute_outgroup_f3)
+library(purrr)
+f3_outgroup <- map_dfr(seq(1, 10000, by = 1000), simulate_outgroup_f3)
 ```
 
 ```{r}
@@ -243,6 +243,8 @@ head(f3_outgroup)
 ```
 
 ```{r}
+library(ggplot2)
+
 ggplot(f3_outgroup, aes(tsplit, f3)) +
   geom_point() +
   geom_smooth(method = "lm", color = "red", linetype = "dashed") +
@@ -264,18 +266,6 @@ differentiating, would both of them give you a reliable answer, regardless of
 the $N_e$ of those populations?
 
 Let's confirm this using simulations again.
-
-```{r}
-samples <- ts_names(ts, split = TRUE)
-
-value_fst <- ts_fst(ts, sample_sets = samples[c("X", "Y")])$Fst
-value_f3 <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])$f3
-
-result <- data.frame(stat = c(value_f3, value_fst))
-result$Ne <- 1000
-
-result
-```
 
 ```{r}
 simulate_fst_f3 <- function(Ne) {
