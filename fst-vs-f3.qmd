@@ -56,7 +56,9 @@ simulate_fst_f3 <- function(Ne) {
   
   plot_model(model, proportions = TRUE)
   
-  ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+  schedule <- schedule_recording(model, times = 10000, list("each", 25))
+
+  ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
   
   samples <- ts_names(ts, split = TRUE)
