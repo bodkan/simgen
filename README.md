@@ -1,1 +1,0 @@
-https://bodkan.net/simgen/
