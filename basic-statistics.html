@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Computing within-population statistics – Computational Population Genomics and Inference in R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./more-statistics.html" rel="next">
+<link href="./scheduling.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating slimcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Simulations with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./basic-statistics.html"><span class="chapter-title">Computing within-population statistics</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Computational Population Genomics and Inference in R</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./r-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">R language</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./r-bootcamp.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">R bootcamp</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Welcome to <em>tidyverse</em></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Introduction to <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-advanced.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">More <em>tidyverse</em> practice</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-viz.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simulations with <em>slendr</em></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Building <em>slendr</em> models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./scheduling.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Simulating genomic data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./basic-statistics.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Computing within-population statistics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./more-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Computing between-population statistics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./f4-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><span class="math inline">\(f_4\)</span> test of gene flow</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Case studies</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-afs.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-neanderthal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Case study exercise: Neanderthal ancestry trajectory</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-demografr.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><em>demografr</em> case study</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-segregating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bonus exercise: Segregating sites and sequencing effort</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./resources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Resources</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./acknowledgements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Acknowledgements</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Archive</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Demographic models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-stats.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Tree-sequence statistics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./setup-tidyverse.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Installation – <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./setup-slendr.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Installation – <em>slendr</em></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#preparation" id="toc-preparation" class="nav-link active" data-scroll-target="#preparation">Preparation</a></li>
+  <li><a href="#exercise-adding-mutations" id="toc-exercise-adding-mutations" class="nav-link" data-scroll-target="#exercise-adding-mutations">Exercise: Adding mutations</a></li>
+  <li><a href="#exercise-within-groups-statistics-nucleotide-diversity" id="toc-exercise-within-groups-statistics-nucleotide-diversity" class="nav-link" data-scroll-target="#exercise-within-groups-statistics-nucleotide-diversity">Exercise: Within-group(s) statistics — nucleotide diversity</a></li>
+  <li><a href="#exercise-parameter-estimation-n_e" id="toc-exercise-parameter-estimation-n_e" class="nav-link" data-scroll-target="#exercise-parameter-estimation-n_e">Exercise: Parameter estimation — <span class="math inline">\(N_e\)</span></a></li>
+  <li><a href="#exercise-generalizing-the-simulation" id="toc-exercise-generalizing-the-simulation" class="nav-link" data-scroll-target="#exercise-generalizing-the-simulation">Exercise: Generalizing the simulation</a></li>
+  <li><a href="#exercise-simulations-across-parameter-grids" id="toc-exercise-simulations-across-parameter-grids" class="nav-link" data-scroll-target="#exercise-simulations-across-parameter-grids">Exercise: Simulations across parameter grids</a></li>
+  <li><a href="#exercise-comparing-multiple-models" id="toc-exercise-comparing-multiple-models" class="nav-link" data-scroll-target="#exercise-comparing-multiple-models">Exercise: Comparing multiple models</a></li>
+  <li><a href="#exercise-expanding-the-parameter-grid" id="toc-exercise-expanding-the-parameter-grid" class="nav-link" data-scroll-target="#exercise-expanding-the-parameter-grid">Exercise: Expanding the parameter grid</a></li>
+  <li><a href="#exercise-allele-frequency-spectrum-afs" id="toc-exercise-allele-frequency-spectrum-afs" class="nav-link" data-scroll-target="#exercise-allele-frequency-spectrum-afs">Exercise: Allele frequency spectrum (AFS)</a></li>
+  <li><a href="#catch-up" id="toc-catch-up" class="nav-link" data-scroll-target="#catch-up">Catch up</a>
+  <ul class="collapse">
+  <li><a href="#bonus-exercise-your-own-model" id="toc-bonus-exercise-your-own-model" class="nav-link" data-scroll-target="#bonus-exercise-your-own-model">Bonus exercise: Your own model</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Simulations with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./basic-statistics.html"><span class="chapter-title">Computing within-population statistics</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Computing within-population statistics</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Computing population genetic statistics requires a specification of <em>what</em> should be computed and <em>how</em>. Which individuals should a computation be performed on? If multiple individuals should be grouped together, how do we define these groups?</p>
+<p>This chapter will teach you how to do this with <em>slendr</em> by guiding you through exercises focused on the most fundamental concepts of population genomics. The focus will be less on teaching you how these concepts work (after all, you might be already be quite familiar with population genetics from your studies or work) and more to give you the opportunity to learn the technicalities of R and <em>slendr</em> in a familiar context.</p>
+<p>That said, I have designed the exercises to provide interesting puzzles to showcase the usefulness of simulation-based exploration even in (seemingly) basic scenarios and applications, so that even readers relatively well familiar with population genomics will appreciate a new perspective on familiar topics. Every single one of them represents a question I myself had, and my solutions are the means I used myself to get the answers.</p>
+<section id="preparation" class="level2">
+<h2 class="anchored" data-anchor-id="preparation">Preparation</h2>
+<p><strong>Let’s start with the following single-population model to keep things as simple as possible. Look through the code to understand what it does, then save it as <code>slendr_statistics.R</code>. Run the entire script and inspect the produced visualization to make sure your understanding is correct.</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="exercise-adding-mutations" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-adding-mutations">Exercise: Adding mutations</h2>
+<p>When you typed <code>ts</code> in your R console earlier, you may have noticed a strange thing — although <code>msprime()</code> simulated genomic data, there are no mutations! How can this be?</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>See the <code>ts</code> summary
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s the summary of the <code>ts</code> object simulated from the script above—notice the “Mutations” field in the table below:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>╔═══════════════════════════╗
+║TreeSequence               ║
+╠═══════════════╤═══════════╣
+║Trees          │     18,798║
+╟───────────────┼───────────╢
+║Sequence Length│ 10,000,000║
+╟───────────────┼───────────╢
+║Time Units     │generations║
+╟───────────────┼───────────╢
+║Sample Nodes   │     10,000║
+╟───────────────┼───────────╢
+║Total Size     │    4.5 MiB║
+╚═══════════════╧═══════════╝
+╔═══════════╤══════╤═════════╤════════════╗
+║Table      │Rows  │Size     │Has Metadata║
+╠═══════════╪══════╪═════════╪════════════╣
+║Edges      │90,861│  2.8 MiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Individuals│ 5,000│136.7 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Migrations │     0│  8 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Mutations  │     0│ 16 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Nodes      │33,296│910.4 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Populations│     1│222 Bytes│         Yes║
+╟───────────┼──────┼─────────┼────────────╢
+║Provenances│     1│  1.5 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Sites      │     0│ 16 Bytes│          No║
+╚═══════════╧══════╧═════════╧════════════╝</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>As we will see later, the magic of tree sequences allows us to compute any population genetic statistic without mutations. That said, particularly for exploring statistics computed by various third-party software outside of R, having mutations is often useful. Here’s how we can make that happen.</p>
+<hr>
+<p><strong>Modify the part of your script <code>slendr_statistics.R</code> by “piping” the output of the <code>msprime()</code> function to <code>ts_mutate(mutation_rate = 1e-8)</code> (remember the <code>%&gt;%</code> “pipe operator” introduced in the earlier chapters). After you execute this new command and type <code>ts</code> in the R console to inspect the summary, you should see that mutations have been added.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s the general pattern of how we simulate genomic data with <em>slendr</em> including mutations:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We can see that, indeed, the tree sequence now has 19527 mutations in it:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>╔═══════════════════════════╗
+║TreeSequence               ║
+╠═══════════════╤═══════════╣
+║Trees          │     18,014║
+╟───────────────┼───────────╢
+║Sequence Length│ 10,000,000║
+╟───────────────┼───────────╢
+║Time Units     │generations║
+╟───────────────┼───────────╢
+║Sample Nodes   │     10,000║
+╟───────────────┼───────────╢
+║Total Size     │    5.6 MiB║
+╚═══════════════╧═══════════╝
+╔═══════════╤══════╤═════════╤════════════╗
+║Table      │Rows  │Size     │Has Metadata║
+╠═══════════╪══════╪═════════╪════════════╣
+║Edges      │88,046│  2.7 MiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Individuals│ 5,000│136.7 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Migrations │     0│  8 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Mutations  │19,527│705.6 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Nodes      │32,757│895.7 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Populations│     1│222 Bytes│         Yes║
+╟───────────┼──────┼─────────┼────────────╢
+║Provenances│     2│  2.2 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Sites      │19,513│476.4 KiB│          No║
+╚═══════════╧══════╧═════════╧════════════╝</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Even though mutations are generally not needed, there’s almost never any huge downside to adding them, so I recommend you always use both <code>msprime()</code> and <code>ts_mutate()</code> in your models.</p>
+<hr>
+<p>With that out of the way, let’s proceed with computing population genetic statistics using <em>slendr</em> and <em>tskit</em>.</p>
+</section>
+<section id="exercise-within-groups-statistics-nucleotide-diversity" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-within-groups-statistics-nucleotide-diversity">Exercise: Within-group(s) statistics — nucleotide diversity</h2>
+<p>The simplest possible computation we can do is to compute a statistic from a single population. As an example, let’s look at <a href="https://en.wikipedia.org/wiki/Nucleotide_diversity">nucleotide diversity <span class="math inline">\(\pi\)</span></a>, implemented by a <em>slendr</em> function <code>ts_diversity()</code>.</p>
+<p>If you <strong>look at its help page under <code>?ts_diversity</code></strong>, you will see that it accepts several arguments—for now let’s focus on the first two, <code>ts =</code> (which is obviously a tree-sequence object, such as the one produced by the <code>msprime()</code> engine) and <code>sample_sets =</code>.</p>
+<hr>
+<p><strong>Compute <code>ts_diversity()</code> on a single simulated individual, such as the individual with the name “pop_1”. Knowing that <em>slendr</em> simulates diploids and knowing the definition of <a href="https://en.wikipedia.org/wiki/Nucleotide_diversity">nucleotide diversity</a>, how would you interpret the result?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The answer is that we get that individual’s heterozygosity—the proportion of their genome (two chromosomes, because each individual is diploid) carrying heterozygous sites:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="st">"pop_1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  set   diversity
+  &lt;chr&gt;     &lt;dbl&gt;
+1 pop_1  0.000215</code></pre>
+</div>
+</div>
+<!-- ```{r} -->
+<!-- sum((ts_genotypes(ts)[, c("pop_1_chr1", "pop_1_chr2")] %>% rowSums()) == 1) / ts$sequence_length -->
+<!-- ``` -->
+<p>Note that this is the same thing as the following command:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">c</span>(<span class="st">"pop_1"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  set   diversity
+  &lt;chr&gt;     &lt;dbl&gt;
+1 pop_1  0.000215</code></pre>
+</div>
+</div>
+<p>This is because in R, a single value is the same thing as a vector of length one (this might seem like a bit of curious R trivia but it’s good to keep in mind):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="st">"single_value"</span> <span class="sc">==</span> <span class="fu">c</span>(<span class="st">"single_value"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">c</span>(<span class="st">"single_value"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(<span class="st">"single_value"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>Now run the following three commands. They look extremely similar, right? Do they produce the same value? If not, can you decipher a general rule from the results obtained how <em>slendr</em> interprets these?</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_42"</span>))</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_42"</span>)))</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(<span class="at">pop_subset =</span> <span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_42"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>It turns out that patterns like these are very important for computing any kind of tree-sequence statistic with <em>slendr</em>, so it very much pays off to think about this, even though this looks trivial and nit-picky!</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The first command is supposed to demonstrate that specifying a vector of individuals’ names to a statistic which operates within a given group of samples simply computes that statistic as if each individual was its own sample:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_2"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  set   diversity
+  &lt;chr&gt;     &lt;dbl&gt;
+1 pop_1  0.000215
+2 pop_2  0.000185</code></pre>
+</div>
+</div>
+<p>The second command features the same vector of names, but wrapped in <code>list()</code>. This is how you can instruct <em>slendr</em> to treat a given set of individuals as a group—and in this case, compute a statistic for the group as a whole. In this context, this command computes the nucleotide diversity within the given sample of two individuals from the whole population “pop”:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_2"</span>, <span class="st">"pop_3"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  set   diversity
+  &lt;chr&gt;     &lt;dbl&gt;
+1 set_1  0.000196</code></pre>
+</div>
+</div>
+<p>Notice that <em>slendr</em> assigned this “anonymous” group of individuals the name “set_1”. Because these default names can be confusing in more complex computations of more complex statistics, you can optionally specify the name of your group by providing the set of individuals as a named list instead (see the R bootcamp chapter in case you need a refresher on named lists and similar topics):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(<span class="at">pop_subset =</span> <span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_2"</span>, <span class="st">"pop_3"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  set        diversity
+  &lt;chr&gt;          &lt;dbl&gt;
+1 pop_subset  0.000196</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p>Of course, you can compute any statistic not only for one group of individuals, but for multiple of them. What result such computation produces depends on whether we’re computing so-called <a href="https://tskit.dev/tskit/docs/stable/stats.html#sec-stats-sample-sets-one-way">“one-way”</a> statistics (which are computed within groups, like nucleotide diversity here) or <a href="https://tskit.dev/tskit/docs/stable/stats.html#multi-way-methods">“multi-way”</a> statistic (which are computed between groups, like <span class="math inline">\(F_{ST}\)</span>). For now we’ll stay with one-way statistics.</p>
+<p><strong>To make the “one-way” statistic concept clear, let’s practice this. Instead of computing <code>ts_diversity()</code> for a single group of individuals (like “pop_1” and “pop_2” above), compute this using a single <code>ts_diversity()</code> command on multiple subsets of individuals of increasing sizes (let’s say groups of 1, 2, 5, 10, 500 1000, and finally all individuals). Do you expect the same value of nucleotide diversity? And why?</strong></p>
+<p><strong>Hint:</strong> You can get a random subset of a larger set of elements using the built-in R function <code>sample()</code>. Take a look at <code>?sample</code> manual page if you need more help.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Let’s first generate the subsets of individuals of different sizes. We have a number of options:</p>
+<ol type="1">
+<li>We could do it “manually” like this:</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first get all names of all individuals recorded in the tree sequence</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>all_inds <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># then manually create all subset names</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>subsets <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(all_inds, <span class="dv">1</span>),</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(all_inds, <span class="dv">2</span>),</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(all_inds, <span class="dv">5</span>),</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(all_inds, <span class="dv">10</span>),</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(all_inds, <span class="dv">500</span>),</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(all_inds, <span class="dv">1000</span>),</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  all_inds</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<ol start="2" type="1">
+<li>Alternatively, we could do it more succinctly using this R pattern:</li>
+</ol>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first get the desired sizes of all subsets</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>sizes <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">500</span>, <span class="dv">1000</span>, <span class="fu">length</span>(all_inds))</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># then iterate over those sizes, and applying the sample() function to each</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>subsets <span class="ot">&lt;-</span> <span class="fu">lapply</span>(sizes, sample, <span class="at">x =</span> all_inds)</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="co"># let's also add names to the groups based on their sizes, for easier reference</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(subsets) <span class="ot">&lt;-</span> sizes</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Either way, these commands give us a list of vector of appropriate lengths, which we can verify like this. It’s very useful to do these sanity checks as your working on your programs, always making sure that what you want to do <em>actually</em> matches reality:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># apple the length() function to each element of the list</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sapply</span>(subsets, length)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   1    2    5   10  500 1000 5000 
+   1    2    5   10  500 1000 5000 </code></pre>
+</div>
+</div>
+<p>Now we can finally compute nucleotide diversity in each of those groups of individuals:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, subsets)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 2
+  set   diversity
+  &lt;chr&gt;     &lt;dbl&gt;
+1 1      0.000216
+2 2      0.000194
+3 5      0.000196
+4 10     0.000200
+5 500    0.000201
+6 1000   0.000201
+7 5000   0.000201</code></pre>
+</div>
+</div>
+<p>Perhaps not surprisingly, we don’t see much difference. After all, this is expected, because there is only one true (and normally unknown) value of nucleotide diversity of the entire population. What changes when we compute this statistic on subsets of different sizes is the stochastic noise.</p>
+<p>We’ll see a bit more on how to control (and quantify) the noise using simulations a little bit later.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-parameter-estimation-n_e" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="exercise-parameter-estimation-n_e">Exercise: Parameter estimation — <span class="math inline">\(N_e\)</span></h2>
+<p>In practical research, we often use various software or statistics to estimate some parameter of interest. In our context—again, to use a very simple toy example to demonstrate a simulation-based approach in a familiar context—let’s look at a measure of the population size called <a href="https://en.wikipedia.org/wiki/Effective_population_size">effective population size</a>, or <span class="math inline">\(N_e\)</span>.</p>
+<p>From a bit of <a href="https://en.wikipedia.org/wiki/Effective_population_size#Empirical_measurements">background theory of population genetics</a>, we know that we can obtain an estimate of <span class="math inline">\(N_e\)</span> from nucleotide diversity (which we just computed). Specifically, neutral theory of molecular evolution posits that an idealised diploid population will have a pairwise nucleotide diversity equal to</p>
+<p><span class="math display">\[\theta = 4 N_e \mu,\]</span></p>
+<p>where <span class="math inline">\(\mu\)</span> is the mutation rate. Using simple algebra to rearrange this equation, this gives us an estimate for <span class="math inline">\(N_e\)</span> in the form of</p>
+<p><span class="math display">\[N_e = \frac{\theta}{4 \mu}.\]</span></p>
+<p><strong>Let’s build a simple simulation-based analysis to determine how well does this estimator perform under different scenarios.</strong></p>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p>If you’re familiar with population genetics, this has all sorts of obvious answers, but let’s demonstrate how we can benchmark this using simulations, hopefully establishing a useful <em>slendr</em> recipe which you will be able to use very often in all kinds of contexts (some of the more complex ones will be demonstrated later in this workshop).</p>
+</div></div><hr>
+<p><strong>Start by computing the nucleotide diversity value for every single individual in your tree sequence and storing the result in a data frame <code>df</code>. Then, use the equation above to estimate <span class="math inline">\(N_e\)</span> from nucleotide diversity, and add a new column <code>Ne_estimated</code> to this data frame with this value. Do you get a reasonable result?</strong></p>
+<p><strong>Hint:</strong> Remember that you know the true <span class="math inline">\(N_e\)</span> in your model — it’s the <code>N</code> value in your simulation script! That’s the most powerful thing about simulations — they allow you to establish a ground truth, and benchmark various methods against it!</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Let’s get the data frame with the value of <span class="math inline">\(\pi\)</span> first:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  set   diversity
+  &lt;chr&gt;     &lt;dbl&gt;
+1 all    0.000201</code></pre>
+</div>
+</div>
+<p>Then add the inferred <span class="math inline">\(N_e\)</span> according to the equation above:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 3
+  set   diversity Ne_estimated
+  &lt;chr&gt;     &lt;dbl&gt;        &lt;dbl&gt;
+1 all    0.000201        5022.</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Of course, benchmarking any method based on a single simulation of a single number doesn’t make sense — so now let’s now take things one step forward.</p>
+</section>
+<section id="exercise-generalizing-the-simulation" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-generalizing-the-simulation">Exercise: Generalizing the simulation</h2>
+<p>Suppose we need to evaluate how our hypothetical statistic of interest (in this example, the estimator of <span class="math inline">\(N_e\)</span>) behaves under different parameters, different, models, different bioinformatic processing, etc.</p>
+<p>To do this, we could make a copy of our original script, modify it a bunch of times, and re-run the modifications as needed, collecting the results in the process. This works, but is almost always the wrong approach. The correct way to do this is to generalize our code into a self-contained function.</p>
+<p>To demonstrate, let’s break this down into individual steps (in software engineering, this process of modifying code and improving it is called <a href="https://en.wikipedia.org/wiki/Code_refactoring">“refactoring”</a>).</p>
+<hr>
+<p><strong>First, create and save a new script called <code>slendr_Ne_pi.R</code>. We’ll be working on our improvements in this new file.</strong></p>
+<hr>
+<p><strong>In this script, create a function called <code>sim_constant</code>, which will accept a single argument <code>Ne_true</code>, and will “wrap around” the following bits of code (in other words, copy-pasting what you programmed in the original <code>slendr_statistics.R</code> and wrapping it into a function):</strong></p>
+<ol type="1">
+<li><p><strong>the code implementing our <em>slendr</em> demographic <code>model</code></strong>,</p></li>
+<li><p><strong>the command simulating a <code>ts</code> object from the <code>model</code></strong>,</p></li>
+<li><p><strong>the commands creating the <code>df</code> data frame with nucleotide diversity,</strong></p></li>
+<li><p><strong>the computation of <code>Ne_estimated</code> from nucleotide diversity,</strong></p></li>
+<li><p><strong>adding a column to <code>df</code> called <code>Ne_true</code> and assigning it the <code>Ne_true</code> argument of your function.</strong></p></li>
+<li><p><strong>Your function should return this <code>df</code> object as its output.</strong></p></li>
+</ol>
+<p><strong>When you’re done, all the code doing the above should be gone from your script, entirely replaced by this function.</strong></p>
+<p><strong>Hint:</strong> If you need help, you can use the following template which shows how should your script look like when you’re done.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>sim_constant <span class="ot">&lt;-</span> <span class="cf">function</span>(model) {</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># move the bits of code doing 1.-6. inside this function</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># write the bits of code to do 5. and 6. afterwards</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># finally, return the df data frame like this</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s how my entire <code>slendr_statistics_Ne.R</code> looks like:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>sim_constant <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> Ne_true)</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>To test your function, restart your R session (in RStudio go to <code>Session -&gt; Restart R</code>), then run your entire script. Then, evaluate your function in the R console by running it for different values of <span class="math inline">\(N_e\)</span> (for instance, type <code>sim_constant(100)</code>, sim_constant(1234)<code>,</code>sim_constant(20000)`, etc.). Each of your function calls should produce a data frame with the appropriate value of <span class="math inline">\(\pi\)</span> and the estimated <span class="math inline">\(N_e\)</span>.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s what I get with my implementation:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sim_constant</span>(<span class="at">Ne_true =</span> <span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  set    diversity Ne_estimated Ne_true
+  &lt;chr&gt;      &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
+1 all   0.00000236         59.1     100</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sim_constant</span>(<span class="at">Ne_true =</span> <span class="dv">1234</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  set   diversity Ne_estimated Ne_true
+  &lt;chr&gt;     &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
+1 all   0.0000393         983.    1234</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sim_constant</span>(<span class="at">Ne_true =</span> <span class="dv">20000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 4
+  set   diversity Ne_estimated Ne_true
+  &lt;chr&gt;     &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
+1 all    0.000811       20275.   20000</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p>Doing all this extra programming work might seem like unnecessary bother. In fact, it looks like we’ve so far written <em>even more code</em>! But the pay off comes later, as you will see.</p>
+<p>Custom functions are absolutely critical for efficient, reproducible science. They eliminate copy-pasted bug-prone code and make it much easier to explore ideas, test parameters, and explore various models. In this workshop, I’ll be often forcing you to write custom functions—hopefully, by the end you will appreciate why I did this!</p>
+</section>
+<section id="exercise-simulations-across-parameter-grids" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-simulations-across-parameter-grids">Exercise: Simulations across parameter grids</h2>
+<p>Whenever we want to benchmark a statistic, or understand its expected behavior under different circumstances, we often need to re-run a model many times, usually for different model parameters (or different models entirely).</p>
+<p><strong>Imagine we want to compute our inference on many different potential values of true <span class="math inline">\(N_e\)</span></strong>, what we could do is something like the exercise above, running the model individually. But this isn’t very scalable, definitely whenever we want to run the same model across a huge number of parameter values (or even multiple such parameters).</p>
+<p>In cases like this, <strong>we want to is to use “looping”, such as the function <code>map_dfr()</code> from the package <em>purrr</em></strong>:</p>
+<p>Imagine a function like this, which creates a data frame of a value and its square:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>silly_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">value =</span> x, <span class="at">squared =</span> x <span class="sc">*</span> x)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The way we use <code>map_dfr</code> is by providing a list of values of our parameter of interest, and a function name. In the case of our silly function, we can use it like this:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a><span class="fu">map_dfr</span>(<span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">1234</span>, <span class="dv">20000</span>), silly_fun)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  value   squared
+1   100     10000
+2  1234   1522756
+3 20000 400000000</code></pre>
+</div>
+</div>
+<p>The name <code>map_dfr</code> stands for _“<code>map</code> a given function producing a <code>d</code>ata <code>f</code>rame and then bind its <code>r</code>ows together, hence, <code>map_dfr</code>. When you look at its output above, this is exactly what happened.</p>
+<hr>
+<p><strong>In your script <code>slendr_statistics_Ne.R</code>, program a simulation of <span class="math inline">\(N_e\)</span> inference across the grid of <code>Ne_true</code> values of <code>c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000)</code>, then visualize the results as a scatterplot of <code>Ne_true</code> against <code>Ne_estimated</code>. Use the function <code>purrr::map_dfr()</code> to do this efficiently.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">2500</span>, <span class="dv">3000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>)</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>df_constant <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_constant)</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_constant, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (constant population size)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p>This toy exercise is a great example of how to use these kinds of simulations in practice. Again, nucleotide diverisity-based <span class="math inline">\(N_e\)</span> estimation and its benchmarking across a range of parameters really is a toy example, but this idea extends to many other settings:</p>
+<ul>
+<li><p>benchmarking of IBD accuracy across different gene-flow scenarios</p></li>
+<li><p>validating qpAdm inference results for various possible admixture graphs</p></li>
+<li><p>testing the robustness of local ancestry inference methods (LAI) and admixture dating inference as a function of admixture times and proportions</p></li>
+<li><p>understanding how PCA differs for different sample sizes from different populations</p></li>
+</ul>
+<p>… and many others. All of this is something that I do in my daily work (and something that almost any paper in population genomics should be doing to validate their results).</p>
+</section>
+<section id="exercise-comparing-multiple-models" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-comparing-multiple-models">Exercise: Comparing multiple models</h2>
+<p>Let’s make it a bit more interesting. Suppose we want to see how robust our statistic of interest is to the underlying demographic model (which is almost always uncertain).</p>
+<p>In the previous exercise, we worked with using <span class="math inline">\(\pi\)</span> to estimate the <span class="math inline">\(N_e\)</span> a population under study (<span class="math inline">\(N_e\)</span>) and verified that it works very well for a model of a long-term constant population size.</p>
+<p>But what about population that experienced a resize event? How well does our <span class="math inline">\(N_e\)</span> estimate work in such case?</p>
+<hr>
+<p><strong>In your script <code>slendr_statistics_Ne.R</code>, make a copy of your function <code>sim_constant()</code> named <code>sim_resize()</code>. Make the following changes in this function:</strong></p>
+<ol type="1">
+<li><p><strong>the population “pop” will start with <span class="math inline">\(N_e\)</span> of 5000,</strong></p></li>
+<li><p><strong>the population will experience a population resize (implemented by the function <code>resize()</code>), which will set the size of the population to the function argument <code>Ne_true</code> at time 500.</strong></p></li>
+</ol>
+<p><strong>Then, use the function <code>map_dfr()</code> to run the new function <code>sim_resize()</code> along the same parameter grid as before, again visualizing the results of <code>Ne_true</code> against <code>Ne_estimated</code>. How well does our diversity-based <span class="math inline">\(N_e\)</span> estimate perform in such a demographic scenario? Is it robust to non-constant demographic histories? If not, why?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s the solution—new function <code>sim_resize()</code>, new simulation run against a parameter grid, and a visualization of results:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># new function to simulate population size change</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>sim_change <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb46-16"><a href="#cb46-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb46-17"><a href="#cb46-17" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb46-18"><a href="#cb46-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb46-19"><a href="#cb46-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-20"><a href="#cb46-20" aria-hidden="true" tabindex="-1"></a><span class="co"># simulations across a parameter grid</span></span>
+<span id="cb46-21"><a href="#cb46-21" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">2500</span>, <span class="dv">3000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>)</span>
+<span id="cb46-22"><a href="#cb46-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-23"><a href="#cb46-23" aria-hidden="true" tabindex="-1"></a>df_change <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_change)</span>
+<span id="cb46-24"><a href="#cb46-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a><span class="co"># visualization of results</span></span>
+<span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_change, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb46-27"><a href="#cb46-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb46-28"><a href="#cb46-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb46-29"><a href="#cb46-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (population size change)"</span>) <span class="sc">+</span></span>
+<span id="cb46-30"><a href="#cb46-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">20000</span>) <span class="sc">+</span></span>
+<span id="cb46-31"><a href="#cb46-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">20000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that even a large population resize event doesn’t change the observed levels of nucleotide diversity that much. As a result, the <span class="math inline">\(N_e\)</span> based on the population nucleotide diversity parameter <span class="math inline">\(\theta\)</span> is very wrong—we consistently estimate it at the level of 5000 (i.e., the size prior to the bottleneck), regardless of the true size of the population after the bottleneck.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-expanding-the-parameter-grid" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-expanding-the-parameter-grid">Exercise: Expanding the parameter grid</h2>
+<p>Our hypothesis for how poorly the nucleotide diversity-based estimate is doing under non-constant population size is the fact that the resize event was very recent. As a result, diversity hasn’t yet reached an equilibrium value.</p>
+<p>Let’s test this hypothesis while, at the same time, showing how we can expand the parameter grid simulations to include another parameter—this time the time of the population size change.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s the solution.</p>
+<p>First, the new function <code>sim_resize()</code></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>sim_change <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true, T_change) {</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> T_change)</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>T_change <span class="ot">&lt;-</span> T_change</span>
+<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb48-18"><a href="#cb48-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>A new simulation run against a parameter grid:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">2500</span>, <span class="dv">3000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>)</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>df_change <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(Ne_grid, sim_change, <span class="at">T_change =</span> <span class="dv">1</span>),    <span class="co"># change 1 generation ago</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(Ne_grid, sim_change, <span class="at">T_change =</span> <span class="dv">100</span>),  <span class="co"># change 100 generations ago</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(Ne_grid, sim_change, <span class="at">T_change =</span> <span class="dv">1000</span>), <span class="co"># etc.</span></span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(Ne_grid, sim_change, <span class="at">T_change =</span> <span class="dv">2000</span>)</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>And finally, visualization of results:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_change, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (population size change)"</span>,</span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>          <span class="at">subtitle =</span> <span class="st">"Each panel indicates the time of the population size change"</span>) <span class="sc">+</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">20000</span>) <span class="sc">+</span></span>
+<span id="cb50-7"><a href="#cb50-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">20000</span>) <span class="sc">+</span></span>
+<span id="cb50-8"><a href="#cb50-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> T_change)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that, indeed, the older the population resize event, the more time there’s for the population to either lose the variation (in case of a bottleneck), or gain new variation (in case of population size increase), which means that the <span class="math inline">\(N_e\)</span> estimated based on the <span class="math inline">\(\theta = 4 N_e \mu\)</span> nucleotide diversity parameter is going to be close to the true (unknown) population size.</p>
+</div>
+</div>
+</div>
+<hr>
+<p>In the case of this example, the problem with the nucleotide diversity is that it effectively reduces the entirety of genetic variation in the population (which mutations there are at which frequencies) into a single number. As a result, we lose a lot of potentially very useful information about the population’s demographic history. When we try to estimate <span class="math inline">\(N_e\)</span> using this summary statistic, we can only hope to infer a long-term <span class="math inline">\(N_e\)</span>.</p>
+<p>As we’ve seen, a single bottleneck doesn’t cause nucleotide diversity to drop significantly enough for us to pick up that this bottleneck even happened.</p>
+</section>
+<section id="exercise-allele-frequency-spectrum-afs" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-allele-frequency-spectrum-afs">Exercise: Allele frequency spectrum (AFS)</h2>
+<p><strong>Create a new script called <code>slendr_Ne_afs.R</code>. Copy-paste the following code into that script. Note that this is the same exact model we started this section (except for the one line which selects only 20 individuals from all individuals recorded in the tree sequence).</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">simulation_length =</span> <span class="dv">1000</span>)</span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p>Unlike nucleotide diversity which, as mentioned above, reduces the entire genomic variation of a population into a single number, the <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">allele frequency spectrum</a> carries information about the distribution of the counts of mutations at each observable frequency.</p>
+<p><strong>Look at the <code>?ts_afs</code> help page to learn how the <em>slendr</em> function <code>ts_afs()</code> works. As you’ve seen, <code>ts_diversity()</code> (like the vast majority of <em>slendr</em> statistical functions) produces a data frame. What data format does <code>ts_afs()</code> produce? Compute the AFS from your simulated tree sequence <code>ts</code> on your <code>subset</code> of individuals, then visualize it (with whatever means you know).</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>As we can see, <code>ts_afs()</code> produces a plain R vector of integer numbers, each of which represents the count of mutations observed at a given frequency — the count of singletons, the count of doubletons, etc.:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>afs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] 1198  177  101   53   36   30   27   20   19   18   18    7    4   15   14
+[16]   18    5    9    8    6   15</code></pre>
+</div>
+</div>
+<p>This vector can be easily visualized with a base-R function <code>plot()</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">col =</span> <span class="st">"lightblue"</span>, <span class="at">xlab =</span> <span class="st">"allele frequency"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p>But does the AFS really carry more information about demographic changes?</p>
+<p><strong>Write a new function in your script, called <code>sim_afs()</code>, which will again accept a single argument <code>Ne_true</code> and implement the exact same demographic model as you did in your function <code>sim_change()</code> (i.e., resize from the initial <code>N</code> of 5000 to the given value of <code>Ne_true</code> at time 1000). In this function, compute the <code>afs</code> vector from this model, then run it for a range of <code>Ne_true</code> values and visualize the individual AFS results. Does AFS pick up signal even from such recent population size changes?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s a function which simulates an AFS for a demographic history given by the <code>Ne_true</code> argument:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>sim_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>  subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span>
+<span id="cb56-14"><a href="#cb56-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb56-15"><a href="#cb56-15" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
+<span id="cb56-16"><a href="#cb56-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb56-17"><a href="#cb56-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the result not as a plain integer vector, but a proper data frame</span></span>
+<span id="cb56-18"><a href="#cb56-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># annotated by the frequency bin number</span></span>
+<span id="cb56-19"><a href="#cb56-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb56-20"><a href="#cb56-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ne_true =</span> Ne_true,</span>
+<span id="cb56-21"><a href="#cb56-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">frequency =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afs),</span>
+<span id="cb56-22"><a href="#cb56-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> afs</span>
+<span id="cb56-23"><a href="#cb56-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb56-24"><a href="#cb56-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>df_afs <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_afs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_afs, <span class="fu">aes</span>(frequency, count, <span class="at">color =</span> <span class="fu">factor</span>(Ne_true))) <span class="sc">+</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"AFS vector for different population size change models"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>For easier comparison, here are the AFS result side-by-side with the values of nucleotide diversity from the same demographic scenarios:</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This simulation indicates that AFS does, indeed, carry much more information about population history, even for recent changes in population size.</p>
+</div>
+</div>
+</div>
+<hr>
+<p>For now we’ll leave this topic be. We could go much deeper into this, but the point of this chapter was to demonstrate how to compute within-population statistics with <em>slendr</em>, how we can use manipulation of R lists and vectors to instruct <em>slendr</em> on how to compute a given statistic, and provide a set of small examples of how population genomic simulations (even extremely simple ones!) and a bit of data processing can be used to build intuition into sometimes unintuitive concepts.</p>
+<p>Towards the end of the workshop, we’re going to work through a slightly more realistic case-study which will demonstrate how to do simulation-based inference by extending our toy example of <span class="math inline">\(N_e\)</span> estimation towards a more real-world scenario.</p>
+<p>For now, we’re going to move on into computing between-group statistics and use similar computational methodology to explore a couple of concepts behind metrics such as <span class="math inline">\(F_{ST}\)</span> or <span class="math inline">\(f\)</span>-statistics.</p>
+</section>
+<section id="catch-up" class="level1">
+<h1>Catch up</h1>
+<p>Here is a complete set of solution to the exercises in this section represented by a single tidy reproducible R script:</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the entire script
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>For simplicity, this script only evaluates models when the size change happens 1000 generations ago (but it could be expanded, of course).</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first we import a couple of packages ------------------------------------</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates a constant size model --------------------------</span></span>
+<span id="cb60-10"><a href="#cb60-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-11"><a href="#cb60-11" aria-hidden="true" tabindex="-1"></a>sim_constant <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb60-12"><a href="#cb60-12" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> Ne_true)</span>
+<span id="cb60-13"><a href="#cb60-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-14"><a href="#cb60-14" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb60-15"><a href="#cb60-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-16"><a href="#cb60-16" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb60-17"><a href="#cb60-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-18"><a href="#cb60-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb60-19"><a href="#cb60-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-20"><a href="#cb60-20" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb60-21"><a href="#cb60-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-22"><a href="#cb60-22" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb60-23"><a href="#cb60-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-24"><a href="#cb60-24" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb60-25"><a href="#cb60-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-26"><a href="#cb60-26" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb60-27"><a href="#cb60-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-28"><a href="#cb60-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-29"><a href="#cb60-29" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates a model of population size change --------------</span></span>
+<span id="cb60-30"><a href="#cb60-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-31"><a href="#cb60-31" aria-hidden="true" tabindex="-1"></a>sim_change <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb60-32"><a href="#cb60-32" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb60-33"><a href="#cb60-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-34"><a href="#cb60-34" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb60-35"><a href="#cb60-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-36"><a href="#cb60-36" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb60-37"><a href="#cb60-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-38"><a href="#cb60-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb60-39"><a href="#cb60-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-40"><a href="#cb60-40" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb60-41"><a href="#cb60-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-42"><a href="#cb60-42" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb60-43"><a href="#cb60-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-44"><a href="#cb60-44" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb60-45"><a href="#cb60-45" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-46"><a href="#cb60-46" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb60-47"><a href="#cb60-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-48"><a href="#cb60-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-49"><a href="#cb60-49" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates the AFS from a size change model ---------------</span></span>
+<span id="cb60-50"><a href="#cb60-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-51"><a href="#cb60-51" aria-hidden="true" tabindex="-1"></a>sim_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb60-52"><a href="#cb60-52" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb60-53"><a href="#cb60-53" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-54"><a href="#cb60-54" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb60-55"><a href="#cb60-55" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-56"><a href="#cb60-56" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb60-57"><a href="#cb60-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb60-58"><a href="#cb60-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb60-59"><a href="#cb60-59" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-60"><a href="#cb60-60" aria-hidden="true" tabindex="-1"></a>  subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span>
+<span id="cb60-61"><a href="#cb60-61" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-62"><a href="#cb60-62" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
+<span id="cb60-63"><a href="#cb60-63" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb60-64"><a href="#cb60-64" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the result not as a plain integer vector, but a proper data frame</span></span>
+<span id="cb60-65"><a href="#cb60-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># annotated by the frequency bin number</span></span>
+<span id="cb60-66"><a href="#cb60-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb60-67"><a href="#cb60-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ne_true =</span> Ne_true,</span>
+<span id="cb60-68"><a href="#cb60-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">frequency =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afs),</span>
+<span id="cb60-69"><a href="#cb60-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> afs</span>
+<span id="cb60-70"><a href="#cb60-70" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb60-71"><a href="#cb60-71" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb60-72"><a href="#cb60-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-73"><a href="#cb60-73" aria-hidden="true" tabindex="-1"></a><span class="co"># run simulations across a given grid -------------------------------------</span></span>
+<span id="cb60-74"><a href="#cb60-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-75"><a href="#cb60-75" aria-hidden="true" tabindex="-1"></a><span class="co"># for the constant model, these values represent the constant Ne, for the size</span></span>
+<span id="cb60-76"><a href="#cb60-76" aria-hidden="true" tabindex="-1"></a><span class="co"># change model they represent the final Ne after the initial size of 5000</span></span>
+<span id="cb60-77"><a href="#cb60-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-78"><a href="#cb60-78" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">2500</span>, <span class="dv">3000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>)</span>
+<span id="cb60-79"><a href="#cb60-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-80"><a href="#cb60-80" aria-hidden="true" tabindex="-1"></a>df_constant <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_constant)</span>
+<span id="cb60-81"><a href="#cb60-81" aria-hidden="true" tabindex="-1"></a>df_change <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_change)</span>
+<span id="cb60-82"><a href="#cb60-82" aria-hidden="true" tabindex="-1"></a>df_afs <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_afs)</span>
+<span id="cb60-83"><a href="#cb60-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-84"><a href="#cb60-84" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize the results ---------------------------------------------------</span></span>
+<span id="cb60-85"><a href="#cb60-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb60-86"><a href="#cb60-86" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity in the constant size models</span></span>
+<span id="cb60-87"><a href="#cb60-87" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_constant, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb60-88"><a href="#cb60-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb60-89"><a href="#cb60-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb60-90"><a href="#cb60-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (constant population size)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"constant_size_pi.pdf"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity in the size change models</span></span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_change, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (population size change)"</span>) <span class="sc">+</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">20000</span>) <span class="sc">+</span></span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">20000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-35-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"changing_size_pi.pdf"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image
+`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="co"># AFS in the size change models</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_afs, <span class="fu">aes</span>(frequency, count, <span class="at">color =</span> <span class="fu">factor</span>(Ne_true))) <span class="sc">+</span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"AFS vector for different population size change models"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-35-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"changing_size_afs.pdf"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<section id="bonus-exercise-your-own-model" class="level2">
+<h2 class="anchored" data-anchor-id="bonus-exercise-your-own-model">Bonus exercise: Your own model</h2>
+<p>If you got all the way here while the others are still working on their solutions, here’s a bonus exercise for you.</p>
+<p><strong>Take a demographic model of an organism or a population which is of your interest in your own research (either your own model or a model you know from the literature) and program it with <em>slendr</em>. Feel free to be as detailed (or not) as possible, but don’t worry about accuracy of various parameters. The point is to practice building a model from scratch. Then, compute the basic summary statistics introduced in this chapter on simulations from your model. Do the results match what you know, either from your research or from the literature? If not, what could be the problem?</strong></p>
+<p>If these statistics aren’t particularly interesting or relevant for your research, don’t despair. Again, the point is to practice, but even then, you’ll have plenty of opportunities to compute more interesting things throughout this course, particularly during the “freeform” sessions at the very end.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./scheduling.html" class="pagination-link" aria-label="Simulating genomic data">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Simulating genomic data</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./more-statistics.html" class="pagination-link" aria-label="Computing between-population statistics">
+        <span class="nav-page-text"><span class="chapter-title">Computing between-population statistics</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

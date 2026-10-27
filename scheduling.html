@@ -1,0 +1,1593 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.19">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Simulating genomic data – Computational Population Genomics and Inference in R</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./basic-statistics.html" rel="next">
+<link href="./models.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-bf27225e3a48a9273f3daa8f8e829971.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-d3f7f8e73c8d287b30bcf59c2b563615.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating slimcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Simulations with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./scheduling.html"><span class="chapter-title">Simulating genomic data</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Computational Population Genomics and Inference in R</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Introduction</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="./r-intro.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">R language</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./r-bootcamp.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">R bootcamp</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Welcome to <em>tidyverse</em></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-basics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Introduction to <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-advanced.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">More <em>tidyverse</em> practice</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tidy-viz.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Visualization with <em>ggplot2</em></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Simulations with <em>slendr</em></span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Building <em>slendr</em> models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./scheduling.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Simulating genomic data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./basic-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Computing within-population statistics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./more-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Computing between-population statistics</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./f4-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><span class="math inline">\(f_4\)</span> test of gene flow</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Case studies</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-afs.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-neanderthal.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Case study exercise: Neanderthal ancestry trajectory</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-demografr.html" class="sidebar-item-text sidebar-link"><span class="chapter-title"><em>demografr</em> case study</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./study-segregating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bonus exercise: Segregating sites and sequencing effort</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./resources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Resources</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./acknowledgements.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Acknowledgements</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Archive</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-models.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Demographic models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./popgen-stats.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Tree-sequence statistics</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./setup-tidyverse.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Installation – <em>tidyverse</em></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./setup-slendr.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Installation – <em>slendr</em></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#preparation" id="toc-preparation" class="nav-link active" data-scroll-target="#preparation">Preparation</a></li>
+  <li><a href="#exercise-simulating-genomic-data" id="toc-exercise-simulating-genomic-data" class="nav-link" data-scroll-target="#exercise-simulating-genomic-data">Exercise: Simulating genomic data</a></li>
+  <li><a href="#exercise-referring-to-simulated-individuals" id="toc-exercise-referring-to-simulated-individuals" class="nav-link" data-scroll-target="#exercise-referring-to-simulated-individuals">Exercise: Referring to simulated individuals</a></li>
+  <li><a href="#exercise-customizing-sample-recording" id="toc-exercise-customizing-sample-recording" class="nav-link" data-scroll-target="#exercise-customizing-sample-recording">Exercise: Customizing sample recording</a></li>
+  <li><a href="#exercise-complex-recording-schedules" id="toc-exercise-complex-recording-schedules" class="nav-link" data-scroll-target="#exercise-complex-recording-schedules">Exercise: Complex recording schedules</a></li>
+  <li><a href="#exercise-recording-of-named-individuals" id="toc-exercise-recording-of-named-individuals" class="nav-link" data-scroll-target="#exercise-recording-of-named-individuals">Exercise: Recording of named individuals</a></li>
+  <li><a href="#catch-up" id="toc-catch-up" class="nav-link" data-scroll-target="#catch-up">Catch up</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./models.html">Simulations with <em>slendr</em></a></li><li class="breadcrumb-item"><a href="./scheduling.html"><span class="chapter-title">Simulating genomic data</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span class="chapter-title">Simulating genomic data</span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The exercises in this chapter will pick up from where we left of in the chapter on building <em>slendr</em> demographic models, and use this as a basis to learn how to simulate genomic data from these models.</p>
+<section id="preparation" class="level2">
+<h2 class="anchored" data-anchor-id="preparation">Preparation</h2>
+<p><strong>To make sure we’re all on the same page, saving the following code in a new script <code>slendr_scheduling.R</code>.</strong> You can see that it’s basically the outcome of the exercises in the previous chapter on building demographic models with <em>slendr</em>.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">12000</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">9000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p1)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">6000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2) <span class="sc">%&gt;%</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">time =</span> <span class="dv">1800</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">resize</span>(<span class="at">N =</span> <span class="dv">2000</span>, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p2, <span class="at">to =</span> p3, <span class="at">start =</span> <span class="dv">3000</span>, <span class="at">end =</span> <span class="dv">2100</span>, <span class="at">proportion =</span> <span class="fl">0.1</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">gene_flow =</span> gf,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation_time =</span> <span class="dv">30</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_units =</span> <span class="st">"years before present"</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="exercise-simulating-genomic-data" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="exercise-simulating-genomic-data">Exercise: Simulating genomic data</h2>
+<p>Once we have compiled a <em>slendr</em> model, we can finally simulate data from it. By default, a simulation from a <em>slendr</em> model always produces a <a href="https://tskit.dev/tutorials/what_is.html">tree-sequence</a> object as a result. We’ll explore the tree-sequence concept in a bit more detail later—for now we can treat it as a black box which “magically” stores genomic variation of a set of individuals.</p>
+<p>There are two simulation engines built into <em>slendr</em> implemented by functions <code>msprime()</code> and <code>slim()</code>. For traditional, non-spatial, neutral demographic models, the <code>msprime()</code> engine is much more efficient, so we’ll be using that for the time being.</p>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><strong>Note:</strong> The alternative engine implemented by the <code>slim()</code> function plays an important role for spatial simulations and for simulations of natural selection — these are the primary two reasons why it’s included in <em>slendr</em> in the first place.</p>
+</div></div><p>As we discussed in the introduction, here’s how you can use simulate a tree sequence from a compiled <em>slendr</em> <code>model</code>. You will be seeing this kind of pattern over and over again, so it’s worth keeping it in mind any time you will be simulating data going forward.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  model,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">sequence_length =</span> <span class="sc">&lt;</span>length of the simulated genome [<span class="cf">in</span> bp]<span class="sc">&gt;</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">recombination_rate =</span> <span class="sc">&lt;</span>uniform recombination rate [<span class="cf">in</span> crossovers per bp per generation]<span class="sc">&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p><strong>Simulate a tree sequence from your compiled <code>model</code> by adding the appropriate <code>msprime()</code> command into the script <code>slendr_scheduling.R</code>, storing it in a variable <code>ts</code>. Set the parameters <code>sequence_length = 1e6</code> and <code>recombination_rate = 1e-8</code>.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This command simulates a <em>tskit</em> tree sequence from a <em>slendr</em> model. Again, note that we don’t have to write any <em>msprime</em> or <em>tskit</em> code to implement the simulation because <em>slendr</em> does all the work for us!</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>Now type out the <code>ts</code> object in the console — what do you see? Try to relate some of the information in the presented summary to our overview discussion of tree sequences. For instance, what are the “nodes” and “edges”? What’s the difference between “samples” and “individuals”? How many “trees” does the tree sequence have, and how many “mutations” are stored in it?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Evaluating the <code>ts</code> variable in the R console should give you a summary of a tree-sequence object with some lower-level technical details about the genomic sequence which it encodes:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>╔═══════════════════════════╗
+║TreeSequence               ║
+╠═══════════════╤═══════════╣
+║Trees          │      1,006║
+╟───────────────┼───────────╢
+║Sequence Length│  1,000,000║
+╟───────────────┼───────────╢
+║Time Units     │generations║
+╟───────────────┼───────────╢
+║Sample Nodes   │     10,000║
+╟───────────────┼───────────╢
+║Total Size     │    1.7 MiB║
+╚═══════════════╧═══════════╝
+╔═══════════╤══════╤═════════╤════════════╗
+║Table      │Rows  │Size     │Has Metadata║
+╠═══════════╪══════╪═════════╪════════════╣
+║Edges      │24,219│756.9 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Individuals│ 5,000│136.7 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Migrations │     0│  8 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Mutations  │     0│ 16 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Nodes      │21,215│580.1 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Populations│     4│335 Bytes│         Yes║
+╟───────────┼──────┼─────────┼────────────╢
+║Provenances│     1│  3.4 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Sites      │     0│ 16 Bytes│          No║
+╚═══════════╧══════╧═════════╧════════════╝</code></pre>
+</div>
+</div>
+<p>For instance, our tree sequence contains genomic information for 5000, each of them diploid. This makes for 10000 samples in total, where a “sample” is a “node” in a tree sequence representing one haplotype (i.e., one chromosome) of a simulated individual. All other “nodes” (of which there are many, many more) represent ancestral haplotypes of these recorded individuals for which we generally have only a part of their genomic information—a sequence information which made it through recombination to some of the recorded samples.</p>
+<p>And notice that there are no mutations! How can this be possible, if we supposedly ran a genomic simulation? More on that later!</p>
+</div>
+</div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><strong>Note:</strong> Similarly to the symbol <code>model</code>, whenever we from now on refer to <code>ts</code>, we will be talking about some simulated tree-sequence object stored in an R variable <code>ts</code>.</p>
+</div></div></section>
+<section id="exercise-referring-to-simulated-individuals" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-referring-to-simulated-individuals">Exercise: Referring to simulated individuals</h2>
+<p>If we are to use tree-sequence data for computation of population genomic statistics, we need a way to refer to individuals and populations. For this purpose, <em>slendr</em> provides three important functions: <code>ts_recorded()</code>, <code>ts_names()</code>, and (sometimes, but not often, also useful) <code>ts_nodes()</code>. At the bare minimum, these functions accept the tree sequence <code>ts</code> as their first argument (i.e., can be run such as <code>ts_recorded(ts)</code>).</p>
+<hr>
+<p><strong>Try answering these questions by running these three functions and inspecting and comparing their outputs:</strong></p>
+<ul>
+<li><p>How many individuals are in your tree sequence based on these functions?</p></li>
+<li><p>How is the result of <code>ts_nodes()</code> different from <code>ts_recorded()</code>?</p></li>
+<li><p>What are the <code>time</code> values of recorded individuals based on the information produced by these two functions? Are the <code>time</code> values the same in both?</p></li>
+<li><p>How many individuals in total are in the tree sequence based on these two functions, and how many of them are in each population? Why do you get the numbers you got, given the model which you programmed and simulated?</p></li>
+<li><p>How does <code>ts_names()</code> differ from the two table-producing functions?</p></li>
+</ul>
+<p><strong>Hint:</strong> Using table-manipulation functions of the <em>dplyr</em> package might be useful for this. Take a look at the chapter on manipulating tabular data using <em>tidyverse</em> packages, if you need a refresher.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>The function <code>ts_recorded()</code> gives us a small metadata table with recorded individuals’ names, populations, and times:</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,000 × 3
+   name   time pop  
+   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
+ 1 p1_1      0 p1   
+ 2 p1_2      0 p1   
+ 3 p1_3      0 p1   
+ 4 p1_4      0 p1   
+ 5 p1_5      0 p1   
+ 6 p1_6      0 p1   
+ 7 p1_7      0 p1   
+ 8 p1_8      0 p1   
+ 9 p1_9      0 p1   
+10 p1_10     0 p1   
+# ℹ 4,990 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">nrow</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop) <span class="sc">%&gt;%</span> tally</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  pop       n
+  &lt;chr&gt; &lt;int&gt;
+1 p1     1000
+2 p2     1000
+3 p3     2000
+4 p4     1000</code></pre>
+</div>
+</div>
+<ul>
+<li>The function <code>ts_nodes()</code> gives us a much larger table about tree-sequence nodes, which includes not only information about recorded individuals chromosomes (one node, or chromosome, for each individual), meaning that we get two rows of the table for each individual:</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_nodes</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 21,215 × 8
+   name  pop   ind_id node_id  time time_tskit sampled pop_id
+   &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;
+ 1 p1_1  p1         0       0     0          0 TRUE         0
+ 2 p1_1  p1         0       1     0          0 TRUE         0
+ 3 p1_2  p1         1       2     0          0 TRUE         0
+ 4 p1_2  p1         1       3     0          0 TRUE         0
+ 5 p1_3  p1         2       4     0          0 TRUE         0
+ 6 p1_3  p1         2       5     0          0 TRUE         0
+ 7 p1_4  p1         3       6     0          0 TRUE         0
+ 8 p1_4  p1         3       7     0          0 TRUE         0
+ 9 p1_5  p1         4       8     0          0 TRUE         0
+10 p1_5  p1         4       9     0          0 TRUE         0
+# ℹ 21,205 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_nodes</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(name <span class="sc">==</span> <span class="st">"p1_42"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 8
+  name  pop   ind_id node_id  time time_tskit sampled pop_id
+  &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;
+1 p1_42 p1        41      82     0          0 TRUE         0
+2 p1_42 p1        41      83     0          0 TRUE         0</code></pre>
+</div>
+</div>
+<p>Additionally, the table also contains information about the recorded individuals’ ancestral haplotypes, i.e.&nbsp;individuals who lived in their genealogical history, but whose complete genomic information we no longer have (because they mostly likely passed only a subset of their genomes to the individuals which we simulated or sequenced):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_nodes</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(time <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11,215 × 8
+   name  pop   ind_id node_id    time time_tskit sampled pop_id
+   &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt;   &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;
+ 1 &lt;NA&gt;  p2        NA   10000 0.00497   0.000166 FALSE        1
+ 2 &lt;NA&gt;  p3        NA   10001 0.00766   0.000255 FALSE        2
+ 3 &lt;NA&gt;  p4        NA   10002 0.0118    0.000394 FALSE        3
+ 4 &lt;NA&gt;  p2        NA   10003 0.0135    0.000449 FALSE        1
+ 5 &lt;NA&gt;  p3        NA   10004 0.0162    0.000541 FALSE        2
+ 6 &lt;NA&gt;  p1        NA   10005 0.0488    0.00163  FALSE        0
+ 7 &lt;NA&gt;  p3        NA   10006 0.0514    0.00171  FALSE        2
+ 8 &lt;NA&gt;  p4        NA   10007 0.0581    0.00194  FALSE        3
+ 9 &lt;NA&gt;  p4        NA   10008 0.0585    0.00195  FALSE        3
+10 &lt;NA&gt;  p4        NA   10009 0.0615    0.00205  FALSE        3
+# ℹ 11,205 more rows</code></pre>
+</div>
+</div>
+<p><strong>TODO:</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>cowplot<span class="sc">::</span><span class="fu">plot_grid</span>(<span class="fu">ts_nodes</span>(ts) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(name)) <span class="sc">%&gt;%</span> </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time)) <span class="sc">+</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() <span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span>comma) <span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_log10</span>() <span class="sc">+</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span><span class="fu">is.na</span>(name), <span class="at">scales =</span> <span class="st">"free_x"</span>),</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Scale for x is already present.
+Adding another scale for x, which will replace the existing scale.
+`stat_bin()` using `bins = 30`. Pick better value `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="scheduling_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-customizing-sample-recording" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="exercise-customizing-sample-recording">Exercise: Customizing sample recording</h2>
+<p>We can see that our tree sequence contains a massive number of individuals. Too many, in fact — we recorded every single individual alive at the end of our simulation, which is something we’re unlikely to be ever lucky enough to have, regardless of which species we study.</p>
+<p>To get closer to the scale of the genomic data that we usually work with, we can restrict our simulation to only record a subset of individuals—we do this using a process called “scheduling of recorded individuals” implemented by the <em>slendr</em> function <code>schedule_recording()</code>. Simply speaking, this is a functionality of <em>slendr</em> which precisely defines which individuals will be recorded in the tree sequence while ignoring everyone else.</p>
+<p>The function follows the structure in the following snippet, representing another very useful pattern worth keeping in mind going forward:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">&lt;</span>compiled slendr model<span class="sc">&gt;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">times =</span> <span class="sc">&lt;</span>times of recording<span class="sc">&gt;</span>,</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="sc">&lt;</span>population object<span class="sc">&gt;</span>, <span class="sc">&lt;</span>number of samples to record<span class="sc">&gt;</span>),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  [... etc. ... ]</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We then use this <code>schedule</code> object in a standard <code>msprime()</code> function call, setting it as the argument of the same name (<code>schedule =</code>) like this:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<hr>
+<p><strong>To get an idea about what this function does in practice, modify the command which simulates the <code>ts</code> object in your script <code>slendr_scheduling.R</code> according to the snippet above, but include a schedule for recording 5 individuals from each of the four populations. When you re-run the new simulation to get a new <code>ts</code> object and type <code>ts</code> into your console, do you see a change? Again, use your knowledge of <code>ts_recorded()</code> and some <em>dplyr</em> table processing function to inspect the recorded individuals.</strong></p>
+<p><strong>Hint:</strong> To make this easier to see, maybe keep the original simulation command in your script (the one without the <code>schedule</code>) but modify it to create a variable <code>ts_big</code> instead before you create the new <code>ts</code> object.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  model,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">times =</span> <span class="dv">0</span>,</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(p1, <span class="dv">5</span>), <span class="fu">list</span>(p2, <span class="dv">5</span>), <span class="fu">list</span>(p3, <span class="dv">5</span>), <span class="fu">list</span>(p4, <span class="dv">5</span>)</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="co"># original simulation command (note the missing schedule)</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>ts_big <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a><span class="co"># new (smaller) tree-sequence recording</span></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># see that the new tree sequence is much smaller (even its memory footprint)</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>╔═══════════════════════════╗
+║TreeSequence               ║
+╠═══════════════╤═══════════╣
+║Trees          │        199║
+╟───────────────┼───────────╢
+║Sequence Length│  1,000,000║
+╟───────────────┼───────────╢
+║Time Units     │generations║
+╟───────────────┼───────────╢
+║Sample Nodes   │         40║
+╟───────────────┼───────────╢
+║Total Size     │   45.3 KiB║
+╚═══════════════╧═══════════╝
+╔═══════════╤════╤═════════╤════════════╗
+║Table      │Rows│Size     │Has Metadata║
+╠═══════════╪════╪═════════╪════════════╣
+║Edges      │ 832│ 26.0 KiB│          No║
+╟───────────┼────┼─────────┼────────────╢
+║Individuals│  20│584 Bytes│          No║
+╟───────────┼────┼─────────┼────────────╢
+║Migrations │   0│  8 Bytes│          No║
+╟───────────┼────┼─────────┼────────────╢
+║Mutations  │   0│ 16 Bytes│          No║
+╟───────────┼────┼─────────┼────────────╢
+║Nodes      │ 286│  7.8 KiB│          No║
+╟───────────┼────┼─────────┼────────────╢
+║Populations│   4│335 Bytes│         Yes║
+╟───────────┼────┼─────────┼────────────╢
+║Provenances│   1│  3.4 KiB│          No║
+╟───────────┼────┼─────────┼────────────╢
+║Sites      │   0│ 16 Bytes│          No║
+╚═══════════╧════╧═════════╧════════════╝</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ts_big</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>╔═══════════════════════════╗
+║TreeSequence               ║
+╠═══════════════╤═══════════╣
+║Trees          │      1,025║
+╟───────────────┼───────────╢
+║Sequence Length│  1,000,000║
+╟───────────────┼───────────╢
+║Time Units     │generations║
+╟───────────────┼───────────╢
+║Sample Nodes   │     10,000║
+╟───────────────┼───────────╢
+║Total Size     │    1.7 MiB║
+╚═══════════════╧═══════════╝
+╔═══════════╤══════╤═════════╤════════════╗
+║Table      │Rows  │Size     │Has Metadata║
+╠═══════════╪══════╪═════════╪════════════╣
+║Edges      │24,358│761.2 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Individuals│ 5,000│136.7 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Migrations │     0│  8 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Mutations  │     0│ 16 Bytes│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Nodes      │21,284│582.0 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Populations│     4│335 Bytes│         Yes║
+╟───────────┼──────┼─────────┼────────────╢
+║Provenances│     1│  3.4 KiB│          No║
+╟───────────┼──────┼─────────┼────────────╢
+║Sites      │     0│ 16 Bytes│          No║
+╚═══════════╧══════╧═════════╧════════════╝</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 3
+   name   time pop  
+   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
+ 1 p1_1      0 p1   
+ 2 p1_2      0 p1   
+ 3 p1_3      0 p1   
+ 4 p1_4      0 p1   
+ 5 p1_5      0 p1   
+ 6 p2_1      0 p2   
+ 7 p2_2      0 p2   
+ 8 p2_3      0 p2   
+ 9 p2_4      0 p2   
+10 p2_5      0 p2   
+11 p3_1      0 p3   
+12 p3_2      0 p3   
+13 p3_3      0 p3   
+14 p3_4      0 p3   
+15 p3_5      0 p3   
+16 p4_1      0 p4   
+17 p4_2      0 p4   
+18 p4_3      0 p4   
+19 p4_4      0 p4   
+20 p4_5      0 p4   </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts_big)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,000 × 3
+   name   time pop  
+   &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;
+ 1 p1_1      0 p1   
+ 2 p1_2      0 p1   
+ 3 p1_3      0 p1   
+ 4 p1_4      0 p1   
+ 5 p1_5      0 p1   
+ 6 p1_6      0 p1   
+ 7 p1_7      0 p1   
+ 8 p1_8      0 p1   
+ 9 p1_9      0 p1   
+10 p1_10     0 p1   
+# ℹ 4,990 more rows</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop) <span class="sc">%&gt;%</span> <span class="fu">tally</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  pop       n
+  &lt;chr&gt; &lt;int&gt;
+1 p1        5
+2 p2        5
+3 p3        5
+4 p4        5</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts_big) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop) <span class="sc">%&gt;%</span> <span class="fu">tally</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  pop       n
+  &lt;chr&gt; &lt;int&gt;
+1 p1     1000
+2 p2     1000
+3 p3     2000
+4 p4     1000</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><strong>Note:</strong> In order to make recording of smaller number of individuals from a (potentially huge) number of population easier, <code>schedule_recording()</code> supports a shortcut of <code>list("all", &lt;number&gt;)</code> which records the given number of individuals from every population in the model at the given time.</p>
+</div></div></section>
+<section id="exercise-complex-recording-schedules" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-complex-recording-schedules">Exercise: Complex recording schedules</h2>
+<p>What if we need to simulate different number of individuals from different populations at very specific times? Doing this with a single call to <code>schedule_recording()</code> is not possible. Luckily, multiple schedules can be easily combined together into a single sampling schedule.</p>
+<hr>
+<p><strong>Type the <code>schedule</code> variable in your R console. What do you see? Why did I say that multiple schedules can be easily combined? And how could we combine them?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The output of any <code>schedule_recording()</code> function is a plain old data frame! It contains a bunch of information we used in the <code>schedule_recording()</code> call (population names, times, etc.), plus a bunch more additional data which is currently irrelevant. For instance, notice the <code>time</code>, <code>pop</code>, and <code>n</code> columns below:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>schedule</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 8
+   time pop       n name  y_orig x_orig y     x    
+  &lt;int&gt; &lt;chr&gt; &lt;int&gt; &lt;lgl&gt; &lt;lgl&gt;  &lt;lgl&gt;  &lt;lgl&gt; &lt;lgl&gt;
+1     0 p1        5 NA    NA     NA     NA    NA   
+2     0 p2        5 NA    NA     NA     NA    NA   
+3     0 p3        5 NA    NA     NA     NA    NA   
+4     0 p4        5 NA    NA     NA     NA    NA   </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>Normally we don’t ever have to look at this data (unless something goes wrong with the sampling and troubleshooting <em>slendr</em> itself is needed), but knowing the format of the schedule means we can easily combine multiple schedules using standard functions such as <code>rbind()</code> (included in base R).</p>
+<hr>
+<p>In the following chapters, we will be working on implementing many real-world scenarios from widely established research in population genomics, particularly those from the field ancient DNA field. Naturally, in cases like this, we need to be able to simulate sequences of “ancient” individuals as well as various “present-day” reference panels.</p>
+<p>In preparation for these complex exercises, <strong>implement the recording schedule summarized into the table below. You will have to figure out how many individual schedules you’ll have to create using <code>schedule_recording()</code>, then bind them together using the function <code>rbind()</code> mentioned above. Then, simulate a tree sequence <code>ts</code> with this new complex schedule, modifying your current solution script accordingly.</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 19%">
+<col style="width: 22%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>time (years B.P.)</th>
+<th style="text-align: left;">population</th>
+<th>samples at each time</th>
+<th>interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td style="text-align: left;">p1</td>
+<td>1</td>
+<td>outgroup</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td style="text-align: left;">p2</td>
+<td>1</td>
+<td>admixture source</td>
+</tr>
+<tr class="odd">
+<td>from 5 k B.P., every 1 k years</td>
+<td style="text-align: left;">p3</td>
+<td>5</td>
+<td>time-series of ancient individuals</td>
+</tr>
+<tr class="even">
+<td>0</td>
+<td style="text-align: left;">p4</td>
+<td>10</td>
+<td>panel of reference individuals</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hint:</strong> You can provide a vector of numbers as the <code>times =</code> argument of <code>schedule_recording()</code>. See the help page for <code>?schedule_recording</code> for more information and to see a concrete example.</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Inspecting the table above, it looks like we have effectively two groups of recording events determined by the times indicated in the first column: one group of individuals in the “present-day” (i.e., at time 0) and a time-series of ancient individuals. So let’s leverage that to create two recording schedules, “modern” and “ancient”:</p>
+<p>Scheduling of modern individuals:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>modern <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p1, <span class="dv">1</span>), <span class="fu">list</span>(p2, <span class="dv">1</span>), <span class="fu">list</span>(p4, <span class="dv">10</span>))</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>modern</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 8
+   time pop       n name  y_orig x_orig y     x    
+  &lt;int&gt; &lt;chr&gt; &lt;int&gt; &lt;lgl&gt; &lt;lgl&gt;  &lt;lgl&gt;  &lt;lgl&gt; &lt;lgl&gt;
+1     0 p1        1 NA    NA     NA     NA    NA   
+2     0 p2        1 NA    NA     NA     NA    NA   
+3     0 p4       10 NA    NA     NA     NA    NA   </code></pre>
+</div>
+</div>
+<p>Scheduling of ancient individuals:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>ancient_times <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">5000</span>, <span class="dv">1000</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">1000</span>)</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>ancient_times</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 5000 4000 3000 2000 1000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>ancient <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> ancient_times, <span class="fu">list</span>(p3, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We can then create a single sampling schedulie like this:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(modern, ancient)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>And use it in our simulation just like we showed above:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Let’s verify that we got the correct number of individuals:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(pop, time) <span class="sc">%&gt;%</span> tally</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 3
+# Groups:   pop [4]
+  pop    time     n
+  &lt;chr&gt; &lt;dbl&gt; &lt;int&gt;
+1 p1        0     1
+2 p2        0     1
+3 p3     1000     5
+4 p3     2000     5
+5 p3     3000     5
+6 p3     4000     5
+7 p3     5000     5
+8 p4        0    10</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="exercise-recording-of-named-individuals" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="exercise-recording-of-named-individuals">Exercise: Recording of named individuals</h2>
+<p>Sometimes, we don’t just want to record a given set of “anonymous” individuals, but we want to be able to work with unique, named individuals. This can be especially helpful when we want to reconstruct a particular scenario in some specific archaeological context (for instance, we want to work with some very precious archaeological sample, such as the “Altai Neanderthal”).</p>
+<p>We can do so by calling <code>schedule_recording()</code> in a slightly modified way which doesn’t use the normal syntax <code>list(&lt;population&gt;, &lt;number&gt;)</code>, to record a given number of individuals from the given population, but instead uses the format of <code>list(&lt;population&gt;, 1, "&lt;name of the individual&gt;")</code>.</p>
+<hr>
+<p><strong>Use this format to modify your recording schedule (for instance, based on combining two recording schedules called <code>modern</code> and <code>ancient</code>) to implement a unique recording event which will give the one representative individual of the admixture source population the name <code>"source_ind"</code> and the outgroup individual will be named <code>"outgroup_ind"</code>. Then create a new combined <code>schedule</code> again, and verify that you got the newly named individuals in a new simulated tree sequence <code>ts</code>.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>We’ll be more succinct now (see the full explanation to the <code>modern</code> and <code>ancient</code> schedules in the solution to the previous exercise):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>outgroup <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p1, <span class="dv">1</span>, <span class="st">"outgroup_ind"</span>))</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>source<span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p2, <span class="dv">1</span>, <span class="st">"source_ind"</span>))</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>modern <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p1, <span class="dv">1</span>), <span class="fu">list</span>(p4, <span class="dv">10</span>))</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>ancient <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">5000</span>, <span class="dv">1000</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">1000</span>), <span class="fu">list</span>(p3, <span class="dv">5</span>))</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(outgroup, source, modern, ancient)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Now we can simulate a new tree sequence with more specifically named individuals:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>And verify that we did everything correctly by inspecting the table of the contents of the tree sequence:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 38 × 3
+   name          time pop  
+   &lt;chr&gt;        &lt;dbl&gt; &lt;chr&gt;
+ 1 p3_1          5000 p3   
+ 2 p3_2          5000 p3   
+ 3 p3_3          5000 p3   
+ 4 p3_4          5000 p3   
+ 5 p3_5          5000 p3   
+ 6 p3_6          4000 p3   
+ 7 p3_7          4000 p3   
+ 8 p3_8          4000 p3   
+ 9 p3_9          4000 p3   
+10 p3_10         4000 p3   
+11 p3_11         3000 p3   
+12 p3_12         3000 p3   
+13 p3_13         3000 p3   
+14 p3_14         3000 p3   
+15 p3_15         3000 p3   
+16 p3_16         2000 p3   
+17 p3_17         2000 p3   
+18 p3_18         2000 p3   
+19 p3_19         2000 p3   
+20 p3_20         2000 p3   
+21 p3_21         1000 p3   
+22 p3_22         1000 p3   
+23 p3_23         1000 p3   
+24 p3_24         1000 p3   
+25 p3_25         1000 p3   
+26 outgroup_ind     0 p1   
+27 p1_1             0 p1   
+28 source_ind       0 p2   
+29 p4_1             0 p4   
+30 p4_2             0 p4   
+31 p4_3             0 p4   
+32 p4_4             0 p4   
+33 p4_5             0 p4   
+34 p4_6             0 p4   
+35 p4_7             0 p4   
+36 p4_8             0 p4   
+37 p4_9             0 p4   
+38 p4_10            0 p4   </code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>You may have noticed that <code>plot_model()</code> has a number of optional arguments. One of them is called <code>schedule</code> and it accepts a sampling schedule (such as the one you just created) as its input. Use your <code>model</code> and sampling <code>schedule</code> to visualize your model.</strong></p>
+<p>This functionality can be useful as an additional validation of your modeling scripts, so always remember to use this for sanity checking your simulations (after all, a picture can be worth more than <strike>thousand words</strike> dozens of lines of code)!</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s is the model on its own:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="scheduling_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Here is the model with sampling numbers overlaid on top:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="scheduling_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><strong>Note:</strong> As you’ve seen above, the visualization is often a bit wonky and convoluted with overlapping elements, so don’t be too frustrated if the results of your <code>plot_model()</code> visualizations are not too pretty. The function has been designed as a validation and troubleshooting tool, rather than a tool to create publication-ready figures.</p>
+</div></div></section>
+<section id="catch-up" class="level2">
+<h2 class="anchored" data-anchor-id="catch-up">Catch up</h2>
+<p>If you want to just catch up to the point at which this section would conclude, here is the version of our simulation script at the end of the final exercise:</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">12000</span>, <span class="at">N =</span> <span class="dv">10000</span>)</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">9000</span>, <span class="at">N =</span> <span class="dv">2000</span>, <span class="at">parent =</span> p1)</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">6000</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">parent =</span> p2)</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">2000</span>, <span class="at">parent =</span> p3)</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p2, <span class="at">to =</span> p3, <span class="at">start =</span> <span class="dv">3000</span>, <span class="at">end =</span> <span class="dv">2100</span>, <span class="at">proportion =</span> <span class="fl">0.1</span>)</span>
+<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb51-12"><a href="#cb51-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">gene_flow =</span> gf,</span>
+<span id="cb51-13"><a href="#cb51-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation_time =</span> <span class="dv">30</span>,</span>
+<span id="cb51-14"><a href="#cb51-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_units =</span> <span class="st">"years before present"</span></span>
+<span id="cb51-15"><a href="#cb51-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb51-16"><a href="#cb51-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-17"><a href="#cb51-17" aria-hidden="true" tabindex="-1"></a>outgroup <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p1, <span class="dv">1</span>, <span class="st">"outgroup_ind"</span>))</span>
+<span id="cb51-18"><a href="#cb51-18" aria-hidden="true" tabindex="-1"></a>source<span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p2, <span class="dv">1</span>, <span class="st">"source_ind"</span>))</span>
+<span id="cb51-19"><a href="#cb51-19" aria-hidden="true" tabindex="-1"></a>modern <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p1, <span class="dv">1</span>), <span class="fu">list</span>(p4, <span class="dv">10</span>))</span>
+<span id="cb51-20"><a href="#cb51-20" aria-hidden="true" tabindex="-1"></a>ancient <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="fu">seq</span>(<span class="dv">5000</span>, <span class="dv">1000</span>, <span class="at">by =</span> <span class="sc">-</span><span class="dv">1000</span>), <span class="fu">list</span>(p3, <span class="dv">5</span>))</span>
+<span id="cb51-21"><a href="#cb51-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-22"><a href="#cb51-22" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">rbind</span>(outgroup, source, modern, ancient)</span>
+<span id="cb51-23"><a href="#cb51-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb51-24"><a href="#cb51-24" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="scheduling_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</div>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./models.html" class="pagination-link" aria-label="Building _slendr_ models">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-title">Building <em>slendr</em> models</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./basic-statistics.html" class="pagination-link" aria-label="Computing within-population statistics">
+        <span class="nav-page-text"><span class="chapter-title">Computing within-population statistics</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
