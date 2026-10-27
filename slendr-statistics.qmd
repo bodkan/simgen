@@ -900,7 +900,7 @@ library(slendr)
 init_env()
 
 sim_afs <- function(Ne_true) {
-  pop <- population("pop", time = 2001, N = 5000) %>% resize(N = Ne_true, time = 100)
+  pop <- population("pop", time = 2001, N = 5000) %>% resize(N = Ne_true, time = 1000)
 
   model <- compile_model(populations = pop, generation_time = 1, direction = "backward")
 
@@ -942,7 +942,7 @@ cowplot::plot_grid(
   ggplot(df_afs, aes(frequency, count, color = factor(Ne_true))) +
     geom_line() +
     ggtitle("AFS vector for different population size change models"),
-  ggplot(dplyr::filter(df_change, T_change == 100), aes(Ne_true, diversity)) +
+  ggplot(dplyr::filter(df_change, T_change == 1000), aes(Ne_true, diversity)) +
     geom_point() +
     geom_smooth(color = "red", linetype = "dashed") +
     ggtitle("True Ne vs Ne estimated from nucleotide diversity (population size change)") +
@@ -982,6 +982,137 @@ such as $F_{ST}$ or $f$-statistics.
 
 
 
+
+
+# Catch up
+
+Here is a complete set of solution to the exercises in this section represented
+by a single tidy reproducible R script:
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the entire script
+
+For simplicity, this script only evaluates models when the size change happens
+1000 generations ago (but it could be expanded, of course).
+
+```{r}
+# first we import a couple of packages ------------------------------------
+
+library(ggplot2)
+library(purrr)
+
+library(slendr)
+init_env()
+
+# function which simulates a constant size model --------------------------
+
+sim_constant <- function(Ne_true) {
+  pop <- population("pop", time = 2001, N = Ne_true)
+  
+  model <- compile_model(populations = pop, generation_time = 1, direction = "backward")
+  
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  df <- ts_diversity(ts, list(all = ts_names(ts)))
+  
+  df$Ne_estimated <- df$diversity / (4 * 1e-8)
+  
+  df$Ne_true <- Ne_true
+  
+  df
+}
+
+# function which simulates a model of population size change --------------
+
+sim_change <- function(Ne_true) {
+  pop <- population("pop", time = 2001, N = 5000) %>% resize(N = Ne_true, time = 1000)
+  
+  model <- compile_model(populations = pop, generation_time = 1, direction = "backward")
+  
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  df <- ts_diversity(ts, list(all = ts_names(ts)))
+  
+  df$Ne_estimated <- df$diversity / (4 * 1e-8)
+  
+  df$Ne_true <- Ne_true
+  
+  df
+}
+
+# function which simulates the AFS from a size change model ---------------
+
+sim_afs <- function(Ne_true) {
+  pop <- population("pop", time = 2001, N = 5000) %>% resize(N = Ne_true, time = 1000)
+  
+  model <- compile_model(populations = pop, generation_time = 1, direction = "backward")
+  
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  subset <- sample(ts_names(ts), 10)
+  
+  afs <- ts_afs(ts, sample_sets = list(subset))
+  
+  # return the result not as a plain integer vector, but a proper data frame
+  # annotated by the frequency bin number
+  data.frame(
+    Ne_true = Ne_true,
+    frequency = 1:length(afs),
+    count = afs
+  )
+}
+
+# run simulations across a given grid -------------------------------------
+
+# for the constant model, these values represent the constant Ne, for the size
+# change model they represent the final Ne after the initial size of 5000
+
+Ne_grid <- c(1000, 1500, 2000, 2500, 3000, 4000, 5000, 10000, 15000, 20000)
+
+df_constant <- map_dfr(Ne_grid, sim_constant)
+df_change <- map_dfr(Ne_grid, sim_change)
+df_afs <- map_dfr(Ne_grid, sim_afs)
+
+# visualize the results ---------------------------------------------------
+
+# diversity in the constant size models
+ggplot(df_constant, aes(Ne_true, Ne_estimated)) +
+  geom_point() +
+  geom_abline(slope = 1, color = "red", linetype = "dashed") +
+  ggtitle("True Ne vs Ne estimated from nucleotide diversity (constant population size)")
+
+ggsave("constant_size_pi.pdf")
+
+# diversity in the size change models
+ggplot(df_change, aes(Ne_true, Ne_estimated)) +
+  geom_point() +
+  geom_smooth(color = "red", linetype = "dashed") +
+  ggtitle("True Ne vs Ne estimated from nucleotide diversity (population size change)") +
+  xlim(0, 20000) +
+  ylim(0, 20000)
+
+ggsave("changing_size_pi.pdf")
+
+# AFS in the size change models
+ggplot(df_afs, aes(frequency, count, color = factor(Ne_true))) +
+  geom_line() +
+  ggtitle("AFS vector for different population size change models")
+
+ggsave("changing_size_afs.pdf")
+```
+
+```{r}
+#| echo: false
+unlink(c("constant_size_pi.pdf", "changing_size_pi.pdf", "changing_size_afs.pdf"))
+```
+
+:::
 
 ## Bonus exercise: Your own model
 
