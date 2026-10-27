@@ -523,9 +523,9 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="exercise-outgroup-f_3-statistic">Exercise: “Outgroup” <span class="math inline">\(f_3\)</span> statistic</h2>
 
 <hr>
-<p><strong>Create a new script <code>outgroup_f3.R</code> and paste your three-population simulation code in it. We’ll be continuing our work in this new script, starting with two modifications:</strong></p>
+<p><strong>Create a new script <code>split_simulation.R</code> and paste your three-population simulation code in it. We’ll be continuing our work in this new script, starting with two modifications:</strong></p>
 <ol type="1">
-<li><p><strong>First, wrap the code in a function called <code>compute_outgroup_f3()</code>. This function should accept a single argument <code>tsplit</code> which will parametrize at which point should “X” and “Y” populations split from the “outgroup” lineage.</strong></p></li>
+<li><p><strong>First, wrap the code in a function called <code>simulate_split()</code>. This function should accept a single argument <code>tsplit</code> which will parametrize at which point should “X” and “Y” populations split from the “outgroup” lineage.</strong></p></li>
 <li><p><strong>Then, compute the outgroup <span class="math inline">\(f_3\)</span> statistic using the function <code>ts_f3()</code>, setting the <code>B =</code> argument to the “X” individuals, <code>C =</code> argument to the “Y” individuals, and the <code>C =</code> argument to the “outgroup” individuals.</strong></p></li>
 <li><p><strong>The function should return the data frame produced by the <code>ts_f3()</code> function, with a new column named <code>tsplit</code> containing the value given to the overall function as its argument.</strong></p></li>
 </ol>
@@ -541,12 +541,12 @@ window.Quarto = {
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Here’s the content of the script <code>outgroup_f3.R</code>:</p>
+<p>Here’s the content of the script <code>split_simulation.R</code>:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>simulate_outgroup_f3 <span class="ot">&lt;-</span> <span class="cf">function</span>(tsplit) {</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>simulate_split <span class="ot">&lt;-</span> <span class="cf">function</span>(tsplit) {</span>
 <span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
 <span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"X"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
 <span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Y"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
@@ -585,32 +585,32 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <p>Let’s test the function first:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_outgroup_f3</span>(<span class="at">tsplit =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
-  A        B     C            f3 tsplit
-  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.0000116   1000</code></pre>
+  A        B     C             f3 tsplit
+  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;  &lt;dbl&gt;
+1 outgroup X     Y     0.00000959   1000</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_outgroup_f3</span>(<span class="at">tsplit =</span> <span class="dv">2000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">2000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
   A        B     C            f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.0000217   2000</code></pre>
+1 outgroup X     Y     0.0000202   2000</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_outgroup_f3</span>(<span class="at">tsplit =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
   A        B     C            f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.0000482   5000</code></pre>
+1 outgroup X     Y     0.0000479   5000</code></pre>
 </div>
 </div>
 <p>Now we can run it on a grid of parameter values:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>f3_outgroup <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">10000</span>, <span class="at">by =</span> <span class="dv">1000</span>), simulate_outgroup_f3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>f3_outgroup <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">10000</span>, <span class="at">by =</span> <span class="dv">1000</span>), simulate_split)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(f3_outgroup)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -618,12 +618,12 @@ window.Quarto = {
 <pre><code># A tibble: 6 × 5
   A        B     C              f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.000000187      1
-2 outgroup X     Y     0.00000952    1001
-3 outgroup X     Y     0.0000167     2001
-4 outgroup X     Y     0.0000377     3001
-5 outgroup X     Y     0.0000357     4001
-6 outgroup X     Y     0.0000494     5001</code></pre>
+1 outgroup X     Y     0.000000124      1
+2 outgroup X     Y     0.00000914    1001
+3 outgroup X     Y     0.0000194     2001
+4 outgroup X     Y     0.0000322     3001
+5 outgroup X     Y     0.0000376     4001
+6 outgroup X     Y     0.0000459     5001</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -783,7 +783,7 @@ Attaching package: 'dplyr'</code></pre>
 <pre><code># A tibble: 1 × 7
   A     B     C             f3  tmix  prop    Ne
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     0.00000238  2000   0.2 10000</code></pre>
+1 mix   x     y     0.00000501  2000   0.2 10000</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -792,7 +792,7 @@ Attaching package: 'dplyr'</code></pre>
 <pre><code># A tibble: 1 × 7
   A     B     C              f3  tmix  prop    Ne
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     -0.00000649  1000   0.2 10000</code></pre>
+1 mix   x     y     -0.00000539  1000   0.2 10000</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -801,7 +801,7 @@ Attaching package: 'dplyr'</code></pre>
 <pre><code># A tibble: 1 × 7
   A     B     C             f3  tmix  prop    Ne
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     -0.0000176     1   0.2 10000</code></pre>
+1 mix   x     y     -0.0000127     1   0.2 10000</code></pre>
 </div>
 </div>
 <div class="cell">
