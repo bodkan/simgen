@@ -367,8 +367,6 @@ window.Quarto = {
   <li><a href="#exercise-statistical-power-of-f_st-vs-outgroup-f_3" id="toc-exercise-statistical-power-of-f_st-vs-outgroup-f_3" class="nav-link" data-scroll-target="#exercise-statistical-power-of-f_st-vs-outgroup-f_3">Exercise: Statistical power of <span class="math inline">\(F_{ST}\)</span> vs outgroup <span class="math inline">\(f_3\)</span></a></li>
   <li><a href="#catch-up" id="toc-catch-up" class="nav-link" data-scroll-target="#catch-up">Catch up</a></li>
   <li><a href="#exercise-admixture-f_3" id="toc-exercise-admixture-f_3" class="nav-link" data-scroll-target="#exercise-admixture-f_3">Exercise: “Admixture” <span class="math inline">\(f_3\)</span></a></li>
-  <li><a href="#exercise-3" id="toc-exercise-3" class="nav-link" data-scroll-target="#exercise-3">Exercise</a></li>
-  <li><a href="#exercise-controlling-stochasticity" id="toc-exercise-controlling-stochasticity" class="nav-link" data-scroll-target="#exercise-controlling-stochasticity">Exercise: controlling stochasticity</a></li>
   </ul>
 </nav>
     </div>
@@ -397,11 +395,11 @@ window.Quarto = {
 <section id="exercise-recap-on-r-lists-and-vectors" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-recap-on-r-lists-and-vectors">Exercise: Recap on R lists and vectors</h2>
 <p>In the previous session, you learned to compute within-group summary statistics by providing <em>slendr</em> functions single vectors of individual names, most easily obtained by the function <code>ts_names()</code> in a very straightforward way.</p>
-<p>Whenever we work with “between-group statistics” (i.e., statistics based on comparing genomic variation between different groupings of individuals), we need to be aware of some of the ways of how R works with lists and vectors. This is not difficult, but it is something that doesn’t come up in daily work in R in a normal data analysis setting.</p>
+<p>Whenever we work with “between-group statistics” (i.e., statistics based on comparing genomic variation between different groupings of individuals), we need to be aware of a couple of things with regards to how R handles nested lists of vectors.</p>
 <p>Let’s first set up a small model to demonstrate this.</p>
 <hr>
-<p><strong>Start by creating a new R script called <code>slendr-multipop.R</code> and program the following model in it, simulating a tree sequence object <code>ts</code> (sequence length 10Mb, recombination rate <code>1e-8</code>, mutation rate <code>1e-8</code>). In this tree sequence, schedule the recording of ten individuals from each of the three populations at time 0 (i.e., the “present-day”).</strong></p>
-<p><strong>Hint:</strong> Note that unlike our previous toy examples, this model features multiple populations, so you will need to program population splits. Remember that you can specify that a population should split from some parent lineage by using the <code>population(..., parent = &lt;parent population object&gt;)</code> format.</p>
+<p><strong>Start by creating a new R script called <code>split_simulation.R</code> and program the following model in it. Simulate a tree sequence object <code>ts</code> (sequence length 10Mb, recombination rate <code>1e-8</code>, mutation rate <code>1e-8</code>) from this model, scheduling the recording of ten individuals from each of the three populations at time 0 (i.e., the “present-day”).</strong></p>
+<p><strong>Hint:</strong> Unlike our previous toy examples, this model features multiple populations, so you will need to program population splits. Remember that you can specify that a population should split from some parent lineage by using the <code>population(..., parent = &lt;parent population&gt;)</code> format.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -414,6 +412,7 @@ window.Quarto = {
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Here’s what’s in my <code>split_simulation.R</code> script:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -442,8 +441,8 @@ window.Quarto = {
 </div>
 </div>
 <hr>
-<p>Now let’s work on a couple of basic vector- and list-based operations in R, which we will be using all the time. If you need a recap, you can scroll through the introductory <a href="r-bootcamp.html">R bootcamp</a> chapter, particularly sections and exercises relevant for subsetting and indexing into vectors and lists in R.</p>
-<p><strong>You’re already familiar with the calling the function <code>ts_names()</code> as <code>ts_names(ts)</code>. Add this command to your script, saving its result as <code>samples</code>. What is the type of the data stored in the <code>samples</code> variable? What does this information tell us and how is it different from running simply <code>ts_names(ts)</code>?</strong></p>
+<p>Let’s work on a couple of basic vector- and list-based operations in R, which we will be using all the time (you can refresh your memory on this topic by scrolling through the introductory <a href="r-bootcamp.html">R bootcamp</a> chapter, particularly sections about subsetting and indexing into vectors and lists.</p>
+<p><strong>You’re already familiar with the calling the function <code>ts_names()</code> as <code>ts_names(ts)</code> and know that it produces a plain vector of individual names. Now, add the line <code>samples &lt;- ts_names(ts, split = TRUE)</code> to your script. What is the type of the data stored in the <code>samples</code> variable? What does this information tell us and how is it different from running simply <code>ts_names(ts)</code>?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -476,8 +475,7 @@ window.Quarto = {
 </div>
 </div>
 <hr>
-<p><strong>Using R list manipulation, how do you access the names of individuals in the population X? What’s the difference between calling <code>samples$X</code>, <code>samples[["X"]]</code>, and <code>samples["X"]</code>?</strong></p>
-<p>(This might seem extremely trivial and boring, but is very important for R programming in general and for correct computation of population genetic statistics with <em>slendr</em>. So bear with me please!)</p>
+<p><strong>Using operations for manipulation of R lists, how do you access the names of individuals in the population X? Specifically, what’s the difference between calling <code>samples$X</code>, <code>samples[["X"]]</code>, and <code>samples["X"]</code>? Try to answer first without runnig these commands, then run them in the R console to verify your intuition.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -490,7 +488,7 @@ window.Quarto = {
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>The first extracts a separate vector of X individuals from the list:</p>
+<p>The first command extracts a “standalone” vector of X individuals from the list:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>samples<span class="sc">$</span>X</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -504,7 +502,7 @@ window.Quarto = {
 <pre><code> [1] "X_1"  "X_2"  "X_3"  "X_4"  "X_5"  "X_6"  "X_7"  "X_8"  "X_9"  "X_10"</code></pre>
 </div>
 </div>
-<p>The third is very different. It looks the same, but it’s actually a list with a single element (the vector of names)!</p>
+<p>The third command is very different. It looks the same, superficially, but it’s actually a list with a single element (the vector of names)!</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>samples[<span class="st">"X"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -516,8 +514,8 @@ window.Quarto = {
 </div>
 </div>
 <hr>
-<p>OK, so why does this matter?</p>
-<p>Remember how in the previous chapter, you sometimes needed to indicate a named sample of some individuals in a slightly convoluted way in order to compute a statistic on all of them, such as:</p>
+<p>Why does any of this matter?</p>
+<p>Remember how in the previous chapter, you needed to specify a subset of individuals in a slightly convoluted way in order to compute a statistic on them, such as:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(<span class="at">group_name =</span> <span class="fu">c</span>(<span class="st">"X_1"</span>, <span class="st">"X_2"</span>, <span class="st">"X_3"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -525,22 +523,33 @@ window.Quarto = {
 [1] "X_1" "X_2" "X_3"</code></pre>
 </div>
 </div>
-<p>Doing so for complex computations is very annoying. But also—notice how the chunk above produces the exact same format as <code>samples["X"]</code> earlier. This is why I implemented the variant <code>ts_names(ts, split = TRUE)</code> in <em>slendr</em>, as a shortcut. As you’ll se below, this makes it possible to use the <code>samples</code> variable to instruct <em>slendr</em> to perform computation very efficiently.</p>
+<p>Doing so for complex computations is very annoying. But also—notice how this chunk produces the same format of data as this:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>samples[<span class="st">"X"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>$X
+ [1] "X_1"  "X_2"  "X_3"  "X_4"  "X_5"  "X_6"  "X_7"  "X_8"  "X_9"  "X_10"</code></pre>
+</div>
+</div>
+<p>This is why I implemented the variant <code>ts_names(ts, split = TRUE)</code> in <em>slendr</em>, as a shortcut for not having to deal with named lists of vectors. This makes it possible to use the <code>samples</code> variable to instruct <em>slendr</em> to perform computation very efficiently.</p>
 </section>
 <section id="exercise-outgroup-f_3-statistic" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="exercise-outgroup-f_3-statistic">Exercise: “Outgroup” <span class="math inline">\(f_3\)</span> statistic</h2>
+<p>The famous <span class="math inline">\(f_3\)</span> statistic <a href="https://academic.oup.com/genetics/article/192/3/1065/5935193">formally established by Nick Patterson and David Reich</a> in 2008. This statistic has two formulations: as a measure of shared drift between two populations (the “outgroup” formulation) and as an admixture test (something we’ll look at later).</p>
+<p>As the name implies, <span class="math inline">\(f_3\)</span> statistic involves the specification of samples from three different lineages (usually populations) called A, B, and C, making it a good starting example of how to compute multi-population statistics.</p>
+<p>Let’s develop a simulation-based model which will allow us to explore some practically relevant features of this important summary statistic.</p>
+<hr>
+<p><strong>Let’s start by doing a couple of modifications to our script <code>split_simulation.R</code>:</strong></p>
+<ol type="1">
+<li><p><strong>First, wrap the code in a function called <code>simulate_split()</code> and update it so that this function accepts a single argument <code>tsplit</code> and uses it to specify the point at which point will the “X” and “Y” populations split from the “outgroup” lineage.</strong></p></li>
+<li><p><strong>Then, add the computation of the outgroup <span class="math inline">\(f_3\)</span> statistic, using the function <code>ts_f3()</code> setting the “X” individuals as the <code>B =</code> argument, “Y” individuals as the <code>C =</code> argument, and the <code>A =</code> argument to the “outgroup” individuals (remember to use the <code>samples</code> variable produced by the <code>ts_names()</code> shortcut above to do this).</strong></p></li>
+<li><p><strong>Finally, the function should return a data frame produced by the <code>ts_f3()</code> function, with a new column named <code>tsplit</code> containing the value of this function argument.</strong></p></li>
+</ol>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
 <p><strong>Note:</strong> The <span class="math inline">\(f_3\)</span> statistic is traditionally expressed as <span class="math inline">\(f_3(A, B; C)\)</span>, where C represents the outgroup. Unfortunately, in <em>tskit</em> the outgroup is named A, with B and C being the pair of samples from which we trace the length of branches towards the outgroup, so the statistic is interpreted as <span class="math inline">\(f_3(B, C;
 A).\)</span></p>
-</div></div><hr>
-<p><strong>Create a new script <code>split_simulation.R</code> and paste your three-population simulation code from <code>slendr-multipop.Ri</code> n it. We’ll be continuing our work in this new script, starting with two modifications:</strong></p>
-<ol type="1">
-<li><p><strong>First, wrap the code in a function called <code>simulate_split()</code>. This function should accept a single argument <code>tsplit</code> which will parametrize at which point should “X” and “Y” populations split from the “outgroup” lineage.</strong></p></li>
-<li><p><strong>Then, compute the outgroup <span class="math inline">\(f_3\)</span> statistic using the function <code>ts_f3()</code>, setting the <code>B =</code> argument to the “X” individuals, <code>C =</code> argument to the “Y” individuals, and the <code>C =</code> argument to the “outgroup” individuals (remember to use the <code>samples</code> variable produced by the <code>ts_names()</code> shortcut above).</strong></p></li>
-<li><p><strong>The function should return a data frame produced by the <code>ts_f3()</code> function, with a new column named <code>tsplit</code> containing the value of this function argument.</strong></p></li>
-</ol>
-<div class="callout callout-style-default callout-note no-icon callout-titled">
+</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
@@ -554,34 +563,35 @@ A).\)</span></p>
 <div class="callout-body-container callout-body">
 <p>Here’s the content of the script <code>split_simulation.R</code>:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>simulate_split <span class="ot">&lt;-</span> <span class="cf">function</span>(tsplit) {</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"X"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Y"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, X, Y), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">10</span>))</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples[<span class="st">"outgroup"</span>], <span class="at">B =</span> samples[<span class="st">"X"</span>], <span class="at">C =</span> samples[<span class="st">"Y"</span>])</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>tsplit <span class="ot">&lt;-</span> tsplit</span>
-<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
-<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>simulate_split <span class="ot">&lt;-</span> <span class="cf">function</span>(tsplit) {</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"X"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Y"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, X, Y), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">10</span>))</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples[<span class="st">"outgroup"</span>], <span class="at">B =</span> samples[<span class="st">"X"</span>], <span class="at">C =</span> samples[<span class="st">"Y"</span>])</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>tsplit <span class="ot">&lt;-</span> tsplit</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
 </div>
 <hr>
-<p><strong>Test your function <code>simulate_split()</code> by calling it on a few split times in the R console (like 1000, 2000, or 5000 generations). Then, use your well-known function <code>map_dfr()</code> from the <em>purrr</em> package to compute it on a grid of split times between 1 and 10000 generations in steps of every 1000 generations. Visualize the statistical expectation of the <span class="math inline">\(f_3\)</span> statistic in a scatterplot as a function of the split time. Add all this code in your script <code>split_simulation.R</code> after your function definition.</strong></p>
+<p><strong>Test your function <code>simulate_split()</code> by calling it on a few split times in the R console (like 1000, 2000, or 5000 generations). Then, use <code>map_dfr()</code> from the <em>purrr</em> package to run simulations of split times between 1 and 10000 generations in steps of every 1000 generations (see <code>?seq</code> for a reminder on how to do this). Visualize the statistical expectation of the <span class="math inline">\(f_3\)</span> statistic in a scatterplot as a function of the split time. Add all this code in your script <code>split_simulation.R</code> after your function definition.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -596,62 +606,88 @@ A).\)</span></p>
 <div class="callout-body-container callout-body">
 <p>Let’s test the function first:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
-  A        B     C            f3 tsplit
-  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.0000122   1000</code></pre>
+  A        B     C             f3 tsplit
+  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;  &lt;dbl&gt;
+1 outgroup X     Y     0.00000954   1000</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">2000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">2000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
   A        B     C            f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.0000202   2000</code></pre>
+1 outgroup X     Y     0.0000210   2000</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 5
   A        B     C            f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;     &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     0.0000423   5000</code></pre>
+1 outgroup X     Y     0.0000521   5000</code></pre>
 </div>
 </div>
 <p>Now we can run it on a grid of parameter values:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>f3_outgroup <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">10000</span>, <span class="at">by =</span> <span class="dv">1000</span>), simulate_split)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>f3_outgroup <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">10000</span>, <span class="at">by =</span> <span class="dv">1000</span>), simulate_split)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>We can verify that we did, indeed, get a tidy table of the expected <span class="math inline">\(f_3\)</span> values for a range of possible split times:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(f3_outgroup)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>f3_outgroup</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 5
-  A        B     C               f3 tsplit
-  &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     -0.000000117      1
-2 outgroup X     Y      0.0000112     1001
-3 outgroup X     Y      0.0000172     2001
-4 outgroup X     Y      0.0000258     3001
-5 outgroup X     Y      0.0000379     4001
-6 outgroup X     Y      0.0000461     5001</code></pre>
+<pre><code># A tibble: 10 × 5
+   A        B     C              f3 tsplit
+   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;
+ 1 outgroup X     Y     0.000000444      1
+ 2 outgroup X     Y     0.00000904    1001
+ 3 outgroup X     Y     0.0000189     2001
+ 4 outgroup X     Y     0.0000268     3001
+ 5 outgroup X     Y     0.0000472     4001
+ 6 outgroup X     Y     0.0000518     5001
+ 7 outgroup X     Y     0.0000603     6001
+ 8 outgroup X     Y     0.0000750     7001
+ 9 outgroup X     Y     0.0000907     8001
+10 outgroup X     Y     0.0000885     9001</code></pre>
 </div>
 </div>
+<p>And we can also visualize our results:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_outgroup, <span class="fu">aes</span>(tsplit, f3)) <span class="sc">+</span></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">10000</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_outgroup, <span class="fu">aes</span>(tsplit, f3)) <span class="sc">+</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">10000</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can see that, as expected, the <span class="math inline">\(f_3\)</span> statistic gives a nearly zero for the simulation of an extremely recent split of X and Y populations from the outgroup lineage—this is consistent with <span class="math inline">\(f_3\)</span> measuring the length of the shared branch of X and Y towards the outgroup sample which, in this case, is almost nonexistent, only 1 generation long. To demonstrate by visualizing such a model (which, necessarily, looks a bit silly):</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>On the other hand, the older the split time from the outgroup, the longer the shared branch is. Again, to demonstrate the “shared branch length” graphically:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -660,19 +696,18 @@ A).\)</span></p>
 </div>
 </div>
 <hr>
-<p>With this initial setup, let’s delve into using this pipeline to answer an interesting and relevant research question.</p>
+<p>With this initial setup out of the way, let’s delve into using our small simulation pipeline to answer a couple of practically relevant questions.</p>
 </section>
 <section id="exercise-statistical-power-of-f_st-vs-outgroup-f_3" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-statistical-power-of-f_st-vs-outgroup-f_3">Exercise: Statistical power of <span class="math inline">\(F_{ST}\)</span> vs outgroup <span class="math inline">\(f_3\)</span></h2>
-<p>Another statistic which is very frequently used as a measure of population differentiation is [<span class="math inline">\(F_{ST}](https://en.wikipedia.org/wiki/Fixation_index).
-Let's say we want to understand, which of the two (\)</span>f_3$ or $F_{ST}) is more robust to <span class="math inline">\(N_e\)</span> differences between the two populations under study. Recall that <span class="math inline">\(N_e\)</span> determines the amount of genetic drift (and, therefore, the rate of the loss) of genomic variation in a population. In other words, if you were interested in measuring how far in the past the populations began differentiating, would both of them give you a reliable answer, regardless of the <span class="math inline">\(N_e\)</span> of those populations?</p>
+<p>Another statistic which is very frequently used as a measure of population differentiation is <a href="https://en.wikipedia.org/wiki/Fixation_index"><span class="math inline">\(F_{ST}\)</span></a>. Let’s say we want to understand, which of the two (<span class="math inline">\(f_3\)</span> or <span class="math inline">\(F_{ST}\)</span>) is more robust to <span class="math inline">\(N_e\)</span> differences between the two populations under study. Recall that <span class="math inline">\(N_e\)</span> determines the amount of genetic drift (and, therefore, the rate of the loss) of genomic variation in a population. In other words, if you were interested in measuring how far in the past the populations began differentiating, would both of them give you a reliable answer, regardless of the <span class="math inline">\(N_e\)</span> of those populations?</p>
 <p>Both <span class="math inline">\(F_{ST}\)</span> and <span class="math inline">\(f_3\)</span> are routinely used as measures of population differentiation—can we use them equivalently? Does one have potentially more statistical power than the other?</p>
 <hr>
-<p><strong>We want to evaluate the impact of <span class="math inline">\(N_e\)</span>, so let’s modify our function <code>simulate_split()</code> a little bit first:</strong></p>
+<p>We want to evaluate the impact of <span class="math inline">\(N_e\)</span>, so let’s modify our function <code>simulate_split()</code> a little bit first:</p>
 <ol type="1">
-<li><p><strong>Right now the function accepts a single argument <code>tsplit</code>. Add a second argument to this function called <code>Ne</code>, then modify the two lines of code indicating splits of “X” and “Y” population and change the fixed values of 1000 to use the new flexible parameters <code>Ne</code>.</strong></p></li>
-<li><p><strong>Modify the function so that it returns in the resulting data frame not only the <span class="math inline">\(f_3\)</span> value (computed by <code>ts_f3()</code>) but also the <span class="math inline">\(F_{ST}\)</span> value (computed by <code>ts_fst()</code>). Look up the help for <code>?ts_fst</code> to see how to use it (it’s very similar to using the <code>ts_f3()</code> function).</strong></p></li>
-<li><p><strong>In the original function, you added a <code>tsplit</code> column to the data frame, to be able to know which <code>f3</code> value corresponds to which <code>tsplit</code> parameter. In the new function, add another column <code>Ne</code> serving the same purpose.</strong></p></li>
+<li><p>Right now the function accepts a single argument <code>tsplit</code>. <strong>Add a second argument to this function called <code>Ne</code>, then modify the two lines of code indicating splits of “X” and “Y” population and change the fixed values of 1000 to use the new flexible parameters <code>Ne</code>.</strong></p></li>
+<li><p><strong>Modify the function so that it returns in the resulting data frame not only the <span class="math inline">\(f_3\)</span> value (computed by <code>ts_f3()</code>) but also the <span class="math inline">\(F_{ST}\)</span> value (computed by <code>ts_fst()</code>).</strong> Look up the help for <code>?ts_fst</code> to see how to use it (it’s very similar to using the <code>ts_f3()</code> function).**</p></li>
+<li><p><strong>The data frame returned by the function should include both the <code>tsplit</code> column (containing the value of the <code>tsplit</code> argument) as well as the column <code>Ne</code> (containing the value of the <code>Ne</code> argument).</strong></p></li>
 </ol>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
@@ -688,67 +723,62 @@ Let's say we want to understand, which of the two (\)</span>f_3$ or $F_{ST}) is 
 <div class="callout-body-container callout-body">
 <p>Here’s how the modified function looks like:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>simulate_split <span class="ot">&lt;-</span> <span class="cf">function</span>(tsplit, Ne) {</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"X"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Y"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, X, Y), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">25</span>))</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  value_fst <span class="ot">&lt;-</span> <span class="fu">ts_fst</span>(ts, <span class="at">sample_sets =</span> samples[<span class="fu">c</span>(<span class="st">"X"</span>, <span class="st">"Y"</span>)])<span class="sc">$</span>Fst</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  value_f3 <span class="ot">&lt;-</span> <span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples[<span class="st">"outgroup"</span>], <span class="at">B =</span> samples[<span class="st">"X"</span>], <span class="at">C =</span> samples[<span class="st">"Y"</span>])<span class="sc">$</span>f3</span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">statistic =</span> <span class="fu">c</span>(<span class="st">"Fst"</span>, <span class="st">"f3"</span>), <span class="at">value =</span> <span class="fu">c</span>(value_fst, value_f3))</span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>tsplit <span class="ot">&lt;-</span> tsplit</span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne <span class="ot">&lt;-</span> Ne</span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>simulate_split <span class="ot">&lt;-</span> <span class="cf">function</span>(tsplit, Ne) {</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  X <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"X"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Y"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> tsplit, <span class="at">parent =</span> outgroup)</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, X, Y), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">25</span>))</span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>  value_fst <span class="ot">&lt;-</span> <span class="fu">ts_fst</span>(ts, <span class="at">sample_sets =</span> samples[<span class="fu">c</span>(<span class="st">"X"</span>, <span class="st">"Y"</span>)])<span class="sc">$</span>Fst</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a>  value_f3 <span class="ot">&lt;-</span> <span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples[<span class="st">"outgroup"</span>], <span class="at">B =</span> samples[<span class="st">"X"</span>], <span class="at">C =</span> samples[<span class="st">"Y"</span>])<span class="sc">$</span>f3</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">statistic =</span> <span class="fu">c</span>(<span class="st">"Fst"</span>, <span class="st">"f3"</span>), <span class="at">value =</span> <span class="fu">c</span>(value_fst, value_f3))</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>tsplit <span class="ot">&lt;-</span> tsplit</span>
+<span id="cb29-20"><a href="#cb29-20" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne <span class="ot">&lt;-</span> Ne</span>
+<span id="cb29-21"><a href="#cb29-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb29-22"><a href="#cb29-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(df)</span>
+<span id="cb29-23"><a href="#cb29-23" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>And here’s how we can check that it works:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  statistic        value tsplit  Ne
-1       Fst 9.229238e-01   3000 100
-2        f3 3.740873e-05   3000 100</code></pre>
+1       Fst 9.174053e-01   3000 100
+2        f3 3.041461e-05   3000 100</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  statistic        value tsplit   Ne
-1       Fst 4.259840e-01   3000 1000
-2        f3 3.335793e-05   3000 1000</code></pre>
+1       Fst 4.358416e-01   3000 1000
+2        f3 2.330536e-05   3000 1000</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  statistic        value tsplit   Ne
-1       Fst 9.989458e-02   3000 5000
-2        f3 3.048318e-05   3000 5000</code></pre>
+1       Fst 9.913295e-02   3000 5000
+2        f3 3.567436e-05   3000 5000</code></pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 <hr>
-<p><strong>You’re already familiar with the basics of working with the iteration looping function <code>map_dfr()</code>. Use this function to run a new batch of parameter grid simulations, this time fixing the parameter <code>tsplit = 3000</code>, and only simulating the model for the values of the <span class="math inline">\(N_e\)</span> parameter indicated below.</strong></p>
-<p><strong>Hint:</strong> You can use the function <code>map_dfr()</code> to iterate over a given vector of values intended for only one of its function arguments (here <code>Ne</code>) while also explicitly setting its other argument(s) to a single fixed value—this is useful in cases in which we want to investigate only one parameter of interest while ignoring the others.**</p>
-<p><strong>Because this might seem a bit complicated, you can use this code to run the new grid simulations using your modified function <code>simulate_split()</code>.</strong></p>
+<p><strong>Run a new batch of parameter grid simulations using the looping function <code>map_dfr()</code>, this time fixing <code>tsplit = 3000</code> and simulating the model for the values of the <span class="math inline">\(N_e\)</span> parameter indicated below using the following code:</strong></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1000</span>, <span class="at">to =</span> <span class="dv">10000</span>, <span class="at">by =</span> <span class="dv">1000</span>))</span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>Ne_grid</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1]   100  1000  2000  3000  4000  5000  6000  7000  8000  9000 10000</code></pre>
-</div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># run `simulate_split()` for each of the `Ne_grid` values, and set the second</span></span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a><span class="co"># argument of the function to a fixed value `tsplit = 3000`</span></span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, simulate_split, <span class="at">tsplit =</span> <span class="dv">3000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co"># define values of the Ne parameter grid</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1000</span>, <span class="at">to =</span> <span class="dv">10000</span>, <span class="at">by =</span> <span class="dv">1000</span>))</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="co"># run simulations for each given Ne value, but fix the tsplit value</span></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, simulate_split, <span class="at">tsplit =</span> <span class="dv">3000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>When you’re done, visualize the expected values of <code>f3</code> and <code>Fst</code> summary statistics as functions of <span class="math inline">\(N_e\)</span>and, therefore, their robustness to genetic drift—which one of them will be more reliable?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
@@ -777,7 +807,7 @@ Let's say we want to understand, which of the two (\)</span>f_3$ or $F_{ST}) is 
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -876,7 +906,7 @@ Attaching package: 'dplyr'</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -899,7 +929,7 @@ Attaching package: 'dplyr'</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-17-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-20-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -910,44 +940,87 @@ Attaching package: 'dplyr'</code></pre>
 </section>
 <section id="exercise-admixture-f_3" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-admixture-f_3">Exercise: “Admixture” <span class="math inline">\(f_3\)</span></h2>
-<p>Now let’s explore the application of the <span class="math inline">\(f_3\)</span> statistic in its other common use, which is an admixture test. To do this, you will need to expand our baseline population model a little bit.</p>
-<p>In our model, we still keep the population <code>outgroup</code>, but the <code>X</code> and <code>Y</code> population now merge at a time <code>tmix</code> to form a population <code>mix</code>. Note that due to the way in which <em>slendr</em> currently implements population merges, you will first need to program the split of <code>mix</code> from <code>X</code> at time <code>tmix - 1</code>, followed at time <code>tmix</code> (i.e., immediately in the following generation) by admixture from <code>U</code> at some defined proportion <code>proportion</code>. To approximate the idea of a population merge as closely as possible within the constraints of the <em>slendr</em> interface, program this admixture event so that it ends after a single generation (i.e., it should end at time <code>tmix + 1</code>).</p>
+<p>Now let’s explore the application of the <span class="math inline">\(f_3\)</span> statistic in its other common use, which is an admixture test. Our primary interest in this exercise will be to investigate the limits of <span class="math inline">\(f_3\)</span> to detect evidence of admixture—in particular, if we see a “non-significant” <span class="math inline">\(f_3\)</span> statistic, which factors could make this test being a false negative?</p>
+<p>To do this, we will need to expand our baseline population model a little bit.</p>
+<hr>
+<p><strong>Create a new script, this time calling it <code>admixture_simulation.R</code>. Paste the following skeleton of a model into this script, read it and try to decipher what kind of model does it program (it’s obvious from the text above, but still, do this as a code-reading practice). In particular, pay attention to how the admixture is programmed. Run the code and take a look at the plot visualization produced.</strong></p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)   <span class="co"># manipulating tabular data</span></span>
 <span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2) <span class="co"># data visualization</span></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)   <span class="co"># convenient looping functions</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)   <span class="co"># convenient looping functions</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a><span class="co"># model parameter (currently fixed to these values)</span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>tmix <span class="ot">&lt;-</span> <span class="dv">2000</span> <span class="co"># admixture time</span></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>prop <span class="ot">&lt;-</span> <span class="fl">0.1</span>  <span class="co"># admixture proportion</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>Ne <span class="ot">&lt;-</span> <span class="dv">5000</span>   <span class="co"># Ne of the admixed population</span></span>
+<span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
+<span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"x"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">5000</span>, <span class="at">parent =</span> outgroup)</span>
+<span id="cb47-15"><a href="#cb47-15" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"y"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">5000</span>, <span class="at">parent =</span> outgroup)</span>
+<span id="cb47-16"><a href="#cb47-16" aria-hidden="true" tabindex="-1"></a>mix <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"mix"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> tmix <span class="sc">+</span> <span class="dv">1</span>, <span class="at">parent =</span> x)</span>
+<span id="cb47-17"><a href="#cb47-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-18"><a href="#cb47-18" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> y, <span class="at">to =</span> mix, <span class="at">start =</span> tmix, <span class="at">end =</span> tmix <span class="sc">-</span> <span class="dv">1</span>, <span class="at">proportion =</span> prop)</span>
+<span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, x, y, mix), <span class="at">gene_flow =</span> gf, <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
+<span id="cb47-21"><a href="#cb47-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-22"><a href="#cb47-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">order =</span> <span class="fu">c</span>(<span class="st">"outgroup"</span>, <span class="st">"x"</span>, <span class="st">"mix"</span>, <span class="st">"y"</span>), <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>In our model, the <code>x</code> and <code>y</code> populations merge at a time <code>tmix</code> to form a population <code>mix</code>. Note that due to the way in which <em>slendr</em> currently implements population merges, we first need to program the split of the population “mix” from a parent “x” at time <code>tmix - 1</code>, followed at time <code>tmix</code> (i.e., immediately in the following generation) by admixture from “y” at some defined proportion <code>proportion</code> (a value between 0 and 1). To approximate the idea of a population merge as closely as possible within the constraints of the <em>slendr</em> interface, we program this admixture event so that it ends after a single generation (i.e., it should end at time <code>tmix + 1</code>).</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>tmix <span class="ot">&lt;-</span> <span class="dv">2000</span></span>
-<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>prop <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
-<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>Ne <span class="ot">&lt;-</span> <span class="dv">5000</span></span>
-<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
-<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"x"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">5000</span>, <span class="at">parent =</span> outgroup)</span>
-<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"y"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">5000</span>, <span class="at">parent =</span> outgroup)</span>
-<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>mix <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"mix"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> tmix <span class="sc">+</span> <span class="dv">1</span>, <span class="at">parent =</span> x)</span>
-<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> y, <span class="at">to =</span> mix, <span class="at">start =</span> tmix, <span class="at">end =</span> tmix <span class="sc">-</span> <span class="dv">1</span>, <span class="at">proportion =</span> prop)</span>
-<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, x, y, mix), <span class="at">gene_flow =</span> gf, <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
-<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">order =</span> <span class="fu">c</span>(<span class="st">"outgroup"</span>, <span class="st">"x"</span>, <span class="st">"mix"</span>, <span class="st">"y"</span>), <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">order =</span> <span class="fu">c</span>(<span class="st">"outgroup"</span>, <span class="st">"x"</span>, <span class="st">"mix"</span>, <span class="st">"y"</span>), <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<section id="exercise" class="level4">
-<h4 class="anchored" data-anchor-id="exercise">Exercise</h4>
-<p>Before we start digging into the limitations of the <span class="math inline">\(f_3\)</span> statistic as a metric for admixture detection, let’s first create a self-contained function which generalizes our baseline model across three main parameters of interest: the admixture time <code>tmix</code>, the admixture proportion <code>prop</code>, and the effective population size of the admixed population <code>Ne</code>:</p>
+<p>This is a bit of an annoying peculiarity of <em>slendr</em> that I never got to make easier, sorry about that! Maybe one day.</p>
+</div>
+</div>
+</div>
+<hr>
+<p>Now, we want to establish the limits of statistical power of <span class="math inline">\(f_3\)</span> to detect signs of admixture across all sorts of parameters, given our general model of interest.</p>
+<p>You know what’s coming!</p>
+<p><strong>Generalize this skeleton with a single instance of a parametrized model in the script <code>admixture_simulation.R</code> and wrap it in a function called <code>simulate_admixture()</code>. Your function should accept three arguments this time:</strong></p>
+<ol type="1">
+<li><p><strong><code>tmix</code> specifying the time of admixture</strong>,</p></li>
+<li><p><strong><code>prop</code> specifying the admixture proportion</strong>,</p></li>
+<li><p><strong><code>Ne</code> specifying the <code>N</code> size of the population “mix”.</strong></p></li>
+</ol>
+<p><strong>In your function, program the recording of 20 individuals from populations “x”, “y”, and “mix” at time 0 (i.e., at the end of the simulation). Simulate a 10 Mb of tree sequence with recombination rate <code>1e-8</code> and mutation rate <code>1e-8</code>. Finally, compute the <code>ts_f3()</code> statistic in the appropriate A, B, C configuration, adding the arguments <code>tmix</code>, <code>prop</code>, and <code>Ne</code> in the resulting data frame.</strong></p>
+<p><strong>Your function will return this data frame as its output.</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s our expanded function:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>compute_admix_f3 <span class="ot">&lt;-</span> <span class="cf">function</span>(tmix, prop, Ne) {</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>simulate_admixture <span class="ot">&lt;-</span> <span class="cf">function</span>(tmix, prop, Ne) {</span>
 <span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">10000</span>)</span>
 <span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"x"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">5000</span>, <span class="at">parent =</span> outgroup)</span>
 <span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"y"</span>, <span class="at">N =</span> <span class="dv">5000</span>, <span class="at">time =</span> <span class="dv">5000</span>, <span class="at">parent =</span> outgroup)</span>
@@ -957,166 +1030,173 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="fu">list</span>(outgroup, x, y, mix), <span class="at">gene_flow =</span> gf, <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
 <span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(x, <span class="dv">5</span>), <span class="fu">list</span>(y, <span class="dv">5</span>), <span class="fu">list</span>(mix, <span class="dv">25</span>))</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(x, <span class="dv">20</span>), <span class="fu">list</span>(y, <span class="dv">20</span>), <span class="fu">list</span>(mix, <span class="dv">20</span>))</span>
 <span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">25e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span> <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
 <span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples[<span class="st">"mix"</span>], <span class="at">B =</span> samples[<span class="st">"x"</span>], <span class="at">C =</span> samples[<span class="st">"y"</span>]) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">tmix =</span> tmix, <span class="at">prop =</span> prop, <span class="at">Ne =</span> Ne)</span>
-<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_f3</span>(ts, <span class="at">A =</span> samples[<span class="st">"mix"</span>], <span class="at">B =</span> samples[<span class="st">"x"</span>], <span class="at">C =</span> samples[<span class="st">"y"</span>]) <span class="sc">%&gt;%</span></span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">tmix =</span> tmix, <span class="at">prop =</span> prop, <span class="at">Ne =</span> Ne)</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Let’s test it on couple of parameter combinations:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_admix_f3</span>(<span class="at">tmix =</span> <span class="dv">2000</span>, <span class="at">prop =</span> <span class="fl">0.2</span>, <span class="at">Ne =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 7
-  A     B     C              f3  tmix  prop    Ne
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     0.000000752  2000   0.2 10000</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_admix_f3</span>(<span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.2</span>, <span class="at">Ne =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1 × 7
-  A     B     C              f3  tmix  prop    Ne
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     -0.00000658  1000   0.2 10000</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">compute_admix_f3</span>(<span class="at">tmix =</span> <span class="dv">1</span>, <span class="at">prop =</span> <span class="fl">0.2</span>, <span class="at">Ne =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_admixture</span>(<span class="at">tmix =</span> <span class="dv">2000</span>, <span class="at">prop =</span> <span class="fl">0.2</span>, <span class="at">Ne =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 7
   A     B     C             f3  tmix  prop    Ne
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     -0.0000109     1   0.2 10000</code></pre>
+1 mix   x     y     0.00000131  2000   0.2 10000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_admixture</span>(<span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.1</span>, <span class="at">Ne =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 7
+  A     B     C              f3  tmix  prop    Ne
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 mix   x     y     -0.00000280  1000   0.1 10000</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_admixture</span>(<span class="at">tmix =</span> <span class="dv">1</span>,    <span class="at">prop =</span> <span class="dv">0</span>,   <span class="at">Ne =</span> <span class="dv">3000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 7
+  A     B     C              f3  tmix  prop    Ne
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 mix   x     y     0.000000569     1     0  3000</code></pre>
 </div>
 </div>
+<p>Having tested the function on a couple of individual simulations, let’s run it along the range of potential <code>tsplit</code> values:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>f3_tmix1 <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">1500</span>, <span class="at">by =</span> <span class="dv">100</span>), compute_admix_f3, <span class="at">prop =</span> <span class="fl">0.2</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>tsplit_grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1</span>, <span class="dv">1500</span>, <span class="at">by =</span> <span class="dv">100</span>)</span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>f3_tsplit <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(tsplit_grid, simulate_admixture, <span class="at">prop =</span> <span class="fl">0.2</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>And we visualize the results (<span class="math inline">\(f_3\)</span> as a function of <code>tsplit</code>):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_tmix1, <span class="fu">aes</span>(tmix, f3)) <span class="sc">+</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_tsplit, <span class="fu">aes</span>(tmix, f3)) <span class="sc">+</span></span>
 <span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1500</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1500</span>)) <span class="sc">+</span></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"f3(x, y; mix) as a function of admixture time (proportion = 20%, Ne = 5000)"</span>,</span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"[f3 = 0 is interpreted as no evidence of admixture]"</span>,</span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Time of admixture [generations B.P.]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>From the trend presented by the trajectory of expected <span class="math inline">\(f_3\)</span> values as a function of the admixture time, we can see that the statistic appears to loose power to detect admixture around 1000 generations “before present” (BP).</p>
-<p><strong>Under which conditions would the <span class="math inline">\(f_3\)</span> statistic gain more power?</strong></p>
-</section>
-<section id="exercise-1" class="level4">
-<h4 class="anchored" data-anchor-id="exercise-1">Exercise</h4>
-<p>Fix the <code>tadmix</code> parameter to 1000 generations B.P. (a value at which our previous simulation suggests <span class="math inline">\(f_3\)</span> starts losing statistical power) and <code>Ne</code> at 5000, and then <strong>evaluate a range of admixture proportions <code>prop</code> between 0% and 50% gene flow. Does <span class="math inline">\(f_3\)</span> pick up the admixture signal for any of these admixture proportions? What does it mean for the ability of <span class="math inline">\(f_3\)</span> to detect gene flow in our models in general?</strong></p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>f3_prop <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="at">by =</span> <span class="fl">0.025</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+</div>
+</div>
+<hr>
+<p>From the trend presented by the trajectory of expected <span class="math inline">\(f_3\)</span> values as a function of the admixture time, we can see that the statistic appears to loose power to detect admixture around 1000 generations “before present” (BP).</p>
+<p><strong>Why is that? Under which conditions would the <span class="math inline">\(f_3\)</span> statistic gain more power? Conversely, which factor could make a true scenario of admixture lead to a non-significant <span class="math inline">\(f_3\)</span> value?</strong></p>
+<p><strong>To answer these questions, fix the <code>tadmix</code> parameter to 1000 generations B.P. and <code>Ne</code> at 5000, and then run simulations across a range of admixture proportions <code>prop</code> between 0% and 50% gene flow. Does <span class="math inline">\(f_3\)</span> pick up the admixture signal for any of these admixture proportions? What does it mean for the ability of <span class="math inline">\(f_3\)</span> to detect gene flow in our models in general?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Run the simulation for admixture proportions ranging between 0% and 50%, fixing the admixture time to the value of 1000 generations ago (i.e., a time point at which the <span class="math inline">\(f_3\)</span> statistic stops giving us a negative value, i.e.&nbsp;it becomes statistically non-significant):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>f3_prop <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="at">by =</span> <span class="fl">0.025</span>), simulate_admixture, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>When we visualize the results, we can see that — perhaps not unexpectedly — this loss of statistical power can be counterbalanced by increasing the admixture proportion:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_prop, <span class="fu">aes</span>(prop, f3)) <span class="sc">+</span></span>
 <span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"f3(x, y; mix) as a function of admixture proportion (tsplit = 1000, Ne = 5000)"</span>,</span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"[f3 = 0 is interpreted as no evidence of admixture]"</span>,</span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Admixture proportion [0: no admixture, 1: 100% admixture]"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-</section>
-<section id="exercise-2" class="level4">
-<h4 class="anchored" data-anchor-id="exercise-2">Exercise</h4>
-<p><strong>Similarly to how you investigated the detection power of <span class="math inline">\(f_3\)</span> as a function of admixture proportion for a given value of <code>tmix = 1000</code> in the previous exercise, repeat this analysis, but now changing the <code>Ne</code> of the mixing population and leaving the <code>prop</code> parameter fixed at <code>prop = 0.2</code>. What do you conclude based on this analysis? Does <code>Ne</code> have an impact on the <span class="math inline">\(f_3\)</span> admixture detection? If it does, why? (Look at equation XYZ.)</strong></p>
+</div>
+</div>
+</div>
+<hr>
+<p><strong>Similarly to how you investigated the detection power of <span class="math inline">\(f_3\)</span> as a function of admixture proportion for a given value of <code>tmix = 1000</code> in the previous exercise, repeat this analysis, but now loop over a range of <code>Ne</code> values of the mixing population, leaving the <code>prop</code> parameter fixed at <code>prop = 0.2</code>. What do you conclude based on this analysis? Does <code>Ne</code> have an impact on the <span class="math inline">\(f_3\)</span> admixture detection? If it does, why?</strong></p>
+<p><strong>As you’re interpreting your results, look at the related discussion surrounding equation 22 in <a href="https://academic.oup.com/genetics/article/202/4/1485/5930214">this paper</a>, and compare your figure to Figure 5B of the same paper!</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>f3_Ne <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>)</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>f3_Ne <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, simulate_admixture, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_Ne, <span class="fu">aes</span>(Ne, f3)) <span class="sc">+</span></span>
 <span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">20000</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">20000</span>)) <span class="sc">+</span></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"f3(x, y; mix) as a function of Ne (tsplit = 1000, Ne = 5000)"</span>,</span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"[f3 = 0 is interpreted as no evidence of admixture]"</span>,</span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Effective population size of the 'mix' population"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="more-statistics_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>In conclusion, we can confirm that the amount of drift (represented by the <code>Ne</code> parameter) really is what determines whether or not can <span class="math inline">\(f_3\)</span> detect admixture for a given model (represented by a fixed <code>tmix</code> time and <code>prop</code> admixture proportion). In fact, once we reach a certain size of the admixed population, the <span class="math inline">\(f_3\)</span> value reaches a stable level below zero.</p>
-</section>
-<section id="exercise-extra-challenge" class="level4">
-<h4 class="anchored" data-anchor-id="exercise-extra-challenge">Exercise (extra challenge)</h4>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a>f3_Ne <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
-<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.1</span>),</span>
-<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.2</span>),</span>
-<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.3</span>),</span>
-<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.4</span>),</span>
-<span id="cb65-6"><a href="#cb65-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(<span class="fu">seq</span>(<span class="dv">1000</span>, <span class="dv">20000</span>, <span class="at">by =</span> <span class="dv">1000</span>), compute_admix_f3, <span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.5</span>)</span>
-<span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(f3_Ne, <span class="fu">aes</span>(Ne, f3, <span class="at">color =</span> <span class="fu">factor</span>(prop), <span class="at">group =</span> <span class="fu">factor</span>(prop))) <span class="sc">+</span></span>
-<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">20000</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="more-statistics_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
 </div>
 </div>
 </div>
-<p>By comparing the relative position of these <span class="math inline">\(f_3\)</span> curves with respect to the baseline null value of zero, we can see that increasing <code>Ne</code> of the admixed population (and, consequently, decreasing the amount of drift in that population post admixture) increases the statistical power of <span class="math inline">\(f_3\)</span> to detect admixture even as the admixture proportion <code>prop</code> decreases.</p>
-</section>
-</section>
-<section id="exercise-3" class="level2">
-<h2 class="anchored" data-anchor-id="exercise-3">Exercise</h2>
-<ul>
-<li>amount of SNPs and amount of sequence vs Zscore &amp; CI</li>
-</ul>
-</section>
-<section id="exercise-controlling-stochasticity" class="level2">
-<h2 class="anchored" data-anchor-id="exercise-controlling-stochasticity">Exercise: controlling stochasticity</h2>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_replicate</span>(</span>
-<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>  <span class="dv">10</span>,</span>
-<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>  {</span>
-<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>    ts <span class="ot">&lt;-</span></span>
-<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb68-7"><a href="#cb68-7" aria-hidden="true" tabindex="-1"></a>    pi_df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">ts_names</span>(ts))</span>
-<span id="cb68-8"><a href="#cb68-8" aria-hidden="true" tabindex="-1"></a>    pi_df<span class="sc">$</span>Ne <span class="ot">&lt;-</span> pi_df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
-<span id="cb68-9"><a href="#cb68-9" aria-hidden="true" tabindex="-1"></a>    pi_df</span>
-<span id="cb68-10"><a href="#cb68-10" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb68-11"><a href="#cb68-11" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<!-- ## Exercise: controlling stochasticity -->
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- ts_replicate( -->
+<!--   10, -->
+<!--   { -->
+<!--     ts <- -->
+<!--       msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>% -->
+<!--       ts_mutate(mutation_rate = 1e-8) -->
+<!--     pi_df <- ts_diversity(ts, ts_names(ts)) -->
+<!--     pi_df$Ne <- pi_df$diversity / (4 * 1e-8) -->
+<!--     pi_df -->
+<!--   } -->
+<!-- ) -->
+<!-- ``` -->
 
 
 </section>
