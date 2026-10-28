@@ -16,7 +16,9 @@ obtained by the function `ts_names()` in a very straightforward way.
 
 Whenever we work with "between-group statistics" (i.e., statistics based on
 comparing genomic variation between different groupings of individuals), we need
-to be aware of some of the ways of how R works with lists and vectors.
+to be aware of some of the ways of how R works with lists and vectors. This is
+not difficult, but it is something that doesn't come up in daily work in R in a
+normal data analysis setting.
 
 Let's first set up a small model to demonstrate this.
 
@@ -50,7 +52,8 @@ schedule <- schedule_recording(model, times = 0, list("each", 10))
 
 plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE, schedule = schedule)
 
-ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+ts <-
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 ```
 
@@ -60,15 +63,14 @@ ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule
 
 Now let's work on a couple of basic vector- and list-based operations in R,
 which we will be using all the time. If you need a recap, you can scroll through
-the introductory "R bootcamp" chapter, particularly sections and exercises
-relevant for subsetting and indexing into vectors and lists in R.
+the introductory [R bootcamp](r-bootcamp.html) chapter, particularly sections
+and exercises relevant for subsetting and indexing into vectors and lists in R.
 
 **You're already familiar with the calling the function `ts_names()` as
-`ts_names(ts)`. What's different when you run it as `ts_names(ts, split =
-TRUE)`? Add this command to your script, saving its result as `samples`.**
-
-**What is the type of the data stored in the `samples` variable? What does this
-information tell us?**
+`ts_names(ts)`. Add this command to your script, saving its result as `samples`.
+What is the type of the data stored in the `samples` variable? What does this
+information tell us and how is it different from running simply
+`ts_names(ts)`?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -127,7 +129,7 @@ samples["X"]
 
 ---
 
-Why does this matter?
+OK, so why does this matter?
 
 Remember how in the previous chapter, you sometimes needed to indicate a named
 sample of some individuals in a slightly convoluted way in order to compute a
@@ -138,10 +140,10 @@ list(group_name = c("X_1", "X_2", "X_3"))
 ```
 
 Doing so for complex computations is very annoying. But also---notice how the
-chunk above produces the exact same format as `samples["X"]` above. This is why
-I implemented the variant `ts_names(ts, split = TRUE)` as a shortcut. As you'll
-se below, this makes it possible to use the `samples` variable to instruct
-_slendr_ to perform computation very efficiently.
+chunk above produces the exact same format as `samples["X"]` earlier. This is
+why I implemented the variant `ts_names(ts, split = TRUE)` in _slendr_, as a
+shortcut. As you'll se below, this makes it possible to use the `samples`
+variable to instruct _slendr_ to perform computation very efficiently.
 
 
 
@@ -162,9 +164,9 @@ A).$
 
 ---
 
-**Create a new script `split_simulation.R` and paste your three-population simulation
-code in it. We'll be continuing our work in this new script, starting with two
-modifications:**
+**Create a new script `split_simulation.R` and paste your three-population
+simulation code from `slendr-multipop.Ri` n it. We'll be continuing our work in
+this new script, starting with two modifications:**
 
 1. **First, wrap the code in a function called `simulate_split()`. This
 function should accept a single argument `tsplit` which will parametrize at
@@ -172,11 +174,12 @@ which point should "X" and "Y" populations split from the "outgroup" lineage.**
 
 2. **Then, compute the outgroup $f_3$ statistic using the function `ts_f3()`,
 setting the `B =` argument to the "X" individuals, `C =` argument to the "Y"
-individuals, and the `C =` argument to the "outgroup" individuals.**
+individuals, and the `C =` argument to the "outgroup" individuals (remember to
+use the `samples` variable produced by the `ts_names()` shortcut above).**
 
-3. **The function should return the data frame produced by the `ts_f3()` function,
-with a new column named `tsplit` containing the value given to the overall function
-as its argument.**
+3. **The function should return a data frame produced by the `ts_f3()` function,
+with a new column named `tsplit` containing the value of this function
+argument.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -212,13 +215,13 @@ simulate_split <- function(tsplit) {
 
 ---
 
-**Test your function by calling it on a few split times in the R console (like
-1000, 2000, or 5000 generations). Then, use your well-known function `map_dfr()`
-from the _purrr_ package to compute it on a grid of split times between 1 and
-10000 generations in steps of every 1000 generations. Visualize the statistical
-expectation of the $f_3$ statistic in a scatterplot as a function of the split
-time. Add all this code in your script `outgroup_f3.R` after your function
-definition.**
+**Test your function `simulate_split()` by calling it on a few split times in
+the R console (like 1000, 2000, or 5000 generations). Then, use your well-known
+function `map_dfr()` from the _purrr_ package to compute it on a grid of split
+times between 1 and 10000 generations in steps of every 1000 generations.
+Visualize the statistical expectation of the $f_3$ statistic in a scatterplot as
+a function of the split time. Add all this code in your script
+`split_simulation.R` after your function definition.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -261,15 +264,15 @@ interesting and relevant research question.
 
 ## Exercise: Statistical power of $F_{ST}$ vs outgroup $f_3$
 
-Let's look at the equations behind $F_{ST}$ and $f_3$ statistics as measures of
-differentiation between two populations:
-
-Based on these equations, would you expect one of them to be more robust to
-$N_e$ differences between those populations? Recall that $N_e$ determines the
-amount of genetic drift (and, therefore, the rate of the loss) of genomic
-variation in a population. In other words, if you were interested in measuring
-how far in the past the populations began differentiating, would both of them
-give you a reliable answer, regardless of the $N_e$ of those populations?
+Another statistic which is very frequently used as a measure of population
+differentiation is [$F_{ST}](https://en.wikipedia.org/wiki/Fixation_index).
+Let's say we want to understand, which of the two ($f_3$ or $F_{ST}) is more
+robust to $N_e$ differences between the two populations under study. Recall that
+$N_e$ determines the amount of genetic drift (and, therefore, the rate of the
+loss) of genomic variation in a population. In other words, if you were
+interested in measuring how far in the past the populations began
+differentiating, would both of them give you a reliable answer, regardless of
+the $N_e$ of those populations?
 
 Both $F_{ST}$ and $f_3$ are routinely used as measures of population
 differentiation---can we use them equivalently? Does one have potentially more
@@ -278,7 +281,7 @@ statistical power than the other?
 ---
 
 **We want to evaluate the impact of $N_e$, so let's modify our function
-`simulate_split()` a little bit first.**
+`simulate_split()` a little bit first:**
 
 1. **Right now the function accepts a single argument `tsplit`. Add a second
 argument to this function called `Ne`, then modify the two lines of code
@@ -337,27 +340,32 @@ simulate_split(tsplit = 3000, Ne = 5000)
 
 ---
 
-**Let's run a new batch of parameter grid simulations, this time fixing the
-parameter `tsplit = 3000`, and only simulating the model for the values of the
-$N_e$ parameter indicated below. Note that you can use the function `map_dfr()`
-to iterate over a given vector of values intended for only one of its function
-arguments (here `Ne`) while also explicitly setting its other argument(s)
-to a single fixed value---this is useful in cases in which we want to investigate
-only one parameter of interest while ignoring the others.**
+**You're already familiar with the basics of working with the iteration looping
+function `map_dfr()`. Use this function to run a new batch of parameter grid
+simulations, this time fixing the parameter `tsplit = 3000`, and only simulating
+the model for the values of the $N_e$ parameter indicated below.**
+
+**Hint:** You can use the function `map_dfr()` to iterate over a given vector of
+values intended for only one of its function arguments (here `Ne`) while also
+explicitly setting its other argument(s) to a single fixed value---this is
+useful in cases in which we want to investigate only one parameter of interest
+while ignoring the others.**
 
 **Because this might seem a bit complicated, you can use this code to run the
 new grid simulations using your modified function `simulate_split()`.**
-
-**When you're done, visualize the expectecd values of `f3` and `Fst` summary
-statistics as functions of $N_e$and, therefore, their robustness to genetic
-drift---which one of them will be more reliable?**
 
 ```{r}
 Ne_grid <- c(100, seq(from = 1000, to = 10000, by = 1000))
 Ne_grid
 
+# run `simulate_split()` for each of the `Ne_grid` values, and set the second
+# argument of the function to a fixed value `tsplit = 3000`
 df <- map_dfr(Ne_grid, simulate_split, tsplit = 3000)
 ```
+
+**When you're done, visualize the expected values of `f3` and `Fst` summary
+statistics as functions of $N_e$and, therefore, their robustness to genetic
+drift---which one of them will be more reliable?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -396,23 +404,28 @@ library(purrr)
 # this is the second version of the function simulate_split() which accepts
 # both tsplit and Ne as function arguments
 simulate_split <- function(tsplit, Ne) {
+  # set up the three-population demographic model
   outgroup <- population("outgroup", N = 1000, time = 10000)
   X <- population("X", N = Ne, time = tsplit, parent = outgroup)
   Y <- population("Y", N = Ne, time = tsplit, parent = outgroup)
-  
   model <- compile_model(list(outgroup, X, Y), generation_time = 1)
   
+  # simulate a tree sequence which will record a defined set of 25 individuals
+  # from each population at the end of the simulation (i.e., "present-day")
   schedule <- schedule_recording(model, times = 0, list("each", 25))
   
   ts <-
     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
+  # extract the list of names of individuals in each population for convenience
   samples <- ts_names(ts, split = TRUE)
   
+  # compute both summary statistics and extract their values as single numbers
   value_fst <- ts_fst(ts, sample_sets = samples[c("X", "Y")])$Fst
   value_f3 <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])$f3
 
+  # construct a data frame with all the necessary information
   df <- data.frame(statistic = c("Fst", "f3"), value = c(value_fst, value_f3))
   df$tsplit <- tsplit
   df$Ne <- Ne
