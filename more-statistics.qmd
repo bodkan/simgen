@@ -16,27 +16,28 @@ obtained by the function `ts_names()` in a very straightforward way.
 
 Whenever we work with "between-group statistics" (i.e., statistics based on
 comparing genomic variation between different groupings of individuals), we need
-to be aware of some of the ways of how R works with lists and vectors. This is
-not difficult, but it is something that doesn't come up in daily work in R in a
-normal data analysis setting.
+to be aware of a couple of things with regards to how R handles nested lists of
+vectors.
 
 Let's first set up a small model to demonstrate this.
 
 ---
 
-**Start by creating a new R script called `slendr-multipop.R` and program the
-following model in it, simulating a tree sequence object `ts` (sequence length
-10Mb, recombination rate `1e-8`, mutation rate `1e-8`). In this tree sequence,
-schedule the recording of ten individuals from each of the three populations at
-time 0 (i.e., the "present-day").**
+**Start by creating a new R script called `split_simulation.R` and program the
+following model in it. Simulate a tree sequence object `ts` (sequence length
+10Mb, recombination rate `1e-8`, mutation rate `1e-8`) from this model,
+scheduling the recording of ten individuals from each of the three populations
+at time 0 (i.e., the "present-day").**
 
-**Hint:** Note that unlike our previous toy examples, this model features
-multiple populations, so you will need to program population splits. Remember
-that you can specify that a population should split from some parent lineage by
-using the `population(..., parent = <parent population object>)` format.
+**Hint:** Unlike our previous toy examples, this model features multiple
+populations, so you will need to program population splits. Remember that you
+can specify that a population should split from some parent lineage by using the
+`population(..., parent = <parent population>)` format.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
+
+Here's what's in my `split_simulation.R` script:
 
 ```{r}
 library(slendr)
@@ -61,14 +62,15 @@ ts <-
 
 ---
 
-Now let's work on a couple of basic vector- and list-based operations in R,
-which we will be using all the time. If you need a recap, you can scroll through
-the introductory [R bootcamp](r-bootcamp.html) chapter, particularly sections
-and exercises relevant for subsetting and indexing into vectors and lists in R.
+Let's work on a couple of basic vector- and list-based operations in R, which we
+will be using all the time (you can refresh your memory on this topic by
+scrolling through the introductory [R bootcamp](r-bootcamp.html) chapter,
+particularly sections about subsetting and indexing into vectors and lists.
 
 **You're already familiar with the calling the function `ts_names()` as
-`ts_names(ts)`. Add this command to your script, saving its result as `samples`.
-What is the type of the data stored in the `samples` variable? What does this
+`ts_names(ts)` and know that it produces a plain vector of individual names.
+Now, add the line `samples <- ts_names(ts, split = TRUE)` to your script. What
+is the type of the data stored in the `samples` variable? What does this
 information tell us and how is it different from running simply
 `ts_names(ts)`?**
 
@@ -95,18 +97,16 @@ class(samples)
 
 ---
 
-**Using R list manipulation, how do you access the names of individuals in the
-population X? What's the difference between calling `samples$X`,
-`samples[["X"]]`, and `samples["X"]`?**
-
-(This might seem extremely trivial and boring, but is very important for R
-programming in general and for correct computation of population genetic
-statistics with _slendr_. So bear with me please!)
+**Using operations for manipulation of R lists, how do you access the names of
+individuals in the population X? Specifically, what's the difference between
+calling `samples$X`, `samples[["X"]]`, and `samples["X"]`? Try to answer first
+without runnig these commands, then run them in the R console to verify your
+intuition.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-The first extracts a separate vector of X individuals from the list:
+The first command extracts a "standalone" vector of X individuals from the list:
 
 ```{r}
 samples$X
@@ -118,8 +118,8 @@ The same goes for this variant:
 samples[["X"]]
 ```
 
-The third is very different. It looks the same, but it's actually a list with a
-single element (the vector of names)!
+The third command is very different. It looks the same, superficially, but it's
+actually a list with a single element (the vector of names)!
 
 ```{r}
 samples["X"]
@@ -129,21 +129,27 @@ samples["X"]
 
 ---
 
-OK, so why does this matter?
+Why does any of this matter?
 
-Remember how in the previous chapter, you sometimes needed to indicate a named
-sample of some individuals in a slightly convoluted way in order to compute a
-statistic on all of them, such as:
+Remember how in the previous chapter, you needed to specify a subset of
+individuals in a slightly convoluted way in order to compute a statistic on
+them, such as:
 
 ```{r}
 list(group_name = c("X_1", "X_2", "X_3"))
 ```
 
-Doing so for complex computations is very annoying. But also---notice how the
-chunk above produces the exact same format as `samples["X"]` earlier. This is
-why I implemented the variant `ts_names(ts, split = TRUE)` in _slendr_, as a
-shortcut. As you'll se below, this makes it possible to use the `samples`
-variable to instruct _slendr_ to perform computation very efficiently.
+Doing so for complex computations is very annoying. But also---notice how this
+chunk produces the same format of data as this:
+
+```{r}
+samples["X"]
+```
+
+This is why I implemented the variant `ts_names(ts, split = TRUE)` in _slendr_,
+as a shortcut for not having to deal with named lists of vectors. This makes it
+possible to use the `samples` variable to instruct _slendr_ to perform
+computation very efficiently.
 
 
 
@@ -152,34 +158,48 @@ variable to instruct _slendr_ to perform computation very efficiently.
 
 ## Exercise: "Outgroup" $f_3$ statistic
 
-::: aside
+The famous $f_3$ statistic [formally established by Nick Patterson and David
+Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193) in 2008.
+This statistic has two formulations: as a measure of shared drift between two
+populations (the "outgroup" formulation) and as an admixture test (something
+we'll look at later).
 
-**Note:** The $f_3$ statistic is traditionally expressed as $f_3(A, B; C)$,
-where C represents the outgroup. Unfortunately, in _tskit_ the outgroup is
-named A, with B and C being the pair of samples from which we trace the length
-of branches towards the outgroup, so the statistic is interpreted as $f_3(B, C;
-A).$
+As the name implies, $f_3$ statistic involves the specification of samples from
+three different lineages (usually populations) called A, B, and C, making it a
+good starting example of how to compute multi-population statistics.
 
-:::
+Let's develop a simulation-based model which will allow us to explore some
+practically relevant features of this important summary statistic.
 
 ---
 
-**Create a new script `split_simulation.R` and paste your three-population
-simulation code from `slendr-multipop.Ri` n it. We'll be continuing our work in
-this new script, starting with two modifications:**
+**Let's start by doing a couple of modifications to our script
+`split_simulation.R`:**
 
-1. **First, wrap the code in a function called `simulate_split()`. This
-function should accept a single argument `tsplit` which will parametrize at
-which point should "X" and "Y" populations split from the "outgroup" lineage.**
+1. **First, wrap the code in a function called `simulate_split()` and update it
+so that this function accepts a single argument `tsplit` and uses it to specify
+the point at which point will the "X" and "Y" populations split from the
+"outgroup" lineage.**
 
-2. **Then, compute the outgroup $f_3$ statistic using the function `ts_f3()`,
-setting the `B =` argument to the "X" individuals, `C =` argument to the "Y"
-individuals, and the `C =` argument to the "outgroup" individuals (remember to
-use the `samples` variable produced by the `ts_names()` shortcut above).**
+2. **Then, add the computation of the outgroup $f_3$ statistic, using the
+function `ts_f3()` setting the "X" individuals as the `B =` argument, "Y"
+individuals as the `C =` argument, and the `A =` argument to the "outgroup"
+individuals (remember to use the `samples` variable produced by the `ts_names()`
+shortcut above to do this).**
 
-3. **The function should return a data frame produced by the `ts_f3()` function,
-with a new column named `tsplit` containing the value of this function
+3. **Finally, the function should return a data frame produced by the `ts_f3()`
+function, with a new column named `tsplit` containing the value of this function
 argument.**
+
+::: aside
+
+**Note:** The $f_3$ statistic is traditionally expressed as $f_3(A, B; C)$,
+where C represents the outgroup. Unfortunately, in _tskit_ the outgroup is named
+A, with B and C being the pair of samples from which we trace the length of
+branches towards the outgroup, so the statistic is interpreted as $f_3(B, C;
+A).$
+
+:::
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -199,7 +219,8 @@ simulate_split <- function(tsplit) {
   
   schedule <- schedule_recording(model, times = 0, list("each", 10))
   
-  ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
   samples <- ts_names(ts, split = TRUE)
@@ -216,11 +237,11 @@ simulate_split <- function(tsplit) {
 ---
 
 **Test your function `simulate_split()` by calling it on a few split times in
-the R console (like 1000, 2000, or 5000 generations). Then, use your well-known
-function `map_dfr()` from the _purrr_ package to compute it on a grid of split
-times between 1 and 10000 generations in steps of every 1000 generations.
-Visualize the statistical expectation of the $f_3$ statistic in a scatterplot as
-a function of the split time. Add all this code in your script
+the R console (like 1000, 2000, or 5000 generations). Then, use `map_dfr()` from
+the _purrr_ package to run simulations of split times between 1 and 10000
+generations in steps of every 1000 generations (see `?seq` for a reminder on how
+to do this). Visualize the statistical expectation of the $f_3$ statistic in a
+scatterplot as a function of the split time. Add all this code in your script
 `split_simulation.R` after your function definition.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -241,9 +262,13 @@ library(purrr)
 f3_outgroup <- map_dfr(seq(1, 10000, by = 1000), simulate_split)
 ```
 
+We can verify that we did, indeed, get a tidy table of the expected $f_3$ values for a range of possible split times:
+
 ```{r}
-head(f3_outgroup)
+f3_outgroup
 ```
+
+And we can also visualize our results:
 
 ```{r}
 library(ggplot2)
@@ -255,18 +280,53 @@ ggplot(f3_outgroup, aes(tsplit, f3)) +
   coord_cartesian(xlim = c(0, 10000))
 ```
 
+We can see that, as expected, the $f_3$ statistic gives a nearly zero for the
+simulation of an extremely recent split of X and Y populations from the outgroup
+lineage---this is consistent with $f_3$ measuring the length of the shared
+branch of X and Y towards the outgroup sample which, in this case, is almost
+nonexistent, only 1 generation long. To demonstrate by visualizing such a model (which, necessarily, looks a bit silly):
+
+```{r}
+#| echo: false
+outgroup <- population("outgroup", N = 1000, time = 10000)
+X <- population("X", N = 1000, time = 1, parent = outgroup)
+Y <- population("Y", N = 1000, time = 1, parent = outgroup)
+
+model <- compile_model(list(outgroup, X, Y), generation_time = 1)
+
+schedule <- schedule_recording(model, times = 0, list("each", 10))
+
+plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE, schedule = schedule)
+```
+
+On the other hand, the older the split time from the outgroup, the longer the
+shared branch is. Again, to demonstrate the "shared branch length" graphically:
+
+```{r}
+#| echo: false
+outgroup <- population("outgroup", N = 1000, time = 10000)
+X <- population("X", N = 1000, time = 9001, parent = outgroup)
+Y <- population("Y", N = 1000, time = 9001, parent = outgroup)
+
+model <- compile_model(list(outgroup, X, Y), generation_time = 1)
+
+schedule <- schedule_recording(model, times = 0, list("each", 10))
+
+plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE, schedule = schedule)
+```
+
 :::
 
 ---
 
-With this initial setup, let's delve into using this pipeline to answer an
-interesting and relevant research question.
+With this initial setup out of the way, let's delve into using our small
+simulation pipeline to answer a couple of practically relevant questions.
 
 ## Exercise: Statistical power of $F_{ST}$ vs outgroup $f_3$
 
 Another statistic which is very frequently used as a measure of population
-differentiation is [$F_{ST}](https://en.wikipedia.org/wiki/Fixation_index).
-Let's say we want to understand, which of the two ($f_3$ or $F_{ST}) is more
+differentiation is [$F_{ST}$](https://en.wikipedia.org/wiki/Fixation_index).
+Let's say we want to understand, which of the two ($f_3$ or $F_{ST}$) is more
 robust to $N_e$ differences between the two populations under study. Recall that
 $N_e$ determines the amount of genetic drift (and, therefore, the rate of the
 loss) of genomic variation in a population. In other words, if you were
@@ -280,22 +340,22 @@ statistical power than the other?
 
 ---
 
-**We want to evaluate the impact of $N_e$, so let's modify our function
-`simulate_split()` a little bit first:**
+We want to evaluate the impact of $N_e$, so let's modify our function
+`simulate_split()` a little bit first:
 
-1. **Right now the function accepts a single argument `tsplit`. Add a second
+1. Right now the function accepts a single argument `tsplit`. **Add a second
 argument to this function called `Ne`, then modify the two lines of code
 indicating splits of "X" and "Y" population and change the fixed values of 1000
 to use the new flexible parameters `Ne`.**
 
 2. **Modify the function so that it returns in the resulting data frame not only
 the $f_3$ value (computed by `ts_f3()`) but also the $F_{ST}$ value (computed by
-`ts_fst()`). Look up the help for `?ts_fst` to see how to use it (it's very
+`ts_fst()`).** Look up the help for `?ts_fst` to see how to use it (it's very
 similar to using the `ts_f3()` function).**
 
-3. **In the original function, you added a `tsplit` column to the data frame, to
-be able to know which `f3` value corresponds to which `tsplit` parameter. In the
-new function, add another column `Ne` serving the same purpose.**
+3. **The data frame returned by the function should include both the `tsplit`
+column (containing the value of the `tsplit` argument) as well as the column
+`Ne` (containing the value of the `Ne` argument).**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -340,26 +400,15 @@ simulate_split(tsplit = 3000, Ne = 5000)
 
 ---
 
-**You're already familiar with the basics of working with the iteration looping
-function `map_dfr()`. Use this function to run a new batch of parameter grid
-simulations, this time fixing the parameter `tsplit = 3000`, and only simulating
-the model for the values of the $N_e$ parameter indicated below.**
-
-**Hint:** You can use the function `map_dfr()` to iterate over a given vector of
-values intended for only one of its function arguments (here `Ne`) while also
-explicitly setting its other argument(s) to a single fixed value---this is
-useful in cases in which we want to investigate only one parameter of interest
-while ignoring the others.**
-
-**Because this might seem a bit complicated, you can use this code to run the
-new grid simulations using your modified function `simulate_split()`.**
+**Run a new batch of parameter grid simulations using the looping function
+`map_dfr()`, this time fixing `tsplit = 3000` and simulating the model for the
+values of the $N_e$ parameter indicated below using the following code:**
 
 ```{r}
+# define values of the Ne parameter grid
 Ne_grid <- c(100, seq(from = 1000, to = 10000, by = 1000))
-Ne_grid
 
-# run `simulate_split()` for each of the `Ne_grid` values, and set the second
-# argument of the function to a fixed value `tsplit = 3000`
+# run simulations for each given Ne value, but fix the tsplit value
 df <- map_dfr(Ne_grid, simulate_split, tsplit = 3000)
 ```
 
@@ -469,38 +518,42 @@ ggplot(f3_vs_fst, aes(Ne, value, color = statistic)) +
 ## Exercise: "Admixture" $f_3$
 
 Now let's explore the application of the $f_3$ statistic in its other common
-use, which is an admixture test. To do this, you will need to expand our
-baseline population model a little bit.
+use, which is an admixture test. Our primary interest in this exercise will be
+to investigate the limits of $f_3$ to detect evidence of admixture---in particular,
+if we see a "non-significant" $f_3$ statistic, which factors could make this
+test being a false negative?
 
-In our model, we still keep the population `outgroup`, but the `X` and `Y`
-population now merge at a time `tmix` to form a population `mix`. Note that due
-to the way in which _slendr_ currently implements population merges, you will
-first need to program the split of `mix` from  `X` at time `tmix - 1`, followed
-at time `tmix` (i.e., immediately in the following generation) by admixture from
-`U` at some defined proportion `proportion`. To approximate the idea of a
-population merge as closely as possible within the constraints of the _slendr_
-interface, program this admixture event so that it ends after a single
-generation (i.e., it should end at time `tmix + 1`).
+To do this, we will need to expand our baseline population model a little bit.
+
+---
+
+**Create a new script, this time calling it `admixture_simulation.R`. Paste the
+following skeleton of a model into this script, read it and try to decipher what
+kind of model does it program (it's obvious from the text above, but still, do
+this as a code-reading practice). In particular, pay attention to how the
+admixture is programmed. Run the code and take a look at the plot visualization
+produced.**
 
 ```{r}
+#| output: false
 library(slendr)
 init_env()
 
 library(dplyr)   # manipulating tabular data
 library(ggplot2) # data visualization
 library(purrr)   # convenient looping functions
-```
 
-```{r}
-tmix <- 2000
-prop <- 0.1
-Ne <- 5000
+
+tmix <- 2000 # time of admixture
+prop <- 0.1  # proportion of admixture
+Ne <- 5000   # Ne of all lineages involved in the admixture
 
 outgroup <- population("outgroup", N = 5000, time = 10000)
 x <- population("x", N = 5000, time = 5000, parent = outgroup)
 y <- population("y", N = 5000, time = 5000, parent = outgroup)
+# program a population "mix" formed by a given proportion of admixture
+# between the populations x and y
 mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
-
 gf <- gene_flow(from = y, to = mix, start = tmix, end = tmix - 1, proportion = prop)
 
 model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
@@ -508,16 +561,59 @@ model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_tim
 plot_model(model, order = c("outgroup", "x", "mix", "y"), proportions = TRUE)
 ```
 
-#### Exercise
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
 
-Before we start digging into the limitations of the $f_3$ statistic as a metric
-for admixture detection, let's first create a self-contained function which
-generalizes our baseline model across three main parameters of interest: the
-admixture time `tmix`, the admixture proportion `prop`, and the effective
-population size of the admixed population `Ne`:
+In our model, the `x` and `y` populations merge at a time `tmix` to form a
+population `mix`. Note that due to the way in which _slendr_ currently
+implements population merges, we first need to program the split of the
+population "mix" from a parent "x" at time `tmix - 1`, followed at time `tmix`
+(i.e., immediately in the following generation) by admixture from "y" at some
+defined proportion `proportion` (a value between 0 and 1). To approximate the
+idea of a population merge as closely as possible within the constraints of the
+_slendr_ interface, we program this admixture event so that it ends after a
+single generation (i.e., it should end at time `tmix + 1`).
 
 ```{r}
-compute_admix_f3 <- function(tmix, prop, Ne) {
+plot_model(model, order = c("outgroup", "x", "mix", "y"), proportions = TRUE)
+```
+
+This is a bit of an annoying peculiarity of _slendr_ that I never got to make
+easier, sorry about that! Maybe one day.
+
+:::
+
+---
+
+Now, we want to establish the limits of statistical power of $f_3$ to detect
+signs of admixture across all sorts of parameters, given our general model of
+interest.
+
+You know what's coming!
+
+**Generalize this skeleton with a single instance of a parametrized model in the
+script `admixture_simulation.R` and wrap it in a function called
+`simulate_admixture()`. Your function should accept three arguments this time:**
+
+1. **`tmix` specifying the time of admixture**,
+
+2. **`prop` specifying the admixture proportion**,
+
+3. **`Ne` specifying the `N` size of the population "mix".**
+
+**In your function, program the recording of 20 individuals from populations
+"x", "y", and "mix" at time 0 (i.e., at the end of the simulation). Simulate a
+10 Mb of tree sequence with recombination rate `1e-8` and mutation rate `1e-8`. Finally,
+compute the `ts_f3()` statistic in the appropriate A, B, C configuration, adding
+the arguments `tmix`, `prop`, and `Ne` in the resulting data frame.**
+
+**Your function will return this data frame as its output.**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+simulate_admixture <- function(tmix, prop, Ne) {
   outgroup <- population("outgroup", N = 5000, time = 10000)
   x <- population("x", N = 5000, time = 5000, parent = outgroup)
   y <- population("y", N = 5000, time = 5000, parent = outgroup)
@@ -527,7 +623,7 @@ compute_admix_f3 <- function(tmix, prop, Ne) {
   
   model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
 
-  schedule <- schedule_recording(model, times = 0, list(x, 5), list(y, 5), list(mix, 25))
+  schedule <- schedule_recording(model, times = 0, list(x, 20), list(y, 20), list(mix, 20))
 
   ts <- msprime(model, sequence_length = 25e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
 
@@ -538,36 +634,43 @@ compute_admix_f3 <- function(tmix, prop, Ne) {
 ```
 
 ```{r}
-compute_admix_f3(tmix = 2000, prop = 0.2, Ne = 10000)
+simulate_admixture(tmix = 2000, prop = 0.2, Ne = 10000)
 ```
 
 ```{r}
-compute_admix_f3(tmix = 1000, prop = 0.2, Ne = 10000)
+simulate_admixture(tmix = 1000, prop = 0.2, Ne = 10000)
 ```
 
 ```{r}
-compute_admix_f3(tmix = 1, prop = 0.2, Ne = 10000)
+simulate_admixture(tmix = 1, prop = 0.2, Ne = 10000)
 ```
 
 ```{r}
-f3_tmix1 <- map_dfr(seq(1, 1500, by = 100), compute_admix_f3, prop = 0.2, Ne = 5000)
+f3_tsplit <- map_dfr(seq(1, 1500, by = 100), simulate_admixture, prop = 0.2, Ne = 5000)
 ```
 
 ```{r}
-ggplot(f3_tmix1, aes(tmix, f3)) +
+ggplot(f3_tsplit, aes(tmix, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
-  coord_cartesian(xlim = c(0, 1500))
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  coord_cartesian(xlim = c(0, 1500)) +
+  labs(title = "f3(x, y; mix) as a function of admixture time (proportion = 20%, Ne = 5000)",
+       subtitle = "[f3 = 0 is interpreted as no evidence of admixture]",
+       x = "Time of admixture [generations B.P.]")
 ```
 
 From the trend presented by the trajectory of expected $f_3$ values as a
 function of the admixture time, we can see that the statistic appears to loose
 power to detect admixture around 1000 generations "before present" (BP).
 
-**Under which conditions would the $f_3$ statistic gain more power?**
+:::
 
-#### Exercise
+---
+
+**Now, why is that? Under which conditions would the $f_3$ statistic gain more
+power? Conversely, which factor could make a true scenario of admixture lead to
+a non-significant $f_3$ value?**
 
 Fix the `tadmix` parameter to 1000 generations B.P. (a value at which our
 previous simulation suggests $f_3$ starts losing statistical power) and `Ne` at
@@ -577,15 +680,18 @@ admixture proportions? What does it mean for the ability of $f_3$ to detect gene
 flow in our models in general?**
 
 ```{r}
-f3_prop <- map_dfr(seq(0, 0.5, by = 0.025), compute_admix_f3, tmix = 1000, Ne = 5000)
+f3_prop <- map_dfr(seq(0, 0.5, by = 0.025), simulate_admixture, tmix = 1000, Ne = 5000)
 ```
 
 ```{r}
 ggplot(f3_prop, aes(prop, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
-  coord_cartesian(xlim = c(0, 0.5))
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  coord_cartesian(xlim = c(0, 0.5)) +
+  labs(title = "f3(x, y; mix) as a function of admixture proportion (tsplit = 1000, Ne = 5000)",
+       subtitle = "[f3 = 0 is interpreted as no evidence of admixture]",
+       x = "Admixture proportion [0: no admixture, 1: 100% admixture]")
 ```
 
 #### Exercise
@@ -598,15 +704,18 @@ conclude based on this analysis? Does `Ne` have an impact on the $f_3$ admixture
 detection? If it does, why? (Look at equation XYZ.)**
 
 ```{r}
-f3_Ne <- map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.2)
+f3_Ne <- map_dfr(seq(1000, 20000, by = 1000), simulate_admixture, tmix = 1000, prop = 0.2)
 ```
 
 ```{r}
 ggplot(f3_Ne, aes(Ne, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(se = FALSE, color = "black", linewidth = 0.5) +
-  coord_cartesian(xlim = c(1000, 20000))
+  coord_cartesian(xlim = c(1000, 20000)) +
+  geom_smooth(se = FALSE, color = "red", linetype = "dashed") +
+  labs(title = "f3(x, y; mix) as a function of Ne (tsplit = 1000, Ne = 5000)",
+       subtitle = "[f3 = 0 is interpreted as no evidence of admixture]",
+       x = "Effective population size of the 'mix' population")
 ```
 
 In conclusion, we can confirm that the amount of drift (represented by the `Ne`
@@ -615,56 +724,31 @@ for a given model (represented by a fixed `tmix` time and `prop` admixture
 proportion). In fact, once we reach a certain size of the admixed population,
 the $f_3$ value reaches a stable level below zero.
 
-#### Exercise (extra challenge)
-
-```{r}
-f3_Ne <- bind_rows(
-  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.1),
-  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.2),
-  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.3),
-  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.4),
-  map_dfr(seq(1000, 20000, by = 1000), compute_admix_f3, tmix = 1000, prop = 0.5)
-)
-```
-
-```{r}
-ggplot(f3_Ne, aes(Ne, f3, color = factor(prop), group = factor(prop))) +
-  geom_point() +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_smooth(se = FALSE, linewidth = 0.5) +
-  coord_cartesian(xlim = c(1000, 20000))
-```
-
-By comparing the relative position of these $f_3$ curves with respect to the
-baseline null value of zero, we can see that increasing `Ne` of the admixed
-population (and, consequently, decreasing the amount of drift in that population
-post admixture) increases the statistical power of $f_3$ to detect admixture
-even as the admixture proportion `prop` decreases.
-
-## Exercise
-
-- amount of SNPs and amount of sequence vs Zscore & CI
 
 
 
 
-## Exercise: controlling stochasticity
 
 
-```{r}
-#| eval: false
-ts_replicate(
-  10,
-  {
-    ts <-
-      msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
-      ts_mutate(mutation_rate = 1e-8)
-    pi_df <- ts_diversity(ts, ts_names(ts))
-    pi_df$Ne <- pi_df$diversity / (4 * 1e-8)
-    pi_df
-  }
-)
-```
+
+
+<!-- ## Exercise: controlling stochasticity -->
+
+
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- ts_replicate( -->
+<!--   10, -->
+<!--   { -->
+<!--     ts <- -->
+<!--       msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>% -->
+<!--       ts_mutate(mutation_rate = 1e-8) -->
+<!--     pi_df <- ts_diversity(ts, ts_names(ts)) -->
+<!--     pi_df$Ne <- pi_df$diversity / (4 * 1e-8) -->
+<!--     pi_df -->
+<!--   } -->
+<!-- ) -->
+<!-- ``` -->
 
 
 
