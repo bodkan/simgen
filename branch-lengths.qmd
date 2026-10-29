@@ -1,4 +1,4 @@
-# $f_4$ test of gene flow
+# Branch-length thinking
 
 ```{r}
 #| message: false
@@ -11,18 +11,16 @@ library(cowplot) # composing plots into panels
 library(purrr)   # convenient looping functions
 ```
 
-<!-- **TODO:** -->
 
-<!-- ```{r} -->
-<!-- #| eval: false -->
-<!-- url_path <- "https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees" -->
-<!-- ts_path <- tempfile() -->
-<!-- download.file(url_path, destfile = ts_path, mode = "wb") -->
-<!-- ts <- ts_read(file = ts_path, model = model) -->
-<!-- ts -->
-<!-- ``` -->
 
-## f4 as a measure of overlapping paths
+
+
+
+
+
+
+
+## Exercise: $f_4$ as a measure of "overlapping paths" through a tree
 
 ```{r}
 p1 <- population("p1", time = 4000, N = 1000)
@@ -31,27 +29,60 @@ p3 <- population("p3", time = 2000, N = 1000, parent = p2)
 p4 <- population("p4", time = 1000, N = 1000, parent = p3)
 
 model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
-schedule <- schedule_recording(model, times = 0, list(p1, 10), list(p2, 10), list(p3, 10), list(p4, 10))
+schedule <- schedule_recording(model, times = 0, list("each", 10))
+
+plot_model(model, schedule = schedule)
 ```
 
+
+
+
 ```{r}
-scenarios <- ts_replicate(n = 10, {
-  ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) 
+ts <-
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+s <- ts_names(model, split = TRUE, schedule = schedule)
+
+s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"])
+s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"])
+s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"])
+
+bind_rows(s1, s2, s3) %>% mutate(quartet = paste0("f4(", W, ",", X, ";", Y, ",", Z, ")"), .before = "f4")
+```
+
+
+
+
+
+## Exercise: Reducing stochastic noise via simulation replicates
+
+**Note:** I wrote this function a few days ago in a bit of a haste, specifically
+for this workshop, but also hoping it'll be useful in daily research. Feedback
+appreciated!
+
+```{r}
+df_quartets <- ts_replicate(n = 10, {
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
 
   s <- ts_names(model, split = TRUE, schedule = schedule)
 
-  s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"], mode = "branch")
-  s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"], mode = "branch")
-  s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"], mode = "branch")
+  s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"])
+  s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"])
+  s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"])
 
-  bind_rows(s1, s2, s3)
+  bind_rows(s1, s2, s3) %>% mutate(quartet = paste(W, X, Y, Z))
 })
+```
 
+```{r}
 p_model1 <- plot_grid(
 
 plot_model(model, schedule = schedule, proportions = TRUE),
 
-ggplot(scenarios, aes(paste(W, X, Y, Z), f4)) +
+ggplot(df_quartets, aes(paste(W, X, Y, Z), f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red"),
@@ -59,7 +90,37 @@ ggplot(scenarios, aes(paste(W, X, Y, Z), f4)) +
 nrow = 2
 
 )
+
+p_model1
 ```
+
+
+
+
+## Exercise: `mode = "branch"` vs `mode = "site"`
+
+
+
+**Repeat the exercise 3 by setting `mode = "site"` in the `ts_f3()` function
+calls** (this is actually the default behavior of all _slendr_ tree-sequence
+based _tskit_ functions). This will switch the _tskit_ computation to using
+mutation counts along each branch of the tree sequence, rather than using
+branch length themselves. **Why might the branch-based computation be a bit
+better if what we're after is investigating the expected values of statistics
+under some model?**
+
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+See [this
+tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy)
+(and particularly the directly linked section) for explanation.
+
+:::
+
+
+
 
 ## f4 as a measure of gene flow
 
@@ -468,58 +529,3 @@ trajectory to change, even after tens of thousands of years.
 
 
 
-
-## Exercise: How many unique f4 quartets are there?
-
-If you've learned about $f$-statistics before, you've probably seen various
-symmetries in $f_4$ (but also other $f$-statistics) depending on the
-arrangement of the "quartet". As a trivial example, an $f_3(A; B, C)$ and
-$f_3(A; C, B)$ will give you exactly the same value, and the same thing applies
-even to more complex $f$-statistics like $f_4$.
-
-**Use simulations to compute how many unique $f_4$ values involving a single
-quartet are there.**
-
-**Hint:** Draw some trees to figure out why could that be true. Also, when
-computing `ts_f4()`, set `mode = "branch"` to avoid the effect of statistical
-noise due to mutations.
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-```{r}
-#| eval: false
-# # install a combinatorics R package
-# install.packages("combinat")
-
-library(combinat)
-
-# These are the four samples we can create quartet combinations from:
-quartet <- c("AFR_1", "EUR_1", "NEA_1", "CHIMP_1")
-
-# This is how we can generate all permutations:
-quartets <- permn(quartet)
-quartets
-
-# How many permutations there are in total?
-#   4! = 4 * 3 * 2 * 1 = 24
-factorial(4)
-
-# We should therefore have 24 different quartet combinations of samples
-length(quartets)
-
-# Loop across all quartets, computing the corresponding f4 statistic (we want
-# to do this using branch lengths, not mutations, as the mutation-based computation
-# would involve statistical noise)
-all_f4s <- lapply(quartets, function(q) ts_f4(ts, q[1], q[2], q[3], q[4], mode = "branch"))
-
-# Bind the list of f4 results into a single data frame and inspect the results
-all_f4s <- bind_rows(all_f4s) %>% arrange(abs(f4))
-print(all_f4s, n = Inf)
-
-# Narrow down the results to only unique f4 values
-distinct(all_f4s, f4, .keep_all = TRUE)
-distinct(all_f4s, abs(f4), .keep_all = TRUE)
-```
-
-:::
