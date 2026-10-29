@@ -29,6 +29,8 @@ following model in it. Simulate a tree sequence object `ts` (sequence length
 scheduling the recording of ten individuals from each of the three populations
 at time 0 (i.e., the "present-day").**
 
+**TODO:** Add a sketch of the model.
+
 **Hint:** Unlike our previous toy examples, this model features multiple
 populations, so you will need to program population splits. Remember that you
 can specify that a population should split from some parent lineage by using the
@@ -40,6 +42,7 @@ can specify that a population should split from some parent lineage by using the
 Here's what's in my `split_simulation.R` script:
 
 ```{r}
+#| collapse: false
 library(slendr)
 init_env()
 
@@ -69,8 +72,13 @@ particularly sections about subsetting and indexing into vectors and lists.
 
 **You're already familiar with the calling the function `ts_names()` as
 `ts_names(ts)` and know that it produces a plain vector of individual names.
-Now, add the line `samples <- ts_names(ts, split = TRUE)` to your script. What
-is the type of the data stored in the `samples` variable? What does this
+Now, add the following line to your script:**
+
+```{r}
+samples <- ts_names(ts, split = TRUE)
+```
+
+**What is the type of the data stored in the `samples` variable? What does this
 information tell us and how is it different from running simply
 `ts_names(ts)`?**
 
@@ -78,11 +86,12 @@ information tell us and how is it different from running simply
 ### Click to see the solution
 
 The command `ts_names(ts)` produces vector of all individuals recorded in the 
-tree sequence:
+tree sequence, as we can see here:
 
 ```{r}
 samples <- ts_names(ts)
 class(samples)
+samples
 ```
 
 The variation `ts_names(ts, split = TRUE)` gives us a (named!) list of vectors,
@@ -91,16 +100,17 @@ one for each population.
 ```{r}
 samples <- ts_names(ts, split = TRUE)
 class(samples)
+samples
 ```
 
 :::
 
 ---
 
-**Using operations for manipulation of R lists, how do you access the names of
-individuals in the population X? Specifically, what's the difference between
+**Now, using operations for manipulation of R lists, how do you access the names
+of individuals in the population X? Specifically, what's the difference between
 calling `samples$X`, `samples[["X"]]`, and `samples["X"]`? Try to answer first
-without runnig these commands, then run them in the R console to verify your
+without running these commands, then run them in the R console to verify your
 intuition.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -158,11 +168,12 @@ computation very efficiently.
 
 ## Exercise: "Outgroup" $f_3$ statistic
 
-The famous $f_3$ statistic [formally established by Nick Patterson and David
-Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193) in 2008.
-This statistic has two formulations: as a measure of shared drift between two
-populations (the "outgroup" formulation) and as an admixture test (something
-we'll look at later).
+The $f_3$ statistic is a famous population genetic metric [formally established
+by Nick Patterson and David
+Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193) in 2008. In
+practice, the statistic is used in two formulations: as a measure of shared
+drift between two populations (the "outgroup" formulation) and as an admixture
+test (something we'll look at later).
 
 As the name implies, $f_3$ statistic involves the specification of samples from
 three different lineages (usually populations) called A, B, and C, making it a
@@ -176,19 +187,18 @@ practically relevant features of this important summary statistic.
 **Let's start by doing a couple of modifications to our script
 `split_simulation.R`:**
 
-1. **First, wrap the code in a function called `simulate_split()` and update it
-so that this function accepts a single argument `tsplit` and uses it to specify
-the point at which point will the "X" and "Y" populations split from the
-"outgroup" lineage.**
+1. **Wrap the code in a function called `simulate_split()` and update it so that
+this function accepts a single argument `tsplit` and uses it to specify the
+point at which point will the "X" and "Y" populations split from the "outgroup"
+lineage** (instead of having a fixed value for the split time as you have now).
 
-2. **Then, add the computation of the outgroup $f_3$ statistic, using the
-function `ts_f3()` setting the "X" individuals as the `B =` argument, "Y"
-individuals as the `C =` argument, and the `A =` argument to the "outgroup"
-individuals (remember to use the `samples` variable produced by the `ts_names()`
-shortcut above to do this).**
+2. **Add the computation of the outgroup $f_3$ statistic, using the function
+`ts_f3()`, setting the "X" individuals as the `B =` argument, "Y" individuals as
+the `C =` argument, and the `A =` argument to the "outgroup" individuals
+(remember to use the `samples` variable produced by `ts_names()` to do this).**
 
-3. **Finally, the function should return a data frame produced by the `ts_f3()`
-function, with a new column named `tsplit` containing the value of this function
+3. **The function should return a data frame produced by the `ts_f3()` function,
+with a new column named `tsplit` containing the value of this function
 argument.**
 
 ::: aside
@@ -237,12 +247,13 @@ simulate_split <- function(tsplit) {
 ---
 
 **Test your function `simulate_split()` by calling it on a few split times in
-the R console (like 1000, 2000, or 5000 generations). Then, use `map_dfr()` from
-the _purrr_ package to run simulations of split times between 1 and 10000
-generations in steps of every 1000 generations (see `?seq` for a reminder on how
-to do this). Visualize the statistical expectation of the $f_3$ statistic in a
-scatterplot as a function of the split time. Add all this code in your script
-`split_simulation.R` after your function definition.**
+the R console. When you're confident you programmed the function correctly, use
+`map_dfr()` from the _purrr_ package to run simulations of split times between 1
+and 10000 generations in steps of every 1000 generations (see `?seq` for a
+reminder on how to do this). Visualize the statistical expectation of the $f_3$
+statistic in a scatterplot as a function of the split time. Add all this
+analysis code in your script `split_simulation.R` after your function
+definition, so that you have it properly recorded as a reproducible pipeline.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -262,13 +273,14 @@ library(purrr)
 f3_outgroup <- map_dfr(seq(1, 10000, by = 1000), simulate_split)
 ```
 
-We can verify that we did, indeed, get a tidy table of the expected $f_3$ values for a range of possible split times:
+We can verify that we did, indeed, get a tidy table of the expected $f_3$ values
+for a range of possible split times by typing the result into the R console:
 
 ```{r}
 f3_outgroup
 ```
 
-And we can also visualize our results:
+And we can finally visualize our results:
 
 ```{r}
 library(ggplot2)
@@ -277,7 +289,9 @@ ggplot(f3_outgroup, aes(tsplit, f3)) +
   geom_point() +
   geom_smooth(method = "lm", color = "red", linetype = "dashed") +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  coord_cartesian(xlim = c(0, 10000))
+  coord_cartesian(xlim = c(0, 10000)) +
+  ggtitle("Expected f3 value as a function of split time") +
+  xlab("Split time [generations ago]")
 ```
 
 We can see that, as expected, the $f_3$ statistic gives a nearly zero for the
@@ -300,7 +314,8 @@ plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE, schedule 
 ```
 
 On the other hand, the older the split time from the outgroup, the longer the
-shared branch is. Again, to demonstrate the "shared branch length" graphically:
+shared branch is. Again, to demonstrate the "shared branch length" graphically
+on a model with the split time of 9001 generations ago:
 
 ```{r}
 #| echo: false
@@ -319,8 +334,8 @@ plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE, schedule 
 
 ---
 
-With this initial setup out of the way, let's delve into using our small
-simulation pipeline to answer a couple of practically relevant questions.
+**With this initial setup out of the way, let's delve into using our small
+simulation pipeline to answer a couple of practically relevant questions.**
 
 ## Exercise: Statistical power of $F_{ST}$ vs outgroup $f_3$
 
@@ -336,26 +351,27 @@ the $N_e$ of those populations?
 
 Both $F_{ST}$ and $f_3$ are routinely used as measures of population
 differentiation---can we use them equivalently? Does one have potentially more
-statistical power than the other?
+statistical power than the other? They are sometimes used quite interchangeably
+in practical research---could it sometimes be a problem?
 
 ---
 
-We want to evaluate the impact of $N_e$, so let's modify our function
-`simulate_split()` a little bit first:
+**We want to evaluate the impact of $N_e$, so let's modify our function
+`simulate_split()` a little bit first:**
 
 1. Right now the function accepts a single argument `tsplit`. **Add a second
 argument to this function called `Ne`, then modify the two lines of code
-indicating splits of "X" and "Y" population and change the fixed values of 1000
-to use the new flexible parameters `Ne`.**
+indicating splits of "X" and "Y" populations from the "outgroup" and change the
+fixed values of 1000 to use the new flexible parameters `Ne`.**
 
 2. **Modify the function so that it returns in the resulting data frame not only
 the $f_3$ value (computed by `ts_f3()`) but also the $F_{ST}$ value (computed by
 `ts_fst()`).** Look up the help for `?ts_fst` to see how to use it (it's very
-similar to using the `ts_f3()` function).**
+similar to using the `ts_f3()` function).
 
-3. **The data frame returned by the function should include both the `tsplit`
-column (containing the value of the `tsplit` argument) as well as the column
-`Ne` (containing the value of the `Ne` argument).**
+3. **The data frame returned by the function should now include not only the
+`tsplit` column (containing the value of the `tsplit` argument) as well as the
+column `Ne` (containing the value of the `Ne` argument).**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -400,27 +416,29 @@ simulate_split(tsplit = 3000, Ne = 5000)
 
 ---
 
-**Run a new batch of parameter grid simulations using the looping function
-`map_dfr()`, this time fixing `tsplit = 3000` and simulating the model for the
-values of the $N_e$ parameter indicated below using the following code:**
+**Now that you have your updated function, use it to run a new batch of
+parameter grid simulations using the looping function `map_dfr()`, this time
+fixing `tsplit = 3000` and simulating the model for the values of the $N_e$
+parameter indicated below using the following code:**
 
 ```{r}
 # define values of the Ne parameter grid
 Ne_grid <- c(100, seq(from = 1000, to = 10000, by = 1000))
 
-# run simulations for each given Ne value, but fix the tsplit value
-df <- map_dfr(Ne_grid, simulate_split, tsplit = 3000)
+# note that although our new function requires two arguments (Ne and tsplit),
+# we can loop over one parameter (Ne), while fixing the other (tsplit)
+df_tsplit3k <- map_dfr(Ne_grid, simulate_split, tsplit = 3000)
 ```
 
 **When you're done, visualize the expected values of `f3` and `Fst` summary
-statistics as functions of $N_e$and, therefore, their robustness to genetic
-drift---which one of them will be more reliable?**
+statistics as functions of $N_e$ (and, therefore, as a function of the amount
+of genetic drift).*
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
 ```{r}
-ggplot(df, aes(Ne, value, color = statistic)) +
+ggplot(df_tsplit3k, aes(Ne, value, color = statistic)) +
   geom_point() +
   geom_smooth() +
   facet_wrap(~ statistic, scales = "free_y") +
@@ -429,8 +447,81 @@ ggplot(df, aes(Ne, value, color = statistic)) +
   ggtitle("Fst and f3 for X-Y split at 3000 generations ago, assuming given Ne")
 ```
 
-Conclusion: unlike $F_{ST}$, the $f_3$ statistic really is an unbiased estimator
-of population divergence with respect to $N_e$ of the two lineages!
+Conclusion: the $f_3$ statistic really is an unbiased estimator of population
+divergence with respect to $N_e$ of the two lineages. On the other hand,
+$F_{ST}$ is not a great metric of shared branch length, even though it's
+sometimes colloquially used in this phylogenetic sense. However, this is not
+surprising, because $F_{ST}$ measures population _differentiation_! If the $N_e$
+is huge, both "X" and "Y" lineages can retain most of the genomic variation
+which arose in their ancestor (unless they diverged a very long time ago). On
+the other hand, $f_3$ truly measures the _shared branch length_ which is, by
+definition, indicative of the population divergence.
+
+:::
+
+---
+
+**Now, add a second batch of the same grid simulations, but this time fixing
+`tsplit` to 9999 generations ago. What changes when you visualize your results,
+with regards to the patterns shown by $f_3$ and $F_{ST}$?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+We only need to rerun the simulation loop and visualise the results:
+
+```{r}
+df_tsplit10k <- map_dfr(Ne_grid, simulate_split, tsplit = 9999)
+```
+
+**When you're done, visualize the expected values of `f3` and `Fst` summary
+statistics as functions of $N_e$ (and, therefore, as a function of the amount
+of genetic drift).*
+
+```{r}
+ggplot(df_tsplit10k, aes(Ne, value, color = statistic)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~ statistic, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 45)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ggtitle("Fst and f3 for X-Y split at 9999 generations ago, assuming given Ne")
+```
+
+When we compare both results side-by-side, we see the difference right away. The
+split time at 3000 generations ago meant that, when the populations have large
+$N_e$, they retain lots of shared genetic variation, leading to a very low
+$F_{ST}$ which indicates they are not differentiated (upper row). However, the
+older the split time between the two populations, the more genetic drift causes
+both "X" and "Y" to become differentiated which is manifested by a higher
+$F_{ST}$ value even for very high $N_e$:
+
+```{r}
+cowplot::plot_grid(
+ggplot(df_tsplit3k, aes(Ne, value, color = statistic)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~ statistic, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 45)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ggtitle("Fst and f3 for X-Y split at 3000 generations ago, assuming given Ne"),
+
+ggplot(df_tsplit10k, aes(Ne, value, color = statistic)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~ statistic, scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 45)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  ggtitle("Fst and f3 for X-Y split at 10000 generations ago, assuming given Ne"),
+
+nrow = 2
+)
+```
+
+**Crucially, however, note that $f_3$ is completely robust to the amount of
+genetic drift (i.e., the $N_e$ of the populations in question)---it always
+measures the correct branch length, regardless of the $N_e$ in the assumed
+model.**
 
 :::
 
@@ -519,9 +610,10 @@ ggplot(f3_vs_fst, aes(Ne, value, color = statistic)) +
 
 Now let's explore the application of the $f_3$ statistic in its other common
 use, which is an admixture test. Our primary interest in this exercise will be
-to investigate the limits of $f_3$ to detect evidence of admixture---in particular,
-if we see a "non-significant" $f_3$ statistic, which factors could make this
-test being a false negative?
+to investigate the limits of $f_3$ to detect evidence of admixture---in
+particular, if we see a "non-significant" $f_3$ statistic ("admixture $f_3$" is
+considered statistically not significant when it has a positive value), which
+factors could make this test being a false negative?
 
 To do this, we will need to expand our baseline population model a little bit.
 
@@ -551,8 +643,9 @@ Ne <- 5000   # Ne of the admixed population
 outgroup <- population("outgroup", N = 5000, time = 10000)
 x <- population("x", N = 5000, time = 5000, parent = outgroup)
 y <- population("y", N = 5000, time = 5000, parent = outgroup)
-mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
 
+# this is how we program "mix" as a merge of "x" and "y" populations
+mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
 gf <- gene_flow(from = y, to = mix, start = tmix, end = tmix - 1, proportion = prop)
 
 model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
@@ -590,9 +683,10 @@ interest.
 
 You know what's coming!
 
-**Generalize this skeleton with a single instance of a parametrized model in the
-script `admixture_simulation.R` and wrap it in a function called
-`simulate_admixture()`. Your function should accept three arguments this time:**
+**Transform the `admixture_simulation.R` script (which has currently fixed
+values of parameters) into a generalized function model by wrapping it in a
+function called `simulate_admixture()`. Your function should accept three
+arguments this time:**
 
 1. **`tmix` specifying the time of admixture**,
 
@@ -601,12 +695,15 @@ script `admixture_simulation.R` and wrap it in a function called
 3. **`Ne` specifying the `N` size of the population "mix".**
 
 **In your function, program the recording of 20 individuals from populations
-"x", "y", and "mix" at time 0 (i.e., at the end of the simulation). Simulate a
-10 Mb of tree sequence with recombination rate `1e-8` and mutation rate `1e-8`. Finally,
-compute the `ts_f3()` statistic in the appropriate A, B, C configuration, adding
-the arguments `tmix`, `prop`, and `Ne` in the resulting data frame.**
+"x", "y", and "mix" at time 0 (i.e., at the end of the simulation), and program
+it to simulate a 10 Mb of tree sequence with recombination rate `1e-8` and
+mutation rate `1e-8`. Finally, compute the "admixture $f_3$ statistic in the
+appropriate A, B, C configuration, adding the arguments `tmix`, `prop`, and `Ne`
+to the data frame produced by the `ts_f3()` function.**
 
-**Your function will return this data frame as its output.**
+**Your function will return this data frame as its output. Again, test it on a
+couple of parameter combinations, to make sure it produces results in the
+desirable format described above.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -643,13 +740,35 @@ simulate_admixture(tmix = 1000, prop = 0.1, Ne = 10000)
 simulate_admixture(tmix = 1,    prop = 0,   Ne = 3000)
 ```
 
-Having tested the function on a couple of individual simulations, let's run it
-along the range of potential `tsplit` values:
+:::
+
+---
+
+**Having tested the function on a couple of individual simulations, run it along
+the range of potential `tsplit` values like this (add this code to your script),
+while fixing the admixture proportion to 20% and $N_e$ to 5000:**
+
+```{r}
+#| eval: false
+tsplit_grid <- seq(1, 1500, by = 100)
+f3_tsplit <- map_dfr(tsplit_grid, simulate_admixture, prop = 0.2, Ne = 5000)
+```
+
+**Do you see any interesting pattern of behavior of the admixture $f_3$ test?
+Can we rely on it to detect admixture (by showing a negative value) in all
+scenarios, or does it lose detection power in some circumstances (by showing a
+value above zero)?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Let's run a new grid simulation of our admixture $f_3$ model:
 
 ```{r}
 tsplit_grid <- seq(1, 1500, by = 100)
 
 f3_tsplit <- map_dfr(tsplit_grid, simulate_admixture, prop = 0.2, Ne = 5000)
+f3_tsplit
 ```
 
 And we visualize the results ($f_3$ as a function of `tsplit`):
@@ -667,7 +786,8 @@ ggplot(f3_tsplit, aes(tmix, f3)) +
 
 From the trend presented by the trajectory of expected $f_3$ values as a
 function of the admixture time, we can see that the statistic appears to loose
-power to detect admixture around 1000 generations "before present" (BP).
+power to detect admixture around 1000 generations "before present" (BP)---recall,
+that $f_3$ admixture test is significant when it produces a negative value.
 
 :::
 
@@ -675,17 +795,19 @@ power to detect admixture around 1000 generations "before present" (BP).
 
 From the trend presented by the trajectory of expected $f_3$ values as a
 function of the admixture time, we can see that the statistic appears to loose
-power to detect admixture around 1000 generations "before present" (BP).
+power to detect admixture around 1000 generations "before present" (BP) because
+that's when it starts producing a positive (i.e., non-significant) value.
 
 **Why is that? Under which conditions would the $f_3$ statistic gain more power?
 Conversely, which factor could make a true scenario of admixture lead to a
 non-significant $f_3$ value?**
 
-**To answer these questions, fix the `tadmix` parameter to 1000 generations B.P.
-and `Ne` at 5000, and then run simulations across a range of admixture
-proportions `prop` between 0% and 50% gene flow. Does $f_3$ pick up the
-admixture signal for any of these admixture proportions? What does it mean for
-the ability of $f_3$ to detect gene flow in our models in general?**
+**To answer these questions, fix the `tadmix` parameter to 1000 generations ago
+(i.e., the point at which $f_3$ loses power to detect admixture) and `Ne` at
+5000, and then run simulations across a range of admixture proportions `prop`
+between 0% and 50% gene flow. Does $f_3$ pick up the admixture signal for any of
+these admixture proportions? What does it mean for the ability of $f_3$ to
+detect gene flow in our models in general?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -711,7 +833,7 @@ ggplot(f3_prop, aes(prop, f3)) +
   coord_cartesian(xlim = c(0, 0.5)) +
   labs(title = "f3(x, y; mix) as a function of admixture proportion (tsplit = 1000, Ne = 5000)",
        subtitle = "[f3 = 0 is interpreted as no evidence of admixture]",
-       x = "Admixture proportion [0: no admixture, 1: 100% admixture]")
+       x = "Admixture proportion [0: no admixture, 0.5: 50% admixture]")
 ```
 
 :::
