@@ -1,4 +1,27 @@
-# Branch-length thinking
+# Tree-based thinking
+
+In our simulation exercises so far, we focused on learning the ins and outs of
+the _slendr_ interface for constructing demographic models and computing
+statistics, followed by showing how to program simulation-based workflows to
+study the behavior and limitations of various summary statistics, hoping to
+inspire you to see how empowering such techniques can be and how easily they can
+be extended to other software methods and other kinds of models.
+
+Towards the end of the workshop, you will have the opportunity to develop your
+own ideas, applying the methods you've learned either on your own research
+problems, or on a couple of "case studies" that I will suggest for you.
+
+In this chapter, we will show how useful _slendr_ can be as an interactive
+"popgen calculator" to quickly explore ideas and build intuition into how (and
+why) population genetic statistics behave a certain way. The ideas are still
+very similar, but the focus will be much more on "interactive playful
+exploration".
+
+Our focus on exploration will be on perhaps the most critical component of
+population genetics research (particularly in the context of ancient DNA
+genomics)---the venerable $f-4$-statistic, [formally established by Nick
+Patterson and David
+Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193).
 
 ```{r}
 #| message: false
@@ -23,33 +46,129 @@ library(purrr)   # convenient looping functions
 ## Exercise: $f_4$ as a measure of "overlapping paths" through a tree
 
 ```{r}
-p1 <- population("p1", time = 4000, N = 1000)
-p2 <- population("p2", time = 3000, N = 1000, parent = p1)
-p3 <- population("p3", time = 2000, N = 1000, parent = p2)
-p4 <- population("p4", time = 1000, N = 1000, parent = p3)
+p4 <- population("p4", time = 4000, N = 1000)
+p3 <- population("p3", time = 3000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
-schedule <- schedule_recording(model, times = 0, list("each", 10))
+schedule <- schedule_recording(
+  model, times = 0,
+  list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1)
+)
 
 plot_model(model, schedule = schedule)
 ```
 
+::: aside
 
+**Note:** I numbered the population this way because it makes more sense to my
+brain with regards to how $f_4$ quartets are often arranged.
 
+:::
 
 ```{r}
 ts <-
   msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
-s <- ts_names(model, split = TRUE, schedule = schedule)
-
-s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"])
-s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"])
-s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"])
-
-bind_rows(s1, s2, s3) %>% mutate(quartet = paste0("f4(", W, ",", X, ";", Y, ",", Z, ")"), .before = "f4")
+# writing `samples` over and over gets annoying, so let's switch that to `s`
+s <- ts_names(ts, split = TRUE)
 ```
+
+**given the phylogenetic relationships above, what value would you expect for
+$f_4(p1, p2; p3, p4)$? try to guess first without any coding, then compute the
+statistic with the `ts_f4()` function. does your simulation give you the result
+you might expect based on logic alone? if not, why could this be?**
+
+::: {.callout-note collapse="true" icon=false}
+### click to see the solution
+
+as we can see, $f$-statistics theory tells us that the value should be zero, but
+without any reference point, we get a number which is very tiny, but how tiny
+would it have to be to be "basically zero"?
+
+```{r}
+ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+```
+
+The reason we didn't get _exactly_ zero is stochasticity, and the fact that
+along a genome (even a small one, only 10 Mb of simulated sequence) there are
+many possible trees. Sometimes, [incomplete lineage
+sorting](https://en.wikipedia.org/wiki/Incomplete_lineage_sorting) will lead to
+genealogical trees which do not fit the tidy, well-behaved population tree like
+the one we see when we run `plot_model()`.
+
+:::
+
+---
+
+As suggested in the solution above, the reason we don't get a perfectly zero
+expected value of the $f_4$ is because of ILS and stochasticity. Let's test this
+hypothesis now.
+
+**First, evaluate `ts` in your R console and note how many individual trees do you
+have in your 10 Mb tree-sequence.**
+
+**Now, restart your R session (`Session -> Restart R`). Then, temporarily change
+the $N_e$ of all lineages in your model to 1 and re-run your script to get a new
+`ts` and compute the same $f_4$ statistic again. $N_e$ of one implies
+ridiculously high amount of drift, which should eliminate ILS completely, giving
+us $f_4$ close to its mathematical expectation of zero. Is this true? How many
+trees does your tree sequence have now?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+#| echo: false
+ts_num_trees <- ts$num_trees
+```
+
+```{r}
+# we changed all N sizes to 1
+p4 <- population("p4", time = 4000, N = 1)
+p3 <- population("p3", time = 3000, N = 1, parent = p4)
+p2 <- population("p2", time = 2000, N = 1, parent = p3)
+p1 <- population("p1", time = 1000, N = 1, parent = p2)
+
+# the rest of the code is the same...
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+schedule <- schedule_recording( model, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1))
+
+ts <-
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+Now let's compute the $f_4$ again on this extreme model:
+
+```{r}
+ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+```
+
+Indeed, when we type `ts` into the R console, we see that it only contains `{r}
+ts$num_trees` individual trees compared to the previous count of `{r}
+ts_num_trees`, consistent with an absolutely extreme amounts of genetic drift in
+your model.
+
+:::
+
+---
+
+Of course, changing $N_e$ to value of one is a drastic measure of generally only
+theoretical utility. We could hardly get away with doing that, if we wanted to
+use simulations to make a point in our research paper.
+
+How do we deal with the unavoidable stochasticity in our simulations then? This
+wasn't much of a problem in exercises in the previous chapters, but we need the
+way to solve this to be able to get useful, applicable results.
+
+Let's look into this now.
+
+
+
+
 
 
 
@@ -94,6 +213,19 @@ nrow = 2
 p_model1
 ```
 
+
+
+
+
+```{r}
+s <- ts_names(ts, split = TRUE)
+
+s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"])
+s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"])
+s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"])
+
+bind_rows(s1, s2, s3)
+```
 
 
 
