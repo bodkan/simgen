@@ -259,6 +259,11 @@ window.Quarto = {
   <a href="./tree-thinking.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Tree-based thinking</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./haplotype-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Untitled</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -287,7 +292,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./study-segregating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bonus exercise: Segregating sites and sequencing effort</span></a>
+  <a href="./study-segregating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Segregating sites and sequencing effort</span></a>
   </div>
 </li>
       </ul>
@@ -413,7 +418,8 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#exercise-6-detecting-neanderthal-admixture-in-europeans" id="toc-exercise-6-detecting-neanderthal-admixture-in-europeans" class="nav-link active" data-scroll-target="#exercise-6-detecting-neanderthal-admixture-in-europeans">Exercise 6: Detecting Neanderthal admixture in Europeans</a></li>
+  <li><a href="#branch-length-overlap-as-a-measure-of-directionality" id="toc-branch-length-overlap-as-a-measure-of-directionality" class="nav-link active" data-scroll-target="#branch-length-overlap-as-a-measure-of-directionality">Branch length overlap as a measure of directionality</a></li>
+  <li><a href="#exercise-6-detecting-neanderthal-admixture-in-europeans" id="toc-exercise-6-detecting-neanderthal-admixture-in-europeans" class="nav-link" data-scroll-target="#exercise-6-detecting-neanderthal-admixture-in-europeans">Exercise 6: Detecting Neanderthal admixture in Europeans</a></li>
   <li><a href="#exercise-7-detecting-neanderthal-admixture-in-europeans-v2.0" id="toc-exercise-7-detecting-neanderthal-admixture-in-europeans-v2.0" class="nav-link" data-scroll-target="#exercise-7-detecting-neanderthal-admixture-in-europeans-v2.0">Exercise 7: Detecting Neanderthal admixture in Europeans v2.0</a></li>
   <li><a href="#exercise-trajectory-of-neanderthal-ancestry-in-europe-over-time" id="toc-exercise-trajectory-of-neanderthal-ancestry-in-europe-over-time" class="nav-link" data-scroll-target="#exercise-trajectory-of-neanderthal-ancestry-in-europe-over-time">Exercise: Trajectory of Neanderthal ancestry in Europe over time</a></li>
   </ul>
@@ -450,6 +456,128 @@ window.Quarto = {
 <li><p>It provides an excellent educational example of how <em>slendr</em> simulations can help you navigate any conceivable population genomic scenario, gain confidence in your results, and aid in their interpretation.</p></li>
 </ol>
 <p>The outcome of</p>
+<section id="branch-length-overlap-as-a-measure-of-directionality" class="level3">
+<h3 class="anchored" data-anchor-id="branch-length-overlap-as-a-measure-of-directionality">Branch length overlap as a measure of directionality</h3>
+<section id="base-model" class="level4">
+<h4 class="anchored" data-anchor-id="base-model">Base model</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'dplyr'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    filter, lag</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">time =</span> <span class="dv">7000000</span>, <span class="at">N =</span> <span class="dv">10000</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>altai    <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Altai"</span>,    <span class="at">time =</span> <span class="dv">6000000</span>, <span class="at">N =</span>  <span class="dv">1000</span>, <span class="at">parent =</span> outgroup)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>vindija  <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Vindija"</span>,  <span class="at">time =</span>  <span class="dv">200000</span>, <span class="at">N =</span>  <span class="dv">1000</span>, <span class="at">parent =</span> altai)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>san      <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"San"</span>,      <span class="at">time =</span>  <span class="dv">600000</span>, <span class="at">N =</span> <span class="dv">10000</span>, <span class="at">parent =</span> altai)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>mbuti    <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Mbuti"</span>,    <span class="at">time =</span>  <span class="dv">350000</span>, <span class="at">N =</span> <span class="dv">10000</span>, <span class="at">parent =</span> san)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>yoruba   <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Yoruba"</span>,   <span class="at">time =</span>  <span class="dv">220000</span>, <span class="at">N =</span> <span class="dv">10000</span>, <span class="at">parent =</span> mbuti)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>dinka    <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Dinka"</span>,    <span class="at">time =</span>  <span class="dv">150000</span>, <span class="at">N =</span> <span class="dv">15000</span>, <span class="at">parent =</span> yoruba)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>nonafr   <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"nonafr"</span>,   <span class="at">time =</span>   <span class="dv">70000</span>, <span class="at">N =</span> <span class="dv">3000</span>,  <span class="at">parent =</span> dinka)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="neanderthal---mh-and-mh---neanderthal-gene-flow-models" class="level4">
+<h4 class="anchored" data-anchor-id="neanderthal---mh-and-mh---neanderthal-gene-flow-models">Neanderthal -&gt; MH and MH -&gt; Neanderthal gene-flow models</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> vindija, <span class="at">to =</span> nonafr, <span class="at">proportion =</span> <span class="fl">0.03</span>, <span class="at">start =</span> <span class="dv">55000</span>, <span class="at">end =</span> <span class="dv">50000</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">30</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>schedule1 <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model1, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">5</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>model2 <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> nonafr, <span class="at">to =</span> vindija, <span class="at">proportion =</span> <span class="fl">0.03</span>, <span class="at">start =</span> <span class="dv">55000</span>, <span class="at">end =</span> <span class="dv">50000</span>),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">30</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>schedule2 <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model2, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model1, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">log =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model2, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">log =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>result1 <span class="ot">&lt;-</span> <span class="fu">ts_replicate</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    ts1 <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model1, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule1) <span class="sc">%&gt;%</span> <span class="fu">ts_mutate</span>(<span class="fl">1e-8</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts1, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"San"</span>],    <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"Mbuti"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"Yoruba"</span>], <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"Dinka"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>])</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="st">"Nea -&gt; MH"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>result2 <span class="ot">&lt;-</span> <span class="fu">ts_replicate</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    ts2 <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model2, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule1) <span class="sc">%&gt;%</span> <span class="fu">ts_mutate</span>(<span class="fl">1e-8</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts2, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"San"</span>],    <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"Mbuti"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"Yoruba"</span>], <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"Dinka"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>])</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="st">"MH -&gt; Nea"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">rbind</span>(result1, result2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(result, <span class="fu">aes</span>(W, f4)) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>() <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> direction)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
 <section id="exercise-6-detecting-neanderthal-admixture-in-europeans" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="exercise-6-detecting-neanderthal-admixture-in-europeans">Exercise 6: Detecting Neanderthal admixture in Europeans</h2>
 <p>Let’s now pretend its about 2008, we sequenced the first Neanderthal genome, and we are working on a project that will <a href="https://www.science.org/doi/10.1126/science.1188021">change human evolution research forever</a>. We also have the genomes of a couple of people from Africa and Europe, which we want to use to answer the most burning question of all evolutionary anthropology: <em>“Do some people living today carry Neanderthal ancestry?”</em></p>
@@ -490,17 +618,17 @@ $$
 <div class="callout-body-container callout-body">
 <p>Compute the difference in the amount of allele sharing between two African individuals and a Neanderthal:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>f4_null <span class="ot">&lt;-</span> <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> <span class="st">"AFR_2"</span>, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>f4_null</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>f4_null <span class="ot">&lt;-</span> <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> <span class="st">"AFR_2"</span>, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>f4_null</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Compute the difference in the amount of allele sharing between an African individual vs European individual and a Neanderthal:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>f4_alt <span class="ot">&lt;-</span> <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> <span class="st">"EUR_1"</span>, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>f4_alt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>f4_alt <span class="ot">&lt;-</span> <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> <span class="st">"EUR_1"</span>, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>f4_alt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can see that the second test resulted in an f4 value about ~20 times more negative than the first test, indicating that a European in our test carries “significantly more” Neanderthal alleles compared to the baseline expectation of no introgression established by the comparison to an African …</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">abs</span>(f4_alt<span class="sc">$</span>f4 <span class="sc">/</span> f4_null<span class="sc">$</span>f4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">abs</span>(f4_alt<span class="sc">$</span>f4 <span class="sc">/</span> f4_null<span class="sc">$</span>f4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>… although this is not a real test of significance because we have no Z-score or standard error which would give us something like a p-value for the hypothesis test, this evaluation of statistical expectations and trends using simulations is extremely useful in research, because it allows us to test our ideas on ground-truth models. With empirical data, we rarely (if ever) know exactly what happened. With simulations, we always know which process generated the data and how that process could have influenced our statistics of interest.</p>
 </div>
@@ -518,18 +646,18 @@ $$
 <p><strong>Compute the first <span class="math inline">\(f_4\)</span> statistic (the baseline expectation between a pair of Africans) and the second <span class="math inline">\(f_4\)</span> statistic (comparing an African and a European), but this time on <em>all recorded Africans</em> and <em>all recorded Europeans</em>, respectively. Plot the <em>distributions</em> of those two sets of statistics. This should remove most of the evolutionary stochastic noise and make a statistical trend stand out much more clearly.</strong></p>
 <p><strong>Hint:</strong> Whenever you need to compute something for many things in sequence, looping is very useful. One way to do compute, say, an <span class="math inline">\(f_4\)</span> statistic over many individuals is by using this kind of pattern using R’s looping function <code>lapply()</code>:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loop over vector of individual names (variable x) and apply a given ts_f4()</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># expression on each individual (note the ts_f4(..., X = x, ...) in the code)</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ind_1"</span>, <span class="st">"ind_2"</span>, ...)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>list_f4 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  X,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x) <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> x, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The above gives us a list of data frames, so we need to bind them all into a</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># single table for easier interpretation and visualization</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>df_f4 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, list_f4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Loop over vector of individual names (variable x) and apply a given ts_f4()</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># expression on each individual (note the ts_f4(..., X = x, ...) in the code)</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"ind_1"</span>, <span class="st">"ind_2"</span>, ...)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>list_f4 <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  X,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x) <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> x, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="co"># The above gives us a list of data frames, so we need to bind them all into a</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="co"># single table for easier interpretation and visualization</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>df_f4 <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, list_f4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
@@ -545,44 +673,44 @@ $$
 <div class="callout-body-container callout-body">
 <p>This gives us list of vectors of the names of all individuals in each population…</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sample_sets <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ... which we can then access like this</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sample_sets<span class="sc">$</span>AFR <span class="co"># all Africans</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>sample_sets<span class="sc">$</span>EUR <span class="co"># all Europeans</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>sample_sets <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># ... which we can then access like this</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>sample_sets<span class="sc">$</span>AFR <span class="co"># all Africans</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>sample_sets<span class="sc">$</span>EUR <span class="co"># all Europeans</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Let’s compute the <span class="math inline">\(f_4\)</span> statistic for all Africans…</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>f4_afr_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  sample_sets<span class="sc">$</span>AFR,</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x) <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> x, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ... and Europeans</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>f4_eur_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  sample_sets<span class="sc">$</span>EUR,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x) <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> x, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>f4_afr_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  sample_sets<span class="sc">$</span>AFR,</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x) <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> x, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ... and Europeans</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>f4_eur_list <span class="ot">&lt;-</span> <span class="fu">lapply</span>(</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  sample_sets<span class="sc">$</span>EUR,</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(x) <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> <span class="st">"AFR_1"</span>, <span class="at">X =</span> x, <span class="at">Y =</span> <span class="st">"NEA_1"</span>, <span class="at">Z =</span> <span class="st">"CHIMP_1"</span>, <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Bind each list of data frames into a single data frame:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>f4_afr <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, f4_afr_list)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>f4_eur <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, f4_eur_list)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># add population columns to each of the two results for easier plotting</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>f4_afr<span class="sc">$</span>pop <span class="ot">&lt;-</span> <span class="st">"AFR"</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>f4_eur<span class="sc">$</span>pop <span class="ot">&lt;-</span> <span class="st">"EUR"</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># bind both tables together</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>f4_results <span class="ot">&lt;-</span> <span class="fu">rbind</span>(f4_afr, f4_eur)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>f4_afr <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, f4_afr_list)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>f4_eur <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, f4_eur_list)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># add population columns to each of the two results for easier plotting</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>f4_afr<span class="sc">$</span>pop <span class="ot">&lt;-</span> <span class="st">"AFR"</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>f4_eur<span class="sc">$</span>pop <span class="ot">&lt;-</span> <span class="st">"EUR"</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="co"># bind both tables together</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>f4_results <span class="ot">&lt;-</span> <span class="fu">rbind</span>(f4_afr, f4_eur)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now we can visualize the results:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>f4_results <span class="sc">%&gt;%</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(pop, f4, <span class="at">color =</span> pop)) <span class="sc">+</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>() <span class="sc">+</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"f4(AFR, EUR; NEA, CHIMP)"</span>) <span class="sc">+</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>f4_results <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(pop, f4, <span class="at">color =</span> pop)) <span class="sc">+</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>() <span class="sc">+</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"f4(AFR, EUR; NEA, CHIMP)"</span>) <span class="sc">+</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can see that the <span class="math inline">\(f_4\)</span> statistic test of Neanderthal introgression in Europeans indeed does give a much more negative distribution of values compared to the baseline expectation which compares two Africans to each other.</p>
 <p>This is why simulations are so powerful — we establish models which generate data under known population history, and then we can investigate what would be the values of our statistics of interest under those models (and perhaps guess which models are then closest to the hidden truth behind our empirical data).</p>
@@ -595,7 +723,7 @@ $$
 <p>There used to be a lot of controversy about the question of whether or not did Neanderthal ancestry proportion in Europeans decline or not over the past 40 thousand years (see Figure 1 in <a href="https://www.pnas.org/doi/full/10.1073/pnas.1814338116">this paper</a> and Figure 2 in <a href="https://www.nature.com/articles/nature17993">this paper</a>).</p>
 <p><strong>Your simulated tree sequence contains a time-series of European individuals over time. Use the <em>slendr</em> function <code>ts_f4ratio()</code> to compute (and then plot, if you’re familiar with data visualization in R) the proportion of Neanderthal ancestry in Europe over time, commonly designated <code>alpha</code> in the literature.</strong> Use <span class="math inline">\(f_4\)</span>-ratio statistic of the following form:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="sc">&lt;</span>vector individual names<span class="sc">&gt;</span>, <span class="at">A =</span> <span class="st">"NEA_1"</span>, <span class="at">B =</span> <span class="st">"NEA_2"</span>, <span class="at">C =</span> <span class="st">"AFR_1"</span>, <span class="at">O =</span> <span class="st">"CHIMP_1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="sc">&lt;</span>vector individual names<span class="sc">&gt;</span>, <span class="at">A =</span> <span class="st">"NEA_1"</span>, <span class="at">B =</span> <span class="st">"NEA_2"</span>, <span class="at">C =</span> <span class="st">"AFR_1"</span>, <span class="at">O =</span> <span class="st">"CHIMP_1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong>If a Neanderthal introgression happened at 3% tens of thousands of years ago, what would you expect the proportion to be in the present day? Lower? About the same?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
@@ -611,30 +739,30 @@ $$
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract table with names and times of sampled Europeans (ancient and present day)</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>eur_inds <span class="ot">&lt;-</span> <span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(pop <span class="sc">==</span> <span class="st">"EUR"</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>eur_inds</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute f4-ration statistic (this will take ~30s) -- note that we can provide</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># a vector of names for the X sample set to the `ts_f4ratio()` function</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>nea_ancestry <span class="ot">&lt;-</span> <span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> eur_inds<span class="sc">$</span>name, <span class="at">A =</span> <span class="st">"NEA_1"</span>, <span class="at">B =</span> <span class="st">"NEA_2"</span>, <span class="at">C =</span> <span class="st">"AFR_1"</span>, <span class="at">O =</span> <span class="st">"CHIMP_1"</span>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the age of each sample to the table of proportions</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>nea_ancestry<span class="sc">$</span>time <span class="ot">&lt;-</span> eur_inds<span class="sc">$</span>time</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>nea_ancestry</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>nea_ancestry <span class="sc">%&gt;%</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time, alpha)) <span class="sc">+</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">linetype =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">40000</span>, <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>)) <span class="sc">+</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time [years ago]"</span>, <span class="at">y =</span> <span class="st">"Neanderthal ancestry proportion"</span>) <span class="sc">+</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Neanderthal ancestry proportion in Europeans over time"</span>)</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="co"># For good measure, let's test the significance of the decline using a linear model</span></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(alpha <span class="sc">~</span> time, <span class="at">data =</span> nea_ancestry))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract table with names and times of sampled Europeans (ancient and present day)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>eur_inds <span class="ot">&lt;-</span> <span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(pop <span class="sc">==</span> <span class="st">"EUR"</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>eur_inds</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Compute f4-ration statistic (this will take ~30s) -- note that we can provide</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="co"># a vector of names for the X sample set to the `ts_f4ratio()` function</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>nea_ancestry <span class="ot">&lt;-</span> <span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> eur_inds<span class="sc">$</span>name, <span class="at">A =</span> <span class="st">"NEA_1"</span>, <span class="at">B =</span> <span class="st">"NEA_2"</span>, <span class="at">C =</span> <span class="st">"AFR_1"</span>, <span class="at">O =</span> <span class="st">"CHIMP_1"</span>)</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Add the age of each sample to the table of proportions</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>nea_ancestry<span class="sc">$</span>time <span class="ot">&lt;-</span> eur_inds<span class="sc">$</span>time</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>nea_ancestry</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>nea_ancestry <span class="sc">%&gt;%</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(time, alpha)) <span class="sc">+</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">linetype =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linewidth =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">40000</span>, <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_cartesian</span>(<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.1</span>)) <span class="sc">+</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"time [years ago]"</span>, <span class="at">y =</span> <span class="st">"Neanderthal ancestry proportion"</span>) <span class="sc">+</span></span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Neanderthal ancestry proportion in Europeans over time"</span>)</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a><span class="co"># For good measure, let's test the significance of the decline using a linear model</span></span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(<span class="fu">lm</span>(alpha <span class="sc">~</span> time, <span class="at">data =</span> nea_ancestry))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>In conclusion, assuming neutral drift, we don’t expect the Neanderthal trajectory to change, even after tens of thousands of years.</p>
 </div>

@@ -71,7 +71,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./study-afs.html" rel="next">
+<link href="./haplotype-statistics.html" rel="next">
 <link href="./more-statistics.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -259,6 +259,11 @@ window.Quarto = {
   <a href="./tree-thinking.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">Tree-based thinking</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./haplotype-statistics.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Untitled</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
@@ -287,7 +292,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./study-segregating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Bonus exercise: Segregating sites and sequencing effort</span></a>
+  <a href="./study-segregating.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Segregating sites and sequencing effort</span></a>
   </div>
 </li>
       </ul>
@@ -418,11 +423,9 @@ window.Quarto = {
   <li><a href="#exercise-mutations-versus-branches" id="toc-exercise-mutations-versus-branches" class="nav-link" data-scroll-target="#exercise-mutations-versus-branches">Exercise: Mutations versus branches</a></li>
   <li><a href="#exercise-outgroup-f_3-as-a-measure-of-overlap-of-tree-paths" id="toc-exercise-outgroup-f_3-as-a-measure-of-overlap-of-tree-paths" class="nav-link" data-scroll-target="#exercise-outgroup-f_3-as-a-measure-of-overlap-of-tree-paths">Exercise: “Outgroup” <span class="math inline">\(f_3\)</span> as a measure of overlap of tree paths</a></li>
   <li><a href="#exercise-f_4-as-a-measure-of-overlap-of-tree-paths" id="toc-exercise-f_4-as-a-measure-of-overlap-of-tree-paths" class="nav-link" data-scroll-target="#exercise-f_4-as-a-measure-of-overlap-of-tree-paths">Exercise: <span class="math inline">\(f_4\)</span> as a measure of overlap of tree paths</a></li>
+  <li><a href="#exercise-estimating-ancestry-proportions" id="toc-exercise-estimating-ancestry-proportions" class="nav-link" data-scroll-target="#exercise-estimating-ancestry-proportions">Exercise: Estimating ancestry proportions</a></li>
   <li><a href="#exercise-how-many-unique-f4-quartets-are-there" id="toc-exercise-how-many-unique-f4-quartets-are-there" class="nav-link" data-scroll-target="#exercise-how-many-unique-f4-quartets-are-there">Exercise: How many unique f4 quartets are there?</a></li>
-  <li><a href="#exercise-f_4-as-a-a-hypothesis-test-for-admixture" id="toc-exercise-f_4-as-a-a-hypothesis-test-for-admixture" class="nav-link" data-scroll-target="#exercise-f_4-as-a-a-hypothesis-test-for-admixture">Exercise: <span class="math inline">\(f_4\)</span> as a a hypothesis test for admixture</a>
-  <ul class="collapse">
-  <li><a href="#branch-length-overlap-as-a-measure-of-directionality" id="toc-branch-length-overlap-as-a-measure-of-directionality" class="nav-link" data-scroll-target="#branch-length-overlap-as-a-measure-of-directionality">Branch length overlap as a measure of directionality</a></li>
-  </ul></li>
+  <li><a href="#exercise-f_4-as-a-a-hypothesis-test-for-admixture" id="toc-exercise-f_4-as-a-a-hypothesis-test-for-admixture" class="nav-link" data-scroll-target="#exercise-f_4-as-a-a-hypothesis-test-for-admixture">Exercise: <span class="math inline">\(f_4\)</span> as a a hypothesis test for admixture</a></li>
   </ul>
 </nav>
     </div>
@@ -474,12 +477,13 @@ window.Quarto = {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">1000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2)</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  model, <span class="at">times =</span> <span class="dv">0</span>,</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(p1, <span class="dv">5</span>), <span class="fu">list</span>(p2, <span class="dv">5</span>), <span class="fu">list</span>(p3, <span class="dv">2</span>), <span class="fu">list</span>(p4, <span class="dv">1</span>)</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  model, <span class="at">times =</span> <span class="dv">0</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(p1, <span class="dv">5</span>), <span class="fu">list</span>(p2, <span class="dv">5</span>), <span class="fu">list</span>(p3, <span class="dv">2</span>), <span class="fu">list</span>(p4, <span class="dv">1</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">schedule =</span> schedule)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
@@ -533,9 +537,9 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"p1"</span>], <span class="at">X =</span> s[<span class="st">"p2"</span>], <span class="at">Y =</span> s[<span class="st">"p3"</span>], <span class="at">Z =</span> s[<span class="st">"p4"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
-  W     X     Y     Z     statistic                 f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt;
-1 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000155</code></pre>
+  W     X     Y     Z     statistic                f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt;
+1 p1    p2    p3    p4    f4(p1,p2;p3,p4) 0.000000885</code></pre>
 </div>
 </div>
 <p>The reason we didn’t get <em>exactly</em> zero is stochasticity, and the fact that along a genome (even a small one, only 10 Mb of simulated sequence) there are many possible trees. Sometimes, <a href="https://en.wikipedia.org/wiki/Incomplete_lineage_sorting">incomplete lineage sorting</a> will lead to genealogical trees which do not fit the tidy, well-behaved population tree like the one we see when we run <code>plot_model()</code>.</p>
@@ -672,26 +676,26 @@ window.Quarto = {
 <pre><code># A tibble: 20 × 7
    W     X     Y     Z     statistic                 f4   rep
    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
- 1 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000625     1
- 2 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000215      2
- 3 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000265      3
- 4 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.000000725     4
- 5 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.0000007       5
- 6 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.0000018       6
- 7 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.000000275     7
- 8 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.0000009       8
- 9 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000965      9
-10 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000170     10
-11 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.0000011      11
-12 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000055     12
-13 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000275     13
-14 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000085     14
-15 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000645     15
-16 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000345     16
-17 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.000000175    17
-18 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.0000024      18
-19 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.0000004      19
-20 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000065     20</code></pre>
+ 1 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000282      1
+ 2 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.000000100     2
+ 3 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000725     3
+ 4 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000207      4
+ 5 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000875     5
+ 6 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000348      6
+ 7 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000275     7
+ 8 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000750     8
+ 9 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000500     9
+10 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000295     10
+11 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000392     11
+12 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000358     12
+13 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000113     13
+14 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.0000051      14
+15 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.000000625    15
+16 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000198     16
+17 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.00000295     17
+18 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.00000195     18
+19 p1    p2    p3    p4    f4(p1,p2;p3,p4) -0.0000123      19
+20 p1    p2    p3    p4    f4(p1,p2;p3,p4)  0.000000425    20</code></pre>
 </div>
 </div>
 <p>This means we can visualize their distribution easily like this, for example:</p>
@@ -859,7 +863,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic           f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;            &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 0.0000712</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 0.0000329</code></pre>
 </div>
 </div>
 <p>And now let’s compose a “homemade” <span class="math inline">\(f_3\)</span> statistic as a linear combination of <span class="math inline">\(f_2\)</span> statistics as given by the equation:</p>
@@ -872,7 +876,7 @@ window.Quarto = {
 <span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 7.121e-05</code></pre>
+<pre><code>[1] 3.286e-05</code></pre>
 </div>
 </div>
 <p>You can see that the <code>ts_f3()</code> implementation gives basically the same value as our “homemade” implementation based on a linear combination of <span class="math inline">\(f_2\)</span> statistics, just as predicted by the underlying math!</p>
@@ -941,19 +945,21 @@ window.Quarto = {
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="fu">bind_rows</span>(s1, s2, s3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 6
-  W     X     Y     Z     statistic               f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                &lt;dbl&gt;
-1 p4    p3    p2    p1    f4(p4,p3;p2,p1) 0.00000372
-2 p4    p2    p3    p1    f4(p4,p2;p3,p1) 0.0000107 
-3 p4    p1    p4    p2    f4(p4,p1;p4,p2) 0.0000715 </code></pre>
+  W     X     Y     Z     statistic                f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt;
+1 p4    p3    p2    p1    f4(p4,p3;p2,p1) -0.00000833
+2 p4    p2    p3    p1    f4(p4,p2;p3,p1) -0.00000309
+3 p4    p1    p4    p2    f4(p4,p1;p4,p2)  0.0000419 </code></pre>
 </div>
 </div>
 </section>
+<section id="exercise-estimating-ancestry-proportions" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-estimating-ancestry-proportions">Exercise: Estimating ancestry proportions</h2>
+</section>
 <section id="exercise-how-many-unique-f4-quartets-are-there" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-how-many-unique-f4-quartets-are-there">Exercise: How many unique f4 quartets are there?</h2>
-<p>If you’ve learned about <span class="math inline">\(f\)</span>-statistics before, you’ve probably seen various symmetries in <span class="math inline">\(f_4\)</span> (but also other <span class="math inline">\(f\)</span>-statistics) depending on the arrangement of the “quartet”. As a trivial example, an <span class="math inline">\(f_3(A; B, C)\)</span> and <span class="math inline">\(f_3(A; C, B)\)</span> will give you exactly the same value, and the same thing applies even to more complex <span class="math inline">\(f\)</span>-statistics like <span class="math inline">\(f_4\)</span>.</p>
-<p><strong>Use simulations to compute how many unique <span class="math inline">\(f_4\)</span> values involving a single quartet are there.</strong></p>
-<p><strong>Hint:</strong> Draw some trees to figure out why could that be true. Also, when computing <code>ts_f4()</code>, set <code>mode = "branch"</code> to avoid the effect of statistical noise due to mutations.</p>
+<p>When playing with <span class="math inline">\(f\)</span>-statistics in this chapter, you’ve probably noticed various symmetries in <span class="math inline">\(f_4\)</span> (but also other <span class="math inline">\(f\)</span>-statistics) depending on the arrangement of their “configuration” (order of populations). As a trivial example, an <span class="math inline">\(f_3(A; B, C)\)</span> and <span class="math inline">\(f_3(A; C, B)\)</span> will give you exactly the same value.</p>
+<p><strong>Try to figure out, how many unique <span class="math inline">\(f_4\)</span> values involving a single quartet (our p1, p2, p3, and p4 populations) are there. How about how many absolute values? You can answer this either by drawing and doodling on paper, but freel free to also use computer simulations if you’d like!</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -967,45 +973,176 @@ window.Quarto = {
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # install a combinatorics R package</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("combinat")</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
 <span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
 <span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">4000</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p1)</span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">2000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2)</span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">1000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">4000</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p4)</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">2000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">1000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2)</span>
 <span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(combinat)</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">generation_time =</span> <span class="dv">1</span>)</span>
 <span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a><span class="co"># These are the four samples we can create quartet combinations from:</span></span>
-<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>quartet <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"p1_1"</span>, <span class="st">"p2_1"</span>, <span class="st">"p3_1"</span>, <span class="st">"p4_1"</span>)</span>
-<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a><span class="co"># This is how we can generate all permutations:</span></span>
-<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>quartets <span class="ot">&lt;-</span> <span class="fu">permn</span>(quartet)</span>
-<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>quartets</span>
-<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a><span class="co"># How many permutations there are in total?</span></span>
-<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a><span class="co">#   4! = 4 * 3 * 2 * 1 = 24</span></span>
-<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a><span class="fu">factorial</span>(<span class="dv">4</span>)</span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span></span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a><span class="co"># install a combinatorics R package:</span></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages("combinat")</span></span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(combinat)</span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a><span class="co"># these are the four samples we can create quartet combinations from:</span></span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>quartet <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"p1_1"</span>, <span class="st">"p2_1"</span>, <span class="st">"p3_1"</span>, <span class="st">"p4_1"</span>)</span>
 <span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="co"># We should therefore have 24 different quartet combinations of samples</span></span>
-<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(quartets)</span>
-<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Loop across all quartets, computing the corresponding f4 statistic (we want</span></span>
-<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a><span class="co"># to do this using branch lengths, not mutations, as the mutation-based computation</span></span>
-<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a><span class="co"># would involve statistical noise)</span></span>
-<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>all_f4s <span class="ot">&lt;-</span> <span class="fu">lapply</span>(quartets, <span class="cf">function</span>(q) <span class="fu">ts_f4</span>(ts, q[<span class="dv">1</span>], q[<span class="dv">2</span>], q[<span class="dv">3</span>], q[<span class="dv">4</span>], <span class="at">mode =</span> <span class="st">"branch"</span>))</span>
-<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a><span class="co"># Bind the list of f4 results into a single data frame and inspect the results</span></span>
-<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>all_f4s <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(all_f4s) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">abs</span>(f4))</span>
-<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(all_f4s, <span class="at">n =</span> <span class="cn">Inf</span>)</span>
-<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Narrow down the results to only unique f4 values</span></span>
-<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4s, f4, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4s, <span class="fu">abs</span>(f4), <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a><span class="co"># this is how we can generate all permutations:</span></span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>quartets <span class="ot">&lt;-</span> <span class="fu">permn</span>(quartet)</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>quartets</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] "p1_1" "p2_1" "p3_1" "p4_1"
+
+[[2]]
+[1] "p1_1" "p2_1" "p4_1" "p3_1"
+
+[[3]]
+[1] "p1_1" "p4_1" "p2_1" "p3_1"
+
+[[4]]
+[1] "p4_1" "p1_1" "p2_1" "p3_1"
+
+[[5]]
+[1] "p4_1" "p1_1" "p3_1" "p2_1"
+
+[[6]]
+[1] "p1_1" "p4_1" "p3_1" "p2_1"
+
+[[7]]
+[1] "p1_1" "p3_1" "p4_1" "p2_1"
+
+[[8]]
+[1] "p1_1" "p3_1" "p2_1" "p4_1"
+
+[[9]]
+[1] "p3_1" "p1_1" "p2_1" "p4_1"
+
+[[10]]
+[1] "p3_1" "p1_1" "p4_1" "p2_1"
+
+[[11]]
+[1] "p3_1" "p4_1" "p1_1" "p2_1"
+
+[[12]]
+[1] "p4_1" "p3_1" "p1_1" "p2_1"
+
+[[13]]
+[1] "p4_1" "p3_1" "p2_1" "p1_1"
+
+[[14]]
+[1] "p3_1" "p4_1" "p2_1" "p1_1"
+
+[[15]]
+[1] "p3_1" "p2_1" "p4_1" "p1_1"
+
+[[16]]
+[1] "p3_1" "p2_1" "p1_1" "p4_1"
+
+[[17]]
+[1] "p2_1" "p3_1" "p1_1" "p4_1"
+
+[[18]]
+[1] "p2_1" "p3_1" "p4_1" "p1_1"
+
+[[19]]
+[1] "p2_1" "p4_1" "p3_1" "p1_1"
+
+[[20]]
+[1] "p4_1" "p2_1" "p3_1" "p1_1"
+
+[[21]]
+[1] "p4_1" "p2_1" "p1_1" "p3_1"
+
+[[22]]
+[1] "p2_1" "p4_1" "p1_1" "p3_1"
+
+[[23]]
+[1] "p2_1" "p1_1" "p4_1" "p3_1"
+
+[[24]]
+[1] "p2_1" "p1_1" "p3_1" "p4_1"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># how many permutations there are in total?</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   4! = 4 * 3 * 2 * 1 = 24</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">factorial</span>(<span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 24</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we should therefore have 24 different quartet combinations of samples</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(quartets)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 24</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># loop across all quartets, computing the corresponding f4 statistic</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>all_f4 <span class="ot">&lt;-</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">map_dfr</span>(quartets, <span class="cf">function</span>(q) <span class="fu">ts_f4</span>(ts, q[<span class="dv">1</span>], q[<span class="dv">2</span>], q[<span class="dv">3</span>], q[<span class="dv">4</span>])) <span class="sc">%&gt;%</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">abs</span>(f4))</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="co"># print all f4 values</span></span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(all_f4, <span class="at">n =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 24 × 6
+   W     X     Y     Z     statistic                       f4
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;
+ 1 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.0000005
+ 2 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.0000005
+ 3 p3_1  p1_1  p2_1  p4_1  f4(p3_1,p1_1;p2_1,p4_1) -0.0000005
+ 4 p3_1  p1_1  p4_1  p2_1  f4(p3_1,p1_1;p4_1,p2_1)  0.0000005
+ 5 p2_1  p4_1  p3_1  p1_1  f4(p2_1,p4_1;p3_1,p1_1) -0.0000005
+ 6 p4_1  p2_1  p3_1  p1_1  f4(p4_1,p2_1;p3_1,p1_1)  0.0000005
+ 7 p4_1  p2_1  p1_1  p3_1  f4(p4_1,p2_1;p1_1,p3_1) -0.0000005
+ 8 p2_1  p4_1  p1_1  p3_1  f4(p2_1,p4_1;p1_1,p3_1)  0.0000005
+ 9 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.0000045
+10 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0.0000045
+11 p3_1  p4_1  p1_1  p2_1  f4(p3_1,p4_1;p1_1,p2_1) -0.0000045
+12 p4_1  p3_1  p1_1  p2_1  f4(p4_1,p3_1;p1_1,p2_1)  0.0000045
+13 p4_1  p3_1  p2_1  p1_1  f4(p4_1,p3_1;p2_1,p1_1) -0.0000045
+14 p3_1  p4_1  p2_1  p1_1  f4(p3_1,p4_1;p2_1,p1_1)  0.0000045
+15 p2_1  p1_1  p4_1  p3_1  f4(p2_1,p1_1;p4_1,p3_1) -0.0000045
+16 p2_1  p1_1  p3_1  p4_1  f4(p2_1,p1_1;p3_1,p4_1)  0.0000045
+17 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.000005 
+18 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.000005 
+19 p4_1  p1_1  p3_1  p2_1  f4(p4_1,p1_1;p3_1,p2_1)  0.000005 
+20 p1_1  p4_1  p3_1  p2_1  f4(p1_1,p4_1;p3_1,p2_1) -0.000005 
+21 p3_1  p2_1  p4_1  p1_1  f4(p3_1,p2_1;p4_1,p1_1)  0.000005 
+22 p3_1  p2_1  p1_1  p4_1  f4(p3_1,p2_1;p1_1,p4_1) -0.000005 
+23 p2_1  p3_1  p1_1  p4_1  f4(p2_1,p3_1;p1_1,p4_1)  0.000005 
+24 p2_1  p3_1  p4_1  p1_1  f4(p2_1,p3_1;p4_1,p1_1) -0.000005 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># narrow down the results to only unique f4 values</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4, f4, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 6
+  W     X     Y     Z     statistic                       f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;
+1 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.0000005
+2 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.0000005
+3 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.0000045
+4 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0.0000045
+5 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.000005 
+6 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.000005 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># narrow down the results to only unique absolute f4 values</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4, <span class="fu">abs</span>(f4), <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 7
+  W     X     Y     Z     statistic                       f4 `abs(f4)`
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;     &lt;dbl&gt;
+1 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.0000005 0.0000005
+2 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.0000045 0.0000045
+3 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.000005  0.000005 </code></pre>
+</div>
 </div>
 </div>
 </div>
@@ -1013,116 +1150,44 @@ window.Quarto = {
 </section>
 <section id="exercise-f_4-as-a-a-hypothesis-test-for-admixture" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-f_4-as-a-a-hypothesis-test-for-admixture">Exercise: <span class="math inline">\(f_4\)</span> as a a hypothesis test for admixture</h2>
-<section id="branch-length-overlap-as-a-measure-of-directionality" class="level3">
-<h3 class="anchored" data-anchor-id="branch-length-overlap-as-a-measure-of-directionality">Branch length overlap as a measure of directionality</h3>
-<section id="base-model" class="level4">
-<h4 class="anchored" data-anchor-id="base-model">Base model</h4>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(cowplot)</span>
-<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
-<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-8"><a href="#cb28-8" aria-hidden="true" tabindex="-1"></a>outgroup <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"outgroup"</span>, <span class="at">time =</span> <span class="dv">7000000</span>, <span class="at">N =</span> <span class="dv">10000</span>)</span>
-<span id="cb28-9"><a href="#cb28-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-10"><a href="#cb28-10" aria-hidden="true" tabindex="-1"></a>altai    <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Altai"</span>,    <span class="at">time =</span> <span class="dv">6000000</span>, <span class="at">N =</span>  <span class="dv">1000</span>, <span class="at">parent =</span> outgroup)</span>
-<span id="cb28-11"><a href="#cb28-11" aria-hidden="true" tabindex="-1"></a>vindija  <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Vindija"</span>,  <span class="at">time =</span>  <span class="dv">200000</span>, <span class="at">N =</span>  <span class="dv">1000</span>, <span class="at">parent =</span> altai)</span>
-<span id="cb28-12"><a href="#cb28-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-13"><a href="#cb28-13" aria-hidden="true" tabindex="-1"></a>san      <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"San"</span>,      <span class="at">time =</span>  <span class="dv">600000</span>, <span class="at">N =</span> <span class="dv">10000</span>, <span class="at">parent =</span> altai)</span>
-<span id="cb28-14"><a href="#cb28-14" aria-hidden="true" tabindex="-1"></a>mbuti    <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Mbuti"</span>,    <span class="at">time =</span>  <span class="dv">350000</span>, <span class="at">N =</span> <span class="dv">10000</span>, <span class="at">parent =</span> san)</span>
-<span id="cb28-15"><a href="#cb28-15" aria-hidden="true" tabindex="-1"></a>yoruba   <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Yoruba"</span>,   <span class="at">time =</span>  <span class="dv">220000</span>, <span class="at">N =</span> <span class="dv">10000</span>, <span class="at">parent =</span> mbuti)</span>
-<span id="cb28-16"><a href="#cb28-16" aria-hidden="true" tabindex="-1"></a>dinka    <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"Dinka"</span>,    <span class="at">time =</span>  <span class="dv">150000</span>, <span class="at">N =</span> <span class="dv">15000</span>, <span class="at">parent =</span> yoruba)</span>
-<span id="cb28-17"><a href="#cb28-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb28-18"><a href="#cb28-18" aria-hidden="true" tabindex="-1"></a>nonafr   <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"nonafr"</span>,   <span class="at">time =</span>   <span class="dv">70000</span>, <span class="at">N =</span> <span class="dv">3000</span>,  <span class="at">parent =</span> dinka)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-</section>
-<section id="neanderthal---mh-and-mh---neanderthal-gene-flow-models" class="level4">
-<h4 class="anchored" data-anchor-id="neanderthal---mh-and-mh---neanderthal-gene-flow-models">Neanderthal -&gt; MH and MH -&gt; Neanderthal gene-flow models</h4>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>model1 <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> vindija, <span class="at">to =</span> nonafr, <span class="at">proportion =</span> <span class="fl">0.03</span>, <span class="at">start =</span> <span class="dv">55000</span>, <span class="at">end =</span> <span class="dv">50000</span>),</span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">30</span></span>
-<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>schedule1 <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model1, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">5</span>))</span>
-<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>model2 <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),</span>
-<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> nonafr, <span class="at">to =</span> vindija, <span class="at">proportion =</span> <span class="fl">0.03</span>, <span class="at">start =</span> <span class="dv">55000</span>, <span class="at">end =</span> <span class="dv">50000</span>),</span>
-<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">30</span></span>
-<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a>schedule2 <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model2, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">5</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_grid</span>(</span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model1, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">log =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model2, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">log =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="tree-thinking_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>result1 <span class="ot">&lt;-</span> <span class="fu">ts_replicate</span>(</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10</span>,</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  {</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    ts1 <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model1, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule1) <span class="sc">%&gt;%</span> <span class="fu">ts_mutate</span>(<span class="fl">1e-8</span>)</span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts1, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
-<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"San"</span>],    <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
-<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"Mbuti"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
-<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"Yoruba"</span>], <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
-<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts1, <span class="at">W =</span> samples[<span class="st">"Dinka"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>])</span>
-<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="st">"Nea -&gt; MH"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>result2 <span class="ot">&lt;-</span> <span class="fu">ts_replicate</span>(</span>
-<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">10</span>,</span>
-<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  {</span>
-<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    ts2 <span class="ot">&lt;-</span> <span class="fu">msprime</span>(model2, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule1) <span class="sc">%&gt;%</span> <span class="fu">ts_mutate</span>(<span class="fl">1e-8</span>)</span>
-<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts2, <span class="at">split =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">bind_rows</span>(</span>
-<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"San"</span>],    <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
-<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"Mbuti"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
-<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"Yoruba"</span>], <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>]),</span>
-<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">ts_f4</span>(ts2, <span class="at">W =</span> samples[<span class="st">"Dinka"</span>],  <span class="at">X =</span> samples[<span class="st">"nonafr"</span>], <span class="at">Y =</span> samples[<span class="st">"Vindija"</span>], <span class="at">Z =</span> samples[<span class="st">"outgroup"</span>])</span>
-<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="st">"MH -&gt; Nea"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">rbind</span>(result1, result2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(result, <span class="fu">aes</span>(W, f4)) <span class="sc">+</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_jitter</span>() <span class="sc">+</span></span>
-<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> direction)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="tree-thinking_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">4000</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p4)</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p2"</span>, <span class="at">time =</span> <span class="dv">2000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">1000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2)</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p3, <span class="at">to =</span> p2, <span class="at">start =</span> <span class="dv">500</span>, <span class="at">end =</span> <span class="dv">100</span>, <span class="at">proportion =</span> <span class="fl">0.13</span>)</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>model_gf <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4),</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,</span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">gene_flow =</span> gf</span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb39-16"><a href="#cb39-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-17"><a href="#cb39-17" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model_gf, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(p1, <span class="dv">5</span>), <span class="fu">list</span>(p2, <span class="dv">5</span>), <span class="fu">list</span>(p3, <span class="dv">2</span>), <span class="fu">list</span>(p4, <span class="dv">1</span>))</span>
+<span id="cb39-18"><a href="#cb39-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-19"><a href="#cb39-19" aria-hidden="true" tabindex="-1"></a>df_gf <span class="ot">&lt;-</span> <span class="fu">ts_replicate</span>(</span>
+<span id="cb39-20"><a href="#cb39-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">n =</span> <span class="dv">20</span>, {</span>
+<span id="cb39-21"><a href="#cb39-21" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb39-22"><a href="#cb39-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model_gf, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
+<span id="cb39-23"><a href="#cb39-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb39-24"><a href="#cb39-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-25"><a href="#cb39-25" aria-hidden="true" tabindex="-1"></a>  s <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(model_gf, <span class="at">split =</span> <span class="cn">TRUE</span>, <span class="at">schedule =</span> schedule)</span>
+<span id="cb39-26"><a href="#cb39-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-27"><a href="#cb39-27" aria-hidden="true" tabindex="-1"></a>  df_mutations <span class="ot">&lt;-</span> <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"p1"</span>], <span class="at">X =</span> s[<span class="st">"p2"</span>], <span class="at">Y =</span> s[<span class="st">"p3"</span>], <span class="at">Z =</span> s[<span class="st">"p4"</span>])</span>
+<span id="cb39-28"><a href="#cb39-28" aria-hidden="true" tabindex="-1"></a>  df_mutations<span class="sc">$</span>mode <span class="ot">&lt;-</span> <span class="st">"mutations"</span></span>
+<span id="cb39-29"><a href="#cb39-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-30"><a href="#cb39-30" aria-hidden="true" tabindex="-1"></a>  df_branches <span class="ot">&lt;-</span> <span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"p1"</span>], <span class="at">X =</span> s[<span class="st">"p2"</span>], <span class="at">Y =</span> s[<span class="st">"p3"</span>], <span class="at">Z =</span> s[<span class="st">"p4"</span>], <span class="at">mode =</span> <span class="st">"branch"</span>)</span>
+<span id="cb39-31"><a href="#cb39-31" aria-hidden="true" tabindex="-1"></a>  df_branches<span class="sc">$</span>mode <span class="ot">&lt;-</span> <span class="st">"branches"</span></span>
+<span id="cb39-32"><a href="#cb39-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-33"><a href="#cb39-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbind</span>(df_mutations, df_branches)</span>
+<span id="cb39-34"><a href="#cb39-34" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
-</section>
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -1533,8 +1598,8 @@ window.Quarto = {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./study-afs.html" class="pagination-link" aria-label="$N_e$ inference with AFS">
-        <span class="nav-page-text"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./haplotype-statistics.html" class="pagination-link" aria-label="Untitled">
+        <span class="nav-page-text"><span class="chapter-title">Untitled</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
