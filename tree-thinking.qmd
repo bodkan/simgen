@@ -61,8 +61,9 @@ p2 <- population("p2", time = 2000, N = 1000, parent = p3)
 p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+
 schedule <- schedule_recording(
-  model, times = 0,
+  model_null, times = 0,
   list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1)
 )
 
@@ -521,6 +522,12 @@ just as predicted by the underlying math!
 
 
 
+
+
+
+
+
+
 ## Exercise: $f_4$ as a measure of overlap of tree paths
 
 The usual application of $f_4$ in practical research usually boils down to some
@@ -588,68 +595,72 @@ bind_rows(s1, s2, s3)
 
 
 
-
-
-
 ## Exercise: How many unique f4 quartets are there?
 
-If you've learned about $f$-statistics before, you've probably seen various
-symmetries in $f_4$ (but also other $f$-statistics) depending on the
-arrangement of the "quartet". As a trivial example, an $f_3(A; B, C)$ and
-$f_3(A; C, B)$ will give you exactly the same value, and the same thing applies
-even to more complex $f$-statistics like $f_4$.
+When playing with $f$-statistics in this chapter, you've probably noticed
+various symmetries in $f_4$ (but also other $f$-statistics) depending on the
+arrangement of their "configuration" (order of populations). As a trivial
+example, an $f_3(A; B, C)$ and $f_3(A; C, B)$ will give you exactly the same
+value.
 
-**Use simulations to compute how many unique $f_4$ values involving a single
-quartet are there.**
-
-**Hint:** Draw some trees to figure out why could that be true. Also, when
-computing `ts_f4()`, set `mode = "branch"` to avoid the effect of statistical
-noise due to mutations.
+**Try to figure out, how many unique $f_4$ values involving a single quartet
+(our p1, p2, p3, and p4 populations) are there. How about how many absolute
+values? You can answer this either by drawing and doodling on paper, but freel
+free to also use computer simulations if you'd like!**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
 ```{r}
-#| eval: false
-# # install a combinatorics R package
-# install.packages("combinat")
+#| message: false
+library(purrr)
+library(dplyr)
 
 library(slendr)
 init_env()
 
-p1 <- population("p1", time = 4000, N = 1000)
-p2 <- population("p2", time = 3000, N = 1000, parent = p1)
-p3 <- population("p3", time = 2000, N = 1000, parent = p2)
-p4 <- population("p4", time = 1000, N = 1000, parent = p3)
+p4 <- population("p4", time = 4000, N = 1000)
+p3 <- population("p3", time = 3000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+# install a combinatorics R package:
+# install.packages("combinat")
 library(combinat)
 
-# These are the four samples we can create quartet combinations from:
+# these are the four samples we can create quartet combinations from:
 quartet <- c("p1_1", "p2_1", "p3_1", "p4_1")
 
-# This is how we can generate all permutations:
+# this is how we can generate all permutations:
 quartets <- permn(quartet)
 quartets
 
-# How many permutations there are in total?
+# how many permutations there are in total?
 #   4! = 4 * 3 * 2 * 1 = 24
 factorial(4)
 
-# We should therefore have 24 different quartet combinations of samples
+# we should therefore have 24 different quartet combinations of samples
 length(quartets)
 
-# Loop across all quartets, computing the corresponding f4 statistic (we want
-# to do this using branch lengths, not mutations, as the mutation-based computation
-# would involve statistical noise)
-all_f4s <- lapply(quartets, function(q) ts_f4(ts, q[1], q[2], q[3], q[4], mode = "branch"))
+# loop across all quartets, computing the corresponding f4 statistic
+all_f4 <-
+  map_dfr(quartets, function(q) ts_f4(ts, q[1], q[2], q[3], q[4])) %>%
+  arrange(abs(f4))
 
-# Bind the list of f4 results into a single data frame and inspect the results
-all_f4s <- bind_rows(all_f4s) %>% arrange(abs(f4))
-print(all_f4s, n = Inf)
+# print all f4 values
+print(all_f4, n = Inf)
 
-# Narrow down the results to only unique f4 values
-distinct(all_f4s, f4, .keep_all = TRUE)
-distinct(all_f4s, abs(f4), .keep_all = TRUE)
+# narrow down the results to only unique f4 values
+distinct(all_f4, f4, .keep_all = TRUE)
+
+# narrow down the results to only unique absolute f4 values
+distinct(all_f4, abs(f4), .keep_all = TRUE)
 ```
 
 :::
@@ -663,103 +674,39 @@ distinct(all_f4s, abs(f4), .keep_all = TRUE)
 
 ## Exercise: $f_4$ as a a hypothesis test for admixture
 
-### Branch length overlap as a measure of directionality
-
-#### Base model
-
 ```{r}
-library(dplyr)
-library(ggplot2)
-library(cowplot)
-
 library(slendr)
 init_env()
 
-outgroup <- population("outgroup", time = 7000000, N = 10000)
+p4 <- population("p4", time = 4000, N = 1000)
+p3 <- population("p3", time = 3000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
-altai    <- population("Altai",    time = 6000000, N =  1000, parent = outgroup)
-vindija  <- population("Vindija",  time =  200000, N =  1000, parent = altai)
+gf <- gene_flow(from = p3, to = p2, start = 500, end = 100, proportion = 0.13)
 
-san      <- population("San",      time =  600000, N = 10000, parent = altai)
-mbuti    <- population("Mbuti",    time =  350000, N = 10000, parent = san)
-yoruba   <- population("Yoruba",   time =  220000, N = 10000, parent = mbuti)
-dinka    <- population("Dinka",    time =  150000, N = 15000, parent = yoruba)
-
-nonafr   <- population("nonafr",   time =   70000, N = 3000,  parent = dinka)
-```
-
-#### Neanderthal -> MH and MH -> Neanderthal gene-flow models
-
-```{r}
-model1 <- compile_model(
-  populations = list(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),
-  gene_flow = gene_flow(from = vindija, to = nonafr, proportion = 0.03, start = 55000, end = 50000),
-  generation_time = 30
+model_gf <- compile_model(
+  populations = list(p1, p2, p3, p4),
+  generation_time = 1,
+  gene_flow = gf
 )
-schedule1 <- schedule_recording(model1, times = 0, list("each", 5))
 
-model2 <- compile_model(
-  populations = list(outgroup, altai, vindija, san, mbuti, yoruba, dinka, nonafr),
-  gene_flow = gene_flow(from = nonafr, to = vindija, proportion = 0.03, start = 55000, end = 50000),
-  generation_time = 30
-)
-schedule2 <- schedule_recording(model2, times = 0, list("each", 5))
+schedule <- schedule_recording(model_gf, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1))
+
+df_gf <- ts_replicate(
+  n = 20, {
+  ts <-
+    msprime(model_gf, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+
+  s <- ts_names(model_gf, split = TRUE, schedule = schedule)
+
+  df_mutations <- ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+  df_mutations$mode <- "mutations"
+
+  df_branches <- ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch")
+  df_branches$mode <- "branches"
+
+  rbind(df_mutations, df_branches)
+})
 ```
-
-```{r}
-plot_grid(
-  plot_model(model1, proportions = TRUE, log = TRUE),
-  plot_model(model2, proportions = TRUE, log = TRUE)
-)
-```
-
-```{r}
-result1 <- ts_replicate(
-  n = 10,
-  {
-    ts1 <- msprime(model1, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule1) %>% ts_mutate(1e-8)
-    
-    samples <- ts_names(ts1, split = TRUE)
-    
-    bind_rows(
-      ts_f4(ts1, W = samples["San"],    X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
-      ts_f4(ts1, W = samples["Mbuti"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
-      ts_f4(ts1, W = samples["Yoruba"], X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
-      ts_f4(ts1, W = samples["Dinka"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"])
-    )
-  }
-) %>% mutate(direction = "Nea -> MH")
-```
-
-```{r}
-result2 <- ts_replicate(
-  n = 10,
-  {
-    ts2 <- msprime(model2, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule1) %>% ts_mutate(1e-8)
-    
-    samples <- ts_names(ts2, split = TRUE)
-    
-    bind_rows(
-      ts_f4(ts2, W = samples["San"],    X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
-      ts_f4(ts2, W = samples["Mbuti"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
-      ts_f4(ts2, W = samples["Yoruba"], X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"]),
-      ts_f4(ts2, W = samples["Dinka"],  X = samples["nonafr"], Y = samples["Vindija"], Z = samples["outgroup"])
-    )
-  }
-) %>% mutate(direction = "MH -> Nea")
-```
-
-```{r}
-result <- rbind(result1, result2)
-```
-
-```{r}
-ggplot(result, aes(W, f4)) +
-  geom_boxplot() +
-  geom_jitter() +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  facet_wrap(~ direction)
-```
-
-
-
