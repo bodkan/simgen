@@ -45,7 +45,7 @@ genetics research (particularly in the context of ancient DNA genomics)---the
 venerable $f-4$-statistic, [formally established by Nick Patterson and David
 Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193).
 
-**Create a new script `f4_branches.R` and paste the following code into that
+**Create a new script `f_statistics.R` and paste the following code into that
 script. Then, as always, read through the code, try to decipher what it's going
 to do, then run it and compare your understanding with the visualization of the
 model.**
@@ -144,7 +144,7 @@ trees does your tree sequence have now?**
 ts_num_trees <- ts$num_trees
 ```
 
-We changed all N sizes to 1, then we rerun the entire script `f4_branches.R`
+We changed all N sizes to 1, then we rerun the entire script `f_statistics.R`
 again:
 
 ```{r}
@@ -229,7 +229,7 @@ stand out, I recently implemented a function `ts_replicates()`. The way it works
 is like this:
 
 ```{r}
-eval: false
+#| eval: false
 ts_replicate(
   n = <number of replicates>,
   {
@@ -277,7 +277,7 @@ df <- ts_replicate(
     msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
-  s <- ts_names(model, split = TRUE)
+  s <- ts_names(ts, split = TRUE)
 
   ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
 })
@@ -341,96 +341,104 @@ independent realization of the demographic model in question.
 
 
 
-<!-- ## Exercise: Mutations versus branches -->
+## Exercise: Mutations versus branches
 
-<!-- Do you recall how I told you earlier that you don't have to add mutations to -->
-<!-- your tree sequence `ts`, and still be able to compute population genetic -->
-<!-- statistics? But that you can safely add them with `ts_mutate()` anyway? -->
+Do you recall how I told you earlier that you don't have to add mutations to
+your tree sequence `ts`, and still be able to compute population genetic
+statistics? But that you can safely add them with `ts_mutate()` anyway?
 
-<!-- The reason this works is because some very smart people figured out a -->
-<!-- mathematical [duality between mutation-based and branch-based -->
-<!-- statistics](https://academic.oup.com/genetics/article/215/3/779/5930459)---it -->
-<!-- actually doesn't matter which way we compute our statistics, they give -->
-<!-- mathematically the same result. -->
+The reason this works is because some very smart people figured out a
+mathematical [duality between mutation-based and branch-based
+statistics](https://academic.oup.com/genetics/article/215/3/779/5930459)---it
+actually doesn't matter which way we compute our statistics, they give
+mathematically the same result.
 
-<!-- On a practical level, we usually resort to mutation-based computation, which is -->
-<!-- how _slendr_ statistical functions operate by default. But there's one reason -->
-<!-- why we sometimes might want to use branch-based computation. Let's now explore -->
-<!-- why this could be the case. -->
+On a practical level, we usually resort to mutation-based computation, which is
+how _slendr_ statistical functions operate by default. But population genetics
+theory (described in the paper in detail) suggests that branch-based computation
+is less noisy than mutation-based computation.
 
-<!-- --- -->
+Let's test to what degree is this the case.
 
-<!-- **Modify your `ts_replicate()` command so that it internally produces two data -->
-<!-- frames:** -->
+---
 
-<!-- 1. **`df_mutations` --- computed with `ts_f4()` same as before, except that you -->
-<!-- should add a new column to this data frame called `mode` with the value `"mutataions"`,** -->
+**Modify your `ts_replicate()` command so that it internally produces two data
+frames:**
 
-<!-- 2. **`df_branches` --- computed with `ts_f4()` by additionally setting its -->
-<!-- argument `mode = "branch"`, and adding a new column to this data frame called `mode` with the value `"branches"`.** -->
+1. **`df_mutations` --- computed with `ts_f4()` same as before, except that you
+should add a new column to this data frame called `mode` with the value `"mutataions"`,**
 
-<!-- **The last thing your `ts_replicate()` command should do is to combine them into -->
-<!-- a single data frame with `rbind(df_mutations, df_branches)`.** -->
+2. **`df_branches` --- computed with `ts_f4()` by additionally setting its
+argument `mode = "branch"`, and adding a new column to this data frame called `mode` with the value `"branches"`.**
 
-<!-- **Now visualize the distributions of $f_4$` values between the two variations of -->
-<!-- `ts_f4()` computation you just did. Is one of them noisier than the other? If -->
-<!-- so, why could this be?** -->
+**The last thing your `ts_replicate()` command should do is to combine them into
+a single data frame with `rbind(df_mutations, df_branches)`.**
 
-<!-- ::: {.callout-note collapse="true" icon=false} -->
-<!-- ### Click to see the solution -->
+**Now visualize the distributions of $f_4$` values between the two variations of
+`ts_f4()` computation you just did. Is one of them noisier than the other? If
+so, why could this be?**
 
-<!-- Here's the complete modified script `f4_branches.R` with the expanded solution -->
-<!-- to this exercise: -->
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
 
-<!-- ```{r} -->
-<!-- library(slendr) -->
-<!-- init_env() -->
+Here's the complete modified script `f_statistics.R` with the expanded solution
+to this exercise:
 
-<!-- p4 <- population("p4", time = 4000, N = 1000) -->
-<!-- p3 <- population("p3", time = 3000, N = 1000, parent = p4) -->
-<!-- p2 <- population("p2", time = 2000, N = 1000, parent = p3) -->
-<!-- p1 <- population("p1", time = 1000, N = 1000, parent = p2) -->
+```{r}
+library(slendr)
+init_env()
 
-<!-- model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1) -->
+p4 <- population("p4", time = 4000, N = 1000)
+p3 <- population("p3", time = 3000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
-<!-- schedule <- schedule_recording(model, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1)) -->
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
 
-<!-- df <- ts_replicate( -->
-<!--   n = 50, { -->
-<!--   ts <- -->
-<!--     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>% -->
-<!--     ts_mutate(mutation_rate = 1e-8) -->
+schedule <- schedule_recording(model, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1))
 
-<!--   s <- ts_names(model, split = TRUE, schedule = schedule) -->
+df <- ts_replicate(
+  n = 20, {
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
 
-<!--   df_mutations <- ts_fst(ts, s[c("p1", "p2")]) -->
-<!--   df_mutations$mode <- "mutations" -->
+  s <- ts_names(model, split = TRUE, schedule = schedule)
 
-<!--   df_branches <- ts_fst(ts, s[c("p1", "p2")], mode = "branch") -->
-<!--   df_branches$mode <- "branches" -->
+  df_mutations <- ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+  df_mutations$mode <- "mutations"
 
-<!--   rbind(df_mutations, df_branches) -->
-<!-- }) -->
-<!-- ``` -->
+  df_branches <- ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch")
+  df_branches$mode <- "branches"
 
-<!-- Let's visualize the results for comparison between mutation-based and -->
-<!-- branch-based computation: -->
+  rbind(df_mutations, df_branches)
+})
+```
 
-<!-- ```{r} -->
-<!-- library(ggplot2) -->
+Let's visualize the results for comparison between mutation-based and
+branch-based computation:
 
-<!-- ggplot(df, aes(mode, Fst)) + -->
-<!--   geom_point() -->
-<!-- ``` -->
+```{r}
+library(ggplot2)
 
+ggplot(df, aes(mode, f4)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~ mode, scales = "free_y")
+```
 
+Do you see a massive difference in the variance between both batches of
+simulations? I personally don't. This suggests that, particularly because it
+makes comparisons of our simulations to real-world software methods (which all
+work on mutations) easier, in a general case we might as well stick to
+mutation-based computation.
 
-<!-- See [this -->
-<!-- tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy) -->
-<!-- (and particularly the directly linked section) for more explanation on this -->
-<!-- topic. -->
+See [this
+tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy)
+(and particularly the directly linked section) for more explanation on this
+topic.
 
-<!-- ::: -->
+:::
 
 
 
@@ -448,7 +456,7 @@ overlapping paths in "population trees" (or, when admixture comes into the
 picture), in "population graphs", let's get back to our familiar $f_3$
 statistic.
 
-Consider the model from our script `f4_branches.R`:
+Consider the model from our script `f_statistics.R`:
 
 ```{r}
 #| echo: false
@@ -520,7 +528,7 @@ variant of ABBA/BABA $D$ statistics for testing admixture hypotheses. We will
 look at this later, but lets first look at $f_4$ statistics in a more general
 case, as a measure of overlapping paths in population trees.
 
-Consider the model from our script `f4_branches.R`:
+Consider the model from our script `f_statistics.R`:
 
 ```{r}
 #| echo: false
@@ -539,7 +547,7 @@ df <- ts_replicate(n = 10, {
   s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"])
   s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"])
 
-  bind_rows(s1, s2, s3) %>% mutate(quartet = paste(W, X, Y, Z))
+  bind_rows(s1, s2, s3)
 })
 ```
 
@@ -548,7 +556,7 @@ p_model1 <- plot_grid(
 
 plot_model(model, schedule = schedule, proportions = TRUE),
 
-ggplot(df_quartets, aes(paste(W, X, Y, Z), f4)) +
+ggplot(df, aes(paste(W, X, Y, Z), f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red"),
