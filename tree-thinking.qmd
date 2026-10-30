@@ -1,27 +1,22 @@
 # Tree-based thinking
 
-In our simulation exercises so far, we focused on learning the ins and outs of
-the _slendr_ interface for constructing demographic models and computing
-statistics, followed by showing how to program simulation-based workflows to
-study the behavior and limitations of various summary statistics, hoping to
-inspire you to see how empowering such techniques can be and how easily they can
-be extended to other software methods and other kinds of models.
+In our simulation exercises, we have so far focused on learning the ins and outs
+of _slendr_ --- how to construct demographic models, how to compute summary
+statistics, and how exploratory, simulation-based workflows can help us to study
+their behavior and limitations. Hopefully, you got a useful glimpse of how
+empowering simulation-based exploration is and how easily the approaches shown
+can be extended to other software methods and other kinds of models (something
+you will get to practice much more towards the end of our workshop).
 
-Towards the end of the workshop, you will have the opportunity to develop your
-own ideas, applying the methods you've learned either on your own research
-problems, or on a couple of "case studies" that I will suggest for you.
+In this chapter, we will play with _slendr_ an interactive "popgen calculator"
+to quickly explore ideas and build intuition into how (and why) some more
+complex statistics work, specifically in the context of tree-sequences (or,
+sometimes, ancestral recombination graphs).
 
-In this chapter, we will show how useful _slendr_ can be as an interactive
-"popgen calculator" to quickly explore ideas and build intuition into how (and
-why) population genetic statistics behave a certain way. The ideas are still
-very similar, but the focus will be much more on "interactive playful
-exploration".
-
-Our focus on exploration will be on perhaps the most critical component of
-population genetics research (particularly in the context of ancient DNA
-genomics)---the venerable $f-4$-statistic, [formally established by Nick
-Patterson and David
-Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193).
+Unlike the previous chapters, which involved a lot of guidance and explanation
+to make sure you understand how _slendr_ operates (and why), this chapter will
+be a bit more compressed and focused on interesting and useful bits of
+functionality to push your modeling with _slendr_ even further.
 
 ```{r}
 #| message: false
@@ -45,7 +40,21 @@ library(purrr)   # convenient looping functions
 
 ## Exercise: $f_4$ as a measure of "overlapping paths" through a tree
 
+We will begin by exploring perhaps the most critical component of population
+genetics research (particularly in the context of ancient DNA genomics)---the
+venerable $f-4$-statistic, [formally established by Nick Patterson and David
+Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193).
+
+**Create a new script `f4_branches.R` and paste the following code into that
+script. Then, as always, read through the code, try to decipher what it's going
+to do, then run it and compare your understanding with the visualization of the
+model.**
+
 ```{r}
+#| output: false
+library(slendr)
+init_env()
+
 p4 <- population("p4", time = 4000, N = 1000)
 p3 <- population("p3", time = 3000, N = 1000, parent = p4)
 p2 <- population("p2", time = 2000, N = 1000, parent = p3)
@@ -58,16 +67,7 @@ schedule <- schedule_recording(
 )
 
 plot_model(model, schedule = schedule)
-```
 
-::: aside
-
-**Note:** I numbered the population this way because it makes more sense to my
-brain with regards to how $f_4$ quartets are often arranged.
-
-:::
-
-```{r}
 ts <-
   msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
@@ -76,17 +76,36 @@ ts <-
 s <- ts_names(ts, split = TRUE)
 ```
 
-**given the phylogenetic relationships above, what value would you expect for
-$f_4(p1, p2; p3, p4)$? try to guess first without any coding, then compute the
-statistic with the `ts_f4()` function. does your simulation give you the result
-you might expect based on logic alone? if not, why could this be?**
+::: aside
+
+**Note:** I numbered the population the "reversed way" because it makes more
+sense to my brain with regards to how $f_4$ quartets are often arranged.
+
+:::
 
 ::: {.callout-note collapse="true" icon=false}
 ### click to see the solution
 
-as we can see, $f$-statistics theory tells us that the value should be zero, but
-without any reference point, we get a number which is very tiny, but how tiny
-would it have to be to be "basically zero"?
+```{r}
+plot_model(model, schedule = schedule)
+```
+
+:::
+
+
+**Given the phylogenetic relationships between the populations encoded by our
+model, what value would you expect for $f_4(p1, p2; p3, p4)$? try to guess first
+without any coding, then compute the statistic with the `ts_f4()` function. does
+your simulation give you the result you might expect based on logic alone? if
+not, why could this be?**
+
+::: {.callout-note collapse="true" icon=false}
+### click to see the solution
+
+As we can see below, $f$-statistics theory tells us that the value should be
+zero, but without any reference point, we get a number which is very tiny (the
+value in the `f4` column), but how tiny would it have to be to be "basically
+zero"?
 
 ```{r}
 ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
@@ -125,23 +144,36 @@ trees does your tree sequence have now?**
 ts_num_trees <- ts$num_trees
 ```
 
+We changed all N sizes to 1, then we rerun the entire script `f4_branches.R`
+again:
+
 ```{r}
-# we changed all N sizes to 1
+library(slendr)
+init_env()
+
+#
+# note the change to N = 1 !!!
+#
 p4 <- population("p4", time = 4000, N = 1)
 p3 <- population("p3", time = 3000, N = 1, parent = p4)
 p2 <- population("p2", time = 2000, N = 1, parent = p3)
 p1 <- population("p1", time = 1000, N = 1, parent = p2)
 
-# the rest of the code is the same...
 model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
-schedule <- schedule_recording( model, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1))
+schedule <- schedule_recording(
+  model, times = 0,
+  list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1)
+)
 
 ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
+
+s <- ts_names(ts, split = TRUE)
 ```
 
-Now let's compute the $f_4$ again on this extreme model:
+Now let's compute the $f_4$ again on the `ts` tree sequence produced by this
+extreme model:
 
 ```{r}
 ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
@@ -156,9 +188,9 @@ your model.
 
 ---
 
-Of course, changing $N_e$ to value of one is a drastic measure of generally only
-theoretical utility. We could hardly get away with doing that, if we wanted to
-use simulations to make a point in our research paper.
+Of course, changing $N_e$ to value of 1 as we did above is a drastic measure of
+generally only theoretical utility. We could hardly get away with doing that, if
+we wanted to use simulations to make a point in our research paper.
 
 How do we deal with the unavoidable stochasticity in our simulations then? This
 wasn't much of a problem in exercises in the previous chapters, but we need the
@@ -166,8 +198,24 @@ way to solve this to be able to get useful, applicable results.
 
 Let's look into this now.
 
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
 
+```{r}
+#| echo: false
+p4 <- population("p4", time = 4000, N = 1000)
+p3 <- population("p3", time = 3000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+:::
 
 
 
@@ -176,12 +224,311 @@ Let's look into this now.
 
 ## Exercise: Reducing stochastic noise via simulation replicates
 
+As a means to tame the stochasticity and help meaningful statistical patterns
+stand out, I recently implemented a function `ts_replicates()`. The way it works
+is like this:
+
+```{r}
+eval: false
+ts_replicate(
+  n = <number of replicates>,
+  {
+    # ...
+    # a block of slendr code wrapped in { ... } containing a ts simulation
+    # and a slendr statistical computation we want to run in replicates
+    # ...
+  }
+)
+```
+
+---
+
+**Take a look at its manual page under `?ts_replicates`, then use it to run 10
+replicate simulations of the $f_4$ statistic above** (the one which should give
+us a zero expectation, but it wasn't clear if it did or not), **saving it to
+variable `df`. What format does the result have? When you visualize the
+distribution of $f_4$ values across all replicates, are they more understandable
+in terms of the statistical expectation for this particular $f_4$ quartet?**
+
+::: aside
+
+**Note:** If you want to speed up the replicate simulation, not that
+`?ts_replicate` describes the means to run multiple simulations in parallel.
+
+:::
+
+::: aside
+
 **Note:** I wrote this function a few days ago in a bit of a haste, specifically
 for this workshop, but also hoping it'll be useful in daily research. Feedback
 appreciated!
 
+:::
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Here's how we can tweak the "template" above to answer the question:
+
 ```{r}
-df_quartets <- ts_replicate(n = 10, {
+df <- ts_replicate(
+  n = 20, {
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+
+  s <- ts_names(model, split = TRUE)
+
+  ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+})
+```
+
+We can see that we get the same format of the data frame as normally produced by
+the `ts_f4()` function, except with a new column `rep` added, indicating a
+replicate number.
+
+```{r}
+df
+```
+
+This means we can visualize their distribution easily like this, for example:
+
+```{r}
+ggplot(df, aes(statistic, f4)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+```
+
+As we can see, when we run multiple replicates of the simulation, we are able
+to "control" the stochastic noise a bit, making the expected pattern stand out
+more clearly: we see that the expected value of `{r} unique(df$statistic)`
+is really zero.
+
+:::
+
+---
+
+**Why do we put the `ts <- ...` simulation code inside the `ts_replicate()` block?
+What happens when you only run the `ts_f4()` command in the `{ ... block ... }`
+inside `ts_replicate()`?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Let's run the `ts_replicate()` without (internally) simulating the tree sequence:
+
+```{r}
+df_bad <- ts_replicate(n = 20, {
+  ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+})
+```
+
+When we do this, we can see that we got the same value throughout! This is because
+all replicates are computed on the same outcome of a single evolutionary process
+which generated the tree-sequence object `ts`.
+
+This is unlike the correct way of using `ts_replicate()`, which simulates an
+independent `ts` object for each replicate, each of those then being based on an
+independent realization of the demographic model in question.
+
+:::
+
+
+
+
+
+
+
+
+<!-- ## Exercise: Mutations versus branches -->
+
+<!-- Do you recall how I told you earlier that you don't have to add mutations to -->
+<!-- your tree sequence `ts`, and still be able to compute population genetic -->
+<!-- statistics? But that you can safely add them with `ts_mutate()` anyway? -->
+
+<!-- The reason this works is because some very smart people figured out a -->
+<!-- mathematical [duality between mutation-based and branch-based -->
+<!-- statistics](https://academic.oup.com/genetics/article/215/3/779/5930459)---it -->
+<!-- actually doesn't matter which way we compute our statistics, they give -->
+<!-- mathematically the same result. -->
+
+<!-- On a practical level, we usually resort to mutation-based computation, which is -->
+<!-- how _slendr_ statistical functions operate by default. But there's one reason -->
+<!-- why we sometimes might want to use branch-based computation. Let's now explore -->
+<!-- why this could be the case. -->
+
+<!-- --- -->
+
+<!-- **Modify your `ts_replicate()` command so that it internally produces two data -->
+<!-- frames:** -->
+
+<!-- 1. **`df_mutations` --- computed with `ts_f4()` same as before, except that you -->
+<!-- should add a new column to this data frame called `mode` with the value `"mutataions"`,** -->
+
+<!-- 2. **`df_branches` --- computed with `ts_f4()` by additionally setting its -->
+<!-- argument `mode = "branch"`, and adding a new column to this data frame called `mode` with the value `"branches"`.** -->
+
+<!-- **The last thing your `ts_replicate()` command should do is to combine them into -->
+<!-- a single data frame with `rbind(df_mutations, df_branches)`.** -->
+
+<!-- **Now visualize the distributions of $f_4$` values between the two variations of -->
+<!-- `ts_f4()` computation you just did. Is one of them noisier than the other? If -->
+<!-- so, why could this be?** -->
+
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- ### Click to see the solution -->
+
+<!-- Here's the complete modified script `f4_branches.R` with the expanded solution -->
+<!-- to this exercise: -->
+
+<!-- ```{r} -->
+<!-- library(slendr) -->
+<!-- init_env() -->
+
+<!-- p4 <- population("p4", time = 4000, N = 1000) -->
+<!-- p3 <- population("p3", time = 3000, N = 1000, parent = p4) -->
+<!-- p2 <- population("p2", time = 2000, N = 1000, parent = p3) -->
+<!-- p1 <- population("p1", time = 1000, N = 1000, parent = p2) -->
+
+<!-- model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1) -->
+
+<!-- schedule <- schedule_recording(model, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1)) -->
+
+<!-- df <- ts_replicate( -->
+<!--   n = 50, { -->
+<!--   ts <- -->
+<!--     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>% -->
+<!--     ts_mutate(mutation_rate = 1e-8) -->
+
+<!--   s <- ts_names(model, split = TRUE, schedule = schedule) -->
+
+<!--   df_mutations <- ts_fst(ts, s[c("p1", "p2")]) -->
+<!--   df_mutations$mode <- "mutations" -->
+
+<!--   df_branches <- ts_fst(ts, s[c("p1", "p2")], mode = "branch") -->
+<!--   df_branches$mode <- "branches" -->
+
+<!--   rbind(df_mutations, df_branches) -->
+<!-- }) -->
+<!-- ``` -->
+
+<!-- Let's visualize the results for comparison between mutation-based and -->
+<!-- branch-based computation: -->
+
+<!-- ```{r} -->
+<!-- library(ggplot2) -->
+
+<!-- ggplot(df, aes(mode, Fst)) + -->
+<!--   geom_point() -->
+<!-- ``` -->
+
+
+
+<!-- See [this -->
+<!-- tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy) -->
+<!-- (and particularly the directly linked section) for more explanation on this -->
+<!-- topic. -->
+
+<!-- ::: -->
+
+
+
+
+
+
+
+
+
+
+## Exercise: "Outgroup" $f_3$ as a measure of tree path overlap
+
+To ease into the problem of interpreting $f$-statistics as measures of
+overlapping paths in "population trees" (or, when admixture comes into the
+picture), in "population graphs", let's get back to our familiar $f_3$
+statistic.
+
+Consider the model from our script `f4_branches.R`:
+
+```{r}
+#| echo: false
+plot_model(model, proportions = TRUE, schedule = schedule)
+```
+
+We know from [the theory of
+$f$-statistics](https://academic.oup.com/genetics/article/202/4/1485/5930214)
+that the $f_2$ statistic measures the branch length between two samples (two
+individuals, or groups of individuals)---see equation (1) in the linked paper.
+
+Another thing established in the paper is the fact that any $f$-statistic can be expressed as a
+linear combination of $f_2$ statistics.
+
+For instance, equation 20b in the same paper states the following:
+
+$$f_3(A; B, C) = \frac{1}{2} (f_2(A, C) + f_2(A, B) - f_2(B, C))$$
+
+**Draw a doodle of the population model above on a piece of paper which traces
+the paths indicated by the $f_2$ statistics in this $f_3$ equation, let's say by
+assuming that A = p4, B = p1, C = p2. When you add up and subtract the paths
+from each other, do you arrive at the interpretation of the "outgroup" $f_3$ as
+a measure of shared branch between B and C and the "outgroup" A?**
+
+**Then, use the function `ts_f2()` and this equation to compute a "homemade"
+$f_3(A = p4; B = p1, C = p2)$ statistic and compare it to the result produced by
+`ts_f3()` provided by _slendr_. Do you get the same result?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+First let's get our groups of individuals from all lineages:
+
+```{r}
+s <- ts_names(ts, split = TRUE)
+```
+
+Now let's compute $f_3$ using the _slendr_ function:
+
+```{r}
+ts_f3(ts, A = s["p4"], B = s["p1"], C = s["p2"])
+```
+
+And now let's compose a "homemade" $f_3$ statistic as a linear combination of
+$f_2$ statistics as given by the equation:
+
+```{r}
+homemade_f3 <- (
+  ts_f2(ts, A = s["p4"], B = s["p1"])$f2 +
+  ts_f2(ts, A = s["p4"], B = s["p2"])$f2 -
+  ts_f2(ts, A = s["p1"], B = s["p2"])$f2
+) / 2
+
+homemade_f3
+```
+
+You can see that the `ts_f3()` implementation gives basically the same value as
+our "homemade" implementation based on a linear combination of $f_2$ statistics,
+just as predicted by the underlying math!
+
+:::
+
+
+
+## Exercise: $f_4$ as a measure of tree path overlaps
+
+The usual application of $f_4$ in practical research usually boils down to some
+variant of ABBA/BABA $D$ statistics for testing admixture hypotheses. We will
+look at this later, but lets first look at $f_4$ statistics in a more general
+case, as a measure of overlapping paths in population trees.
+
+Consider the model from our script `f4_branches.R`:
+
+```{r}
+#| echo: false
+plot_model(model, proportions = TRUE, schedule = schedule)
+```
+
+```{r}
+df <- ts_replicate(n = 10, {
   ts <-
     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
@@ -229,32 +576,9 @@ bind_rows(s1, s2, s3)
 
 
 
-## Exercise: `mode = "branch"` vs `mode = "site"`
 
 
-
-**Repeat the exercise 3 by setting `mode = "site"` in the `ts_f3()` function
-calls** (this is actually the default behavior of all _slendr_ tree-sequence
-based _tskit_ functions). This will switch the _tskit_ computation to using
-mutation counts along each branch of the tree sequence, rather than using
-branch length themselves. **Why might the branch-based computation be a bit
-better if what we're after is investigating the expected values of statistics
-under some model?**
-
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-See [this
-tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy)
-(and particularly the directly linked section) for explanation.
-
-:::
-
-
-
-
-## f4 as a measure of gene flow
+## Exercise: $f_4$ as an admixture test
 
 ### Branch length overlap as a measure of directionality
 
@@ -353,311 +677,6 @@ ggplot(result, aes(W, f4)) +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
   facet_wrap(~ direction)
 ```
-
-
-## Exercise 6: Detecting Neanderthal admixture in Europeans
-
-Let's now pretend its about 2008, we sequenced the first Neanderthal genome,
-and we are working on a project that will [change human evolution research
-forever](https://www.science.org/doi/10.1126/science.1188021). We also have the
-genomes of a couple of people from Africa and Europe, which we want to use to
-answer the most burning question of all evolutionary anthropology: _"Do some
-people living today carry Neanderthal ancestry?"_
-
-Perhaps you've heard earlier about an $f_4$ statistic (or its equivalent, the
-$D$ statistic) which can be used as a test of "treeness". As a recap, for some
-"quartet" of individuals or population samples (whose names can be giving as
-characters such as "EUR_1" to the `ts_f4()` function, as you can see in the
-help page of `?ts_f4`), they can be used as a hypothesis test of whether the
-history of those samples is compatible with there not having been an
-introgression.
-
-**Compute the $f_4$ test of Neanderthal introgression in EUR individuals using
-the _slendr_ function `ts_f4()` (make sure to set `mode = "branch"` argument to
-minimize stochastic noise).**
-
-::: aside
-
-**Note:** By default, each _slendr_ / _tskit_ statistic function operates on
-mutations, and this will switch them to use branch length (as you might know,
-$f$-statistics are mathematically defined using branch lengths in trees and
-`mode = "branch"` does exactly that).
-
-:::
-
-**Hint:** If you haven't learned this earlier, to solve this exercise, you want
-to compute and compare the values of these two statistics:
-
-1. $f_4$(\<some African\>, \<another African\>; \<Neanderthal\>, \<Chimp\>)
-
-2. $f_4$(\<some African\>, \<a test European\>; \<Neanderthal\>, \<Chimp\>),
-
-here `<individual>` can be the name of any individual recorded in your
-tree sequence, such as names you saw as `name` column in the table returned
-by `ts_recorded(ts)` (i.e. `"NEA_1"` could be used as a "representative"
-\<Neanderthal\> in those equations, similarly for `"CHIMP_1"` as the fourth
-sample in the $f_4$ quarted representing the outgroup).
-
-<!--
-To simplify things a lot, we can understand the above equations as comparing the
-counts of so-called BABA and ABBA allele patterns between the quarted of samples
-specified in the statistics:
-
-$$
-f_4(<African>, <X>; <Neand.>, <Chimp>) = \frac{\#BABA - \#ABBA}{\#SNPs}
-$$
--->
-
-The first $f_4$ statistic above is not expected to give values "too different"
-from 0 (even in case of Neanderthal introgression into Europeans) because we
-don't expect two African individuals to differ "significantly" in terms of how
-much alleles they share with a Neanderthal (because their ancestors never met
-Neanderthals!). However, the other statistic should be "significantly negative"
-if there Neanderthal introgression into Europeans happened some time throughout
-their history.
-
-**Is the second of those two statistics "much more negative" than the first,
-as expected assuming introgression from Neanderthals into Europeans?**
-
-**Why am I putting "significantly" and "much more negative" in quotes in the
-previous sentence? What are we missing here for this being a true hypothesis
-test as you might be accustomed to from computing $f$-statistics using a tool
-such as ADMIXTOOLS?** (We hinted at this issue a couple of times earlier.)
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-Compute the difference in the amount of allele sharing between two African
-individuals and a Neanderthal:
-
-```{r}
-#| eval: false
-f4_null <- ts_f4(ts, W = "AFR_1", X = "AFR_2", Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
-f4_null
-```
-
-Compute the difference in the amount of allele sharing between an African
-individual vs European individual and a Neanderthal:
-
-```{r}
-#| eval: false
-f4_alt <- ts_f4(ts, W = "AFR_1", X = "EUR_1", Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
-f4_alt
-```
-
-We can see that the second test resulted in an f4 value about ~20 times more
-negative than the first test, indicating that a European in our test carries
-"significantly more" Neanderthal alleles compared to the baseline expectation
-of no introgression established by the comparison to an African ...
-
-```{r}
-#| eval: false
-abs(f4_alt$f4 / f4_null$f4)
-```
-
-... although this is not a real test of significance because we have no Z-score
-or standard error which would give us something like a p-value for the
-hypothesis test, this evaluation of statistical expectations and trends using
-simulations is extremely useful in research, because it allows us to test our
-ideas on ground-truth models. With empirical data, we rarely (if ever) know
-exactly what happened. With simulations, we always know which process generated
-the data and how that process could have influenced our statistics of interest.
-
-:::
-
-
-
-
-
-
-## Exercise 7: Detecting Neanderthal admixture in Europeans v2.0
-
-The fact that we don't get something equivalent to a p-value in these kinds of
-simulations is generally not a problem, because we're often interested in
-establishing a trend of a statistic under various conditions, and understand
-under which conditions and in which way its _expected value_ behaves in a
-certain way. If statistical noise is a problem, we work around this by
-computing a statistic on multiple simulation replicates or even increasing the
-sample sizes.
-
-::: {.aside}
-**Note:** To see this in practice, you can check out a
-[paper](https://www.pnas.org/doi/10.1073/pnas.1814338116#fig02) in which I used
-this approach quite successfully on a related problem.
-:::
-
-On top of that, p-value of something like an $f$-statistic (whether it's
-significantly different from zero) is also strongly affected by quality of
-the data, sequencing errors, coverage, etc. (which can certainly be examined
-using simulations!). However, these are aspects of modeling which are quite
-orthogonal to the problem of investigating the expectations and trends of
-statistics given some underlying evolutionary model, which is what we're after
-in these exercises.
-
-That said, even in perfect simulated data, what exactly does
-_"significantly different from zero compared to some baseline expectation"_
-mean can be blurred by noise with simple single-individual comparisons that we
-did above. Let's increase the sample size a bit to see if a statistical
-pattern expected in $f_4$ statistic from our Neanderthal introgression model
-becomes more apparent.
-
-**Compute the first $f_4$ statistic (the baseline expectation between a pair of
-Africans) and the second $f_4$ statistic (comparing an African and a European),
-but this time on _all recorded Africans_ and _all recorded Europeans_,
-respectively. Plot the *distributions* of those two sets of statistics. This
-should remove most of the evolutionary stochastic noise and make a statistical
-trend stand out much more clearly.**
-
-**Hint:** Whenever you need to compute something for many things in sequence,
-looping is very useful. One way to do compute, say, an $f_4$ statistic over
-many individuals is by using this kind of pattern using R's looping function
-`lapply()`:
-
-```{r}
-#| eval: false
-
-# Loop over vector of individual names (variable x) and apply a given ts_f4()
-# expression on each individual (note the ts_f4(..., X = x, ...) in the code)
-X <- c("ind_1", "ind_2", ...)
-
-list_f4 <- lapply(
-  X,
-  function(x) ts_f4(ts, W = "AFR_1", X = x, Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
-)
-
-# The above gives us a list of data frames, so we need to bind them all into a
-# single table for easier interpretation and visualization
-df_f4 <- do.call(rbind, list_f4)
-```
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-This gives us list of vectors of the names of all individuals in each
-population...
-
-```{r}
-#| eval: false
-sample_sets <- ts_names(ts, split = TRUE)
-# ... which we can then access like this
-sample_sets$AFR # all Africans
-sample_sets$EUR # all Europeans
-```
-
-Let's compute the $f_4$ statistic for all Africans... 
-
-```{r}
-#| eval: false
-f4_afr_list <- lapply(
-  sample_sets$AFR,
-  function(x) ts_f4(ts, W = "AFR_1", X = x, Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
-)
-# ... and Europeans
-f4_eur_list <- lapply(
-  sample_sets$EUR,
-  function(x) ts_f4(ts, W = "AFR_1", X = x, Y = "NEA_1", Z = "CHIMP_1", mode = "branch")
-)
-```
-
-Bind each list of data frames into a single data frame:
-
-```{r}
-#| eval: false
-f4_afr <- do.call(rbind, f4_afr_list)
-f4_eur <- do.call(rbind, f4_eur_list)
-
-# add population columns to each of the two results for easier plotting
-f4_afr$pop <- "AFR"
-f4_eur$pop <- "EUR"
-
-# bind both tables together
-f4_results <- rbind(f4_afr, f4_eur)
-```
-
-Now we can visualize the results:
-
-```{r}
-#| eval: false
-f4_results %>%
-  ggplot(aes(pop, f4, color = pop)) +
-  geom_boxplot() +
-  geom_jitter() +
-  geom_hline(yintercept = 0, linetype = 2) +
-  ggtitle("f4(AFR, EUR; NEA, CHIMP)") +
-  theme_bw()
-```
-
-We can see that the $f_4$ statistic test of Neanderthal introgression in
-Europeans indeed does give a much more negative distribution of values compared
-to the baseline expectation which compares two Africans to each other.
-
-This is why simulations are so powerful --- we establish models which generate
-data under known population history, and then we can investigate what would be
-the values of our statistics of interest under those models (and perhaps guess
-which models are then closest to the hidden truth behind our empirical data).
-
-:::
-
-
-## Exercise: Trajectory of Neanderthal ancestry in Europe over time
-
-There used to be a lot of controversy about the question of whether or not did
-Neanderthal ancestry proportion in Europeans decline or not over the past 40
-thousand years (see Figure 1 in [this
-paper](https://www.pnas.org/doi/full/10.1073/pnas.1814338116) and Figure 2 in
-[this paper](https://www.nature.com/articles/nature17993)).
-
-**Your simulated tree sequence contains a time-series of European individuals
-over time. Use the _slendr_ function `ts_f4ratio()` to compute (and then plot,
-if you're familiar with data visualization in R) the proportion of Neanderthal
-ancestry in Europe over time, commonly designated `alpha` in the literature.**
-Use $f_4$-ratio statistic of the following form:
-
-```{r}
-#| eval: false
-ts_f4ratio(ts, X = <vector individual names>, A = "NEA_1", B = "NEA_2", C = "AFR_1", O = "CHIMP_1")
-```
-
-**If a Neanderthal introgression happened at 3% tens of thousands of years ago,
-what would you expect the proportion to be in the present day? Lower? About the
-same?**
-
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-```{r}
-#| eval: false
-# Extract table with names and times of sampled Europeans (ancient and present day)
-eur_inds <- ts_recorded(ts) %>% filter(pop == "EUR")
-eur_inds
-
-# Compute f4-ration statistic (this will take ~30s) -- note that we can provide
-# a vector of names for the X sample set to the `ts_f4ratio()` function
-nea_ancestry <- ts_f4ratio(ts, X = eur_inds$name, A = "NEA_1", B = "NEA_2", C = "AFR_1", O = "CHIMP_1")
-
-# Add the age of each sample to the table of proportions
-nea_ancestry$time <- eur_inds$time
-nea_ancestry
-
-nea_ancestry %>%
-  ggplot(aes(time, alpha)) +
-  geom_point() +
-  geom_smooth(method = "lm", linetype = 2, color = "red", linewidth = 0.5) +
-  xlim(40000, 0) +
-  coord_cartesian(ylim = c(0, 0.1)) +
-  labs(x = "time [years ago]", y = "Neanderthal ancestry proportion") +
-  theme_bw() +
-  ggtitle("Neanderthal ancestry proportion in Europeans over time")
-
-# For good measure, let's test the significance of the decline using a linear model
-summary(lm(alpha ~ time, data = nea_ancestry))
-```
-
-In conclusion, assuming neutral drift, we don't expect the Neanderthal
-trajectory to change, even after tens of thousands of years.
-
-:::
 
 
 
