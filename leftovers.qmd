@@ -11,3 +11,104 @@ download.file(url_path, destfile = ts_path, mode = "wb")
 ts <- ts_read(file = ts_path, model = model)
 ts
 ```
+
+
+
+## Exercise: Mutations versus branches
+
+Do you recall how I told you earlier that you don't have to add mutations to
+your tree sequence `ts`, and still be able to compute population genetic
+statistics? But that you can safely add them with `ts_mutate()` anyway?
+
+The reason this works is because some very smart people figured out a
+mathematical [duality between mutation-based and branch-based
+statistics](https://academic.oup.com/genetics/article/215/3/779/5930459)---it
+actually doesn't matter which way we compute our statistics, they give
+mathematically the same result.
+
+On a practical level, we usually resort to mutation-based computation, which is
+how _slendr_ statistical functions operate by default. But population genetics
+theory (described in the paper in detail) suggests that branch-based computation
+is less noisy than mutation-based computation.
+
+Let's test to what degree is this the case.
+
+---
+
+**Modify your `ts_replicate()` command so that it internally produces two data
+frames:**
+
+1. **`df_mutations` --- computed with `ts_f4()` same as before, except that you
+should add a new column to this data frame called `mode` with the value `"mutataions"`,**
+
+2. **`df_branches` --- computed with `ts_f4()` by additionally setting its
+argument `mode = "branch"`, and adding a new column to this data frame called `mode` with the value `"branches"`.**
+
+**The last thing your `ts_replicate()` command should do is to combine them into
+a single data frame with `rbind(df_mutations, df_branches)`.**
+
+**Now visualize the distributions of $f_4$` values between the two variations of
+`ts_f4()` computation you just did. Is one of them noisier than the other? If
+so, why could this be?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Here's the complete modified script `f_statistics.R` with the expanded solution
+to this exercise:
+
+```{r}
+library(slendr)
+init_env()
+
+p4 <- population("p4", time = 4000, N = 1000)
+p3 <- population("p3", time = 3000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+
+schedule <- schedule_recording(model, times = 0, list(p1, 5), list(p2, 5), list(p3, 2), list(p4, 1))
+
+df_comparison <- ts_replicate(
+  n = 20, {
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+
+  s <- ts_names(model, split = TRUE, schedule = schedule)
+
+  df_mutations <- ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+  df_mutations$mode <- "mutations"
+
+  df_branches <- ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch")
+  df_branches$mode <- "branches"
+
+  rbind(df_mutations, df_branches)
+})
+```
+
+Let's visualize the results for comparison between mutation-based and
+branch-based computation:
+
+```{r}
+library(ggplot2)
+
+ggplot(df, aes(mode, f4)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.5) +
+  facet_wrap(~ mode, scales = "free_y")
+```
+
+Do you see a massive difference in the variance between both batches of
+simulations? I personally don't. This suggests that, particularly because it
+makes comparisons of our simulations to real-world software methods (which all
+work on mutations) easier, in a general case we might as well stick to
+mutation-based computation.
+
+See [this
+tutorial](https://tskit.dev/tutorials/no_mutations.html#genealogy-based-measures-are-less-noisy)
+(and particularly the directly linked section) for more explanation on this
+topic.
+
+:::
