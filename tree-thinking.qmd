@@ -652,8 +652,9 @@ p4 <- population("p4", time = 20000, N = 1000)
 p3 <- population("p3", time = 6000, N = 1000, parent = p4)
 p2 <- population("p2", time = 2000, N = 1000, parent = p3)
 p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+px <- population("px", time = 500, N = 1000, parent = p2)
 
-model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
 
 schedule <- schedule_recording(model, times = 0, list("each", 10))
 
@@ -670,9 +671,9 @@ df <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
+    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"], mode = "branch")
   )
 })
 
@@ -777,10 +778,11 @@ p4 <- population("p4", time = 20000, N = 1000)
 p3 <- population("p3", time = 6000, N = 1000, parent = p4)
 p2 <- population("p2", time = 2000, N = 1000, parent = p3)
 p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+px <- population("px", time = 500, N = 1000, parent = p2)
 
-gf <- gene_flow(from = p3, to = p2, start = 500, end = 400, proportion = 0.1)
+gf <- gene_flow(from = p3, to = px, start = 400, end = 300, proportion = 0.2)
 
-model <- compile_model(populations = list(p1, p2, p3, p4), gene_flow = gf, generation_time = 1)
+model <- compile_model(populations = list(p1, p2, p3, p4, px), gene_flow = gf, generation_time = 1)
 
 schedule <- schedule_recording(model, times = 0, list("each", 10))
 
@@ -797,9 +799,9 @@ df <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
+    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"], mode = "branch")
   )
 })
 
@@ -857,43 +859,19 @@ of whether an admixture event happened in the history of our samples, but also
 estimate the proportion of ancestry derived from admixture.
 
 ```{r}
-ts <-
-msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
-ts_mutate(mutation_rate = 1e-8)
-
-s <- ts_names(ts, split = TRUE)
-
-x <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
-ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
-x
-
-y <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
-ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
-y
-```
-
-
-
-```{r}
-ts_replicate(1000, {
+ts_replicate(100, {
 ts <-
   msprime(model, sequence_length = 50e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
   
-x <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
-  ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
+x <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"])$f4 / 
+  ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])$f4
 
-y <- ts_f4(ts, W = "p1_1", X = s["p4"], Y = s["p2"], Z = s["p3"])$f4 / 
-  ts_f4(ts, W = "p1_1", X = s["p4"], Y = "p1_2", Z = s["p3"])$f4
-
-# ts_f4(ts, A, O, X[i], C, mode = mode)$f4 /
-# ts_f4(ts, A, O, B, C, mode = mode)$f4
-
-ts_f4ratio(ts, "p2_1", A = "p3_1", B = "p3_2", C = s["p1"], O = s["p4"]) %>%
-  dplyr::mutate(x = x, y = y)
-}, parallel = 10) -> df
+ts_f4ratio(ts, s["px"], A = s["p1"], B = s["p2"], C = s["p3"], O = s["p4"]) %>%
+  dplyr::mutate(x = x)
+}, parallel = parallel::detectCores() - 1) -> df
 
 df
 
@@ -902,18 +880,13 @@ plot_grid(
   ggplot() +
     geom_density(data = df, aes(alpha), color = "red") +
     geom_density(data = df, aes(x), color = "blue") +
-    geom_density(data = df, aes(y), color = "green") +
-    geom_vline(xintercept = c(0, 0.1)) +
-    coord_cartesian(xlim = c(0, 0.5)),
+    geom_vline(xintercept = c(0, 0.8)),
   nrow = 2
 )
 
 mean(df$alpha)
 mean(df$x)
-mean(df$y)
 ```
-
-
 
 
 
