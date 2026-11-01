@@ -44,8 +44,9 @@ p4 <- population("p4", time = 20000, N = 1000)
 p3 <- population("p3", time = 6000, N = 1000, parent = p4)
 p2 <- population("p2", time = 2000, N = 1000, parent = p3)
 p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+px <- population("px", time = 500, N = 1000, parent = p2)
 
-model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
 
 schedule <- schedule_recording(model, times = 0, list("each", 10))
 
@@ -266,7 +267,7 @@ value in the `f4` column), but how tiny would it have to be to be "basically
 zero"?
 
 ```{r}
-ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"])
 ```
 
 The reason we didn't get _exactly_ zero is stochastic noise of any evolutionary
@@ -322,11 +323,14 @@ p4 <- population("p4", time = 20000, N = 1)
 p3 <- population("p3", time = 6000, N = 1, parent = p4)
 p2 <- population("p2", time = 2000, N = 1, parent = p3)
 p1 <- population("p1", time = 1000, N = 1, parent = p2)
+px <- population("px", time = 500, N = 1, parent = p2)
 
-model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
+
+schedule <- schedule_recording(model, times = 0, list("each", 10))
 
 ts <-
-  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
@@ -367,11 +371,14 @@ p4 <- population("p4", time = 20000, N = 1000)
 p3 <- population("p3", time = 6000, N = 1000, parent = p4)
 p2 <- population("p2", time = 2000, N = 1000, parent = p3)
 p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+px <- population("px", time = 500, N = 1000, parent = p2)
 
-model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
+
+schedule <- schedule_recording(model, times = 0, list("each", 10))
 
 ts <-
-  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
@@ -636,6 +643,7 @@ which showcases the most important results from this chapter so far:
 ### Click to see the entire script
 
 ```{r}
+#| echo: false
 ##################################################
 # load the necessary packages
 
@@ -671,9 +679,9 @@ df <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"], mode = "branch")
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
   )
 })
 
@@ -686,7 +694,7 @@ p_df <- ggplot(df, aes(statistic, f4)) +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 
-p_model <- plot_model(model, schedule = schedule)
+p_model <- plot_model(model, proportions = TRUE)
 
 p_panels <- plot_grid(p_model, p_df, nrow = 2)
 
@@ -799,9 +807,9 @@ df <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"], mode = "branch")
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
   )
 })
 
@@ -814,7 +822,7 @@ p_df <- ggplot(df, aes(statistic, f4)) +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 
-p_model <- plot_model(model, schedule = schedule)
+p_model <- plot_model(model, proportions = TRUE)
 
 p_panels <- plot_grid(p_model, p_df, nrow = 2)
 
@@ -859,33 +867,40 @@ of whether an admixture event happened in the history of our samples, but also
 estimate the proportion of ancestry derived from admixture.
 
 ```{r}
-ts_replicate(100, {
-ts <-
-  msprime(model, sequence_length = 50e6, recombination_rate = 1e-8, schedule = schedule) %>%
-  ts_mutate(mutation_rate = 1e-8)
+f4ratios <- ts_replicate(
+  n = 20,
+  {
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    ts_mutate(mutation_rate = 1e-8)
 
-s <- ts_names(ts, split = TRUE)
+  s <- ts_names(ts, split = TRUE)
+    
+  # one possible "f4-ratio" variant
+  num1 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p2"])$f4
+  den1 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p3"], Z = s["p2"])$f4
   
-x <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"])$f4 / 
-  ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])$f4
-
-ts_f4ratio(ts, s["px"], A = s["p1"], B = s["p2"], C = s["p3"], O = s["p4"]) %>%
-  dplyr::mutate(x = x)
-}, parallel = parallel::detectCores() - 1) -> df
-
-df
-
-plot_grid(
-  plot_model(model), 
-  ggplot() +
-    geom_density(data = df, aes(alpha), color = "red") +
-    geom_density(data = df, aes(x), color = "blue") +
-    geom_vline(xintercept = c(0, 0.8)),
-  nrow = 2
+  # another possible "f4-ratio" variant
+  num2 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"])$f4
+  den2 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])$f4
+  
+  # create a data frame with both variants
+  data.frame(estimate = c("variant1", "variant2"),
+             prop = c(num1 / den1, prop2 = num2 / den2))
+  },
+  parallel = parallel::detectCores() - 1
 )
 
-mean(df$alpha)
-mean(df$x)
+p_model <- plot_model(model, proportions = TRUE)
+
+p_f4ratios <-  ggplot(f4ratios, aes(prop, color = estimate)) +
+    geom_density() +
+    geom_vline(xintercept = c(0.2, 0.8), linetype = "dashed", color = "red") +
+    coord_cartesian(xlim = c(0, 1))
+
+p_panels <- plot_grid(p_model, p_f4ratios, nrow = 2)
+
+p_panels
 ```
 
 
