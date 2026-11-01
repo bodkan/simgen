@@ -1,35 +1,20 @@
 # Tree-based thinking
 
-In our simulation exercises, we have so far focused on learning the ins and outs
-of _slendr_ --- how to construct demographic models, how to compute summary
-statistics, and how exploratory, simulation-based workflows can help us to study
-their behavior and limitations. Hopefully, you got a useful glimpse of how
-empowering simulation-based exploration is and how easily the approaches shown
-can be extended to other software methods and other kinds of models (something
-you will get to practice much more towards the end of our workshop).
+We have so far focused on learning how to construct _slendr_ demographic models,
+how to compute summary statistics, and how exploratory, simulation-based
+workflows help us study the behavior and limitations of those statistics.
 
-In this chapter, we will play with _slendr_ an interactive "popgen calculator"
-to quickly explore ideas and build intuition into how (and why) some more
-complex statistics work, specifically in the context of tree-sequences (or,
-sometimes, ancestral recombination graphs).
+In this chapter, we will change the pace a bit, and play with _slendr_ as a bit
+of an "interactive popgen calculator" to quickly explore theoretical concepts in
+a hands-on practical way, and build intuition into how (and why) they work the
+way they do. We will also dig a little bit more into the tree-sequence data
+itself.
 
-Unlike the previous chapters, which involved a lot of guidance and explanation
-to make sure you understand how _slendr_ operates (and why), this chapter will
-be a bit more compressed and focused on interesting and useful bits of
-functionality to push your modeling with _slendr_ even further.
-
-This will be more of a demonstration of the exploratory power of simulations.
-
-```{r}
-#| message: false
-library(slendr)
-init_env()
-
-library(dplyr)   # manipulating tabular data
-library(ggplot2) # data visualization
-library(cowplot) # composing plots into panels
-library(purrr)   # convenient looping functions
-```
+Our main focus will be on $f$-statistics, mostly because they form such a
+crucial component of population genomics research, specifically within the aDNA
+context, and because they showcase very nicely why simulation-based exploration
+can be so powerful. In the process, we will also learn a few useful _slendr_
+tricks which are applicable for many other research problems.
 
 
 
@@ -44,19 +29,8 @@ library(purrr)   # convenient looping functions
 
 ## Exercise: "Outgroup" $f_3$ as a measure of overlap of tree paths
 
-To ease into the problem of interpreting $f$-statistics as measures of
-overlapping paths in "population trees" (or, when admixture comes into the
-picture), in "population graphs", let's get back to our familiar $f_3$
-statistic.
-
-**Create a new script `fstatistics.R` and paste the following code into that
-script. Then, as always, read through the code, try to decipher what it's going
-to do, then run it and compare your understanding with the visualization of the
-model.**
-
-(Note that we don't bother with specific recording schedules, just to make our
-code a little less verbose and the simulation-based explorations in this chapter
-a little less tedious.)
+script. As always, read through the code, try to decipher what it's going to do,
+run it and compare your understanding with the visualization of the model.**
 
 ```{r}
 #| output: false
@@ -70,31 +44,18 @@ p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
 
-schedule <- schedule_recording(model, times = 0, list("each", 1))
+schedule <- schedule_recording(model, times = 0, list("each", 10))
+
+plot_model(model, schedule = schedule)
 
 ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 ```
 
-::: aside
+---
 
-**Note:** I numbered the population the "reversed way" because it makes more
-sense to my brain with regards to how $f_4$ quartets are often arranged.
-
-:::
-
-::: {.callout-note collapse="true" icon=false}
-### click to see the solution
-
-```{r}
-plot_model(model, schedule = schedule)
-
-```
-
-:::
-
-Consider the model from our script `f_statistics.R`:
+Now, consider the model from this script:
 
 ```{r}
 #| echo: false
@@ -103,51 +64,76 @@ plot_model(model, schedule = schedule)
 
 We know from [the theory of
 $f$-statistics](https://academic.oup.com/genetics/article/202/4/1485/5930214)
-that the $f_2$ statistic measures the branch length between two samples (two
-individuals, or groups of individuals)---see equation (1) in the linked paper.
+that:
+
+- $f_2(A, B)$ statistic measures the branch length between two samples A
+and B (two individuals, two groups of individuals, etc.), and
+
+- similarly, $f_3(C; A, B)$ statistic is formally defined as the branch length
+which connects the internal most recent common ancestor node of A and B with the
+sample C.
+
+This can be seen graphically in Figure 1 of that linked paper.
 
 Another thing established in the paper is the fact that any $f$-statistic can be
-expressed as a linear combination of $f_2$ statistics.
-
-For instance, equation 20b in the same paper states the following:
+expressed as a linear combination of $f_2$ statistics. If you're not familiar
+with linear algebra, this might sound a bit obscure. More concretely, for
+instance, equation (20b) in the same paper states the following, which
+decomposes an $f_3$ statistic into a composite of simpler $f_2$ statistics (this
+is what "linear combination" basically is):
 
 $$f_3(A; B, C) = \frac{1}{2} (f_2(A, C) + f_2(A, B) - f_2(B, C))$$
 
-**Draw a doodle of the population model above on a piece of paper which traces
-the paths indicated by the $f_2$ statistics in this $f_3$ equation, let's say by
-assuming that A = p4, B = p1, C = p2. When you add up and subtract the paths
-from each other, do you arrive at the interpretation of the "outgroup" $f_3$ as
-a measure of shared branch between B and C and the "outgroup" A?**
+---
 
-**Then, use the function `ts_f2()` and this equation to compute a "homemade"
-$f_3(A = p4; B = p1, C = p2)$ statistic and compare it to the result produced by
-`ts_f3()` provided by _slendr_. Do you get the same result?**
+**Draw a sketch of the population model plotted above on a piece of paper, then
+trace by hand the paths indicated by the three $f_2$ statistics in this equation
+on that drawn model (again, knowing that $f_2(x, y)$ indicates the length of the
+path from ($x$ to $y$), let's say substituting A = p4, B = p1, C = p2. When you
+add up and subtract the paths from each other (graphically, on your drawn
+model), do you arrive at the definition of "outgroup" $f_3$ as a measure
+of shared branch between B and C towards the outgroup A?**
+
+
+---
+
+
+True story: When I was writing this chapter, I made a mistake in the equation
+above, and wrote a quick simulation to double-check that the equation is
+correct. This is the true motivation for this little exercise, showing why
+simulations are also helpful!
+
+**Now let's move to R. Use the function `ts_f2()` to implement this equation in
+code, computing a "homemade" $f_3(A = p4; B = p1, C = p2)$ statistic which you
+just solved on paper, and compare it to the result produced by `ts_f3()`
+provided by _slendr_. Do you get the same result?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-First let's get our groups of individuals from all lineages:
+First let's get our groups of individuals in the tree sequence:
 
 ```{r}
 s <- ts_names(ts, split = TRUE)
+s
 ```
 
-Now let's compute $f_3$ using the _slendr_ function:
+Now let's compute $f_3$ using the built-in _slendr_ function:
 
 ```{r}
-ts_f3(ts, A = s["p4"], B = s["p1"], C = s["p2"])
+simulated_f3 <- ts_f3(ts, A = s["p4"], B = s["p1"], C = s["p2"])
+simulated_f3
 ```
 
 And now let's compose a "homemade" $f_3$ statistic as a linear combination of
 $f_2$ statistics as given by the equation:
 
 ```{r}
-homemade_f3 <- (
+homemade_f3 <- 1/2 * (
   ts_f2(ts, A = s["p4"], B = s["p1"])$f2 +
   ts_f2(ts, A = s["p4"], B = s["p2"])$f2 -
   ts_f2(ts, A = s["p1"], B = s["p2"])$f2
-) / 2
-
+)
 homemade_f3
 ```
 
@@ -157,7 +143,15 @@ just as predicted by the underlying math!
 
 :::
 
----
+
+
+
+
+
+
+
+
+## Exercise: Mutations versus branches
 
 Do you recall how I told you earlier that you don't have to add mutations to
 your tree sequence `ts`, and still be able to compute population genetic
@@ -167,12 +161,16 @@ The reason this works is because some very smart people figured out a
 mathematical [duality between mutation-based and branch-based
 statistics](https://academic.oup.com/genetics/article/215/3/779/5930459)---it
 actually doesn't matter which way we compute our statistics, they give
-mathematically the same result in terms of statistical expectations.
+mathematically the same result in terms of theoretical statistical expectations
+(i.e., expectations of what happen in real data).
 
-**Try to repeat the previous task, but this time add the `mode = "branch"`
-argument in both `ts_f3()` and `ts_f2()` function calls. What numbers do you
-get? Can you relate the $f_3$ and $f_2$ values obtained in this way to what your
-population tree model visualization shows?**
+**Try to repeat the previous task, but this time specify `mode = "branch"` in
+all your `ts_f3()` and `ts_f2()` commands. Feel free to make a copy of your
+`ts_f3()` and `ts_f2()`-based code in your `f_null.R` script and and modify
+the copies for easier comparison. What numbers do you get compared to the
+results of the previous exercise? Can you relate those numbers to what your
+population tree model visualization indicates (in terms of branch lenghts)? Look
+at your sketch with pen and paper again if this helps.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -194,17 +192,27 @@ homemade_f3
 We can see that when we use the `"branch"` mode of operation, the returned
 values of $f$ statistics correspond to the _real branch lengths_ in terms of
 times! Which is quite cool because as we discussed, the mathematical expectation
-of $f$ statistics does, after all, represent tree path overlaps.
+of $f$ statistics does, after all, represent tree path overlap going from p1
+and p2 to the "outgroup" p4:
 
+```{r}
+#| echo: false
+plot_model(model)
+```
 
 :::
 
 
 Hopefully, you can now appreciate that there's nothing magical about $f$
-statistics. Even though their practical interpretation can get sometimes quite
+statistics. Even though their practical interpretation can get sometimes
 complicated, internally they _always_ boil down to tracing paths through
 population trees in order to obtain statistical expectations of allele frequency
-correlations between lineages under study.
+correlations between lineages under study, easily visualized by tracing paths
+through population trees.
+
+In a way, setting `mode = "branch"` can be understood as instructing _slendr_ to
+compute the results --- in this case, of the $f_3$ statistic --- in "real time
+units", generations.
 
 
 
@@ -216,21 +224,35 @@ correlations between lineages under study.
 
 
 
-## Exercise: $f_4$ as a measure of "overlapping paths" through a tree
+## Exercise: Basic intuition into the $f_4$ statistic
 
 Now let's finally dig into exploring perhaps the most critical component of
 population genetics research (particularly in the context of ancient DNA
-genomics)---the venerable $f-4$-statistic, [formally established by Nick
-Patterson and David
-Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193).
+genomics)---the venerable $f_4$-statistic, formally established by Nick
+Patterson and David Reich in 2008.
+
+From the [intuitive follow-up paper on $f$-statistics by Benjamin
+Peter](https://academic.oup.com/genetics/article/202/4/1485/5930214), we know
+that (in a very similar way to $f_2$ and $f_3$), the $f_4(W, X; Y, Z)$ statistic
+can be interpreted as quantifying the overlap between the paths in a tree
+connecting W-X and Y-Z pairs of lineages, as is demonstrated in Figure 1 of the
+linked paper.
+
+That said, what value does any given $f_4$ statistic _actually_ gives you of
+course depends on the (in practice, hidden) underlying demographic model which
+determines how populations are related and also what do we assign into each of
+the four positions of that $f_4$ "quartet configuration".
 
 ---
 
-**Given the phylogenetic relationships between the populations encoded by our
-model, what value would you expect for $f_4(p1, p2; p3, p4)$? try to guess first
-without any coding, then compute the statistic with the `ts_f4()` function. does
-your simulation give you the result you might expect based on logic alone? if
-not, why could this be?**
+**Given the phylogenetic relationships between the populations encoded by the
+model in `f_null.R`, what value would you expect for $f_4(p1, p2; p3, p4)$?
+try to guess first without any coding simply by taking a look at the sketch of
+your model again tracing the path overlaps between p1-p2 and p3-p4, then compute
+the statistic on a `ts` simulated data with the `ts_f4()` function. Does your
+simulation give you the _exact_ result you might expect based on the
+visualization of the model alone? If it doesn't give you the exact expected
+result, why could this be?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### click to see the solution
@@ -244,12 +266,16 @@ zero"?
 ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
 ```
 
-The reason we didn't get _exactly_ zero is stochasticity, and the fact that
-along a genome (even a small one, only 10 Mb of simulated sequence) there are
-many possible trees. Sometimes, [incomplete lineage
-sorting](https://en.wikipedia.org/wiki/Incomplete_lineage_sorting) will lead to
-genealogical trees which do not fit the tidy, well-behaved population tree like
-the one we see when we run `plot_model()`.
+The reason we didn't get _exactly_ zero is stochastic noise of any evolutionary
+process, which means that that along a genome (even a small one, only 10 Mb of
+simulated sequence) there are many possible trees. Sometimes, [incomplete
+lineage sorting](https://en.wikipedia.org/wiki/Incomplete_lineage_sorting) will
+lead to genealogical trees which do not fit the tidy, well-behaved population
+tree like the one we see when we run `plot_model()`.
+
+That said, gene trees that don't fit the overall population trees will tend to
+"average out", particularly when we look across many different regions of the
+genome.
 
 :::
 
@@ -285,7 +311,9 @@ library(slendr)
 init_env()
 
 #
-# note the change to N = 1 !!!
+# !!!
+# note the (temporary) change to N = 1
+# !!!
 #
 p4 <- population("p4", time = 20000, N = 1)
 p3 <- population("p3", time = 6000, N = 1, parent = p4)
@@ -342,6 +370,8 @@ model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
 ts <-
   msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
   ts_mutate(mutation_rate = 1e-8)
+
+s <- ts_names(ts, split = TRUE)
 ```
 
 :::
@@ -354,8 +384,8 @@ ts <-
 ## Exercise: Reducing stochastic noise via simulation replicates
 
 As a means to tame the stochasticity and help meaningful statistical patterns
-stand out, I recently implemented a function `ts_replicates()`. The way it works
-is like this:
+stand out, I recently implemented a new _slendr_ function `ts_replicates()`,
+specifically for this workshop! The way it works is like this:
 
 ```{r}
 #| eval: false
@@ -386,14 +416,6 @@ in terms of the statistical expectation for this particular $f_4$ quartet?**
 
 :::
 
-::: aside
-
-**Note:** I wrote this function a few days ago in a bit of a haste, specifically
-for this workshop, but also hoping it'll be useful in daily research. Feedback
-appreciated!
-
-:::
-
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
@@ -401,9 +423,9 @@ Here's how we can tweak the "template" above to answer the question:
 
 ```{r}
 df <- ts_replicate(
-  n = 20, {
+  n = 10, {
   ts <-
-    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
   s <- ts_names(ts, split = TRUE)
@@ -423,253 +445,174 @@ df
 This means we can visualize their distribution easily like this, for example:
 
 ```{r}
+library(ggplot2)
+
 ggplot(df, aes(statistic, f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 ```
 
-As we can see, when we run multiple replicates of the simulation, we are able
-to "control" the stochastic noise a bit, making the expected pattern stand out
-more clearly: we see that the expected value of `{r} unique(df$statistic)`
-is really zero.
+As we can see, when we run multiple replicates of the simulation, we are able to
+"control" the stochastic noise a bit, making the expected pattern stand out more
+clearly: we see that the expected value of `{r} unique(df$statistic)` is really
+zero (up to that unavoidable stochastic noise).
 
 :::
 
----
+<!-- --- -->
 
-**Why do we put the `ts <- ...` simulation code inside the `ts_replicate()` block?
-What happens when you only run the `ts_f4()` command in the `{ ... block ... }`
-inside `ts_replicate()`?**
+<!-- **Why do we put the `ts <- ...` simulation code inside the `ts_replicate()` block? -->
+<!-- What happens when you only run the `ts_f4()` command in the `{ ... block ... }` -->
+<!-- inside `ts_replicate()`?** -->
+
+<!-- ::: {.callout-note collapse="true" icon=false} -->
+<!-- ### Click to see the solution -->
+
+<!-- Let's run the `ts_replicate()` without (internally) simulating the tree sequence: -->
+
+<!-- ```{r} -->
+<!-- df_bad <- ts_replicate(n = 10, { -->
+<!--   ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"]) -->
+<!-- }) -->
+<!-- ``` -->
+
+<!-- When we do this, we can see that we got the same value throughout! This is because -->
+<!-- all replicates are computed on the same outcome of a single evolutionary process -->
+<!-- which generated the tree-sequence object `ts`. -->
+
+<!-- This is unlike the correct way of using `ts_replicate()`, which simulates an -->
+<!-- independent `ts` object for each replicate, each of those then being based on an -->
+<!-- independent realization of the demographic model in question. -->
+
+<!-- ::: -->
+
+
+
+
+
+
+
+
+## Exercise: Other $f_4$ "quartets"
+
+Of course, $f_4(p1, p2; p3, p4)$ is only one possible "quartet configuration".
+
+**Expand your 10 replicates simulation $f_4(p1, p2; p3, p4)$ by adding the
+computation of $f_4(p1, p3; p2, p4)$ and $f_4(p1, p4; p2, p3)$ in the same
+`{...}` block provided to `ts_replicate()` (making sure you bind all three data
+resulting frames together at the end)..**
+
+**How would you compare the interpretation of the three $f_4$ statistics,
+looking at your sketch of the four-population model (or by looking at the
+visualization of the model below), before running and visualizing the expanded
+replication code you just wrote? Does your interpretation fit what you get from
+the simulation once you run it?**
+
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-Let's run the `ts_replicate()` without (internally) simulating the tree sequence:
+Let's add the computation of all three $f_4$ statistics in the same replicate
+simulation pipeline:
 
 ```{r}
-df_bad <- ts_replicate(n = 20, {
-  ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+df <- ts_replicate(
+  n = 10, {
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  s <- ts_names(ts, split = TRUE)
+
+  rbind(
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"]), # 1st f4
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"]), # 2nd f4
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])  # 3rd f4
+  )
 })
 ```
 
-When we do this, we can see that we got the same value throughout! This is because
-all replicates are computed on the same outcome of a single evolutionary process
-which generated the tree-sequence object `ts`.
+We get a data frame with multiple replicates for each of the three statistics:
 
-This is unlike the correct way of using `ts_replicate()`, which simulates an
-independent `ts` object for each replicate, each of those then being based on an
-independent realization of the demographic model in question.
+```{r}
+df
+```
+
+From the mathematical definition of $f_4$ as internal branch lengths between two
+pairs of lineages in a given "quartet" and knowing the topological structure of
+our population tree, we can predict that the first $f_4$ is expected to be zero
+(which is what we established earlier), and the other two $f_4$ statistics are
+expected to have the same value corresponding to the internal branch length
+connecting pairs p1-p2 and p3-p4.
+
+This is exactly what we see in our results:
+
+```{r}
+ggplot(df, aes(statistic, f4)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+```
 
 :::
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- ## Exercise: $f_4$ as a measure of overlap of tree paths -->
-
-<!-- The usual application of $f_4$ in practical research usually boils down to some -->
-<!-- variant of ABBA/BABA $D$ statistics for testing admixture hypotheses. We will -->
-<!-- look at this later, but lets first look at $f_4$ statistics in a more general -->
-<!-- case, as a measure of overlapping paths in population trees. -->
-
-<!-- Consider the model from our script `f_statistics.R`: -->
-
-<!-- ```{r} -->
-<!-- #| echo: false -->
-<!-- plot_model(model, proportions = TRUE) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- df <- ts_replicate(n = 10, { -->
-<!--   ts <- -->
-<!--     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>% -->
-<!--     ts_mutate(mutation_rate = 1e-8) -->
-
-<!--   s <- ts_names(model, split = TRUE) -->
-
-<!--   s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"]) -->
-<!--   s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"]) -->
-<!--   s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"]) -->
-
-<!--   bind_rows(s1, s2, s3) -->
-<!-- }) -->
-<!-- ``` -->
-
-<!-- ```{r} -->
-<!-- p_model1 <- plot_grid( -->
-
-<!-- plot_model(model, proportions = TRUE), -->
-
-<!-- ggplot(df, aes(paste(W, X, Y, Z), f4)) + -->
-<!--   geom_boxplot() + -->
-<!--   geom_jitter() + -->
-<!--   geom_hline(yintercept = 0, linetype = "dashed", color = "red"), -->
-
-<!-- nrow = 2 -->
-
-<!-- ) -->
-
-<!-- p_model1 -->
-<!-- ``` -->
-
-
-
-
-
-<!-- ```{r} -->
-<!-- s <- ts_names(ts, split = TRUE) -->
-
-<!-- s1 <- ts_f4(ts, W = s["p4"], X = s["p3"], Y = s["p2"], Z = s["p1"]) -->
-<!-- s2 <- ts_f4(ts, W = s["p4"], X = s["p2"], Y = s["p3"], Z = s["p1"]) -->
-<!-- s3 <- ts_f4(ts, W = s["p4"], X = s["p1"], Y = s["p4"], Z = s["p2"]) -->
-
-<!-- bind_rows(s1, s2, s3) -->
-<!-- ``` -->
-
-
-
-
-
-
-
-
-
-
-
-## Exercise: $f_4$ as a a hypothesis test for admixture
-
-Let's do a bit more $f$ statistics exploration by switching to a more
-interesting example model---something that's much closer to many models used in
-practical research.
-
-**Create a new script called `introgression.R`, add the following code to it,
-then run it. Looking through the model and inspecting its visualization, you'll
-probably recognize a familiar sketch of ancient human history:**
-
-```{r}
-library(slendr)
-init_env()
-
-library(ggplot2)
-
-outgroup <- population("outgroup", time = 6200000, N = 10000)
-
-anc      <- population("ancestor", time = 6000000, N =  1000, parent = outgroup, remove = 599999)
-
-neand    <- population("Neanderthal", time = 600000, N =  1000, parent = anc)
-
-san      <- population("San",      time =  600000, N = 10000, parent = anc)
-mbuti    <- population("Mbuti",    time =  350000, N = 10000, parent = san)
-yoruba   <- population("Yoruba",   time =  220000, N = 10000, parent = mbuti)
-dinka    <- population("Dinka",    time =  150000, N = 15000, parent = yoruba)
-
-nonafr   <- population("nonAfr",   time =   70000, N = 3000,  parent = dinka)
-
-model0 <- compile_model(
-  populations = list(outgroup, anc, neand, san, mbuti, yoruba, dinka, nonafr),
-  generation_time = 30
-)
-
-schedule <- schedule_recording(model0, times = 0, list("each", 10))
-
-plot_model(model0)
-
-# trick we haven't seen yet: ts_names() also accepts models and schedules!
-# to give us the names of "individuals to be simulated in the future from this model
-s <- ts_names(model0, split = TRUE, schedule = schedule)
-```
-
-(It will become clear soon why we use the suffix `0` for the `model` and `ts`
-variables.)
-
 ---
 
+**Make a copy of your `ts_replicate()` code and modify it by setting `mode =
+"branch"`, as we did before for the example $f_3$ simulation. As mentioned
+above, this instructs _slendr_'s internal statistical machinery to effectively
+use "model time units" (here, generations) in computing the results. When you
+visualize the three $f_4$ statistics computed in this way, do you see this being
+the case?**
+
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Let's save the result in a new data frame `df_branch`:
+
 ```{r}
-df0 <- ts_replicate(
-  10,
-  {
-  ts <- msprime(model0, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
+df_branch <- ts_replicate(
+  n = 10, {
+  ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
   
+  s <- ts_names(ts, split = TRUE)
+
   rbind(
-    ts_f4(ts, W = s["San"], X = s["Mbuti"], Y = s["Neanderthal"], Z = s["outgroup"]),
-    ts_f4(ts, W = s["San"], X = s["Yoruba"], Y = s["Neanderthal"], Z = s["outgroup"]),
-    ts_f4(ts, W = s["San"], X = s["Dinka"], Y = s["Neanderthal"], Z = s["outgroup"]),
-    ts_f4(ts, W = s["San"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"])
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"), # 2nd f4
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")  # 3rd f4
   )
-  }
-)
-
-ggplot(df0, aes(f4, statistic)) +
-  geom_jitter() +
-  geom_boxplot() +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "red")
+})
 ```
 
+When we visualize the results, we do indeed see that the `f4` column contains
+the expected branch lengths expressed in real generation times! Here are the
+results plotted alongside the model using the package _cowplot_ (from which the
+branch length times can be read more easily):
 
 ```{r}
-gf1 <- gene_flow(from = neand, to = nonafr, proportion = 0.03, start = 55000, end = 50000)
-model1 <- compile_model(
-  populations = list(outgroup, anc, neand, san, mbuti, yoruba, dinka, nonafr),
-  gene_flow = gf1,
-  generation_time = 30
-)
+library(cowplot) # get access to the plot_grid() function
 
-gf2 <- gene_flow(from = nonafr, to = neand, proportion = 0.03, start = 55000, end = 50000)
-model2 <- compile_model(
-  populations = list(outgroup, anc, neand, san, mbuti, yoruba, dinka, nonafr),
-  gene_flow = gf2,
-  generation_time = 30
-)
-```
+plot_grid(
+  # first panel:
+  plot_model(model, schedule = schedule),
 
-```{r}
-#| echo: false
-cowplot::plot_grid(
-  plot_model(model1, proportions = TRUE),
-  plot_model(model2, proportions = TRUE),
+  # second panel:
+  ggplot(df_branch, aes(statistic, f4)) +
+    geom_boxplot() +
+    geom_jitter() +
+    geom_hline(yintercept = 0, color = "red", linetype = "dashed"),
+
+  # plot both panels in two rows:
   nrow = 2
 )
 ```
 
-
-
-```{r}
-df1 <- run_reps(model1, 10)
-
-ggplot(df1, aes(f4, statistic)) +
-  geom_jitter() +
-  geom_boxplot() +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "red")
-```
-
-
-
-```{r}
-df2 <- run_reps(model2, 10)
-
-ggplot(df2, aes(f4, statistic)) +
-  geom_jitter() +
-  geom_boxplot() +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "red")
-```
-
-
-## Exercise: Estimating ancestry proportions
+:::
 
 
 
@@ -680,31 +623,27 @@ ggplot(df2, aes(f4, statistic)) +
 
 
 
+## Catch up
 
-
-## Exercise: How many unique f4 quartets are there?
-
-When playing with $f$-statistics in this chapter, you've probably noticed
-various symmetries in $f_4$ (but also other $f$-statistics) depending on the
-arrangement of their "configuration" (order of populations). As a trivial
-example, an $f_3(A; B, C)$ and $f_3(A; C, B)$ will give you exactly the same
-value.
-
-**Try to figure out, how many unique $f_4$ values involving a single quartet
-(our p1, p2, p3, and p4 populations) are there. How about how many absolute
-values? You can answer this either by drawing and doodling on paper, but freel
-free to also use computer simulations if you'd like!**
+This was a lot of work! If you want to check in with the state of our
+$f$-statistics exploratory simulation script `f_null.R`, here it is in the form
+which showcases the most important results from this chapter so far:
 
 ::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
+### Click to see the entire script
 
 ```{r}
-#| message: false
-library(purrr)
-library(dplyr)
+##################################################
+# load the necessary packages
+
+library(ggplot2)
+library(cowplot)
 
 library(slendr)
 init_env()
+
+##################################################
+# define the basic structure of our demographic model
 
 p4 <- population("p4", time = 20000, N = 1000)
 p3 <- population("p3", time = 6000, N = 1000, parent = p4)
@@ -713,41 +652,41 @@ p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
 
-ts <-
-  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
-  ts_mutate(mutation_rate = 1e-8)
+schedule <- schedule_recording(model, times = 0, list("each", 10))
 
-# install a combinatorics R package:
-# install.packages("combinat")
-library(combinat)
+##################################################
+# simulate replicates of the three f4 statistics
+# (based on branches)
 
-# these are the four samples we can create quartet combinations from:
-quartet <- c("p1_1", "p2_1", "p3_1", "p4_1")
+df_branch <- ts_replicate(
+  n = 10, {
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  s <- ts_names(ts, split = TRUE)
 
-# this is how we can generate all permutations:
-quartets <- permn(quartet)
-quartets
+  rbind(
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"), # 2nd f4
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")  # 3rd f4
+  )
+})
 
-# how many permutations there are in total?
-#   4! = 4 * 3 * 2 * 1 = 24
-factorial(4)
+##################################################
+# visualize branch-based f4 statistics alongside
+# the corresponding demographic model
 
-# we should therefore have 24 different quartet combinations of samples
-length(quartets)
+p_null_df <- ggplot(df_branch, aes(statistic, f4)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 
-# loop across all quartets, computing the corresponding f4 statistic
-all_f4 <-
-  map_dfr(quartets, function(q) ts_f4(ts, q[1], q[2], q[3], q[4])) %>%
-  arrange(abs(f4))
+p_null_model <- plot_model(model, schedule = schedule)
 
-# print all f4 values
-print(all_f4, n = Inf)
+p_null <- plot_grid(p_null_model, p_null_df, nrow = 2)
 
-# narrow down the results to only unique f4 values
-distinct(all_f4, f4, .keep_all = TRUE)
-
-# narrow down the results to only unique absolute f4 values
-distinct(all_f4, abs(f4), .keep_all = TRUE)
+p_null
 ```
 
 :::
@@ -759,37 +698,99 @@ distinct(all_f4, abs(f4), .keep_all = TRUE)
 
 
 
-## Exercise: Estimating ancestry proportions
+
+
+
+## Exercise: $f_4$ as an admixture hypothesis test
+
+Admittedly, thinking about $f$ statistics as measures of allele frequency
+correlations between populations and interpreting them as overlapping branch
+lengths is intellectually interesting in terms of population genetics theory,
+but in practice, they are most famous as admixture tests.
+
 
 ```{r}
-schedule <- schedule_recording(model_gf, times = 0, list("each", 1))
+##################################################
+# load the necessary packages
 
-ts <- msprime(model_gf, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule)
+library(ggplot2)
+library(cowplot)
 
-ts_recorded(ts)
+library(slendr)
+init_env()
+
+##################################################
+# define the basic structure of our demographic model
+
+p4 <- population("p4", time = 20000, N = 1000)
+p3 <- population("p3", time = 6000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+
+gf <- gene_flow(from = p3, to = p2, start = 500, end = 400, proportion = 0.1)
+
+model <- compile_model(populations = list(p1, p2, p3, p4), gene_flow = gf, generation_time = 1)
+
+schedule <- schedule_recording(model, times = 0, list("each", 10))
+
+##################################################
+# simulate replicates of the three f4 statistics
+# (based on branches)
+
+df_branch <- ts_replicate(
+  n = 10, {
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+  
+  s <- ts_names(ts, split = TRUE)
+
+  rbind(
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"), # 2nd f4
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")  # 3rd f4
+  )
+})
+
+##################################################
+# visualize branch-based f4 statistics alongside
+# the corresponding demographic model
+
+p_admix_df <- ggplot(df_branch, aes(statistic, f4)) +
+  geom_boxplot() +
+  geom_jitter() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed")
+
+p_admix_model <- plot_model(model, schedule = schedule)
+
+plot_grid(p_admix_model, p_admix_df, nrow = 2)
+
+p_admix
 ```
+
+:::
+
+
+
+
 
 ```{r}
-library(ape)
+ts <-
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
 
-plot_tree <- function(ts, index) {
-  tree <- ts_phylo(ts, i = index, labels = "pop", quiet = TRUE)
-  plot(tree, main = paste("Tree at index:", index))
-}
+s <- ts_names(ts, split = TRUE)
+  
+num <- ts_f4(ts, W = s["p2"], X = s["p3"], Y = "p1_1", Z = s["p4"])
+den <- ts_f4(ts, W = "p1_2", X = s["p3"], Y = "p1_1", Z = s["p4"])
+
+1 - num$f4 / den$f4
 ```
 
-```{r}
-plot_tree(ts, 0)
-```
 
-```{r}
-plot_tree(ts, 1)
-```
 
-```{r}
-plot_tree(ts, 2)
-```
 
-```{r}
-plot_tree(ts, 3)
-```
+
+
+
+

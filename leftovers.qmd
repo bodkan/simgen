@@ -3,6 +3,262 @@
 
 
 
+
+
+
+
+
+Let's do a bit more $f$ statistics exploration by switching to a more
+interesting example model---something that's much closer to many models used in
+practical research.
+
+**Create a new script called `introgression.R`, add the following code to it,
+then run it. Looking through the model and inspecting its visualization, you'll
+probably recognize a familiar sketch of ancient human history:**
+
+```{r}
+library(slendr)
+init_env()
+
+library(ggplot2)
+
+outgroup <- population("outgroup", time = 6200000, N = 10000)
+
+anc      <- population("ancestor", time = 6000000, N =  1000, parent = outgroup, remove = 599999)
+
+neand    <- population("Neanderthal", time = 600000, N =  1000, parent = anc)
+
+san      <- population("San",      time =  600000, N = 10000, parent = anc)
+mbuti    <- population("Mbuti",    time =  350000, N = 10000, parent = san)
+yoruba   <- population("Yoruba",   time =  220000, N = 10000, parent = mbuti)
+dinka    <- population("Dinka",    time =  150000, N = 15000, parent = yoruba)
+
+nonafr   <- population("nonAfr",   time =   70000, N = 3000,  parent = dinka)
+
+model0 <- compile_model(
+  populations = list(outgroup, anc, neand, san, mbuti, yoruba, dinka, nonafr),
+  generation_time = 30
+)
+
+schedule <- schedule_recording(model0, times = 0, list("each", 10))
+
+plot_model(model0)
+
+# trick we haven't seen yet: ts_names() also accepts models and schedules!
+# to give us the names of "individuals to be simulated in the future from this model
+s <- ts_names(model0, split = TRUE, schedule = schedule)
+```
+
+(It will become clear soon why we use the suffix `0` for the `model` and `ts`
+variables.)
+
+---
+
+```{r}
+df0 <- ts_replicate(
+  10,
+  {
+  ts <- msprime(model0, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
+  
+  rbind(
+    ts_f4(ts, W = s["San"], X = s["Mbuti"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["San"], X = s["Yoruba"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["San"], X = s["Dinka"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["San"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"])
+  )
+  }
+)
+
+ggplot(df0, aes(f4, statistic)) +
+  geom_jitter() +
+  geom_boxplot() +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "red")
+```
+
+
+```{r}
+gf1 <- gene_flow(from = neand, to = nonafr, proportion = 0.03, start = 55000, end = 50000)
+model1 <- compile_model(
+  populations = list(outgroup, anc, neand, san, mbuti, yoruba, dinka, nonafr),
+  gene_flow = gf1,
+  generation_time = 30
+)
+
+gf2 <- gene_flow(from = nonafr, to = neand, proportion = 0.03, start = 55000, end = 50000)
+model2 <- compile_model(
+  populations = list(outgroup, anc, neand, san, mbuti, yoruba, dinka, nonafr),
+  gene_flow = gf2,
+  generation_time = 30
+)
+```
+
+```{r}
+#| echo: false
+cowplot::plot_grid(
+  plot_model(model1, proportions = TRUE),
+  plot_model(model2, proportions = TRUE),
+  nrow = 2
+)
+```
+
+
+
+```{r}
+df1 <- ts_replicate(
+  10,
+  {
+  ts <- msprime(model0, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
+  
+  rbind(
+    ts_f4(ts, W = s["San"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["Mbuti"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["Yoruba"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["Dinka"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"])
+  )
+  }
+)
+```
+
+
+
+```{r}
+df2 <- ts_replicate(
+  10,
+  {
+  ts <- msprime(model0, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
+  
+  rbind(
+    ts_f4(ts, W = s["San"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["Mbuti"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["Yoruba"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"]),
+    ts_f4(ts, W = s["Dinka"], X = s["nonAfr"], Y = s["Neanderthal"], Z = s["outgroup"])
+  )
+  }
+)
+```
+
+
+## Exercise: Estimating ancestry proportions
+
+
+
+
+
+
+
+
+
+
+
+
+## Exercise: How many unique f4 quartets are there?
+
+When playing with $f$-statistics in this chapter, you've probably noticed
+various symmetries in $f_4$ (but also other $f$-statistics) depending on the
+arrangement of their "configuration" (order of populations). As a trivial
+example, an $f_3(A; B, C)$ and $f_3(A; C, B)$ will give you exactly the same
+value.
+
+**Try to figure out, how many unique $f_4$ values involving a single quartet
+(our p1, p2, p3, and p4 populations) are there. How about how many absolute
+values? You can answer this either by drawing and doodling on paper, but freel
+free to also use computer simulations if you'd like!**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+#| message: false
+library(purrr)
+library(dplyr)
+
+library(slendr)
+init_env()
+
+p4 <- population("p4", time = 20000, N = 1000)
+p3 <- population("p3", time = 6000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+# install a combinatorics R package:
+# install.packages("combinat")
+library(combinat)
+
+# these are the four samples we can create quartet combinations from:
+quartet <- c("p1_1", "p2_1", "p3_1", "p4_1")
+
+# this is how we can generate all permutations:
+quartets <- permn(quartet)
+quartets
+
+# how many permutations there are in total?
+#   4! = 4 * 3 * 2 * 1 = 24
+factorial(4)
+
+# we should therefore have 24 different quartet combinations of samples
+length(quartets)
+
+# loop across all quartets, computing the corresponding f4 statistic
+all_f4 <-
+  map_dfr(quartets, function(q) ts_f4(ts, q[1], q[2], q[3], q[4])) %>%
+  arrange(abs(f4))
+
+# print all f4 values
+print(all_f4, n = Inf)
+
+# narrow down the results to only unique f4 values
+distinct(all_f4, f4, .keep_all = TRUE)
+
+# narrow down the results to only unique absolute f4 values
+distinct(all_f4, abs(f4), .keep_all = TRUE)
+```
+
+:::
+
+
+
+
+
+
+
+
+## Exercise: Estimating ancestry proportions
+
+
+```{r}
+library(ape)
+
+plot_tree <- function(ts, index) {
+  tree <- ts_phylo(ts, i = index, labels = "pop", quiet = TRUE)
+  plot(tree, main = paste("Tree at index:", index))
+}
+```
+
+<!-- ```{r} -->
+<!-- plot_tree(ts1, 0) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- plot_tree(ts1, 1) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- plot_tree(ts1, 2) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- plot_tree(ts1, 3) -->
+<!-- ``` -->
+
+
+
+
 ```{r}
 #| eval: false
 url_path <- "https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/popgen/introgression.trees"
