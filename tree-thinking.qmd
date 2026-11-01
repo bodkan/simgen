@@ -875,9 +875,9 @@ y
 
 
 ```{r}
-ts_replicate(20, {
+ts_replicate(1000, {
 ts <-
-  msprime(model, sequence_length = 30e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  msprime(model, sequence_length = 50e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
@@ -885,8 +885,8 @@ s <- ts_names(ts, split = TRUE)
 x <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
   ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
 
-y <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
-  ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
+y <- ts_f4(ts, W = "p1_1", X = s["p4"], Y = s["p2"], Z = s["p3"])$f4 / 
+  ts_f4(ts, W = "p1_1", X = s["p4"], Y = "p1_2", Z = s["p3"])$f4
 
 # ts_f4(ts, A, O, X[i], C, mode = mode)$f4 /
 # ts_f4(ts, A, O, B, C, mode = mode)$f4
@@ -902,6 +902,7 @@ plot_grid(
   ggplot() +
     geom_density(data = df, aes(alpha), color = "red") +
     geom_density(data = df, aes(x), color = "blue") +
+    geom_density(data = df, aes(y), color = "green") +
     geom_vline(xintercept = c(0, 0.1)) +
     coord_cartesian(xlim = c(0, 0.5)),
   nrow = 2
@@ -909,6 +910,7 @@ plot_grid(
 
 mean(df$alpha)
 mean(df$x)
+mean(df$y)
 ```
 
 
