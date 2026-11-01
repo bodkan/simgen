@@ -24,11 +24,14 @@ tricks which are applicable for many other research problems.
 
 
 
-
-
-
 ## Exercise: "Outgroup" $f_3$ as a measure of overlap of tree paths
 
+To ease into the problem of interpreting $f$-statistics as measures of
+overlapping paths in "population trees" (or, when admixture comes into the
+picture), in "population graphs", let's get back to our familiar $f_3$
+statistic.
+
+**Create a new script `fstatistics.R` and paste the following code into that
 script. As always, read through the code, try to decipher what it's going to do,
 run it and compare your understanding with the visualization of the model.**
 
@@ -658,7 +661,7 @@ schedule <- schedule_recording(model, times = 0, list("each", 10))
 # simulate replicates of the three f4 statistics
 # (based on branches)
 
-df_branch <- ts_replicate(
+df <- ts_replicate(
   n = 10, {
   ts <-
     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
@@ -667,9 +670,9 @@ df_branch <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"), # 2nd f4
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")  # 3rd f4
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
   )
 })
 
@@ -677,16 +680,16 @@ df_branch <- ts_replicate(
 # visualize branch-based f4 statistics alongside
 # the corresponding demographic model
 
-p_null_df <- ggplot(df_branch, aes(statistic, f4)) +
+p_df <- ggplot(df, aes(statistic, f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 
-p_null_model <- plot_model(model, schedule = schedule)
+p_model <- plot_model(model, schedule = schedule)
 
-p_null <- plot_grid(p_null_model, p_null_df, nrow = 2)
+p_panels <- plot_grid(p_model, p_df, nrow = 2)
 
-p_null
+p_panels
 ```
 
 :::
@@ -701,15 +704,63 @@ p_null
 
 
 
-## Exercise: $f_4$ as an admixture hypothesis test
+## Exercise: Interpreting $f_4$ as an admixture hypothesis test
 
 Admittedly, thinking about $f$ statistics as measures of allele frequency
 correlations between populations and interpreting them as overlapping branch
-lengths is intellectually interesting in terms of population genetics theory,
-but in practice, they are most famous as admixture tests.
+lengths is intellectually interesting in terms of population genetics theory (at
+least if you're a nerd like me!), but in practice, they are most famous as
+admixture tests.
 
+**Create a new script `f_admixture.R` and copy my solutions to the exercises in
+this chapter available under the _"Catch up"_ section into that script. Restart
+your R session (`Session -> Restart R`) then skim through this script and re-run
+it all. Having gone through the exercises, the code should look somewhat
+familiar and the visualization you obtain by typing out `p_panels` into your R
+console (the branch lengths encoded by the three $f_4$ statistics we studied)
+should make sense.**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Here's the final visualization of the three $f_3$ statistics for easier
+reference as you work on the following exercise.
 
 ```{r}
+#| echo: false
+p_panel
+```
+
+:::
+
+
+---
+
+**Introduce the following two changes to the `f_admixture.R` script:**
+
+1. **Program a `gene_flow()` event `gf`, introducing 10% gene-flow from p3 to p2
+between 500 and 400 generations ago.**
+
+2. **Add this `gf` event into the `model` compilation step, making sure it's
+included in the demographic model.**
+
+**With the steps 1. and 2. done, you're model now includes admixture. Re-run the
+script again, and inspect the final visualization obtained by typing out
+`p_panels` into your R console.**
+
+**How does admixture from p3 to p2 affect the branch lengths compared to the
+previous model `f_null.R`, which (as the name indicates) represented a null
+model of no admixture? Pay particular attention to the $f_4(p1,p2;p3,p4)$
+statistic which had an expected value of zero---does it still have a zero
+value?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Here's only the final visualization of the figure in the `p_panel` variable:
+
+```{r}
+#| echo: false
 ##################################################
 # load the necessary packages
 
@@ -737,7 +788,7 @@ schedule <- schedule_recording(model, times = 0, list("each", 10))
 # simulate replicates of the three f4 statistics
 # (based on branches)
 
-df_branch <- ts_replicate(
+df <- ts_replicate(
   n = 10, {
   ts <-
     msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
@@ -746,9 +797,9 @@ df_branch <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"), # 2nd f4
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")  # 3rd f4
+    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
   )
 })
 
@@ -756,17 +807,30 @@ df_branch <- ts_replicate(
 # visualize branch-based f4 statistics alongside
 # the corresponding demographic model
 
-p_admix_df <- ggplot(df_branch, aes(statistic, f4)) +
+p_df <- ggplot(df, aes(statistic, f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
 
-p_admix_model <- plot_model(model, schedule = schedule)
+p_model <- plot_model(model, schedule = schedule)
 
-plot_grid(p_admix_model, p_admix_df, nrow = 2)
+p_panels <- plot_grid(p_model, p_df, nrow = 2)
 
-p_admix
+p_panels
 ```
+
+As we can see, because of the admixture event, our previously tree-like
+population model is no longer tree. In the tree model without an admixture edge,
+there was no path overlap between the pairs p1-p2 and p3-p4, which is why the
+$f_4(p1,p2;p3,p4)$ statistic was zero.
+
+Admixture is a violation of "treeness", because "mathematical" trees are not
+allowed to have admixture edges---structures which do have edges are called
+"admixture graphs", This is why the statistic now significantly deviates from
+zero.
+
+This is exactly why $f_4(p1,p2;p3,p4)$ serves as a statistical hypothesis test
+of admixture.
 
 :::
 
@@ -774,17 +838,77 @@ p_admix
 
 
 
+
+
+
+## Exercise: Estimating admixture proportions
+
+From the little simulation and tree-doodling experiments above we now got a
+sense of how various $f$ statistics (and particularly $f_4$ statistics)
+mathematically quantify allele frequency correlations between lineages of
+population trees and how they can be interpreted as the amounts of overlaps of
+paths traced along branches of those trees. We also got an idea how different
+patterns emerge in $f_4$ statistic expectation when gene-flow is introduced into
+population trees, adding admixture edges to them and turning them into so-called
+"admixture graphs".
+
+It turns out that the same principles allow us to not just test the hypothesis
+of whether an admixture event happened in the history of our samples, but also
+estimate the proportion of ancestry derived from admixture.
+
 ```{r}
 ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+ts_mutate(mutation_rate = 1e-8)
+
+s <- ts_names(ts, split = TRUE)
+
+x <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
+ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
+x
+
+y <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
+ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
+y
+```
+
+
+
+```{r}
+ts_replicate(20, {
+ts <-
+  msprime(model, sequence_length = 30e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
   
-num <- ts_f4(ts, W = s["p2"], X = s["p3"], Y = "p1_1", Z = s["p4"])
-den <- ts_f4(ts, W = "p1_2", X = s["p3"], Y = "p1_1", Z = s["p4"])
+x <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
+  ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
 
-1 - num$f4 / den$f4
+y <- ts_f4(ts, W = "p3_1", X = s["p4"], Y = s["p2"], Z = s["p1"])$f4 / 
+  ts_f4(ts, W = "p3_1", X = s["p4"], Y = "p3_2", Z = s["p1"])$f4
+
+# ts_f4(ts, A, O, X[i], C, mode = mode)$f4 /
+# ts_f4(ts, A, O, B, C, mode = mode)$f4
+
+ts_f4ratio(ts, "p2_1", A = "p3_1", B = "p3_2", C = s["p1"], O = s["p4"]) %>%
+  dplyr::mutate(x = x, y = y)
+}, parallel = 10) -> df
+
+df
+
+plot_grid(
+  plot_model(model), 
+  ggplot() +
+    geom_density(data = df, aes(alpha), color = "red") +
+    geom_density(data = df, aes(x), color = "blue") +
+    geom_vline(xintercept = c(0, 0.1)) +
+    coord_cartesian(xlim = c(0, 0.5)),
+  nrow = 2
+)
+
+mean(df$alpha)
+mean(df$x)
 ```
 
 
@@ -794,3 +918,30 @@ den <- ts_f4(ts, W = "p1_2", X = s["p3"], Y = "p1_1", Z = s["p4"])
 
 
 
+
+## Exercise: Masking evidence of admixture?
+
+In another amazing [follow-up
+paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC11563031/) on $f$ statistics and
+admixture graphs which provides advice and guidance on performing admixture analyses,
+the author writes the following:
+
+> two admixture events together can cause an $f_4$-statistic to be close to zero
+and thereby mask the signal of admixture
+
+Obviously, this can be a rather worrisome, because real-world population histories
+are very complex and involve, of course, multiple admixture events across our idealized population trees.
+
+**Try to modify your admixture model by introducing such second gene-flow event,
+which would make the $f_4(p1,p2;p3,p4)$ statistic (which we established serves
+as an admixture test) return back to a near-zero expectation, and therefore mask
+evidence of p3-p2 admixture even though we know it happened in the simulation.**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+I don't have the solution for this one, as I came with this question at the last
+moment! Maybe you could contribute this solution to a future iteration of the
+workshop? :)
+
+:::
