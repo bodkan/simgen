@@ -1212,3 +1212,118 @@ p_panels
 ```
 
 :::
+
+## Exercise: What are tree sequences?
+
+We've mentioned the concept of "tree sequence" only in passing so far, although
+they've been absolutely central to every single one of our simulations because
+of that mysterious `ts` object. However, we've been referring to trees,
+genealogies, population trees, etc. throughout the exercises, particularly in
+this chapter, although we've never actually looked at those underlying trees at
+all.
+
+Generally speaking, for most of the practical work, we don't need to be aware of
+the underlying tree-sequence data that much, but it's always a good idea to know
+what's going on behind the scenes of the methods that we use, so let's take a
+small peek at what actually _is_ hiding behind our familiar `ts` objects. **This
+section will be more like a demonstration rather than a "serious exercise", just
+in case you're curious about this topic.**
+
+
+---
+
+**When you type `ts` into your R console, you'll get a summary of the most
+important characteristics in your data. For instance, consider a small 100 kb
+tree-sequence simulation like this, and note the number of trees (in this case,
+`{r} ts$num_trees`), the number of edges, nodes, and mutations:**
+
+```{r}
+schedule <- schedule_recording(model, times = 0, list("each", 1))
+
+ts <-
+    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule, random_seed = 42) %>%
+    ts_mutate(mutation_rate = 1e-8, random_seed = 42)
+
+ts
+```
+
+---
+
+**We can extract a single tree at a given index using the function
+`ts_tree()`.** (Note that because _slendr_ ties into the Python module _tskit_
+behind the scenes, indexing into the tree sequence starts at 0.) **This doesn't
+give us much information  though---it's just an opaque object in computer
+memory:**
+
+```{r}
+tree <- ts_tree(ts, i = 0)
+tree
+```
+
+---
+
+**We can use the built-in _slendr_ helper function `ts_draw()` to visualize
+these tree objects. For instance, here's how we can visualize the 0th (i.e., the
+first) tree in our small tree sequence. Note that by setting `labels = TRUE`, we
+can see individuals' names at the tips of the tree (which are normally only
+assigned numerical identifiers), as well as the fact that each individual is
+represented by two tips (one for each of its chromosome).**
+
+```{r}
+ts_draw(tree, labels = TRUE, width = 1000, height = 500, title = paste("Tree #", tree$index))
+```
+
+---
+
+**Take a few minutes visualizing different trees, perhaps starting from 0th and
+going forward, until you get bored! As you do this, notice that "neighboring"
+trees tend to be quite similar (why do you think this is?) Can you find an
+example of a tree which conforms with our underlying population tree model? How
+about trees which clearly "contradict" this model? And how about a tree which
+would show evidence of the gene flow from `p3` to `px` we programmed in our
+model?**
+
+The outcome of an evolutionary simulation is completely random, so don't get too
+frustrated if you don't find anything meaningful! When you explore the trees
+along the tree sequence, even for a small section of a genome like 1 Mb in this
+case, it makes you appreciate just how complex real-world evolutionary processes
+are.
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Here's what I found after a couple of minutes of visualizing different trees:
+
+- A neat and tidy genealogy which is completely concordant with our population
+tree:
+
+```{r}
+i <- 200
+tree <- ts_tree(ts, i)
+ts_draw(tree, labels = TRUE, width = 1000, height = 500, title = paste("Tree #", tree$index))
+```
+
+- A clear evidence of the introgression from `p3` into `px` population:
+
+```{r}
+i <- 243
+tree <- ts_tree(ts, i)
+ts_draw(tree, labels = TRUE, width = 1000, height = 500, title = paste("Tree #", tree$index))
+```
+
+- A complete and utter mess elsewhere which doesn't seem to be similar to our
+underlying population tree model at all:
+
+```{r}
+i <- 114
+tree <- ts_tree(ts, i)
+ts_draw(tree, labels = TRUE, width = 1000, height = 500, title = paste("Tree #", tree$index))
+```
+
+:::
+
+I hope that this little exercise illustrates really nice just how much work
+population genetic statistics do for us in understanding the hidden truth behind
+real-world evolutionary processes---they do this exactly by aggregating by these
+massive amounts of convoluted data resulting from these genealogical processes,
+and making meaningful patterns stand out.
