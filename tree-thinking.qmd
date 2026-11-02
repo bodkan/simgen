@@ -42,6 +42,7 @@ the best way to learn to spot bugs.)
 
 ```{r}
 #| output: false
+#| collapse: true
 library(slendr)
 init_env()
 
@@ -54,7 +55,7 @@ px <- population("px", time = 500, N = 1000, parent = p2)
 
 # compile the model and define recording of individuals
 model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
-schedule <- schedule_recording(model, times = 0, list("each", 10))
+schedule <- schedule_recording(model, times = 0, list("each", 5))
 
 # plot the model to check its correctness visually
 plot_model(model, schedule = schedule)
@@ -78,14 +79,13 @@ We know from [the theory of
 $f$-statistics](https://academic.oup.com/genetics/article/202/4/1485/5930214)
 that:
 
-- $f_2(A, B)$ statistic measures the branch length between A and B (two
-individuals, two groups of individuals, two populations, etc.), and
+- **$f_2(A, B)$ statistic measures the branch length between A and B (two
+individuals, two groups of individuals, two populations, etc.)**, and similarly
 
-- similarly, $f_3(C; A, B)$ statistic is formally defined as the branch length
-which connects the internal most recent common ancestor node of A and B with
-the lineage C,
+- **$f_3(C; A, B)$ statistic is defined as the branch length which connects the
+internal most recent common ancestor node of A and B with the lineage C**,
 
-- the same also applies to $f_4$ which we will discuss later.
+- **$f_4$ (which we will discuss later) has a similar interpretation**.
 
 This can be seen graphically in [Figure
 1](https://academic.oup.com/view-large/figure/379128872/1485fig1.jpeg) of that
@@ -253,23 +253,23 @@ $f_4$-statistic, formally established by Nick Patterson and David Reich in
 
 From the [intuitive follow-up paper on $f$-statistics by Benjamin
 Peter](https://academic.oup.com/genetics/article/202/4/1485/5930214), we know
-that (in a very similar way to $f_2$ and $f_3$) $f_4(W, X; Y, Z)$ statistic can
-be interpreted as the overlap between the paths in a tree connecting the pairs
-W-X and Y-Z, as is demonstrated in [Figure
+that (in a very similar way to $f_2$ and $f_3$) **the $f_4(W, X; Y, Z)$
+statistic can be interpreted as the overlap between the paths in a tree
+connecting the pairs W-X and Y-Z**, as is demonstrated in [Figure
 1](https://academic.oup.com/view-large/figure/379128872/1485fig1.jpeg) of the
 linked paper.
 
-That said, what value does any given $f_4$ statistic _actually_ gives you of
-course depends on the (in practice, hidden) underlying demographic model which
-determines how populations are related---in fact, what we usually need to do is
-to infer features of that hidden model---and also what do we assign into each
-of the four positions of the $f_4$ "quartet configuration".
+That said, **what value does any given $f_4$ statistic _actually_ gives you
+depends on the (in practice, hidden) underlying demographic model which
+determines how populations are related**---in fact, what we usually need to do
+is to infer features of that hidden model---**and also what individuals assign
+into each of the four positions of the $f_4$ "quartet configuration"**.
 
 ---
 
 **Knowing the relationships between populations encoded by the tree model
 programmed in your script `f_null.R` and the interpretation of the $f_4$
-statistic, what is the expected value of $f_4(p1, p2; p3, p4)$ for this model?
+statistic, what is the expected value of $f_4(p1, px; p3, p4)$ for this model?
 Try to answer by taking a look at the sketch of your model and tracing the path
 overlaps between p1-p2 and p3-p4, then compute the statistic on a `ts`
 simulated data with the `ts_f4()` function to verify your intuition. Does your
@@ -345,10 +345,10 @@ px <- population("px", time = 500, N = 1, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
 
-schedule <- schedule_recording(model, times = 0, list("each", 10))
+schedule <- schedule_recording(model, times = 0, list("each", 5))
 
 ts <-
-  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
@@ -358,7 +358,7 @@ Now let's compute the $f_4$ again on the `ts` tree sequence produced by this
 extreme model:
 
 ```{r}
-ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"])
 ```
 
 Indeed, when we type `ts` into the R console, we see that it only contains
@@ -394,10 +394,10 @@ px <- population("px", time = 500, N = 1000, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
 
-schedule <- schedule_recording(model, times = 0, list("each", 10))
+schedule <- schedule_recording(model, times = 0, list("each", 5))
 
 ts <-
-  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
 
 s <- ts_names(ts, split = TRUE)
@@ -462,12 +462,12 @@ df <- ts_replicate(
 
   # ... which first simulates a tree sequence ...
   ts <-
-    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
   # ... and then computes a data frame with the given f4 statistic ...
   s <- ts_names(ts, split = TRUE)
-  ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
+  ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"])
 
   } # ... the function automatically binds all data frames into single one
 )
@@ -517,7 +517,7 @@ computation of $f_4(p1, p3; p2, p4)$ and $f_4(p1, p4; p2, p3)$ in the same `{
 data resulting frames together at the end).**
 
 **How would you compare the interpretation of the three $f_4$ statistics,
-looking at your sketch of the four-population model (or by looking at the
+looking at your sketch of the five-population model (or by looking at the
 visualization of the model below), before running and visualizing the expanded
 replication code you just wrote? Again, use sketching of paths on a population
 tree on paper to try to figure it out first based on the definition of what
@@ -535,7 +535,7 @@ simulation pipeline:
 df <- ts_replicate(
   n = 10, {
   ts <-
-    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
   
   s <- ts_names(ts, split = TRUE)
@@ -543,9 +543,9 @@ df <- ts_replicate(
   # instead of computing one f4 like before, we compute all three and then
   # bind the three data frames into a single one
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"]), # 1st f4
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"]), # 2nd f4
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])  # 3rd f4
+    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"]), # 1st f4
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"]), # 2nd f4
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"])  # 3rd f4
   )
 })
 ```
@@ -561,7 +561,7 @@ pairs of lineages in a given "quartet" and knowing the topological structure of
 our population tree, we can predict that the first $f_4$ is expected to be zero
 (which is what we established earlier), and the other two $f_4$ statistics are
 expected to have the same value representing the internal branch length
-connecting pairs p1-p2 and p3-p4.
+connecting two pairs in the "quartet".
 
 This is exactly what we see in our results:
 
@@ -594,15 +594,15 @@ Let's save the result in a new data frame `df_branch`:
 df_branch <- ts_replicate(
   n = 10, {
   ts <-
-    msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
   
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"), # 2nd f4
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")  # 3rd f4
+    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"], mode = "branch"), # 1st f4
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"], mode = "branch"), # 2nd f4
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"], mode = "branch")  # 3rd f4
   )
 })
 ```
@@ -617,7 +617,7 @@ library(cowplot) # get access to the plot_grid() function
 
 plot_grid(
   # first panel:
-  plot_model(model, schedule = schedule),
+  plot_model(model),
 
   # second panel:
   ggplot(df_branch, aes(statistic, f4)) +
@@ -672,7 +672,7 @@ px <- population("px", time = 500, N = 1000, parent = p2)
 
 model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
 
-schedule <- schedule_recording(model, times = 0, list("each", 10))
+schedule <- schedule_recording(model, times = 0, list("each", 5))
 
 ##################################################
 # simulate replicates of the three f4 statistics
@@ -695,14 +695,15 @@ df <- ts_replicate(
 
 ##################################################
 # visualize branch-based f4 statistics alongside
-# the corresponding demographic model
+# the corresponding demographic model (note that
+# ggplot figures can be stored in variables!)
+
+p_model <- plot_model(model, proportions = TRUE)
 
 p_df <- ggplot(df, aes(statistic, f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
-
-p_model <- plot_model(model, proportions = TRUE)
 
 p_panels <- plot_grid(p_model, p_df, nrow = 2)
 
@@ -753,7 +754,7 @@ p_panels
 
 ---
 
-Right now our script `f_admixture.R` doesn't have any admixture! It still
+Right now our script `f_admixture.R` doesn't have any admixture. It still
 contains what we established in this chapter so far: a statistical null model of
 "nothing interesting happened in the demographic history in terms of potential
 admixture", as is reflected in the $f_4$ values we obtained.
@@ -774,7 +775,7 @@ population tree.**
 
 **How does admixture from p3 to px affect the branch lengths compared to the
 previous model `f_null.R` of no admixture? Pay particular attention to the
-$f_4(p1,p2;p3,p4)$ statistic which had an expected value of zero before---does
+$f_4(p1,px;p3,p4)$ statistic which had an expected value of zero before---does
 it still have a zero value? If not, why, and what does it tell us about it
 utility to study admixture histories?**
 
@@ -805,7 +806,11 @@ px <- population("px", time = 500, N = 1000, parent = p2)
 
 gf <- gene_flow(from = p3, to = px, start = 400, end = 300, proportion = 0.2)
 
-model <- compile_model(populations = list(p1, p2, p3, p4, px), gene_flow = gf, generation_time = 1)
+model <- compile_model(
+  populations = list(p1, p2, p3, p4, px),
+  gene_flow = gf,
+  generation_time = 1
+)
 
 schedule <- schedule_recording(model, times = 0, list("each", 10))
 
@@ -822,22 +827,23 @@ df <- ts_replicate(
   s <- ts_names(ts, split = TRUE)
 
   rbind(
-    ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"], mode = "branch"),
-    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"], mode = "branch")
+    ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["px"], Z = s["p4"], mode = "branch"),
+    ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"], mode = "branch")
   )
 })
 
 ##################################################
 # visualize branch-based f4 statistics alongside
-# the corresponding demographic model
+# the corresponding demographic model (note that
+# ggplot figures can be stored in variables!)
+
+p_model <- plot_model(model, proportions = TRUE)
 
 p_df <- ggplot(df, aes(statistic, f4)) +
   geom_boxplot() +
   geom_jitter() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed")
-
-p_model <- plot_model(model, proportions = TRUE)
 
 p_panels <- plot_grid(p_model, p_df, nrow = 2)
 
@@ -846,25 +852,25 @@ p_panels
 
 As we can see, because of the admixture event, our previously tree-like
 population model is no longer tree. In the tree model without an admixture edge,
-there was no path overlap between the pairs p1-p2 and p3-p4, which is why the
-$f_4(p1,p2;p3,p4)$ statistic was zero.
+there was no path overlap between the pairs p1-px and p3-p4, which is why the
+$f_4(p1,px;p3,p4)$ statistic was zero.
 
 Admixture is a violation of "treeness", because "mathematical" trees are not
 allowed to have edges (they effectively create "loops" in the
 trees)---structures which do have edges are called "admixture graphs", This is
 why the statistic now significantly deviates from zero.
 
-This is exactly why $f_4(p1,p2;p3,p4)$ is useful as a statistical hypothesis
-test of admixture---if a population quartet is from a truly tree-like model,
-this statistic will always necessarily be zero; conversely, it can only ever be
+This is exactly why $f_4$ is useful as a statistical hypothesis test of
+admixture---if a population quartet is from a truly tree-like model, this
+statistic will always necessarily be zero; conversely, it can only ever be
 non-zero if the underlying model (usually hidden, in real-world applications)
 involves admixture which violates "treeness".
 
 :::
 
-This is exactly why $f_4(p1,p2;p3,p4)$ is useful as a statistical hypothesis
-test of admixture---if a population quartet is from a truly tree-like model,
-this statistic will always necessarily be zero; conversely, it can only ever be
+This is exactly why $f_4$ is useful as a statistical hypothesis test of
+admixture---if a population quartet is from a truly tree-like model, this
+statistic will always necessarily be zero; conversely, it can only ever be
 non-zero if the underlying model (usually hidden, in real-world applications)
 involves admixture which violates "treeness".
 
@@ -875,47 +881,223 @@ involves admixture which violates "treeness".
 
 ## Exercise: Estimating admixture proportions
 
-From the little simulation and tree-doodling experiments above we now got a
-sense of how various $f$ statistics (and particularly $f_4$ statistics)
-mathematically quantify allele frequency correlations between lineages of
-population trees and how they can be interpreted as the amounts of overlaps of
-paths traced along branches of those trees. We also got an idea how different
-patterns emerge in $f_4$ statistic expectation when gene-flow is introduced into
-population trees, adding admixture edges to them and turning them into so-called
-"admixture graphs".
+From the little simulation and tree-doodling experiments, we now have a sense of
+how $f$ statistics mathematically quantify allele frequency correlations between
+lineages of population trees and how they can be interpreted as the amounts of
+overlaps of paths traced along branches of those trees.
+
+We also have an idea how different patterns emerge in $f_4$ statistic
+expectation when gene-flow is introduced into population trees, adding admixture
+edges to them and turning them into so-called "admixture graphs".
 
 It turns out that the same principles allow us to not just test the hypothesis
 of whether an admixture event happened in the history of our samples, but also
-estimate the proportion of ancestry derived from admixture.
+estimate the proportion of ancestry derived from this admixture---a concept
+known as $f_4$-ratio statistics.
+
+---
+
+The theory of $f_4$-ratios can get quite complex, but let's try to get an idea
+about its internal workings using a very simple example and build up from there.
+We'll end up inventing the $f_4$-ratio statistic from scratch!
+
+**Let's consider our model again and set a goal to estimate how much ancestry of
+`px` came from `p3` (or how much came from `p2`---these are complementary, of
+course). Imagine tracing a path through the population from `px` to `p2` through
+the tree. Draw a fresh sketch of our five-population model on paper, and trace
+this `px`-`p2` path on it.**
+
+**How many such paths can we take through the tree?**
 
 ```{r}
-f4ratios <- ts_replicate(
-  n = 20,
+#| echo: false
+plot_model(model, proportions = TRUE)
+```
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+There are two paths:
+
+1. We could either go from `px` "to the right" and walk through the tree through
+the `p3` population and them "loop over" into the `p2` population.
+
+2. Alternatively, we could go "to the left" and arrive to `p2` "directly"
+through the population split of `px` from `p2`.
+
+We only have those two possibilities, because we know that the genetic ancestry
+of `px` is effectively derived from admixture between `p2` and `p3` lineages.
+
+(In fact, because this is a simulation, we even know that 20% of the genome of
+`px` comes from `p3` and 80% comes from `p2`, meaning that 20% of our paths will
+go through the `p3` lineage.)
+
+:::
+
+---
+
+**How many `px` to `p2` paths would we have available if there wasn't any
+admixture in the model?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+If our model didn't have an admixture edge it would be a simple tree, meaning
+that we could only trace one path from `px` to `p2` "directly" through the
+population split of `px` from `p2`.
+
+:::
+
+---
+
+**Now that we've established the two possible paths from `px` to `p2` in our
+population tree, what would be the interpretation of $f_4(p1,p4;px,p2)$ at any
+given locus of the genome? What would be the possible values of this $f_4$ in
+this situation? Again, try to use pen and paper to figure it out based on the
+knowledge of $f_4$ as a measures of internal branches in a tree.**
+
+**Hint:** Remember that we've established that there are two possible paths from
+`px` to `p2` in the tree, depending on whether `px` has a genetic ancestry
+coming from `p2` or `p3` at a given locus of the genome.
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+The $f_4$ statistic in question could give two possible results, depending on
+the paths 1. or 2. taken (as explain in the previous section):
+
+1. In the first potential path, $f_4(p1,p4;px,p2)$ would be the length of the
+shared internal branch in the tree between pairs `p1`-`p4` and `p2-px` (or,
+effectively, `p2`-`p3`, because that locus in `px` originated in `p3` due to
+admixture).
+
+2. In the second potential path, $f_4(p1,p4;px,p2)$ would be zero! This is
+because in such a situation, there's no overlap between pairs `p1`-`p4` and
+`p2`-`p3` in the tree---and so there's no such internal branch.
+
+:::
+
+---
+
+Now for the final punchline!
+
+You've already established that one of the two interpretations of
+$f_4(p1,p4;px,p2)$ describes the internal branch in the tree separating the
+pairs `p1`-`p4` and `px`-`p2`, which exists for the parts of the genome which
+`px` inherited from `p3` (the other interpretation giving a value of zero, by
+definition).
+
+**What is the interpretation of $f_4(p1,p4;p3,p2)$? Again, sketch the internal
+path represented by this $f_4$ statistic in your tree model on paper.**
+
+**What happens if you would take the value produced by $f_4(p1,p4;px,p2)$ and
+divided it by $f_4(p1,p4;p3,p2)$, i.e. what is the interpretation of the
+following equation?**
+
+$$\frac{f_4(p1,p4;px,p2)}{f_4(p1,p4;p3,p2)}$$
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+As we've shown in the first part of this exercise, if we want to model the
+ancestry of `px` as an admixture of $\alpha$ proportion from `p3` and $1 -
+\alpha$ proportion from `p2`, we can effectively decompose $f_4(p1,p4;px,p2)$
+into two possible outcomes corresponding two two possible quantities: one of
+them is zero (and happens in $1 - \alpha$ proportion of cases), the other one
+gives the internal branch length (and happens in $\alpha$ proportion of cases).
+
+We can then use this fact to expand the ratio given in this task like this (using the
+fact that the red-highlighted branch length is zero, leaving the rest of the
+fraction to cancel each other):
+
+$$
+\frac{f_4(p1,p4;px,p2)}{f_4(p1,p4;p3,p2)} =
+\frac{(1 - \alpha) f_4(p1,p4;p2,p2) + \alpha f_4(p1,p4;p3,p2)}{f_4(p1,p4;p3,p2)} = 
+\frac{\textcolor{red}{\cancelto{0}{(1-\alpha)f_4(p1,p4;p2,p2)}} + \alpha \cancel{f_4(p1,p4;p3,p2)}}{\cancel{f_4(p1,p4;p3,p2)}} =
+\alpha
+$$
+
+And hurray, just like this, we invented the famous $f_4$-ratio estimator for
+ancestry proportion!
+
+:::
+
+---
+
+There's one thing to be smart and logical, there's one thing to be able to
+derive an equation (or be handed one equation from a paper or a textbook).
+Trusting and understanding the equation is another matter---that's when
+simulations can be very useful again. After all, at some point, our results
+depend on scripts and software, which require us to estimate statistics as
+established.
+
+**Use the equation for the $f_4$-ratio estimator of ancestry proportion to write
+a new code chunk in your `f_admixture.R` script which will simulate the values
+of this estimator expected from our admixture model using a ratio two individual
+`ts_f4()` statistics, specifying the quartet configuration accordingly. Then
+visualize the admixture proportion thus computed---did your estimator recover
+the known value of 20% of admixture?**
+
+**If you want an extra challenge, it turns out there are multiple variations of
+how the ancestry proportion can be estimated. Try to find them, add them to your
+`ts_replicate()` code and compare them to one another!**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+I managed to come up with three possible $f_4$-ratio variations, all three
+programmed and benchmarked below:
+
+- Variant number 1 is the one we derived together, based on tracing the path
+from `px` to `p2` through population `p3` (this is predicted to estimate 20%
+ancestry).
+
+- Variant number 2 is the complement to the first variant which traces the
+ancestry from `px` to `p3` through population `p2` (and therefore is expected to
+estimate 80% ancestry).
+
+- Variant number 3 is a little strange and I came up with it by accident when I
+was developing the very first $f_4$ ratio exercise. Notice that although it does
+produce the correct 20% expectation, it shows a much higher variance (i.e., much
+more statistical noise).
+
+```{r}
+props <- ts_replicate(
+  n = 50,
   {
   ts <-
-    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
   s <- ts_names(ts, split = TRUE)
     
-  # one possible "f4-ratio" variant
+  # variant #1 -- this is the variant we derived together
   num1 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p2"])$f4
   den1 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p3"], Z = s["p2"])$f4
+  prop1 <- num1 / den1
   
-  # another possible "f4-ratio" variant
+  # variant #2
   num2 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"])$f4
   den2 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])$f4
-  
-  # create a data frame with both variants
-  data.frame(estimate = c("variant1", "variant2"),
-             prop = c(num1 / den1, prop2 = num2 / den2))
+  prop2 <- num2 / den2
+
+  # variant #3 (a weird one?)
+  num3 <- ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p2"], Z = s["p4"])$f4
+  den3 <- ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"])$f4
+  prop3 <- - num3 / den3
+    
+  # create a data frame with different variants
+  data.frame(
+    proportion = c("variant1", "variant2", "variant3 (weird?)"),
+    value = c(prop1, prop2, prop3)
+  )
   },
   parallel = parallel::detectCores() - 1
 )
 
 p_model <- plot_model(model, proportions = TRUE)
 
-p_f4ratios <-  ggplot(f4ratios, aes(prop, color = estimate)) +
+p_f4ratios <-  ggplot(props, aes(value, color = proportion)) +
     geom_density() +
     geom_vline(xintercept = c(0.2, 0.8), linetype = "dashed", color = "red") +
     coord_cartesian(xlim = c(0, 1))
@@ -925,35 +1107,9 @@ p_panels <- plot_grid(p_model, p_f4ratios, nrow = 2)
 p_panels
 ```
 
-
-
-
-
-
-
-## Exercise: Masking evidence of admixture?
-
-In another amazing [follow-up
-paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC11563031/) on $f$ statistics and
-admixture graphs which provides advice and guidance on performing admixture analyses,
-the author writes the following:
-
-> two admixture events together can cause an $f_4$-statistic to be close to zero
-and thereby mask the signal of admixture
-
-Obviously, this can be a rather worrisome, because real-world population histories
-are very complex and involve, of course, multiple admixture events across our idealized population trees.
-
-**Try to modify your admixture model by introducing such second gene-flow event,
-which would make the $f_4(p1,p2;p3,p4)$ statistic (which we established serves
-as an admixture test) return back to a near-zero expectation, and therefore mask
-evidence of p3-p2 admixture even though we know it happened in the simulation.**
-
-::: {.callout-note collapse="true" icon=false}
-### Click to see the solution
-
-I don't have the solution for this one, as I came with this question at the last
-moment! Maybe you could contribute this solution to a future iteration of the
-workshop? :)
-
 :::
+
+
+
+
+
