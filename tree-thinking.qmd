@@ -1,16 +1,17 @@
 # Tree-based thinking
 
-We have so far focused on learning how to construct _slendr_ demographic models,
-how to compute summary statistics, and how exploratory, simulation-based
-workflows help us study the behavior and limitations of those statistics.
+So far we have focused on learning how to construct _slendr_ demographic
+models, how to compute basic summary statistics, and demonstrating how
+exploratory, simulation-based workflows help us study the behavior and
+limitations of statistics of interest.
 
-In this chapter, we will change the pace a bit, and play with _slendr_ as a bit
-of an "interactive popgen calculator" to quickly explore theoretical concepts in
-a hands-on practical way, and build intuition into how (and why) they work the
-way they do. We will also dig a little bit more into the tree-sequence data
-itself.
+In this chapter, we will change the pace a bit, and introduce the power of
+_slendr_ as a bit of an "interactive popgen calculator" to quickly explore
+theoretical concepts in a hands-on way, and build intuition into how (and why)
+these concepts work the way they do. We will also dig a little bit more into
+the tree-sequence data itself.
 
-Our main focus will be on $f$-statistics, mostly because they form such a
+Our main focus here will be on $f$-statistics, mostly because they form such a
 crucial component of population genomics research, specifically within the aDNA
 context, and because they showcase very nicely why simulation-based exploration
 can be so powerful. In the process, we will also learn a few useful _slendr_
@@ -27,31 +28,38 @@ tricks which are applicable for many other research problems.
 ## Exercise: "Outgroup" $f_3$ as a measure of overlap of tree paths
 
 To ease into the problem of interpreting $f$-statistics as measures of
-overlapping paths in "population trees" (or, when admixture comes into the
-picture), in "population graphs", let's get back to our familiar $f_3$
+overlapping paths in "population trees" or---when admixture comes into the
+picture---in "admixture graphs", let's briefly return to our familiar $f_3$
 statistic.
 
-**Create a new script `fstatistics.R` and paste the following code into that
-script. As always, read through the code, try to decipher what it's going to do,
-run it and compare your understanding with the visualization of the model.**
+**Create a new script `f_null.R` and paste the following code into that
+script. As always, read through the code, try to build a mental model of what
+it's going to do, then run it and compare your understanding with the generated
+visualization of the model.**
+
+(I know this is easy, but being able to read code quickly and efficiently is
+the best way to learn to spot bugs.)
 
 ```{r}
 #| output: false
 library(slendr)
 init_env()
 
+# build a basic population tree structure
 p4 <- population("p4", time = 20000, N = 1000)
 p3 <- population("p3", time = 6000, N = 1000, parent = p4)
 p2 <- population("p2", time = 2000, N = 1000, parent = p3)
 p1 <- population("p1", time = 1000, N = 1000, parent = p2)
 px <- population("px", time = 500, N = 1000, parent = p2)
 
+# compile the model and define recording of individuals
 model <- compile_model(populations = list(p1, p2, p3, p4, px), generation_time = 1)
-
 schedule <- schedule_recording(model, times = 0, list("each", 10))
 
+# plot the model to check its correctness visually
 plot_model(model, schedule = schedule)
 
+# simulate 10 Mb of genomic data for later exploration
 ts <-
   msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
   ts_mutate(mutation_rate = 1e-8)
@@ -59,7 +67,7 @@ ts <-
 
 ---
 
-Now, consider the model from this script:
+Now, consider the model implemented in our script `f_null.R`:
 
 ```{r}
 #| echo: false
@@ -70,67 +78,65 @@ We know from [the theory of
 $f$-statistics](https://academic.oup.com/genetics/article/202/4/1485/5930214)
 that:
 
-- $f_2(A, B)$ statistic measures the branch length between two samples A
-and B (two individuals, two groups of individuals, etc.), and
+- $f_2(A, B)$ statistic measures the branch length between A and B (two
+individuals, two groups of individuals, two populations, etc.), and
 
 - similarly, $f_3(C; A, B)$ statistic is formally defined as the branch length
-which connects the internal most recent common ancestor node of A and B with the
-sample C.
+which connects the internal most recent common ancestor node of A and B with
+the lineage C,
 
-This can be seen graphically in Figure 1 of that linked paper.
+- the same also applies to $f_4$ which we will discuss later.
 
-Another thing established in the paper is the fact that any $f$-statistic can be
-expressed as a linear combination of $f_2$ statistics. If you're not familiar
-with linear algebra, this might sound a bit obscure. More concretely, for
-instance, equation (20b) in the same paper states the following, which
-decomposes an $f_3$ statistic into a composite of simpler $f_2$ statistics (this
-is what "linear combination" basically is):
+This can be seen graphically in [Figure
+1](https://academic.oup.com/view-large/figure/379128872/1485fig1.jpeg) of that
+linked paper.
+
+Another thing established in the paper is the fact that any $f$-statistic can
+be expressed as a linear combination of multiple $f_2$ statistics. If you're
+not familiar with linear algebra, this might sound a bit obscure, but the idea
+is simple. More concretely, for instance, equation (20b) in the same paper
+states the following, which decomposes an $f_3$ statistic into a composite of
+simpler $f_2$ statistics (this is what "linear combination" basically is):
 
 $$f_3(A; B, C) = \frac{1}{2} (f_2(A, C) + f_2(A, B) - f_2(B, C))$$
 
 ---
 
-**Draw a sketch of the population model plotted above on a piece of paper, then
-trace by hand the paths indicated by the three $f_2$ statistics in this equation
-on that drawn model (again, knowing that $f_2(x, y)$ indicates the length of the
-path from ($x$ to $y$), let's say substituting A = p4, B = p1, C = p2. When you
-add up and subtract the paths from each other (graphically, on your drawn
-model), do you arrive at the definition of "outgroup" $f_3$ as a measure
-of shared branch between B and C towards the outgroup A?**
+**Draw a sketch of the population p1, p2, p3, etc. model plotted above on a
+piece of paper, then trace by hand the paths indicated by the three $f_2$
+statistics in this equation on that drawn model (again, knowing that $f_2(A,
+B)$ describes the branch between some two nodes $A$ and $B$. When you "add" and
+"subtract" paths based on the equation (graphically! on your drawn model), do
+you arrive at the definition of "outgroup" $f_3$ as we defined it above?**
 
 
 ---
 
-
 True story: When I was writing this chapter, I made a mistake in the equation
-above, and wrote a quick simulation to double-check that the equation is
-correct. This is the true motivation for this little exercise, showing why
-simulations are also helpful!
+above, which I discovered after I wrote a quick simulation to double-check that
+the equation is correct. Let's retrace my steps here because it shows why even
+very quick simulations can be really useful (almost like a "popgen
+calculator"!).
 
-**Now let's move to R. Use the function `ts_f2()` to implement this equation in
+**Let's move to R. Use the function `ts_f2()` to implement this equation in
 code, computing a "homemade" $f_3(A = p4; B = p1, C = p2)$ statistic which you
 just solved on paper, and compare it to the result produced by `ts_f3()`
-provided by _slendr_. Do you get the same result?**
+provided by _slendr_. Do you get the same result using both methods, thus
+verifying that the equation is correct?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-First let's get our groups of individuals in the tree sequence:
+First let's get our groups of individuals in the tree sequence so that we can
+refer to grouped individuals more easily:
 
 ```{r}
 s <- ts_names(ts, split = TRUE)
 s
 ```
 
-Now let's compute $f_3$ using the built-in _slendr_ function:
-
-```{r}
-simulated_f3 <- ts_f3(ts, A = s["p4"], B = s["p1"], C = s["p2"])
-simulated_f3
-```
-
-And now let's compose a "homemade" $f_3$ statistic as a linear combination of
-$f_2$ statistics as given by the equation:
+Let's compose a "homemade" $f_3$ statistic as a linear combination of $f_2$
+statistics as given by the equation:
 
 ```{r}
 homemade_f3 <- 1/2 * (
@@ -141,9 +147,17 @@ homemade_f3 <- 1/2 * (
 homemade_f3
 ```
 
+Finally, let's compute $f_3$ using the "official" built-in _slendr_ function:
+
+```{r}
+simulated_f3 <- ts_f3(ts, A = s["p4"], B = s["p1"], C = s["p2"])
+simulated_f3
+```
+```
+
 You can see that the `ts_f3()` implementation gives basically the same value as
-our "homemade" implementation based on a linear combination of $f_2$ statistics,
-just as predicted by the underlying math!
+our "homemade" implementation based on a linear combination of $f_2$
+statistics, just as predicted by the underlying math!
 
 :::
 
@@ -157,9 +171,9 @@ just as predicted by the underlying math!
 
 ## Exercise: Mutations versus branches
 
-Do you recall how I told you earlier that you don't have to add mutations to
-your tree sequence `ts`, and still be able to compute population genetic
-statistics? But that you can safely add them with `ts_mutate()` anyway?
+Do you recall how I told you that you don't have to add mutations to your tree
+sequence `ts`, and still be able to compute population genetic statistics? But
+that you can safely add them with `ts_mutate()` anyway?
 
 The reason this works is because some very smart people figured out a
 mathematical [duality between mutation-based and branch-based
@@ -168,13 +182,16 @@ actually doesn't matter which way we compute our statistics, they give
 mathematically the same result in terms of theoretical statistical expectations
 (i.e., expectations of what happen in real data).
 
-**Try to repeat the previous task, but this time specify `mode = "branch"` in
-all your `ts_f3()` and `ts_f2()` commands. Feel free to make a copy of your
-`ts_f3()` and `ts_f2()`-based code in your `f_null.R` script and and modify
-the copies for easier comparison. What numbers do you get compared to the
-results of the previous exercise? Can you relate those numbers to what your
-population tree model visualization indicates (in terms of branch lenghts)? Look
-at your sketch with pen and paper again if this helps.**
+---
+
+**Repeat the previous exercise, but this time specify `mode = "branch"` in all
+your `ts_f3()` and `ts_f2()` commands.** I suggest that you make a copy of your
+`ts_f3()` and `ts_f2()`-based code in your `f_null.R` script and and modify the
+copies for easier comparison. **What numbers do you get compared to the results
+of the previous exercise in terms of their scale? Can you relate those values
+to what your population tree model visualization indicates (in terms of branch
+lenghts)? Look at your sketch with pen and paper again if this helps in
+understanding the branch length (particularly with regards to split times).**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -193,11 +210,11 @@ homemade_f3 <- (
 homemade_f3
 ```
 
-We can see that when we use the `"branch"` mode of operation, the returned
-values of $f$ statistics correspond to the _real branch lengths_ in terms of
-times! Which is quite cool because as we discussed, the mathematical expectation
-of $f$ statistics does, after all, represent tree path overlap going from p1
-and p2 to the "outgroup" p4:
+We can see that when we specify `mode = "branch"`, the returned values of $f$
+statistics correspond to the _real branch lengths_ in terms of times! Which is
+quite cool because as we discussed, the mathematical expectation of $f_3$
+statistic does, in fact, represent the overlap of paths in a tree going from p1
+and p2 to the outgroup p4:
 
 ```{r}
 #| echo: false
@@ -230,22 +247,24 @@ units", generations.
 
 ## Exercise: Basic intuition into the $f_4$ statistic
 
-Now let's finally dig into exploring perhaps the most critical component of
-population genetics research (particularly in the context of ancient DNA
-genomics)---the venerable $f_4$-statistic, formally established by Nick
-Patterson and David Reich in 2008.
+Now let's finally dig into exploring the most critical component of population
+genetics research (particularly in the context of ancient DNA)---the venerable
+$f_4$-statistic, formally established by Nick Patterson and David Reich in
+2008.
 
 From the [intuitive follow-up paper on $f$-statistics by Benjamin
 Peter](https://academic.oup.com/genetics/article/202/4/1485/5930214), we know
-that (in a very similar way to $f_2$ and $f_3$), the $f_4(W, X; Y, Z)$ statistic
-can be interpreted as quantifying the overlap between the paths in a tree
-connecting W-X and Y-Z pairs of lineages, as is demonstrated in Figure 1 of the
+that (in a very similar way to $f_2$ and $f_3$) $f_4(W, X; Y, Z)$ statistic can
+be interpreted as the overlap between the paths in a tree connecting the pairs
+W-X and Y-Z, as is demonstrated in [Figure
+1](https://academic.oup.com/view-large/figure/379128872/1485fig1.jpeg) of the
 linked paper.
 
 That said, what value does any given $f_4$ statistic _actually_ gives you of
 course depends on the (in practice, hidden) underlying demographic model which
-determines how populations are related and also what do we assign into each of
-the four positions of that $f_4$ "quartet configuration".
+determines how populations are related---in fact, what we usually need to do is
+to infer features of that hidden model---and also what do we assign into each
+of the four positions of the $f_4$ "quartet configuration".
 
 ---
 
