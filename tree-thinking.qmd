@@ -153,7 +153,6 @@ Finally, let's compute $f_3$ using the "official" built-in _slendr_ function:
 simulated_f3 <- ts_f3(ts, A = s["p4"], B = s["p1"], C = s["p2"])
 simulated_f3
 ```
-```
 
 You can see that the `ts_f3()` implementation gives basically the same value as
 our "homemade" implementation based on a linear combination of $f_2$
@@ -268,11 +267,12 @@ of the four positions of the $f_4$ "quartet configuration".
 
 ---
 
-**Given the phylogenetic relationships between the populations encoded by the
-model in `f_null.R`, what value would you expect for $f_4(p1, p2; p3, p4)$?
-try to guess first without any coding simply by taking a look at the sketch of
-your model again tracing the path overlaps between p1-p2 and p3-p4, then compute
-the statistic on a `ts` simulated data with the `ts_f4()` function. Does your
+**Knowing the relationships between populations encoded by the tree model
+programmed in your script `f_null.R` and the interpretation of the $f_4$
+statistic, what is the expected value of $f_4(p1, p2; p3, p4)$ for this model?
+Try to answer by taking a look at the sketch of your model and tracing the path
+overlaps between p1-p2 and p3-p4, then compute the statistic on a `ts`
+simulated data with the `ts_f4()` function to verify your intuition. Does your
 simulation give you the _exact_ result you might expect based on the
 visualization of the model alone? If it doesn't give you the exact expected
 result, why could this be?**
@@ -281,9 +281,9 @@ result, why could this be?**
 ### click to see the solution
 
 As we can see below, $f$-statistics theory tells us that the value should be
-zero, but without any reference point, we get a number which is very tiny (the
-value in the `f4` column), but how tiny would it have to be to be "basically
-zero"?
+zero, but without having a reference baseline, we get a number which is very
+tiny (the value in the `f4` column). But how tiny would it have to be to be
+"basically zero"?
 
 ```{r}
 ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p3"], Z = s["p4"])
@@ -293,30 +293,31 @@ The reason we didn't get _exactly_ zero is stochastic noise of any evolutionary
 process, which means that that along a genome (even a small one, only 10 Mb of
 simulated sequence) there are many possible trees. Sometimes, [incomplete
 lineage sorting](https://en.wikipedia.org/wiki/Incomplete_lineage_sorting) will
-lead to genealogical trees which do not fit the tidy, well-behaved population
-tree like the one we see when we run `plot_model()`.
+lead to genealogical trees which do not fit the expected "well-behaved"
+population tree like the one we see when we run `plot_model()`.
 
 That said, gene trees that don't fit the overall population trees will tend to
 "average out", particularly when we look across many different regions of the
-genome.
+genome---this is why the simulated $f_4$ gets very close to zero.
 
 :::
 
 ---
 
 As suggested in the solution above, the reason we don't get a perfectly zero
-expected value of the $f_4$ is because of ILS and stochasticity. Let's test this
-hypothesis now.
+expected value of the $f_4$ is because of ILS and stochasticity. Let's test
+this hypothesis now.
 
-**First, evaluate `ts` in your R console and note how many individual trees do you
-have in your 10 Mb tree-sequence.**
+**First, evaluate `ts` in your R console and note how many trees do you have in
+your 10 Mb tree-sequence.**
 
-**Now, restart your R session (`Session -> Restart R`). Then, temporarily change
-the $N_e$ of all lineages in your model to 1 and re-run your script to get a new
-`ts` and compute the same $f_4$ statistic again. $N_e$ of one implies
-ridiculously high amount of drift, which should eliminate ILS completely, giving
-us $f_4$ close to its mathematical expectation of zero. Is this true? How many
-trees does your tree sequence have now?**
+**Now, restart your R session (`Session -> Restart R`). Then, temporarily
+change the `N`** (which, in this case, really is $N_e$)** of all populations in
+your model to 1 and re-run your script to get a new `ts` and compute the same
+$f_4$ statistic again. $N_e$ of one implies a ludicrously high amount of drift,
+which should eliminate ILS completely, giving us $f_4$ close to its
+mathematical expectation of zero. Is this true? How many trees does your tree
+sequence have now?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -333,11 +334,9 @@ again:
 library(slendr)
 init_env()
 
-#
 # !!!
-# note the (temporary) change to N = 1
+# note the temporary change to N = 1
 # !!!
-#
 p4 <- population("p4", time = 20000, N = 1)
 p3 <- population("p3", time = 6000, N = 1, parent = p4)
 p2 <- population("p2", time = 2000, N = 1, parent = p3)
@@ -362,18 +361,19 @@ extreme model:
 ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
 ```
 
-Indeed, when we type `ts` into the R console, we see that it only contains `{r}
-ts$num_trees` individual trees compared to the previous count of `{r}
-ts_num_trees`, consistent with an absolutely extreme amounts of genetic drift in
-your model.
+Indeed, when we type `ts` into the R console, we see that it only contains
+`{r} ts$num_trees`
+individual trees compared to the previous count of
+`{r} ts_num_trees`,
+consistent with an absolutely extreme amounts of genetic drift in your model.
 
 :::
 
 ---
 
 Of course, changing $N_e$ to value of 1 as we did above is a drastic measure of
-generally only theoretical utility. We could hardly get away with doing that, if
-we wanted to use simulations to make a point in our research paper.
+only theoretical utility. We could hardly get away with doing that, if we wanted
+to use simulations to make a point in our research paper.
 
 How do we deal with the unavoidable stochasticity in our simulations then? This
 wasn't much of a problem in exercises in the previous chapters, but we need the
@@ -419,11 +419,11 @@ specifically for this workshop! The way it works is like this:
 ```{r}
 #| eval: false
 ts_replicate(
-  n = <number of replicates>,
+  n = <number of replicates to simulate>,
   {
     # ...
     # a block of slendr code wrapped in { ... } containing a ts simulation
-    # and a slendr statistical computation we want to run in replicates
+    # and a statistical computation we want to run in given replicates
     # ...
   }
 )
@@ -433,34 +433,45 @@ ts_replicate(
 
 **Take a look at its manual page under `?ts_replicates`, then use it to run 10
 replicate simulations of the $f_4$ statistic above** (the one which should give
-us a zero expectation, but it wasn't clear if it did or not), **saving it to
-variable `df`. What format does the result have? When you visualize the
-distribution of $f_4$ values across all replicates, are they more understandable
-in terms of the statistical expectation for this particular $f_4$ quartet?**
+us a zero expectation, but it wasn't clear if it did or not), **saving the
+result to variable `df`. What format does the result have? When you visualize
+the distribution of $f_4$ values across all 10 replicates, are they more
+interpretable in terms of the statistical expectation for this particular $f_4$
+quartet?**
 
 ::: aside
 
-**Note:** If you want to speed up the replicate simulation, not that
-`?ts_replicate` describes the means to run multiple simulations in parallel.
+**Note:** If you want to speed up the replicate simulation, note that
+`?ts_replicate` allows running multiple simulations in parallel.
 
 :::
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-Here's how we can tweak the "template" above to answer the question:
+Here's how we can modify the "template" above to answer this question:
 
 ```{r}
 df <- ts_replicate(
-  n = 10, {
+
+  # run 10 replicates ...
+  n = 10,
+
+  # ... of the following block of code...
+  {
+
+  # ... which first simulates a tree sequence ...
   ts <-
     msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
+  # ... and then computes a data frame with the given f4 statistic ...
   s <- ts_names(ts, split = TRUE)
-
   ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"])
-})
+
+  } # ... the function automatically binds all data frames into single one
+)
+
 ```
 
 We can see that we get the same format of the data frame as normally produced by
@@ -485,37 +496,10 @@ ggplot(df, aes(statistic, f4)) +
 As we can see, when we run multiple replicates of the simulation, we are able to
 "control" the stochastic noise a bit, making the expected pattern stand out more
 clearly: we see that the expected value of `{r} unique(df$statistic)` is really
-zero (up to that unavoidable stochastic noise).
+zero (up to that unavoidable stochastic noise shown by the scatter of individual
+replicate values around zero).
 
 :::
-
-<!-- --- -->
-
-<!-- **Why do we put the `ts <- ...` simulation code inside the `ts_replicate()` block? -->
-<!-- What happens when you only run the `ts_f4()` command in the `{ ... block ... }` -->
-<!-- inside `ts_replicate()`?** -->
-
-<!-- ::: {.callout-note collapse="true" icon=false} -->
-<!-- ### Click to see the solution -->
-
-<!-- Let's run the `ts_replicate()` without (internally) simulating the tree sequence: -->
-
-<!-- ```{r} -->
-<!-- df_bad <- ts_replicate(n = 10, { -->
-<!--   ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"]) -->
-<!-- }) -->
-<!-- ``` -->
-
-<!-- When we do this, we can see that we got the same value throughout! This is because -->
-<!-- all replicates are computed on the same outcome of a single evolutionary process -->
-<!-- which generated the tree-sequence object `ts`. -->
-
-<!-- This is unlike the correct way of using `ts_replicate()`, which simulates an -->
-<!-- independent `ts` object for each replicate, each of those then being based on an -->
-<!-- independent realization of the demographic model in question. -->
-
-<!-- ::: -->
-
 
 
 
@@ -528,15 +512,17 @@ zero (up to that unavoidable stochastic noise).
 Of course, $f_4(p1, p2; p3, p4)$ is only one possible "quartet configuration".
 
 **Expand your 10 replicates simulation $f_4(p1, p2; p3, p4)$ by adding the
-computation of $f_4(p1, p3; p2, p4)$ and $f_4(p1, p4; p2, p3)$ in the same
-`{...}` block provided to `ts_replicate()` (making sure you bind all three data
-resulting frames together at the end)..**
+computation of $f_4(p1, p3; p2, p4)$ and $f_4(p1, p4; p2, p3)$ in the same `{
+... }` block provided to `ts_replicate()` (making sure you `rbind()` all three
+data resulting frames together at the end).**
 
 **How would you compare the interpretation of the three $f_4$ statistics,
 looking at your sketch of the four-population model (or by looking at the
 visualization of the model below), before running and visualizing the expanded
-replication code you just wrote? Does your interpretation fit what you get from
-the simulation once you run it?**
+replication code you just wrote? Again, use sketching of paths on a population
+tree on paper to try to figure it out first based on the definition of what
+$f_4$ between two pairs of lineages indicate. Does your interpretation fit what
+you get from the simulation once you run it?**
 
 
 ::: {.callout-note collapse="true" icon=false}
@@ -554,6 +540,8 @@ df <- ts_replicate(
   
   s <- ts_names(ts, split = TRUE)
 
+  # instead of computing one f4 like before, we compute all three and then
+  # bind the three data frames into a single one
   rbind(
     ts_f4(ts, W = s["p1"], X = s["p2"], Y = s["p3"], Z = s["p4"]), # 1st f4
     ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"]), # 2nd f4
@@ -572,7 +560,7 @@ From the mathematical definition of $f_4$ as internal branch lengths between two
 pairs of lineages in a given "quartet" and knowing the topological structure of
 our population tree, we can predict that the first $f_4$ is expected to be zero
 (which is what we established earlier), and the other two $f_4$ statistics are
-expected to have the same value corresponding to the internal branch length
+expected to have the same value representing the internal branch length
 connecting pairs p1-p2 and p3-p4.
 
 This is exactly what we see in our results:
@@ -588,13 +576,14 @@ ggplot(df, aes(statistic, f4)) +
 
 ---
 
-**Make a copy of your `ts_replicate()` code and modify it by setting `mode =
-"branch"`, as we did before for the example $f_3$ simulation. As mentioned
-above, this instructs _slendr_'s internal statistical machinery to effectively
-use "model time units" (here, generations) in computing the results. When you
-visualize the three $f_4$ statistics computed in this way, do you see this being
-the case?**
-
+**Make a copy of your `ts_replicate()` code computing the three $f_4$ statistics
+and modify it by setting `mode = "branch"`, as we did before, perhaps changing
+`df` to `df_branch` for easier reference. Recall that `mode = "branch"`
+instructs _slendr_'s internal statistical machinery to use "model time units"
+(here, generations) in computing the results based on branches, instead of
+mutations. When you visualize the three $f_4$ statistics computed in this way,
+do you see this being reflected in the scale (and meaning) of the numbers which
+you get back?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -736,17 +725,17 @@ p_panels
 
 Admittedly, thinking about $f$ statistics as measures of allele frequency
 correlations between populations and interpreting them as overlapping branch
-lengths is intellectually interesting in terms of population genetics theory (at
-least if you're a nerd like me!), but in practice, they are most famous as
-admixture tests.
+lengths is intellectually interesting in terms of population genetics theory),
+but in practice, they are most famous (and most famously used) as admixture
+tests.
 
 **Create a new script `f_admixture.R` and copy my solutions to the exercises in
-this chapter available under the _"Catch up"_ section into that script. Restart
-your R session (`Session -> Restart R`) then skim through this script and re-run
-it all. Having gone through the exercises, the code should look somewhat
-familiar and the visualization you obtain by typing out `p_panels` into your R
-console (the branch lengths encoded by the three $f_4$ statistics we studied)
-should make sense.**
+this chapter available under the _"Catch up"_ section above into that script.**
+This is just to get the same starting point. **Restart your R session (`Session
+-> Restart R`) then skim through this script and re-run it. Having gone through
+the exercises, the code should look somewhat familiar and the visualization you
+obtain by typing out `p_panels` into your R console (the branch lengths encoded
+by the three $f_4$ statistics we studied) should make sense.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -764,23 +753,30 @@ p_panels
 
 ---
 
-**Introduce the following two changes to the `f_admixture.R` script:**
+Right now our script `f_admixture.R` doesn't have any admixture! It still
+contains what we established in this chapter so far: a statistical null model of
+"nothing interesting happened in the demographic history in terms of potential
+admixture", as is reflected in the $f_4$ values we obtained.
 
-1. **Program a `gene_flow()` event `gf`, introducing 10% gene-flow from p3 to p2
-between 500 and 400 generations ago.**
+**Introduce the following two changes to the `f_admixture.R` script to turn it
+into an admixture model:**
 
-2. **Add this `gf` event into the `model` compilation step, making sure it's
-included in the demographic model.**
+1. **Program a `gene_flow()` event `gf`, introducing 20% gene-flow from p3 to px
+between 400 and 300 generations ago.**
 
-**With the steps 1. and 2. done, you're model now includes admixture. Re-run the
+2. **Add this `gf` event into the `model` compilation step executed by
+`compile_model().**
+
+**With the steps 1. and 2. done, your model now includes admixture. Re-run the
 script again, and inspect the final visualization obtained by typing out
-`p_panels` into your R console.**
+`p_panels` into your R console. You should see an admixture edge added to your
+population tree.**
 
-**How does admixture from p3 to p2 affect the branch lengths compared to the
-previous model `f_null.R`, which (as the name indicates) represented a null
-model of no admixture? Pay particular attention to the $f_4(p1,p2;p3,p4)$
-statistic which had an expected value of zero---does it still have a zero
-value?**
+**How does admixture from p3 to px affect the branch lengths compared to the
+previous model `f_null.R` of no admixture? Pay particular attention to the
+$f_4(p1,p2;p3,p4)$ statistic which had an expected value of zero before---does
+it still have a zero value? If not, why, and what does it tell us about it
+utility to study admixture histories?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -854,16 +850,23 @@ there was no path overlap between the pairs p1-p2 and p3-p4, which is why the
 $f_4(p1,p2;p3,p4)$ statistic was zero.
 
 Admixture is a violation of "treeness", because "mathematical" trees are not
-allowed to have admixture edges---structures which do have edges are called
-"admixture graphs", This is why the statistic now significantly deviates from
-zero.
+allowed to have edges (they effectively create "loops" in the
+trees)---structures which do have edges are called "admixture graphs", This is
+why the statistic now significantly deviates from zero.
 
-This is exactly why $f_4(p1,p2;p3,p4)$ serves as a statistical hypothesis test
-of admixture.
+This is exactly why $f_4(p1,p2;p3,p4)$ is useful as a statistical hypothesis
+test of admixture---if a population quartet is from a truly tree-like model,
+this statistic will always necessarily be zero; conversely, it can only ever be
+non-zero if the underlying model (usually hidden, in real-world applications)
+involves admixture which violates "treeness".
 
 :::
 
-
+This is exactly why $f_4(p1,p2;p3,p4)$ is useful as a statistical hypothesis
+test of admixture---if a population quartet is from a truly tree-like model,
+this statistic will always necessarily be zero; conversely, it can only ever be
+non-zero if the underlying model (usually hidden, in real-world applications)
+involves admixture which violates "treeness".
 
 
 
