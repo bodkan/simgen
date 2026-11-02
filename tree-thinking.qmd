@@ -651,7 +651,7 @@ which showcases the most important results from this chapter so far:
 ### Click to see the entire script
 
 ```{r}
-#| echo: false
+#| output: false
 ##################################################
 # load the necessary packages
 
@@ -1088,7 +1088,7 @@ props <- ts_replicate(
     
   # create a data frame with different variants
   data.frame(
-    proportion = c("variant1", "variant2", "variant3 (weird?)"),
+    proportion = c("variant1", "variant2", "variant3 (weird one?)"),
     value = c(prop1, prop2, prop3)
   )
   },
@@ -1097,10 +1097,114 @@ props <- ts_replicate(
 
 p_model <- plot_model(model, proportions = TRUE)
 
-p_f4ratios <-  ggplot(props, aes(value, color = proportion)) +
+p_f4ratios <- ggplot(props, aes(value, color = proportion)) +
     geom_density() +
     geom_vline(xintercept = c(0.2, 0.8), linetype = "dashed", color = "red") +
-    coord_cartesian(xlim = c(0, 1))
+    coord_cartesian(xlim = c(0, 1)) +
+    labs(title = "Simulation-based validation of f4-ratio ancestry estimates",
+         subtitle = "(three different variations of f4-ratios are shown)",
+         x = "ancestry proportion") +
+    theme(legend.position = "bottom")
+
+p_ratios <- plot_grid(p_model, p_f4ratios, nrow = 2)
+
+p_ratios
+```
+
+:::
+
+## Catch up
+
+This was even more work! And no wonder---a simulation-based analysis like this
+one could easily be part of a real research paper. In fact, many studies which
+introduced these theoretical concepts used these simulations as
+proof-of-principle, and increasing number of applications include them for
+benchmarking and validation of results. Now you know how to do these things as
+well!
+
+If you want to check in with the state of the final `f_admixture.R` script,
+you can find it below.
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the entire script
+
+```{r}
+#| output: false
+##################################################
+# load the necessary packages
+
+library(ggplot2)
+library(cowplot)
+
+library(slendr)
+init_env()
+
+##################################################
+# define the basic structure of our demographic model
+
+p4 <- population("p4", time = 20000, N = 1000)
+p3 <- population("p3", time = 6000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+px <- population("px", time = 500, N = 1000, parent = p2)
+
+gf <- gene_flow(from = p3, to = px, start = 400, end = 300, proportion = 0.2)
+
+model <- compile_model(
+  populations = list(p1, p2, p3, p4, px),
+  gene_flow = gf,
+  generation_time = 1
+)
+
+schedule <- schedule_recording(model, times = 0, list("each", 10))
+
+##################################################
+# implement variations of f4-ratio estimates and
+# benchmark them with simple simulations
+
+props <- ts_replicate(
+  n = 50,
+  {
+  ts <-
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+    ts_mutate(mutation_rate = 1e-8)
+
+  s <- ts_names(ts, split = TRUE)
+    
+  # variant #1 -- this is the variant we derived together
+  num1 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p2"])$f4
+  den1 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p3"], Z = s["p2"])$f4
+  prop1 <- num1 / den1
+  
+  # variant #2
+  num2 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["px"], Z = s["p3"])$f4
+  den2 <- ts_f4(ts, W = s["p1"], X = s["p4"], Y = s["p2"], Z = s["p3"])$f4
+  prop2 <- num2 / den2
+
+  # variant #3 (a weird one?)
+  num3 <- ts_f4(ts, W = s["p1"], X = s["px"], Y = s["p2"], Z = s["p4"])$f4
+  den3 <- ts_f4(ts, W = s["p1"], X = s["p3"], Y = s["p2"], Z = s["p4"])$f4
+  prop3 <- - num3 / den3
+    
+  # create a data frame with different variants
+  data.frame(
+    proportion = c("variant1", "variant2", "variant3 (weird one?)"),
+    value = c(prop1, prop2, prop3)
+  )
+  },
+  parallel = parallel::detectCores() - 1
+)
+
+p_model <- plot_model(model, proportions = TRUE)
+
+p_f4ratios <- ggplot(props, aes(value, color = proportion)) +
+    geom_density() +
+    geom_vline(xintercept = c(0.2, 0.8), linetype = "dashed", color = "red") +
+    coord_cartesian(xlim = c(0, 1)) +
+    labs(title = "Simulation-based validation of f4-ratio ancestry estimates",
+         subtitle = "(three different variations of f4-ratios are shown)",
+         x = "ancestry proportion") +
+    theme(legend.position = "bottom")
 
 p_panels <- plot_grid(p_model, p_f4ratios, nrow = 2)
 
@@ -1108,8 +1212,3 @@ p_panels
 ```
 
 :::
-
-
-
-
-
