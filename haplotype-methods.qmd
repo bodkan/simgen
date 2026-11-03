@@ -1,0 +1,641 @@
+# Haplotype-based methods
+
+All of our exercises and all of our coding in _slendr_ focused on population
+genetic statistics and metrics, all of whom were based, one way or another, on
+allele frequencies and allele frequency correlations.
+
+One class of modeling tools implemented in _slendr_ which are also useful for
+you to learn methods based on haplotypes---i.e., continuous segments of DNA
+inherited from generation to generation, continuously broken up by the process
+of recombination.
+
+To make this session a little more relaxed compared to previous exercises, this
+chapter presents the haplotype-based techniques available in _slendr_ more as a
+set of "recipes" rather than extensive exercises. The primary goal is to close
+off our sessions on learning modeling with a few more tools before we dig into
+developing modeling workflows for your own projects or working on a few
+suggested case studies.
+
+## Preparation
+
+**Take a look at the following basic admixture model, and save it as
+`haplotypes.R`. Note also the presence of a small helper function I provided
+(you don't have to study it, although it should look familiar if you've done the
+_tidyverse_ and _ggplot2_ parts of this workbook):**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the entire script
+
+```{r}
+#| message: false
+#| collapse: true
+##################################################
+# simple admixture demographic model
+library(slendr)
+init_env()
+
+popZ <- population("popZ", time = 3000, N = 500)
+popX <- population("popX", time = 1500, N = 2000, parent = popZ)
+popY <- population("popY", time = 1500, N = 10000, parent = popZ)
+
+gf <- gene_flow(from = popX, to = popY, proportion = 0.2, start = 500, end = 499)
+
+model <- compile_model(list(popZ, popX, popY), generation_time = 1, gene_flow = gf)
+
+schedule <- rbind(
+  schedule_recording(model, times = seq(1400, 0, by = -200), list(popY, 10)),
+  schedule_recording(model, times = 0, list(popX, 10), list(popZ, 10))
+)
+  
+ts <-
+  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+samples <- ts_names(ts, split = TRUE)
+
+##################################################
+# a helper function to plot admixture tracts
+
+library(ggplot2)
+library(dplyr)
+library(scales)
+
+plot_tracts <- function(tracts, ind) {
+  ind_tracts <- filter(tracts, name %in% ind) %>%
+    mutate(chr = paste0(name, "\nchr. ", haplotype)) %>%
+    mutate(chr = factor(chr, levels = unique(chr[order(node_id)])))
+
+  ggplot(ind_tracts) +
+    geom_rect(aes(xmin = left, xmax = right, ymin = 1, ymax = 2, fill = name),
+              linewidth = 1) +
+    labs(x = "coordinate along a chromosome [bp]") +
+    theme_bw() +
+    theme(legend.position = "none",
+          axis.text.y = element_blank(), axis.ticks = element_blank(),
+          panel.border = element_blank(), panel.grid = element_blank()) +
+    facet_grid(chr ~ .) +
+    scale_x_continuous(labels = comma)
+}
+```
+
+:::
+
+Here is what this model look like. Note particularly the "ancient DNA time
+series" we simulated in `popY` and the admixture from `popX` into `popY`:
+
+```{r}
+plot_model(model, schedule = schedule, proportions = TRUE)
+```
+
+
+
+
+
+
+
+
+
+
+
+## Exercise: Local ancestry inference (LAI) with `ts_tracts()`
+
+As mentioned above, we've learned a lot about admixture tests based on allele
+frequency correlations, namely $f$-statistics. Although very powerful, there are
+situations where they either lose inference power or they don't allow us to
+answer deeper questions we might be also interested in.
+
+For instance, **what if we want to detect not only _if_ or _how much_ admixture
+happened, but _where_ in the genome can we detect continuous admixture blocks?**
+
+**A wide range of software methods called Local Ancestry Inference (LAI) have
+been developed do do exactly this**, each with their strengths and weaknesses.
+For an overview, see [this
+preprint](https://www.biorxiv.org/content/10.64898/2026.05.19.725905v1) which I
+put together with a former PhD student about LAI methods (fun fact: _slendr_ is
+what made this work possible!).
+
+**On the simulation side, _slendr_ provides a function `ts_tracts()`, which can
+extract the exact coordinates of admixture tracts resulting an admixture
+event.** This is extremely useful both for simulation-based inference, but also
+for benchmarking software methods, picking which method gives the most accurate
+answer in our scenario of interest, etc.
+
+---
+
+**If you have a simulated tree sequence `ts`** (such as the one simulated by
+your script `haplotypes.R`)**, you can obtain admixture tracts by providing a
+so-called "census time" to the function `ts_tracts()`** (this is a slightly
+strange name for a [low-level technical
+concept](https://tskit.dev/msprime/docs/stable/ancestry.html#census-events)
+corresponding to the time of gene-flow we want to focus on). **In case of our
+model, set this `census` to 500 generations and add the following command to
+your script `haplotypes.R`, then run it. What's the format of the data it gives
+you? Can you guess what sort of information it contains by looking through it?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+#| output: false
+tracts <- ts_tracts(ts, census = 500)
+```
+
+When you look at the output of this function, you seen that it's a plain data
+frame with many columns which will be familiar to you:
+
+```{r}
+head(tracts)
+```
+
+For instance, `name` indicates the name of the individual carrying a given
+admixture tract derived from admixture from source population `source_pop` with
+genomic coordinates between `left` and `right`.
+
+:::
+
+---
+
+**Can you guess the meaning of the `haplotype` column? How many of them are
+there for any given individual? You can use your _tidyverse_ magic to answer
+this.**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+This finds the haplotype number and node ID for each individual:
+
+```{r}
+tracts %>% group_by(name) %>% distinct(haplotype, node_id)
+```
+
+Haplotype is basically equivalent to "chromosome" in this case. Because each
+simulated _slendr_ individual is diploid, we get one "chromosome" for each of
+them. The `node_id` column is a low-level numerical identifier for such
+chromosome used by the underlying _tskit_ Python module which handles
+tree-sequence operations.
+
+Here are both columns for the couple of individuals separately, making it clear
+that there are always two entries for each of them:
+
+```{r}
+tracts %>% group_by(name)  %>% filter(name == "popY_71") %>% distinct(haplotype, node_id)
+tracts %>% group_by(name)  %>% filter(name == "popY_80") %>% distinct(haplotype, node_id)
+```
+
+:::
+
+---
+
+In the script above, I provided the function `plot_tracts()` for you. The way it
+works is that you give it a table of all `tracts` and the names of some
+individuals recorded in the tree sequence.
+
+You can probably guess what this function does. **To test this function, give it
+the simulated `tracts` data frame and a vector of names of individuals who span
+a wider range of "aDNA time points", starting from the oldest individual and
+ending by an individual "from the present day" (but no more than one individual
+from each time point, just to keep things manageable).**
+
+**What do you see in terms of the number of tracts and the length of tracts
+across these individuals? Can you detect some distinctive pattern or differences
+between the individual tracts (even just visually, we'll do this more rigorously
+later)?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Let's apply some _tidyverse_ table munging to select individuals of different
+times(remember, we recorded oldest individuals at 1000 generations ago, the
+youngest individuals at 0 generations ago). Of course, you could also do this
+manually, but this is more effective, particularly if we needed to subsample
+many individuals.
+
+```{r}
+names <- tracts %>% group_by(time) %>% distinct(name) %>% slice_sample(n = 1) %>% pull(name)
+names
+```
+
+We then simply provide these names to the helper function:
+
+```{r}
+#| width: 800
+#| height: 1000
+plot_tracts(tracts, names)
+```
+
+It looks like the older individual is, the closer they lived to the start of the
+admixture event, and the longer the tracts they carry will be. Which makes
+perfect sense!
+
+:::
+
+---
+
+If we were interested in benchmarking some inference methods (all of which produce
+data very similar to the `tracts` table), this is the ground truth we would be
+comparing its performance against---effectively the results of "the perfect method"
+which never makes a mistake.
+
+We'll give a tip on how to do this benchmarking in practice in the final
+exercise of this chapter.
+
+
+## Exercise: Dating admixture events
+
+Once we have a set of admixture tracts (either simulated or inferred
+empirically), we can try to date the admixture event. Again, we simulated our
+tracts and so we know this admixture date exactly, of course. But that's not the
+point here. Typically what we want to do is to simulate genomic data (see the
+final exercise) from our model, and then use this data as an input to external
+inference software to ask the question: How well can this software infer the
+truth? An example of such software is
+[DATES](https://elifesciences.org/articles/77625),
+[MOSAIC](https://academic.oup.com/genetics/article/212/3/869/5931232), or
+[FLARE](https://cell.com/ajhg/retrieve/pii/S0002929722005444).
+
+Still, let's do a little theoretical exercise to demonstrate how admixture tract
+coordinates can be used to infer admixture times. In fact, this is not far from
+how the methods mentioned above actually do this, so it's quite useful to know
+even besides intellectual curiosity.
+
+---
+
+**First, compute the average length of a ancestry tracts in individuals recorded
+in each time point, then visualize the length distribution of these tracts stratified
+by their length (i.e., assign a color to each distribution).**
+
+**Hint:** You only need a little bit of _tidyverse_ and _ggplot2_ knowledge to
+do this. Take a look at the relevant chapters on the left if you need a
+refresher. We did something similar with our example IBD data set.
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+Let's compute the average length in each time bin:
+
+```{r}
+tracts %>%
+  group_by(time) %>%
+  summarise(mean(length))
+```
+
+Obviously, we can see that the older the individual, the closer to the admixture
+event that individual is and, consequently, the longer the admixture tracts are.
+This is, of course, because recombination hadn't yet had the time to break up
+longer admixture chunks into shorter pieces.
+
+We can get a better idea about this by plotting the admixture tract length
+distributions like this:
+
+```{r}
+ggplot(tracts, aes(length, color = factor(time))) +
+  geom_density() +
+  coord_cartesian(xlim = c(0, 3e6)) +
+  theme_bw() +
+  scale_color_discrete("Time of\nrecording") +
+  labs(title = "Distribution of admixture lengths, stratified by age group",
+       x = "admixture tract length [bp]")
+```
+
+:::
+
+---
+
+**Suppose we only have sequences of present-day individuals. In our script,
+let's subset the `tracts` data frame to only individuals recorded at time 0 ("the present day"):**
+
+```{r}
+tracts <- filter(tracts, time == 0)
+```
+
+---
+
+When we look again at the distribution of tracts lengths observed in individuals
+at time 0 a bit more carefully, we can notice that it seems to follow the
+[exponential
+distribution](https://en.wikipedia.org/wiki/Exponential_distribution):
+
+```{r, echo=FALSE}
+h_ind <- tracts %>% .$length %>% hist(breaks = 50, plot = FALSE)
+plot(as.integer(h_ind$mids), h_ind$counts, main = "Tract lengths in individuals at time 0",
+     xlab = "tract length bin [bp]", ylab = "count",
+     xlim = c(0, max(h_ind$mids)), ylim = c(0, max(h_ind$counts)))
+```
+
+[Exponential
+distribution](https://en.wikipedia.org/wiki/Exponential_distribution) is
+governed by the following density function with a _rate parameter_ $\lambda$:
+
+$$
+f(\textrm{tract length }~x) \sim \lambda \exp^{-\lambda x}
+$$
+
+In the case of exponential decay of admixture tracts and after making some
+simplifying assumptions, the $\lambda$ rate parameter can be parametrized as:
+
+$$ \lambda = \frac{1}{r t}, $$ where $r$ is the recombination rate and $t$ is
+the time (in generations) since the admixture event.
+
+The [expected
+value](https://en.wikipedia.org/wiki/Exponential_distribution#Mean,_variance,_moments,_and_median)
+of such exponential distribution is given by:
+
+$$
+\mathop{\mathbb{E}} [X] = \frac{1}{\lambda}
+$$
+
+Because we can get the maximum likelihood value of this expected average simply
+by computing a simple mean of tract lengths $\bar{x}$, we can also write:
+
+$$
+\bar{x} \approx \mathop{\mathbb{E}} [X] = \frac{1}{\lambda}.
+$$
+
+Simply by rearranging this equation, we can therefore get an estimate the rate
+of exponential decay $\hat{\lambda}$ of the underlying exponential distribution
+of the tract lengths as:
+
+$$
+\hat{\lambda} = \frac{1}{\bar{x}}.
+$$
+
+We can also verify our assumptions by overlaying a theoretical exponential
+distribution density corresponding to the tract length data. (This is a very technical bit, so feel free to skip this):
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+We can do this using the `dexp()` function:
+
+```{r, echo=FALSE}
+# get tract lengths as a normal vector
+tract_lengths <- tracts$length
+
+# bin the lengths into 50 bins
+h_ind <- hist(tract_lengths, breaks = 50, plot = FALSE)
+
+# plot the length bins (distribution of the data)
+plot(as.integer(h_ind$mids), h_ind$counts, main = "Tract lengths in individuals at time 0",
+     xlab = "tract length bin [bp]", ylab = "count",
+     xlim = c(0, max(h_ind$mids)), ylim = c(0, max(h_ind$counts)))
+
+# compute the exponential density corresponding to the tract lengths distribution
+y_values <- dexp(h_ind$mids, rate = 1 / mean(tract_lengths))
+
+# overlay this exponential density on the data
+lines(h_ind$mids, sum(h_ind$counts) * unique(diff(h_ind$mids)) * y_values, lty = 2, col = "darkgreen", lwd = 2)
+```
+
+:::
+
+But more importantly, because we know that $\lambda = 1 / (r t)$, assuming we
+know the uniform average recombination rate $r$ reasonably well, we can estimate
+the time of admixture simply by rearranging this equation to extract the
+admixture time $t$ as:
+
+$$
+t \approx \frac{\hat{\lambda}}{r}
+$$
+
+For example, given a vector of tract lengths in our simulated individuals
+"from the present day":
+
+
+```{r}
+head(tracts$length, 10) # ... etc
+```
+
+we can estimate the rate of exponential decay $\hat{\lambda}$ like this:
+
+```{r}
+lambda_hat <- 1 / mean(tracts$length)
+lambda_hat
+```
+
+and then use this value to estimate of time since admixture in the history of
+these individual directly:
+
+```{r}
+r <- 1e-8 # recombination rate (crossovers per bp per generation)
+
+admixture_time <- lambda_hat / r # admixture time in "generations before this individual lived"
+
+admixture_time
+```
+
+---
+
+You can see that we're a little bit of from the true value of 500 generations
+(after all, we only simulated a small part of the genome), but still, hopefully
+this gives you a hint of how admixture dating methods work, at least in
+principle.
+
+Real-world inference uses mathematical machinery which is a little bit more
+sophisticated (usually we deal with filtered tracts, or we don't even have full
+haplotypes and can only work with linkage information between individual
+alleles), but the general ideas remains the same---fitting an exponential curve
+to the information signal left in admixed genomes by the process of
+recombination.
+
+<!-- ```{r} -->
+<!-- bin_data <- hist(tracts$length, plot = FALSE, breaks = 101) -->
+<!-- density <- bin_data$density[-1] -->
+<!-- length <- bin_data$mids[-1][density > 0] -->
+<!-- density <- density[density > 0] -->
+
+<!-- nls_res <- nls(density ~ SSasymp(length, Asym, R0, lrc)) -->
+<!-- lambda_nls <- exp(unname(coef(nls_res)["lrc"])) -->
+<!-- t_nls <- lambda_nls / r -->
+<!-- t_nls -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- x_values <- sort(unique(c(length, seq(0, max(tracts$length), by = 5000)))) -->
+<!-- y_mean <- dexp(x_values, rate = lambda_hat) -->
+<!-- y_nls <- predict(nls_res, newdata = data.frame(length = x_values)) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- plot(length, density, xlim = c(0, 1e6)) -->
+<!-- lines(x_values, y_mean, col = "red", lty = 2, lwd = 2) -->
+<!-- lines(x_values, y_nls, col = "purple", lty = 2, lwd = 2) -->
+<!-- ``` -->
+
+
+
+
+
+
+
+
+## Exercise: Identity-by-Descent segments (IBD)
+
+Another function useful for studying demographic history using haplotypes is
+`ts_ibd()`. As the name suggests, this function extracts IBD segments for the
+given set of individuals recorded in a tree sequence.
+
+Let's first get the names of individuals "at the present":
+
+```{r}
+samples <- ts_recorded(ts) %>% filter(time == 0)
+samples
+```
+
+**In general, there are two modes of operation for the `ts_ibd()` function
+(depending on whether we set its argument `within` or `between`) as outlined
+bellow.**
+
+(Additionally, because the IBD data from even a tiny simulation can be
+absolutely huge, we typically need to pre-filter which IBDs to extract, for
+instance by setting the `maximum_time` argument, which only searches for IBDs
+that aren't resulting from a most recent common ancestor (MRCA) not older than
+the given time. Alternatively, we also have the option to filter for
+`minimum_length`, but see the instructions in `?ts_ibd` for some caveats.)
+
+1. **We can look for IBD segments _within_ a given group of individuals by
+providing the names of the group of individuals within which to extract IBD
+segments.**
+
+```{r}
+ibd_within <- ts_ibd(ts, within = samples$name, maximum_time = 100)
+```
+
+Looking at the data, we see a familiar data frame structure again, namely with
+pairs of names of two individuals `name1` and `name2` for each IBD segment (each
+row of the data frame), the time `tmrca` of the most common ancestor from which
+the IBD segment was inherited.
+
+When we summarize how many segments of what average length do we find in our
+simulated sample set (a simple metric of relatedness), we can see that the
+amount of IBDs follows the $N_e$ of the population in our model: the smaller the
+$N_e$, the more related (and with more IBD) we observe in our populations:
+
+```{r}
+#| message: false
+ibd_within %>%
+  group_by(pop1, pop2) %>%
+  summarize(ibd_count = n(), ibd_length = mean(length))
+```
+
+```{r}
+plot_model(model, proportions = TRUE)
+```
+
+2. **We can look for IBD segments _between_ two groups by providing two sets of
+individuals.**
+
+Let's first convert our present-day only table of samples into the necessary
+format (list of vectors, as we discussed many times before).
+
+```{r}
+samples <- split(samples$name, samples$pop)
+samples
+```
+
+
+**Let's run `ts_ibd()` with the `between` mode. Notice that we see nothing
+between any pair of the three populations if we keep the `maximum_time = 100`
+filter present. This makes sense because the splits between the populations (and
+their $N_e$) don't allow for such "young" IBD segments to persist. This applies
+also to the `popY`-`popX` pair whose demographic history involves a substantial
+gene flow event of 20%!**
+
+```{r}
+ts_ibd(ts, between = samples[c("popZ", "popX")], maximum_time = 100)
+ts_ibd(ts, between = samples[c("popZ", "popY")], maximum_time = 100)
+ts_ibd(ts, between = samples[c("popY", "popX")], maximum_time = 100)
+```
+
+**We see the same thing between the `popY`-`popX` pair even when we filter for IBD
+segments inherited right at the time the gene-flow ended (obviously):**
+
+```{r}
+ts_ibd(ts, between = samples[c("popY", "popX")], maximum_time = 499)
+```
+
+**Finally, we do pick up an admixture signal when we allow IBD segments tracing
+the MRCA between the two populations to the exact generation during which the
+admixture began:**
+
+```{r}
+ts_ibd(ts, between = samples[c("popY", "popX")], maximum_time = 500)
+```
+
+---
+
+**Unlike every single statistical method introduced in this workshop, there's a
+caveat to using `ts_ibd()` used for real-world simulation-based inference of
+demographic history or software benchmarking**, and it has to do with [an
+issue](https://github.com/tskit-dev/tskit/issues/2459) in how the underlying
+_tskit_ tree-sequence machinery handles IBD segments. Read the linked GitHub
+issue as well as my note in the `?ts_ibd` help page to learn more.
+
+**That said, if you want to do real-world inference using IBD segments on real
+data, this would anyway require applying third-party software doing the
+inference anyway (AncIBD, IBDSeq, Ibis, etc.). For this reason, this issue
+doesn't have much practical implication.**
+
+**For those applications, let's move on to how you'd go about approaching tying
+_slendr_ simulations with external software.**
+
+
+
+
+
+
+
+
+
+
+
+## Exercise: Converting tree sequences to other genotype formats
+
+As convenient as it is to always work in R with user-friendly modeling interface
+of _slendr_, it's library of _tskit_ tree-sequence statistical functions, and
+the whole _tidyverse_ and _ggplot2_ data science packages, real-world research
+requires using third-party external software. In general, software like this
+doesn't work with tree-sequence data structures, and even when it does, our
+real-world data doesn't come in the form of tree sequences---it takes the form
+of genotype files such as VCF, EIGENSTRAT, PLINK, and others.
+
+Luckily, _slendr_ provides convenient means to convert tree sequences into
+standard genotype formats. For instance, if we have a tree sequence object `ts`,
+we can:
+
+```{r}
+#| echo: false
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
+```
+
+1. **Obtain a VCF file with the function `ts_vcf()`**
+
+```{r}
+ts_vcf(ts, path = "/tmp/genotypes.vcf.gz")
+```
+
+```{bash}
+bcftools view -s popX_1,popY_1,popZ_1 /tmp/genotypes.vcf.gz | head -n15
+```
+
+2. **Convert our data into the EIGENSTRAT trio of files for ADMIXTOOLS with the
+function `ts_eigenstrat()`**
+
+```{r}
+ts_eigenstrat(ts, prefix = "/tmp/eigenstrat")
+```
+
+3. **Get a normal table of genotypes as a data frame with the function
+`ts_genotypes()`**
+
+```{r}
+ts_genotypes(ts)
+```
+
+---
+
+With these three functions, you can always finish your _slendr_ simulation
+scripts with a file conversion to another fileformat and pick up your inference
+work in a different third-party software (IBDseq, DATES, ADMIXTOOLS, PLINK,
+etc.).
