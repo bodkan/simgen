@@ -46,19 +46,19 @@ Neanderthal introgression into the ancestors of non-Africans.**
 library(slendr)
 init_env()
 
-outgroup <- population("outgroup", time = 7000000, N = 10000)
+outgroup <- population("outgroup",   time = 7000000, N = 10000)
 
-ancestor <- population("ancestor", time = 6000001, N =  1000, parent = outgroup, remove = 599999)
+ancestor <- population("ancestor",   time = 6000001, N =  1000, parent = outgroup, remove = 599999)
 
-altai    <- population("Altai",    time =  600000, N =  1000, parent = ancestor, remove = 49999)
-vindija  <- population("Vindija",  time =  200000, N =  1000, parent = altai, remove = 49999)
+altai    <- population("Altai",      time =  600000, N =  1000, parent = ancestor, remove = 49999)
+vindija  <- population("Vindija",    time =  200000, N =  1000, parent = altai, remove = 49999)
 
-san      <- population("San",      time =  600000, N = 10000, parent = ancestor)
-mbuti    <- population("Mbuti",    time =  350000, N = 10000, parent = san)
-yoruba   <- population("Yoruba",   time =  220000, N = 10000, parent = mbuti)
-dinka    <- population("Dinka",    time =  150000, N = 15000, parent = yoruba)
+san      <- population("San",        time =  600000, N = 10000, parent = ancestor)
+mbuti    <- population("Mbuti",      time =  350000, N = 10000, parent = san)
+yoruba   <- population("Yoruba",     time =  220000, N = 10000, parent = mbuti)
+dinka    <- population("Dinka",      time =  150000, N = 15000, parent = yoruba)
 
-nonafr   <- population("nonAfrican",   time =   70000, N = 3000,  parent = dinka)
+nonafr   <- population("nonAfrican", time =   70000, N = 3000,  parent = dinka)
 
 gf <- gene_flow(from = vindija, to = nonafr, proportion = 0.03, start = 55000, end = 50000)
 
@@ -188,10 +188,16 @@ ancestry estimate, we need to compute it's complement:
 Here's what my simulated trajectory looks like:
 
 ```{r}
+#| messages: false
 #| echo: false
 library(purrr)
 library(dplyr)
 library(ggplot2)
+
+seed <- 3996481
+ts <-
+  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
+  ts_mutate(mutation_rate = 1e-8, random_seed = seed)
 
 indirect <-
   ts_recorded(ts) %>%                 # get the table of individuals
@@ -223,7 +229,7 @@ ggplot(indirect, aes(time, ancestry)) +
 
 
 
-## Effect of complex admixture through the modern human prehistory
+## Effect of complex admixture during modern human prehistory
 
 In your visualization of the indirect $f_4$-ratio trajectory, you should have
 noticed no trend at all---under neutrality, Neanderthal ancestry is expected to
@@ -257,6 +263,7 @@ things clean and tidy.
 Here's what my simulated trajectory looks like on the modified model:
 
 ```{r}
+#| messages: false
 #| echo: false
 gf <- list(
   # Neanderthal introgression
@@ -299,17 +306,12 @@ direct <-
       })
   )
 
-rbind(
-  mutate(indirect, variant = "indirect f4-ratio"),
-  mutate(direct, variant = "direct f4-ratio")
-) %>%
-ggplot(aes(time, ancestry, color = variant)) +
+ggplot(indirect, aes(time, ancestry)) +
   geom_point() +
   xlim(45000, 0) +
   ylim(0, 0.1) +
   geom_smooth(method = "lm") +
-  ggtitle(paste(seed, "Direct f4-ratio estimate of Neanderthal ancestry over time"),
-          subtitle = "[black dashed line indicates the true trajectory]") +
+  ggtitle(paste(seed, "Indirect f4-ratio estimate of Neanderthal ancestry over time")) +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
 ```
@@ -380,6 +382,7 @@ ts_f4ratio(ts, X = "nonAfrican_1", A = "Altai", B = "Vindija", C = s["Dinka"], O
 Here's what my simulated trajectory looks like on the modified model:
 
 ```{r}
+#| messages: false
 #| echo: false
 ts <-
   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = 123456) %>%
@@ -400,8 +403,7 @@ ggplot(direct, aes(time, ancestry)) +
   xlim(45000, 0) +
   ylim(0, 0.1) +
   geom_smooth(method = "lm") +
-  ggtitle("Direct f4-ratio estimate of Neanderthal ancestry over time",
-          subtitle = "[black dashed line indicates the true trajectory]") +
+  ggtitle("Direct f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
 ```
@@ -410,6 +412,7 @@ And here are the two estimates compared to one another, both computed on the
 same simulated tree sequence:
 
 ```{r}
+#| messages: false
 #| echo: false
 rbind(
   mutate(indirect, variant = "indirect f4-ratio"),
@@ -420,8 +423,7 @@ ggplot(aes(time, ancestry, color = variant)) +
   xlim(45000, 0) +
   ylim(0, 0.1) +
   geom_smooth(method = "lm") +
-  ggtitle("Direct f4-ratio estimate of Neanderthal ancestry over time",
-          subtitle = "[black dashed line indicates the true trajectory]") +
+  ggtitle("Trajectories of indirect and direct f4-ratio estimates") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
 ```
@@ -450,7 +452,7 @@ modeling for this type of research!**
 
 
 
-## Bonus question
+## Bonus exercise
 
 Because I saved you a lot of work by providing the introgression admixture model
 already programmed, here's a bonus challenge:
