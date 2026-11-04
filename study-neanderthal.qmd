@@ -392,20 +392,6 @@ Here's what my simulated trajectory looks like on the modified model:
 ```{r}
 #| message: false
 #| echo: false
-ts <-
-  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = 123456) %>%
-  ts_mutate(mutation_rate = 1e-8)
-
-direct <-
-  ts_recorded(ts) %>%                 # get the table of individuals
-  filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
-  mutate(
-    ancestry =                        # compute the "indirect" estimate for each individual
-      sapply(name, function(x) {
-        ts_f4ratio(ts, X = x, A = "Altai", B = "Vindija", C = s["Dinka"], O = s["outgroup"])$alpha
-      })
-  )
-
 ggplot(direct, aes(time, ancestry)) +
   geom_point() +
   xlim(45000, 0) +
