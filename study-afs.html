@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>N_e inference with AFS – Computational Population Genomics and Inference in R</title>
+<title>AFS-based inference of N_e – Computational Population Genomics and Inference in R</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -153,7 +153,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./study-overview.html">Case studies</a></li><li class="breadcrumb-item"><a href="./study-afs.html"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./study-overview.html">Case studies</a></li><li class="breadcrumb-item"><a href="./study-afs.html"><span class="chapter-title">AFS-based inference of <span class="math inline">\(N_e\)</span></span></a></li></ol></nav>
         <a class="flex-grow-1" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -274,7 +274,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./study-afs.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></a>
+  <a href="./study-afs.html" class="sidebar-item-text sidebar-link active"><span class="chapter-title">AFS-based inference of <span class="math inline">\(N_e\)</span></span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -403,17 +403,17 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#exercise-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs" id="toc-exercise-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs" class="nav-link active" data-scroll-target="#exercise-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs">Exercise 1: A self-contained <em>slendr</em> function of <span class="math inline">\(N_e \rightarrow \textrm{AFS}\)</span></a></li>
-  <li><a href="#exercise-2-estimating-unknown-n_e-from-empirical-afs" id="toc-exercise-2-estimating-unknown-n_e-from-empirical-afs" class="nav-link" data-scroll-target="#exercise-2-estimating-unknown-n_e-from-empirical-afs">Exercise 2: Estimating unknown <span class="math inline">\(N_e\)</span> from empirical AFS</a></li>
+  <li><a href="#part-1-a-self-contained-data-generating-slendr-function" id="toc-part-1-a-self-contained-data-generating-slendr-function" class="nav-link active" data-scroll-target="#part-1-a-self-contained-data-generating-slendr-function">Part 1: A self-contained data-generating <em>slendr</em> function</a></li>
+  <li><a href="#part-2-matching-simulated-afs-against-empirical-afs" id="toc-part-2-matching-simulated-afs-against-empirical-afs" class="nav-link" data-scroll-target="#part-2-matching-simulated-afs-against-empirical-afs">Part 2: Matching simulated AFS against empirical AFS</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content" tabindex="-1">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./study-overview.html">Case studies</a></li><li class="breadcrumb-item"><a href="./study-afs.html"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="Breadcrumbs"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./study-overview.html">Case studies</a></li><li class="breadcrumb-item"><a href="./study-afs.html"><span class="chapter-title">AFS-based inference of <span class="math inline">\(N_e\)</span></span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-title"><span class="math inline">\(N_e\)</span> inference with AFS</span></h1>
+<h1 class="title"><span class="chapter-title">AFS-based inference of <span class="math inline">\(N_e\)</span></span></h1>
 </div>
 
 
@@ -430,15 +430,30 @@ window.Quarto = {
 </header>
 
 
-<p>So far we’ve learned how <em>slendr</em> provides an easy way to define demographic models in R and simulate (even very large!) tree sequences from them. This allows us to quickly verify our intuition about some popgen problem (things like <em>“Hmmm, I wonder what would an <span class="math inline">\(f_4\)</span> statistic look like if my model includes this particular gene-flow event?</em>), in just a few lines of R. There have been instances in which we’ve been able to even answer questions like this directly in a meeting, pretty much on the spot! This makes <em>slendr</em> a very powerful “popgen calculator”.</p>
-<p>Now let’s take things one step further. Imagine you gathered some empirical data, like an allele frequency spectrum (AFS) from a population that you study. That data was, in the real world, produced by some (hidden) biological process (demographic history) that we want to learn about. For instance, the population we study had some <span class="math inline">\(N_e\)</span>, which we don’t know the value of (the only thing we have is the observed AFS) but we want to infer that value.</p>
-<p>Simulations can be a great tool to estimate the most likely value of such an unknown parameter. Briefly speaking, in this particular toy example, we can simulate a large number of AFS vectors (each resulting from a different assumed <span class="math inline">\(N_e\)</span> value) and then pick just those <span class="math inline">\(N_e\)</span> values (or just one <span class="math inline">\(N_e\)</span> value) which produced a simulated AFS closest to the observed AFS.</p>
-<p>This is exactly what you’ll be doing just now.</p>
-<section id="exercise-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="exercise-1-a-self-contained-slendr-function-of-n_e-rightarrow-textrmafs">Exercise 1: A self-contained <em>slendr</em> function of <span class="math inline">\(N_e \rightarrow \textrm{AFS}\)</span></h2>
-<p><strong>In a new script <code>inference-afs.R</code> write a custom R function called <code>simulate_afs()</code>, which will take <code>Ne</code> as its only parameter. Use this function to compute (and return) <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">AFS vectors</a> for a couple of <code>Ne</code> values of your choosing, but staying between <code>Ne = 1000</code> and <code>Ne = 30000</code> Plot those AFS vectors and observe how (and why?) do they differ based on <code>Ne</code> parameter you used in each respective simulation.</strong></p>
-<p><strong>Hint:</strong> The function should create a one-population <em>forward-time</em> model (our population starting at <code>time = 1</code>, with the model <code>simulation_length = 100000</code> and <code>generation_time = 1</code> in <code>compile_model()</code>), simulate 10Mb tree sequence using <code>msprime()</code> (recombination rate 1e-8) and then overlay neutral mutations on it at <code>mutation_rate = 1e-8</code>), compute AFS for 10 samples and return the AFS vector as result of this custom function.</p>
-<p><strong>Hint:</strong> If you’ve never programmed before, the concept of a “custom function” might be very alien to you. Again, if you need help, feel free to start building your <code>inference-afs.R</code> solution based on this “template” (just fill in missing relevant bits of <em>slendr</em> code that you should be already familiar with):</p>
+<p><strong>Imagine you sequenced 1 Mb of sequence of ten individuals from a population of your interest and computed a summary statistic such as the allele frequency spectrum (AFS). Those sequences (and, by extension, the AFS) were produced by a real-world biological process (demographic history) which is hidden but which you want to learn about. Prior bioinformatic studies estimated that the recombination and mutation rates of this population are both <code>1e-8</code> (just like in humans).</strong></p>
+<p><strong>Now you want to use this data to estimate the population’s long-term <span class="math inline">\(N_e\)</span> which is, of course, unknown (you only have the observed AFS). Suppose that the only thing known about the population size from some other hypothetical evidence that this <span class="math inline">\(N_e\)</span> was somewhere between 1000 and 30000.</strong></p>
+<p>(<span class="math inline">\(N_e\)</span> is just an example here—in practice, we’re typically interested in other parameters as well (admixture rate, admixture time, split times, etc.), but the idea remains the same: we computed summaries of the empirical data which were shaped by those hidden parameters and we need to estimate them.)</p>
+<p>Simulations can be a great tool to estimate the most likely value of such an unknown parameters. <strong>In this exercise, you’re going to simulate a large number of AFS vectors (each resulting from a different assumed <span class="math inline">\(N_e\)</span> value) and then pick just those <span class="math inline">\(N_e\)</span> values (or just one <span class="math inline">\(N_e\)</span> value) which produced a simulated AFS closest to the observed AFS.</strong> This is the core idea behind simulation-based inference and applies to many other situations and modeling contexts.</p>
+<p>To make things manageable, let’s decompose the problem into a sequence of steps.</p>
+<section id="part-1-a-self-contained-data-generating-slendr-function" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="part-1-a-self-contained-data-generating-slendr-function">Part 1: A self-contained data-generating <em>slendr</em> function</h2>
+<p><strong>Create a new script <code>inference_afs.R</code>. In this script, program a function called <code>simulate_afs()</code>, which will take <code>Ne</code> as its only parameter and will contain a single-population <em>slendr</em> demographic model. In this function, use <code>ts_afs()</code> to compute (and return) the <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">AFS vector</a> on a sample of 10 individuals in the tree sequence produced by this model. When you return the AFS vector from this function, make sure to drop the first and last elements (with something like <code>afs[-c(1, 21)]</code>). Test this function on a couple of <code>Ne</code> values of your choosing, but staying between <code>Ne = 1000</code> and <code>Ne = 30000</code> and plot them to observe how (and why) do they differ based on <code>Ne</code> parameter you used in each respective simulation. If you want more information about AFS, see the help page under <code>?ts_afs</code>.</strong></p>
+<p><strong>Hint:</strong> If you need help, take a look at the exercise chapter which introduced the concepts of <em>slendr</em> model functions generating some statistics, or feel free to start building your <code>inference_afs.R</code> solution based on the following “template” (just fill in missing relevant bits of <em>slendr</em> code that you should be already familiar with).</p>
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p><strong>Note:</strong> If you want to know why I asked you to drop the first and last element of the <code>ts_afs()</code> output (for instance with something like <code>afs[-c(1, 20)]</code>), it’s due to technical reasons related to how the underlying <em>tskit</em> module operates. You don’t have to worry about that here, but you can read <a href="https://tskit.dev/tutorials/analysing_tree_sequences.html#sec-tutorial-afs-zeroth-entry">this</a> for more detail.</p>
+</div></div><div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the “template”
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -446,57 +461,41 @@ window.Quarto = {
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>simulate_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne) {</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># In here you should write code which will:</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   1. create one population with a given Ne (provided as a function argument)</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   2. compile a model using `simulation_length =` and `generation_time =`</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   2. compile the model (either forward-time or backward-time, doesn't matter)</span></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   3. simulate a tree sequence</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   4. select names of 10 samples (doesn't matter which, "pop_1", "po2_", ...)</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   4. select a subset of 10 individuals (you could also schedule ther recording)</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">#   5. compute AFS vector from those 10 individuals using `ts_afs()`</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  </span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># `result` is a variable with your 10-sample AFS vector (we remove the</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># first element because it's not meaningful for our example)</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result[<span class="sc">-</span><span class="dv">1</span>]) </span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># first and last element because it's not meaningful for our example)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(result[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">21</span>)]) </span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>afs_1 <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>) <span class="co"># simulate AFS from a Ne = 1000 model...</span></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_1, <span class="at">type =</span><span class="st">"o"</span>)           <span class="co"># ... and plot it</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co"># test the function on a few example runs</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>afs1k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs1k, <span class="at">type =</span><span class="st">"o"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>afs7k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">7000</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs7k, <span class="at">type =</span><span class="st">"o"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-
-<div class="no-row-height column-margin column-container"><div class="margin-aside">
-<p><strong>Note:</strong> Remember that you should drop the first element of the AFS vector produced by <code>ts_afs()</code> (for instance with something like <code>result[-1]</code> if <code>result</code> contains the output of <code>ts_afs()</code>) technical reasons related to <em>tskit</em>. You don’t have to worry about that here, but you can read <a href="https://tskit.dev/tutorials/analysing_tree_sequences.html#sec-tutorial-afs-zeroth-entry">this</a> for more detail.</p>
-</div></div><p><strong>Hint:</strong> <strong>If the above still doesn’t make any sense to you, feel free to copy-paste the function from the solution below into your script and work with that function instead!</strong></p>
+</div>
+</div>
+</div>
 <p>When used in R, your custom function should work like this (the simulation is stochastic, so your numbers will be different, of course):</p>
+<p><strong>In summary, your function should give you a vector of singletons, doubletons, etc., all the way to the number of fixed mutations in our sample of 10 individuals, looking something like this:</strong></p>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>The `quiet` argument of `init_env()` has been deprecated (the function is now "quiet" by default).</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This gives us a vector of singletons, doubletons, etc., etc., all the way</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># to the number of fixed mutations in our sample of 10 individuals</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 402 269 124  75  75  72  69  26  49  52  26  27  30  34  18  21  38  24  14
-[20]  13</code></pre>
+<pre><code> [1] 346 189 153 103  92  62  57  55  28  31  27  25  34  24  58  21  25  32  21</code></pre>
 </div>
 </div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>math_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne) {</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="dv">20</span> <span class="co"># 1 is for the fixed sites included by tskit</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  theta <span class="ot">&lt;-</span> <span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span> <span class="sc">*</span> Ne <span class="sc">*</span> <span class="fl">10e6</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  theta <span class="sc">*</span> <span class="dv">1</span> <span class="sc">/</span> <span class="dv">1</span><span class="sc">:</span>n</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>), <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">col =</span> <span class="st">"darkgreen"</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(<span class="fu">math_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>), <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">col =</span> <span class="st">"darkblue"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="study-afs_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
+<!-- You can visualize this AFS with a simple base R `plot()` function (just for fun, -->
+<!-- I'm also plotting the AFS expected from this model [given by a mathematical -->
+<!-- formula](https://en.wikipedia.org/wiki/Allele_frequency_spectrum#Calculation), -->
+<!-- but you can ignore this, it's just a bonus to further validate the simulation -->
+<!-- result): -->
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -505,51 +504,68 @@ window.Quarto = {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>A function can be understood as a independent unit of a computer program which executes a block of code inside the {…} brackets given some values of some parameters. In our example, we programmed a function <code>simulate_sfs()</code> which accepts a single parameter, <code>Ne</code>.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>simulate_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a slendr model with a single population of size Ne = N</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> <span class="dv">1</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">simulation_length =</span> <span class="dv">100000</span>)</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># simulate a tree sequence</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get a random sample of names of 10 individuals</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">sample</span>(<span class="dv">10</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># compute the AFS vector (dropping the 0-th element added by tskit)</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(samples))[<span class="sc">-</span><span class="dv">1</span>]</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  afs</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The point of the exercise is for you to force yourself to push through the frustration. These case studies were designed to put you in a situation in which you have to address a research problem without a known solution and let you practice this in a safe environment. Please, only take a look at the solution if you’re either done with your own code, or if you want to compare your solution to mine:</p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
 </div>
-<p>Our functions is supposed to produce an AFS vector of counts of alleles observed at a given frequency a the population sample:</p>
-<p>Let’s use our custom function to simulate AFS vector for Ne = 1k, 10k, and 30k:</p>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s the complete script <code>inference_afs.R</code> so far:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>afs_1k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="dv">1000</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>afs_10k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="dv">10000</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>afs_30k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="dv">30000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>simulate_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne) {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># create a slendr model with a single population of size Ne = N</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">N =</span> Ne, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(pop, <span class="dv">10</span>))</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># simulate a tree sequence</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>, <span class="at">schedule =</span> schedule) <span class="sc">%&gt;%</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get the names of the 10 individuals in the tree sequence</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  samples <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># compute the AFS vector</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(samples))</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the AFS (without the first and last element)</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(afs[<span class="sc">-</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="fu">length</span>(afs))])</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Our function is supposed to produce an AFS vector of counts of alleles observed at a given frequency in the population sample. Let’s verify that our custom function works correctly by simulating an AFS vector for Ne = 1k, 10k, and 30k:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>afs_1k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="dv">1000</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>afs_10k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="dv">10000</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>afs_30k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="dv">30000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Here’s one of those vectors. We can see that the function does, indeed, produce a result of the correct format:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>afs_1k</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>afs_1k</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 352 184  90  65  72  48  71  52  57  73  50  34  29  17  25  15  13  29  15
-[20]  36</code></pre>
+<pre><code> [1] 369 228 121  97  90  49  37  41  31  48  21  41  26  21  23  24  17  17   8</code></pre>
 </div>
 </div>
 <p>To see the results of this function in a clearer context, let’s visualize the vectors in the same plot:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_30k, <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">main =</span> <span class="st">"AFS, Ne = 30000"</span>, <span class="at">col =</span> <span class="st">"cyan"</span>,)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_10k, <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">main =</span> <span class="st">"AFS, Ne = 10000"</span>, <span class="at">col =</span> <span class="st">"purple"</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_1k, <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">main =</span> <span class="st">"AFS, Ne = 1000"</span>, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Ne = 1k"</span>, <span class="st">"Ne = 10k"</span>, <span class="st">"Ne = 30k"</span>),</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"purple"</span>, <span class="st">"cyan"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_30k, <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">main =</span> <span class="st">"AFS, Ne = 30000"</span>, <span class="at">col =</span> <span class="st">"cyan"</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fu">max</span>(afs_30k)))</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_10k, <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">main =</span> <span class="st">"AFS, Ne = 10000"</span>, <span class="at">col =</span> <span class="st">"purple"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_1k, <span class="at">type =</span> <span class="st">"o"</span>, <span class="at">main =</span> <span class="st">"AFS, Ne = 1000"</span>, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"Ne = 1k"</span>, <span class="st">"Ne = 10k"</span>, <span class="st">"Ne = 30k"</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"blue"</span>, <span class="st">"purple"</span>, <span class="st">"cyan"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -561,23 +577,24 @@ window.Quarto = {
 </div>
 </div>
 </div>
-</section>
-<section id="exercise-2-estimating-unknown-n_e-from-empirical-afs" class="level2">
-<h2 class="anchored" data-anchor-id="exercise-2-estimating-unknown-n_e-from-empirical-afs">Exercise 2: Estimating unknown <span class="math inline">\(N_e\)</span> from empirical AFS</h2>
-<p>Imagine you sequenced 10 samples from a population and computed the following AFS vector (which contains, sequentially, the number of singletons, doubletons, etc., in your sample from a population):</p>
-<!-- dput(as.vector(observed_afs)) -->
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>afs_observed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2520</span>, <span class="dv">1449</span>, <span class="dv">855</span>, <span class="dv">622</span>, <span class="dv">530</span>, <span class="dv">446</span>, <span class="dv">365</span>, <span class="dv">334</span>, <span class="dv">349</span>, <span class="dv">244</span>,</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dv">264</span>, <span class="dv">218</span>,  <span class="dv">133</span>, <span class="dv">173</span>, <span class="dv">159</span>, <span class="dv">142</span>, <span class="dv">167</span>, <span class="dv">129</span>, <span class="dv">125</span>, <span class="dv">143</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>You know (maybe from some fossil evidence) that the population probably had a constant <span class="math inline">\(N_e\)</span> somewhere between 1000 and 30000 for the past 100,000 generations, and had mutation and recombination rates of 1e-8 (i.e., parameters already implemented by your <code>simulate_afs()</code> function – how convenient!).</p>
-<p><strong>Use <em>slendr</em> simulations to guess the true (and hidden!) <span class="math inline">\(N_e\)</span> given the observed AFS by running simulations for a range of <span class="math inline">\(N_e\)</span> values and finding out which <span class="math inline">\(N_e\)</span> produces the closest AFS vector to the <code>afs_observed</code> vector above using one of the following two approaches.</strong></p>
+</div>
+</div>
+</section>
+<section id="part-2-matching-simulated-afs-against-empirical-afs" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-matching-simulated-afs-against-empirical-afs">Part 2: Matching simulated AFS against empirical AFS</h2>
+<p><strong>This is the empirical AFS you computed from the 10 sequenced genomes of your individuals of interest (perhaps with software like PLINK):</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>afs_observed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2493</span>, <span class="dv">1167</span>, <span class="dv">876</span>, <span class="dv">649</span>, <span class="dv">539</span>, <span class="dv">543</span>, <span class="dv">381</span>, <span class="dv">330</span>, <span class="dv">338</span>, <span class="dv">211</span>,</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dv">268</span>, <span class="dv">183</span>, <span class="dv">205</span>, <span class="dv">214</span>, <span class="dv">155</span>, <span class="dv">176</span>, <span class="dv">144</span>, <span class="dv">122</span>, <span class="dv">121</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p><strong>Now use your <em>slendr</em> function <code>simulate_afs()</code> and a few other techniques you learned throughout this workshop to “guess” the true (but hidden) <span class="math inline">\(N_e\)</span> of your population of interest, given this observed AFS. Depending on how confident you feel with coding, there are two possible options:</strong></p>
 <ul>
-<li><p><strong>Option 1</strong> [easy]: Plot AFS vectors for various <span class="math inline">\(N_e\)</span> values (i.e.&nbsp;simulate several of them using your function <code>simulate_afs()</code>), then eyeball which looks closest to the observed AFS based on the figures alone. (This is, of course, not how proper statistical inference is done, but it will be good enough for this exercie!)</p></li>
-<li><p><strong>Option 2</strong> [hard]: Simulate AFS vectors in steps of possible <code>Ne</code> (maybe <code>lapply()</code>?), and find the <span class="math inline">\(N_e\)</span> which gives the closest AFS to the observed AFS based on <a href="https://en.wikipedia.org/wiki/Mean_squared_error">Mean squared error</a>.</p></li>
+<li><p><strong>Option 1</strong> [easy but not rigorous]: Plot AFS vectors simulated for various <span class="math inline">\(N_e\)</span> values, then try to guess (just by looking at the AFS visualizations) which one looks closest to the empirical AFS and, therefore, which simulated <span class="math inline">\(N_e\)</span> is the closest match to the reality. (This is, of course, not how proper statistical inference is done, but it’s a good start if you’re just starting with simulation-based inference.)</p></li>
+<li><p><strong>Option 2</strong> [harder and more rigorous]: Simulate AFS vectors across a grid of possible <code>Ne</code> values depending on your prior information (perhaps using base R <code>lapply()</code> or <em>purrr</em> <code>map()</code>), and find the <span class="math inline">\(N_e\)</span> which results in a simulated AFS which is closest to the observed AFS by computing <a href="https://en.wikipedia.org/wiki/Mean_squared_error">Mean squared error</a> on the two of them.</p></li>
 </ul>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -586,50 +603,53 @@ window.Quarto = {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>This is the observed AFS with which we want to compare our simulated AFS vectors:</p>
+<p>This is the empirical AFS to which we need to compare our simulated AFS vectors:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>afs_observed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2520</span>, <span class="dv">1449</span>, <span class="dv">855</span>, <span class="dv">622</span>, <span class="dv">530</span>, <span class="dv">446</span>, <span class="dv">365</span>, <span class="dv">334</span>, <span class="dv">349</span>, <span class="dv">244</span>,</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dv">264</span>, <span class="dv">218</span>,  <span class="dv">133</span>, <span class="dv">173</span>, <span class="dv">159</span>, <span class="dv">142</span>, <span class="dv">167</span>, <span class="dv">129</span>, <span class="dv">125</span>, <span class="dv">143</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>afs_observed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2493</span>, <span class="dv">1167</span>, <span class="dv">876</span>, <span class="dv">649</span>, <span class="dv">539</span>, <span class="dv">543</span>, <span class="dv">381</span>, <span class="dv">330</span>, <span class="dv">338</span>, <span class="dv">211</span>,</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dv">268</span>, <span class="dv">183</span>, <span class="dv">205</span>, <span class="dv">214</span>, <span class="dv">155</span>, <span class="dv">176</span>, <span class="dv">144</span>, <span class="dv">122</span>, <span class="dv">121</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We know that the true <span class="math inline">\(N_e\)</span> is supposed to be between 1000 and 30000, so let’s simulate a bunch of AFS vectors for different <span class="math inline">\(N_e\)</span> values using our new AFS simulation function:</p>
+<p>We know that the true <span class="math inline">\(N_e\)</span> is supposed to be between 1000 and 30000, so let’s simulate a couple of AFS vectors for different <span class="math inline">\(N_e\)</span> values using our new AFS simulation function:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>afs_Ne1k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>afs_Ne5k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">5000</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>afs_Ne6k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">6000</span>)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>afs_Ne10k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">10000</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>afs_Ne20k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">20000</span>)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>afs_Ne30k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">30000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>afs_Ne1k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">1000</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>afs_Ne5k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">5000</span>)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>afs_Ne6k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">6000</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>afs_Ne10k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">10000</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>afs_Ne20k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">20000</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>afs_Ne30k <span class="ot">&lt;-</span> <span class="fu">simulate_afs</span>(<span class="at">Ne =</span> <span class="dv">30000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Now let’s plot our simulated AFS vectors together with the observed AFS (highlighting it in black):</p>
+<p>Now let’s plot our simulated AFS vectors together with the observed AFS (shown in black):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>,</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">13000</span>))</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne1k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne5k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"green"</span>)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne6k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"pink"</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne10k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"purple"</span>)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne20k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"orange"</span>)</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne30k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"cyan"</span>)</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>,</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"observed AFS"</span>, <span class="st">"Ne = 1000"</span>, <span class="st">"Ne = 5000"</span>,</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"Ne = 6000"</span>, <span class="st">"Ne = 10000"</span>, <span class="st">"Ne = 20000"</span>, <span class="st">"Ne = 30000"</span>),</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>, <span class="st">"pink"</span>, <span class="st">"purple"</span>, <span class="st">"orange"</span>, <span class="st">"cyan"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>,</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>, <span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">13000</span>))</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne1k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"blue"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne5k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"green"</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne6k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"pink"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne10k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"purple"</span>)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne20k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"orange"</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(afs_Ne30k, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"cyan"</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>       <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"observed AFS"</span>, <span class="st">"Ne = 1000"</span>, <span class="st">"Ne = 5000"</span>,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"Ne = 6000"</span>, <span class="st">"Ne = 10000"</span>, <span class="st">"Ne = 20000"</span>, <span class="st">"Ne = 30000"</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"blue"</span>, <span class="st">"green"</span>, <span class="st">"pink"</span>, <span class="st">"purple"</span>, <span class="st">"orange"</span>, <span class="st">"cyan"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="study-afs_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="study-afs_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The true <span class="math inline">\(N_e\)</span> was 6543!</p>
+<p>From the figure, we can see that the black line (empirical AFS) seems to be closest to the simulated <span class="math inline">\(N_e\)</span> = 6000.</p>
+<p>And indeed, I can now reveal that the true <span class="math inline">\(N_e\)</span> of our population of interest was 6543. Not a bad result for such a simple inference pipeline!</p>
+<hr>
+<p>Having done the “Option 1” solution, now consider taking a stab at the “Option 2”. It’s not that much harder, actually, and you’ve already practiced everything you need to solve this. You’ve got this!</p>
 </div>
 </div>
 </div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -638,17 +658,17 @@ window.Quarto = {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>This is the observed AFS with which we want to compare our simulated AFS vectors:</p>
+<p>This is the empirical AFS to which we need to compare our simulated AFS vectors:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>afs_observed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2520</span>, <span class="dv">1449</span>, <span class="dv">855</span>, <span class="dv">622</span>, <span class="dv">530</span>, <span class="dv">446</span>, <span class="dv">365</span>, <span class="dv">334</span>, <span class="dv">349</span>, <span class="dv">244</span>,</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dv">264</span>, <span class="dv">218</span>,  <span class="dv">133</span>, <span class="dv">173</span>, <span class="dv">159</span>, <span class="dv">142</span>, <span class="dv">167</span>, <span class="dv">129</span>, <span class="dv">125</span>, <span class="dv">143</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>afs_observed <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2493</span>, <span class="dv">1167</span>, <span class="dv">876</span>, <span class="dv">649</span>, <span class="dv">539</span>, <span class="dv">543</span>, <span class="dv">381</span>, <span class="dv">330</span>, <span class="dv">338</span>, <span class="dv">211</span>,</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>                  <span class="dv">268</span>, <span class="dv">183</span>, <span class="dv">205</span>, <span class="dv">214</span>, <span class="dv">155</span>, <span class="dv">176</span>, <span class="dv">144</span>, <span class="dv">122</span>, <span class="dv">121</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We know that the true <span class="math inline">\(N_e\)</span> is supposed to be between 1000 and 30000. Let’s generate regularly spaced values of potential Ne values whose AFS we want to investigate and compare to the obesrved AFS (our parameter grid):</p>
+<p>We know that the true <span class="math inline">\(N_e\)</span> is supposed to be between 1000 and 30000. Let’s generate a regular grid of potential <span class="math inline">\(N_e\)</span> values for which we want to simulate AFS vectors:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1000</span>, <span class="at">to =</span> <span class="dv">30000</span>, <span class="at">by =</span> <span class="dv">500</span>)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>Ne_grid</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="at">from =</span> <span class="dv">1000</span>, <span class="at">to =</span> <span class="dv">30000</span>, <span class="at">by =</span> <span class="dv">500</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>Ne_grid</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code> [1]  1000  1500  2000  2500  3000  3500  4000  4500  5000  5500  6000  6500
 [13]  7000  7500  8000  8500  9000  9500 10000 10500 11000 11500 12000 12500
@@ -657,80 +677,46 @@ window.Quarto = {
 [49] 25000 25500 26000 26500 27000 27500 28000 28500 29000 29500 30000</code></pre>
 </div>
 </div>
-<p>With the parameter grid <code>Ne_grid</code> set up, let’s simulate an AFS from each <span class="math inline">\(N_e\)</span> model:</p>
+<p>With the parameter grid <code>Ne_grid</code> set up, let’s simulate an AFS from each <span class="math inline">\(N_e\)</span> model (we simply loop over the grid using a parallel version of <code>lapply()</code> to speed things up, but plain <code>lapply()</code> or <code>map()</code> would work too):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>afs_grid <span class="ot">&lt;-</span> <span class="fu">mclapply</span>(Ne_grid, simulate_afs, <span class="at">mc.cores =</span> <span class="fu">detectCores</span>())</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(afs_grid) <span class="ot">&lt;-</span> Ne_grid</span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a><span class="co"># show the first five simulated AFS vectors, for brevity, just to demonstrate</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># what the output of the grid simulations is supposed to look like</span></span>
-<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>afs_grid[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parallel)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>afs_grid <span class="ot">&lt;-</span> <span class="fu">mclapply</span>(Ne_grid, simulate_afs, <span class="at">mc.cores =</span> <span class="fu">detectCores</span>() <span class="sc">-</span> <span class="dv">1</span>)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(afs_grid) <span class="ot">&lt;-</span> Ne_grid</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Here’s an example of the first five simulated AFS vectors, just to demonstrate what the output of the grid simulations looks like. As you can see, we get a list of numerical vectors, one element of the list corresponding to one AFS (and indexed by the corresponding <code>Ne</code>):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>afs_grid[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>$`1000`
- [1] 458 152 109  76  76  55  47  32  44  37  26  31  32  25  20  17  24  21  22
-[20]  13
+ [1] 377 207 131 115  80  52  69  64  60  47  43  36  35  21  19  26  13  32  20
 
 $`1500`
- [1] 635 277 159 154 112 101  71  66  62  49  68  42  69  59  47  44  34  47  46
-[20]  33
+ [1] 639 348 197 159 138  74 111  69  67  92  59  45  52  37  49  48  34  61  33
 
 $`2000`
- [1] 861 364 281 211 195 131 116 107  94  89  65  62  67  43  51  59  47  25  18
-[20]  28
+ [1] 869 474 287 140 130 128 113  94  88 101  61  59  56  54  49  34  66  44  61
 
 $`2500`
- [1] 1025  510  364  224  156  177  131  100  114  123   98   78  103   74   58
-[16]   57   84   58   61   47
+ [1] 953 519 310 266 208 146 149 116 130 109  99  92  76  71  91  69  57  58  50
 
 $`3000`
- [1] 1180  580  435  288  210  178  159  140  174  155  129   95   87   65   68
-[16]   70   68   52   79   56</code></pre>
+ [1] 1104  485  456  337  246  202  159  141  144  120  110   82   73   76  102
+[16]   67   81   32   52</code></pre>
 </div>
 </div>
-<p>Plot the observed AFS and overlay the simulated AFS vectors on top of it:</p>
+<p>To get a better idea of the grid simulations, let’s visualize the observed AFS (in black) and overlay the simulated AFS vectors on top of it (in gray):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(Ne_grid)) {</span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(afs_grid[[i]], <span class="at">lwd =</span> <span class="fl">0.5</span>)</span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"observed AFS"</span>, <span class="st">"simulated AFS"</span>), <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"gray"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="study-afs_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Compute mean-squared error of the AFS produced by each <span class="math inline">\(N_e\)</span> value across the grid:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>errors <span class="ot">&lt;-</span> <span class="fu">sapply</span>(afs_grid, <span class="cf">function</span>(sim_afs) {</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>((sim_afs <span class="sc">-</span> afs_observed)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">length</span>(sim_afs)</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Ne_grid, errors, <span class="at">ylab =</span> <span class="st">"error"</span>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> Ne_grid[<span class="fu">which.min</span>(errors)], <span class="at">col =</span> <span class="st">"red"</span>)</span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">paste</span>(<span class="st">"minimum error Ne ="</span>, Ne_grid[<span class="fu">which.min</span>(errors)]), <span class="at">fill =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="study-afs_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>Plot the AFS again, but this time highlight the most likely spectrum (i.e.&nbsp;the one which gave the lowest RMSE value):</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(Ne_grid)) {</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  color <span class="ot">&lt;-</span> <span class="cf">if</span> (i <span class="sc">==</span> <span class="fu">which.min</span>(errors)) <span class="st">"red"</span> <span class="cf">else</span> <span class="st">"gray"</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  width <span class="ot">&lt;-</span> <span class="cf">if</span> (i <span class="sc">==</span> <span class="fu">which.min</span>(errors)) <span class="dv">2</span> <span class="cf">else</span> <span class="fl">0.75</span></span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(afs_grid[[i]], <span class="at">lwd =</span> width, <span class="at">col =</span> color)</span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"observed AFS"</span>, <span class="fu">paste</span>(<span class="st">"best fitting Ne ="</span>, Ne_grid[<span class="fu">which.min</span>(errors)])),</span>
-<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"red"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the observed AFS in black</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># then loop over the list with simulated AFS, overlaying them onto the plot</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(Ne_grid)) {</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(afs_grid[[i]], <span class="at">lwd =</span> <span class="fl">0.5</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a><span class="co"># add a legend too</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"observed AFS"</span>, <span class="st">"simulated AFS"</span>), <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"gray"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -739,12 +725,60 @@ $`3000`
 </div>
 </div>
 </div>
-<p>The true <span class="math inline">\(N_e\)</span> was 6543!</p>
+<p>Instead of just eyeballing the closest AFS like we do in “Option 1” (which is impossible to do here anyway because of how many AFS vectors we simulated), we want to compute the <a href="https://en.wikipedia.org/wiki/Mean_squared_error">mean squared error</a> of the AFS produced by each <span class="math inline">\(N_e\)</span> value across the grid:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># loop over simulated AFS vectors and compute the MSE from the observed AFS for each</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>error_grid <span class="ot">&lt;-</span> <span class="fu">sapply</span>(afs_grid, <span class="cf">function</span>(afs_simulated) {</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum</span>((afs_simulated <span class="sc">-</span> afs_observed)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> <span class="fu">length</span>(afs_simulated)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Let’s visualize the error of each simulated AFS and highlight the one which was closest to the empirical AFS:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(Ne_grid, error_grid, <span class="at">ylab =</span> <span class="st">"error"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">v =</span> Ne_grid[<span class="fu">which.min</span>(error_grid)], <span class="at">col =</span> <span class="st">"red"</span>)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">paste</span>(<span class="st">"minimum error Ne ="</span>, Ne_grid[<span class="fu">which.min</span>(error_grid)]), <span class="at">fill =</span> <span class="st">"red"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="study-afs_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
 </div>
 </div>
-<p>Congratulations, you now know how to infer parameters of evolutionary models using simulations! What you just did is really very similar to how simulation-based inference is done in practice (even with methods such as ABC). Hopefully you now also see how easy <em>slendr</em> makes it to do this (normally a rather laborious) process.</p>
-<p>This kind of approach can be used to infer all sorts of demographic parameters, even using other summary statistics that you’ve also learned to compute… including selection parameters, which we delve into in another exercise.</p>
+<p>Plot the AFS again, but this time highlight the AFS which is the most statistically likely (i.e.&nbsp;the one which gave the lowest MSE value):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot the observed AFS again</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs_observed, <span class="at">type =</span> <span class="st">"b"</span>, <span class="at">col =</span> <span class="st">"black"</span>, <span class="at">lwd =</span> <span class="dv">3</span>, <span class="at">xlab =</span> <span class="st">"allele count bin"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a><span class="co"># loop over each simulated AFS...</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">seq_along</span>(Ne_grid)) {</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ... and assign a red color to the one which was the closest based on</span></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># the computed error from the observed AFS</span></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>  color <span class="ot">&lt;-</span> <span class="cf">if</span> (i <span class="sc">==</span> <span class="fu">which.min</span>(error_grid)) <span class="st">"red"</span> <span class="cf">else</span> <span class="st">"gray"</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>  width <span class="ot">&lt;-</span> <span class="cf">if</span> (i <span class="sc">==</span> <span class="fu">which.min</span>(error_grid)) <span class="dv">2</span> <span class="cf">else</span> <span class="fl">0.75</span></span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lines</span>(afs_grid[[i]], <span class="at">lwd =</span> width, <span class="at">col =</span> color)</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"observed AFS"</span>, <span class="fu">paste</span>(<span class="st">"best fitting Ne ="</span>, Ne_grid[<span class="fu">which.min</span>(error_grid)])),</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">fill =</span> <span class="fu">c</span>(<span class="st">"black"</span>, <span class="st">"red"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="study-afs_files/figure-html/unnamed-chunk-22-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The true <span class="math inline">\(N_e\)</span> was 6543, which fits our inference result very well!</p>
+</div>
+</div>
+</div>
+<hr>
+<p>Congratulations, you now know how to infer parameters of evolutionary models using simulations! What you just did is really very similar to how simulation-based inference is done in practice (even with methods such as ABC). Hopefully you now also see how easy <em>slendr</em> makes it to do this process.</p>
+<p>As mentioned in the introduction, this kind of approach can be used to infer all sorts of demographic parameters using simulation-based inference, even using other summary statistics that you’ve also learned to compute (<span class="math inline">\(f\)</span>-statistics, nucleotide diversity, IBD data, etc.).</p>
 
 
 </section>
