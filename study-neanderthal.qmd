@@ -3,40 +3,40 @@
 In this case study, you will be reproducing an important result from [my 2018
 study](https://www.pnas.org/doi/10.1073/pnas.1814338116) on the limits of
 selection against Neanderthal introgression. In a very unplanned and
-unpredictable (and stressful, for a young PhD student!) manner, this research
-ended up turning into a study on the importance of model assumptions on the
-robustness of inferences with $f_4$ statistics and how they can produce entirely
-misleading inferences about ancient admixture events in human history.
+unpredictable manner, this research ended up turning into a study on the
+importance of model assumptions on the robustness of inferences with $f_4$
+statistics and how they can produce entirely misleading inferences about ancient
+admixture events in human history.
 
 I chose this case study for several reasons:
 
-1. This research would've been absolutely impossible to carry out without
-computer simulations.
+1. This research would've been absolutely impossible without simulations exactly
+like those you've learned to do in this workshop.
 
-2. The limitations of modeling tools I had available at the time required me to
-write hundreds of lines of code spread across shell scripts, Python scripts, and
-R scripts.
+2. The limitations of computational tools I had available at the time required
+me to write hundreds of lines of code spread across shell scripts, Python
+scripts, and R scripts. Thanks to _slendr_, a project which required months of
+work and lots of coding is possible to do in a handful of lines of R.
 
-3. Thanks to _slendr_, a project which required months of work and lots of
-coding is possible to reduce to a handful of lines of R.
+3. It provides an excellent educational example of how _slendr_ simulations can
+help you navigate practically any demographic scenario, gain confidence in your
+results, and aid in their interpretation.
 
-4. It provides an excellent educational example of how _slendr_ simulations can
-help you navigate any conceivable population genomic scenario, gain confidence
-in your results, and aid in their interpretation.
-
-5. **Most importantly, the lessons of my paper apply in any context of using
-$f_4$ statistics in ancient DNA research. The Neanderthal introgression case is
-just an example.**
+4. **Most importantly, the lessons of my paper apply in any context of using
+$f_4$ statistics in ancient DNA research. The Neanderthal introgression case
+serves just as an illustrative example.**
 
 ---
 
 ## Preparation
 
 **To avoid too much frustration with transcribing very complex admixture graph
-model from yet another drawing, please copy the following code into a new script
-`introgression.R`. When you visualize the model, you should see a relatively
-detailed (yet still simplified) model of ancient human history including
-Neanderthal introgression into the ancestors of non-Africans.**
+model from yet another of my drawings, please copy the following code into a new
+script `introgression.R`. When you visualize the model, you should see a
+relatively detailed (yet still simplified) model of ancient human history
+including Neanderthal introgression into the ancestors of non-Africans. Again,
+please inspect this script to make sure you understand what it does---this is
+now even more important than before.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the the script `introgression.R`
@@ -93,17 +93,15 @@ s <- ts_names(ts, split = TRUE)
 Here's the model visualization (very janky, I know, but it is what it is...):
 
 ```{r}
-library(cowplot)
-
-plot_grid(
+cowplot::plot_grid(
   plot_model(model, proportions = TRUE, schedule = schedule),
   plot_model(model, proportions = TRUE, schedule = schedule, log = TRUE),
   ncol = 2
 )
 ```
 
-Here are the individuals we sequenced, as a sanity check (mostly because of how
-hard-to-read the model visualization above is):
+And here are the individuals we "sequenced", as a sanity check (mostly because
+of how hard-to-read the model visualization above is):
 
 ```{r}
 ts_recorded(ts) %>% print(n = Inf)
@@ -122,19 +120,22 @@ ts_recorded(ts) %>% print(n = Inf)
 
 ## Indirect $f_4$-ratio estimate of Neanderthal ancestry
 
-The main controversy at the time was caused by the observation that ancient DNA
-time series of early modern humans (like the one you just simulated!) showed [a
-clear decline](https://www.nature.com/articles/nature17993/figures/2) in
-Neanderthal ancestry trajectory over the past ~45 thousand years.
+The main controversy at the time I did this research was caused by the
+observation that ancient DNA time series of early modern humans (like the one
+you just simulated!) showed [a clear
+decline](https://www.nature.com/articles/nature17993/figures/2) in Neanderthal
+ancestry trajectory over the past ~45 thousand years.
 
 The way the authors of the "Neanderthal decline" paper computed Neanderthal
-ancestry was using (what eventually became known as) "indirect $f_4$-ratio"
+ancestry was using what I ended up naming as the "indirect $f_4$-ratio"
 estimate, described in panel B of [Figure
-1](https://www.pnas.org/doi/10.1073/pnas.1814338116#fig01) in my paper, where
+1](https://www.pnas.org/doi/10.1073/pnas.1814338116#fig01) in my paper (where
 "Dinka" typically represented the "East African" lineage, and "Yoruba"
 represented the "Central and West African" lineage, to follow the terminology in
-that schematic diagram. This "indirect" estimate is what showed clear evidence
+that schematic diagram). This "indirect" estimate is what showed clear evidence
 of the decline in Neanderthal ancestry over time.
+
+---
 
 **Compute this "indirect $f_4$-ratio" estimate of Neanderthal ancestry from your
 simulated `ts` tree sequence for every one of your "nonAfrican" individuals.
@@ -146,10 +147,10 @@ temporal trend do you observe?**
 **Hint:** You can either compute this "manually" using the path overlap
 principles described in the $f$ statistics chapter earlier, or you can make your
 life a bit easier and use a dedicated _slendr_ function `ts_f4ratio()`. That
-function follows the same nomenclature shown in my Figure 1B diagram above
-(after all, I wrote `ts_f4ratio()` based on the lessons learned from this
-study!). If you use this function, note that `X` can only always be one
-individual, so you will want to compute this for every aDNA individual in the
+function follows the same nomenclature shown in my [Figure
+1B](https://www.pnas.org/doi/10.1073/pnas.1814338116#fig01) diagram above. If
+you use `ts_f4ratio()`, be aware that `X` can only always be one individual in
+this function, so you will want to compute this for every aDNA individual in the
 time-series separately.
 
 **Hint:** If you need more help, see this example of how to compute the indirect
@@ -180,6 +181,9 @@ ancestry estimate, we need to compute it's complement:
 1 - ts_f4ratio(ts, X = "nonAfrican_1", A = s["Yoruba"], B = s["Dinka"], C = "Altai", O = s["outgroup"])$alpha
 ```
 
+This is close to our simulated 3% Neanderthal ancestry proportion, which is
+reassuring!
+
 :::
 
 ::: {.callout-note collapse="true" icon=false}
@@ -188,7 +192,7 @@ ancestry estimate, we need to compute it's complement:
 Here's what my simulated trajectory looks like:
 
 ```{r}
-#| messages: false
+#| message: false
 #| echo: false
 library(purrr)
 library(dplyr)
@@ -229,29 +233,33 @@ ggplot(indirect, aes(time, ancestry)) +
 
 
 
-## Effect of complex admixture during modern human prehistory
+## Adding complex admixture during modern human prehistory
 
 In your visualization of the indirect $f_4$-ratio trajectory, you should have
-noticed no trend at all---under neutrality, Neanderthal ancestry is expected to
-constant throughout the millenia. However, the puzzle at the time was that the
-empirical data showed clear, significant temporal decline in this estimate over
-time.
+noticed no trend at all. Indeed, under neutrality, Neanderthal ancestry is
+expected to constant throughout the millenia. However, the puzzle at the time
+was that the empirical data showed clear, significant temporal decline in this
+estimate over time!
 
 The solution to the puzzle came out of (lots of) simulations and modeling, very
-similar to what you've done in this workshop so far.
+similar to what you've done in this workshop so far. Let's retrace my steps
+again.
+
+---
 
 **What happens if you introduce additional gene flow events _within_ the modern
 human population tree? For example, simulate admixture between the two African
 lineages used in your indirect $f_4$-ratio calculation, as well as "back-flow"
-admixture from the non-African population into both of those lineages. Let's say
-that all of these admixture events should happen at 5% proportion, the
+admixture from the non-African population into both of those African lineages.
+Let's say that all of these admixture events should happen at 5% proportion, the
 within-Africa gene flow should happen starting from 20 kya until present-day
-time 0, and the backflow admixture from 8 kya to 5 kya.**
+time 0, and the backflow nonAfrican admixture should happen from 8 kya to 5
+kya.**
 
-**None of those changes into the demographic model changes the amount of true
-Neanderthal ancestry in Europeans. But what does the trajectory of the indirect
-Neanderthal ancestry estimate look like when you compute it on this model with
-additional complex admixture within modern humans?**
+None of those changes into the demographic model changes the amount of true
+Neanderthal ancestry in Europeans. But **what does the trajectory of the
+indirect Neanderthal ancestry estimate look like when you compute it on this
+model with additional complex admixture within modern humans?**
 
 **Hint:** Feel free to make a copy of your `introgression.R` script to make the
 indicated changes, perhaps saving it as `introgression_complex.R`, just to make
@@ -263,7 +271,7 @@ things clean and tidy.
 Here's what my simulated trajectory looks like on the modified model:
 
 ```{r}
-#| messages: false
+#| message: false
 #| echo: false
 gf <- list(
   # Neanderthal introgression
@@ -311,7 +319,7 @@ ggplot(indirect, aes(time, ancestry)) +
   xlim(45000, 0) +
   ylim(0, 0.1) +
   geom_smooth(method = "lm") +
-  ggtitle(paste(seed, "Indirect f4-ratio estimate of Neanderthal ancestry over time")) +
+  ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
 ```
@@ -382,7 +390,7 @@ ts_f4ratio(ts, X = "nonAfrican_1", A = "Altai", B = "Vindija", C = s["Dinka"], O
 Here's what my simulated trajectory looks like on the modified model:
 
 ```{r}
-#| messages: false
+#| message: false
 #| echo: false
 ts <-
   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = 123456) %>%
@@ -412,7 +420,7 @@ And here are the two estimates compared to one another, both computed on the
 same simulated tree sequence:
 
 ```{r}
-#| messages: false
+#| message: false
 #| echo: false
 rbind(
   mutate(indirect, variant = "indirect f4-ratio"),
