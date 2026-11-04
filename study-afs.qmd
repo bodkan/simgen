@@ -1,49 +1,77 @@
-# $N_e$ inference with AFS
+# AFS-based inference of $N_e$
 
-So far we've learned how _slendr_ provides an easy way to define
-demographic models in R and simulate (even very large!) tree sequences from them.
-This allows us to quickly verify our intuition about some popgen problem
-(things like _"Hmmm, I wonder what would an $f_4$ statistic look like if my model
-includes this particular gene-flow event?_), in just a few lines of R. There
-have been instances in which we've been able to even answer questions like
-this directly in a meeting, pretty much on the spot! This makes _slendr_ a
-very powerful "popgen calculator".
+**Imagine you sequenced 1 Mb of sequence of ten individuals from a population
+of your interest and computed a summary statistic such as the allele frequency
+spectrum (AFS). Those sequences (and, by extension, the AFS) were produced by a
+real-world biological process (demographic history) which is hidden but which
+you want to learn about. Prior bioinformatic studies estimated that the
+recombination and mutation rates of this population are both `1e-8` (just like
+in humans).**
 
-Now let's take things one step further. Imagine you gathered some empirical
-data, like an allele frequency spectrum (AFS) from a population that you
-study. That data was, in the real world, produced by some (hidden) biological
-process (demographic history) that we want to learn about.
-For instance, the population we study had some $N_e$, which we don't
-know the value of (the only thing we have is the observed AFS) but we
-want to infer that value.
+**Now you want to use this data to estimate the population's long-term $N_e$
+which is, of course, unknown (you only have the observed AFS). Suppose that the
+only thing known about the population size from some other hypothetical evidence
+that this $N_e$ was somewhere between 1000 and 30000.**
+
+($N_e$ is just an example here---in practice, we're typically interested in
+other parameters as well (admixture rate, admixture time, split times, etc.),
+but the idea remains the same: we computed summaries of the empirical data which
+were shaped by those hidden parameters and we need to estimate them.)
 
 Simulations can be a great tool to estimate the most likely value of such an
-unknown parameter. Briefly speaking, in this particular toy example,
-we can simulate a large number of AFS vectors (each resulting from a different
-assumed $N_e$ value) and then pick just those $N_e$ values (or just one $N_e$
-value) which produced a simulated AFS closest to the observed AFS.
+unknown parameters. **In this exercise, you're going to simulate a large number
+of AFS vectors (each resulting from a different assumed $N_e$ value) and then
+pick just those $N_e$ values (or just one $N_e$ value) which produced a
+simulated AFS closest to the observed AFS.** This is the core idea behind
+simulation-based inference and applies to many other situations and modeling
+contexts.
 
-This is exactly what you'll be doing just now.
+To make things manageable, let's decompose the problem into a sequence of steps.
 
-## Exercise 1: A self-contained _slendr_ function of $N_e \rightarrow \textrm{AFS}$
 
-**In a new script `inference-afs.R` write a custom R function called `simulate_afs()`,
-which will take `Ne` as its only parameter. Use this function to compute (and
-return) [AFS vectors](https://en.wikipedia.org/wiki/Allele_frequency_spectrum)
-for a couple of `Ne` values of your choosing, but staying between
-`Ne = 1000` and `Ne = 30000` Plot those AFS vectors and observe how (and why?)
-do they differ based on `Ne` parameter you used in each respective simulation.**
 
-**Hint:** The function should create a one-population _forward-time_ model
-(our population starting at `time = 1`, with the model
-`simulation_length = 100000`
-and `generation_time = 1` in `compile_model()`),
-simulate 10Mb tree sequence using `msprime()` (recombination rate 1e-8) and then overlay neutral mutations on it at `mutation_rate = 1e-8`), compute AFS for 10 samples and return the AFS vector as result of this custom function.
 
-**Hint:** If you've never programmed before, the concept of a "custom function" might
-be very alien to you. Again, if you need help, feel free to start building your
-`inference-afs.R` solution based on this "template" (just fill in missing relevant
-bits of _slendr_ code that you should be already familiar with):
+
+
+
+
+
+
+
+## Part 1: A self-contained data-generating _slendr_ function
+
+**Create a new script `inference_afs.R`. In this script, program a function
+called `simulate_afs()`, which will take `Ne` as its only parameter and will
+contain a single-population _slendr_ demographic model. In this function, use
+`ts_afs()` to compute (and return) the [AFS
+vector](https://en.wikipedia.org/wiki/Allele_frequency_spectrum) on a sample of
+10 individuals in the tree sequence produced by this model. When you return the
+AFS vector from this function, make sure to drop the first and last elements
+(with something like `afs[-c(1, 21)]`). Test this function on a couple of `Ne`
+values of your choosing, but staying between `Ne = 1000` and `Ne = 30000` and
+plot them to observe how (and why) do they differ based on `Ne` parameter you
+used in each respective simulation. If you want more information about AFS, see
+the help page under `?ts_afs`.**
+
+**Hint:** If you need help, take a look at the exercise chapter which introduced
+the concepts of _slendr_ model functions generating some statistics, or feel
+free to start building your `inference_afs.R` solution based on the following
+"template" (just fill in missing relevant bits of _slendr_ code that you should
+be already familiar with).
+
+::: {.aside}
+
+**Note:** If you want to know why I asked you to drop the first and last element
+of the `ts_afs()` output (for instance with something like `afs[-c(1, 20)]`),
+it's due to technical reasons related to how the underlying _tskit_ module
+operates. You don't have to worry about that here, but you can read
+[this](https://tskit.dev/tutorials/analysing_tree_sequences.html#sec-tutorial-afs-zeroth-entry)
+for more detail.
+
+:::
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the "template"
 
 ```{r}
 #| eval: false
@@ -53,31 +81,26 @@ init_env()
 simulate_afs <- function(Ne) {
   # In here you should write code which will:
   #   1. create one population with a given Ne (provided as a function argument)
-  #   2. compile a model using `simulation_length =` and `generation_time =`
+  #   2. compile the model (either forward-time or backward-time, doesn't matter)
   #   3. simulate a tree sequence
-  #   4. select names of 10 samples (doesn't matter which, "pop_1", "po2_", ...)
+  #   4. select a subset of 10 individuals (you could also schedule ther recording)
   #   5. compute AFS vector from those 10 individuals using `ts_afs()`
   
   # `result` is a variable with your 10-sample AFS vector (we remove the
-  # first element because it's not meaningful for our example)
-  return(result[-1]) 
+  # first and last element because it's not meaningful for our example)
+  return(result[-c(1, 21)]) 
 }
 
-afs_1 <- simulate_afs(Ne = 1000) # simulate AFS from a Ne = 1000 model...
-plot(afs_1, type ="o")           # ... and plot it
+# test the function on a few example runs
+afs1k <- simulate_afs(Ne = 1000)
+plot(afs1k, type ="o")
+
+afs7k <- simulate_afs(Ne = 7000)
+plot(afs7k, type ="o")
 ```
 
-::: {.aside}
-**Note:** Remember that you should drop the first element of the AFS vector
-produced by `ts_afs()` (for instance with something like `result[-1]` if
-`result` contains the output of `ts_afs()`) technical reasons related to
-_tskit_. You don't have to worry about that here, but you can read
-[this](https://tskit.dev/tutorials/analysing_tree_sequences.html#sec-tutorial-afs-zeroth-entry) for more detail.
 :::
 
-**Hint:** **If the above still doesn't make any sense to you, feel free to
-copy-paste the function from the solution below into your script and work with
-that function instead!**
 
 When used in R, your custom function should work like this (the simulation
 is stochastic, so your numbers will be different, of course):
@@ -85,81 +108,111 @@ is stochastic, so your numbers will be different, of course):
 ```{r}
 #| echo: false
 library(slendr)
-init_env(quiet=TRUE)
+init_env()
 
 simulate_afs <- function(Ne) {
   # create a slendr model with a single population of size Ne = N
-  pop <- population("pop", N = Ne, time = 1)
-  model <- compile_model(pop, generation_time = 1, simulation_length = 100000)
+  pop <- population("pop", N = Ne, time = 1000)
+  model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+  schedule <- schedule_recording(model, times = 0, list(pop, Ne))
 
   # simulate a tree sequence
   ts <-
-    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
-  # get a random sample of names of 10 individuals
-  samples <- ts_names(ts) %>% sample(10)
+  # get the names of the 10 individuals in the tree sequence
+  samples <- sample(ts_names(ts), 10)
 
-  # compute the AFS vector (dropping the 0-th element added by tskit)
-  afs <- ts_afs(ts, sample_sets = list(samples))[-1]
+  # compute the AFS vector
+  afs <- ts_afs(ts, sample_sets = list(samples))
 
-  afs
+  # return the AFS (without the first and last element)
+  afs[-c(1, 21)]
 }
 ```
 
+**In summary, your function should give you a vector of singletons, doubletons,
+etc., all the way to the number of fixed mutations in our sample of 10
+individuals, looking something like this:**
+
 ```{r}
-# This gives us a vector of singletons, doubletons, etc., etc., all the way
-# to the number of fixed mutations in our sample of 10 individuals
 simulate_afs(Ne = 1000)
 ```
 
+<!-- You can visualize this AFS with a simple base R `plot()` function (just for fun, -->
+<!-- I'm also plotting the AFS expected from this model [given by a mathematical -->
+<!-- formula](https://en.wikipedia.org/wiki/Allele_frequency_spectrum#Calculation), -->
+<!-- but you can ignore this, it's just a bonus to further validate the simulation -->
+<!-- result): -->
+
 ```{r}
+#| eval: false
+#| echo: false
+#| code-fold: true
+# plot the simulated AFS
+plot(simulate_afs(Ne = 1000), type = "o", col = "darkgreen", xlab = "allele frequency", ylab = "count")
+
+# plot the mathematical expectation for the AFS
 math_afs <- function(Ne) {
-  n <- 20 # 1 is for the fixed sites included by tskit
+  # compute the expected theta parameter ...
   theta <- 4 * 1e-8 * Ne * 10e6
+  # ... and the expected AFS given this theta
+  n <- 20 - 1# a sample of 10 diploid individuals means 20 chromosomes
   theta * 1 / 1:n
 }
-
-plot(simulate_afs(Ne = 1000), type = "o", col = "darkgreen")
 lines(math_afs(Ne = 1000), type = "o", col = "darkblue")
+
+# plot the legend for both AFS vectors
+legend("topright", legend = c("simulated AFS", "theoretical AFS"), fill = c("darkgreen", "darkblue"))
 ```
-
-
-
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-A function can be understood as a independent unit of a computer program
-which executes a block of code inside the {...} brackets given some
-values of some parameters. In our example, we programmed a function
-`simulate_sfs()` which accepts a single parameter, `Ne`.
+The point of the exercise is for you to force yourself to push through the
+frustration. These case studies were designed to put you in a situation in which
+you have to address a research problem without a known solution and let you
+practice this in a safe environment. Please, only take a look at the solution if
+you're either done with your own code, or if you want to compare your solution
+to mine:
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see the solution
+
+Here's the complete script `inference_afs.R` so far:
 
 ```{r}
+library(slendr)
+init_env()
+
 simulate_afs <- function(Ne) {
   # create a slendr model with a single population of size Ne = N
-  pop <- population("pop", N = Ne, time = 1)
-  model <- compile_model(pop, generation_time = 1, simulation_length = 100000)
+  pop <- population("pop", N = Ne, time = 1000)
+  model <- compile_model(pop, generation_time = 1, direction = "backward")
+
+  schedule <- schedule_recording(model, times = 0, list(pop, 10))
 
   # simulate a tree sequence
   ts <-
-    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
+    msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
-  # get a random sample of names of 10 individuals
-  samples <- ts_names(ts) %>% sample(10)
+  # get the names of the 10 individuals in the tree sequence
+  samples <- ts_names(ts)
 
-  # compute the AFS vector (dropping the 0-th element added by tskit)
-  afs <- ts_afs(ts, sample_sets = list(samples))[-1]
+  # compute the AFS vector
+  afs <- ts_afs(ts, sample_sets = list(samples))
 
-  afs
+  # return the AFS (without the first and last element)
+  return(afs[-c(1, length(afs))])
 }
 ```
 
-Our functions is supposed to produce an AFS vector of counts of alleles
-observed at a given frequency a the population sample:
-
-Let's use our custom function to simulate AFS vector for Ne = 1k, 10k, and 30k:
+Our function is supposed to produce an AFS vector of counts of alleles observed
+at a given frequency in the population sample. Let's verify that our custom
+function works correctly by simulating an AFS vector for Ne = 1k, 10k, and 30k:
 
 ```{r}
 afs_1k <- simulate_afs(1000)
@@ -178,7 +231,7 @@ To see the results of this function in a clearer context, let's visualize
 the vectors in the same plot:
 
 ```{r}
-plot(afs_30k, type = "o", main = "AFS, Ne = 30000", col = "cyan",)
+plot(afs_30k, type = "o", main = "AFS, Ne = 30000", col = "cyan", ylim = c(0, max(afs_30k)))
 lines(afs_10k, type = "o", main = "AFS, Ne = 10000", col = "purple")
 lines(afs_1k, type = "o", main = "AFS, Ne = 1000", col = "blue")
 legend("topright", legend = c("Ne = 1k", "Ne = 10k", "Ne = 30k"),
@@ -187,13 +240,22 @@ legend("topright", legend = c("Ne = 1k", "Ne = 10k", "Ne = 30k"),
 
 :::
 
+:::
 
 
 
-## Exercise 2: Estimating unknown $N_e$ from empirical AFS
+
+
+
+
+
+
+
+
+## Part 2: Matching simulated AFS against empirical AFS
 
 ```{r}
-#| eval: false
+#| output: false
 #| echo: false
 set.seed(42)
 TRUE_NE <- 6543
@@ -201,62 +263,76 @@ TRUE_NE <- 6543
 pop <- population("pop", N = TRUE_NE, time = 100000)
 model <- compile_model(pop, generation_time = 1, direction = "backward")
 
+schedule <- schedule_recording(model, times = 0, list(pop, 10))
+
+# simulate a tree sequence
 ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, random_seed = 42) %>%
-  ts_mutate(mutation_rate = 1e-8, random_seed = 42)
+  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
+  ts_mutate(mutation_rate = 1e-8)
 
-samples <- ts_names(ts) %>% sample(10)
+# get the names of the 10 individuals in the tree sequence
+samples <- ts_names(ts)
 
-afs_observed <- ts_afs(ts, list(samples))
+afs_observed_ <- ts_afs(ts, list(samples))[c(-1, -21)]
+dput(afs_observed_)
 ```
 
-Imagine you sequenced 10 samples from a population and computed the following
-AFS vector (which contains, sequentially, the number of singletons, doubletons,
-etc., in your sample from a population):
-
-<!-- dput(as.vector(observed_afs)) -->
+**This is the empirical AFS you computed from the 10 sequenced genomes of your
+individuals of interest (perhaps with software like PLINK):**
 
 ```{r}
-afs_observed <- c(2520, 1449, 855, 622, 530, 446, 365, 334, 349, 244,
-                  264, 218,  133, 173, 159, 142, 167, 129, 125, 143)
+afs_observed <- c(2493, 1167, 876, 649, 539, 543, 381, 330, 338, 211,
+                  268, 183, 205, 214, 155, 176, 144, 122, 121)
 ```
 
-You know (maybe from some fossil evidence) that the population probably had
-a constant $N_e$ somewhere between 1000 and 30000 for the past 100,000 generations,
-and had mutation and recombination rates of 1e-8 (i.e., parameters already
-implemented by your `simulate_afs()` function -- how convenient!).
+```{r}
+#| echo: false
+if (!all(afs_observed_ == afs_observed)) stop("Unexpected mismatch", call. = FALSE)
+```
 
-**Use _slendr_ simulations to guess the true (and hidden!) $N_e$ given the observed
-AFS by running simulations for a range of $N_e$ values and finding out
-which $N_e$ produces the closest AFS vector to the `afs_observed` vector above
-using one of the following two approaches.**
 
-- **Option 1** [easy]: Plot AFS vectors for various $N_e$ values (i.e. simulate
-several of them using your function `simulate_afs()`), then eyeball
-which looks closest to the observed AFS based on the figures alone. (This is,
-of course, not how proper statistical inference is done, but it will be
-good enough for this exercie!)
+**Now use your _slendr_ function `simulate_afs()` and a few other techniques you
+learned throughout this workshop to "guess" the true (but hidden) $N_e$ of your
+population of interest, given this observed AFS. Depending on how confident you
+feel with coding, there are two possible options:**
 
-- **Option 2** [hard]: Simulate AFS vectors in steps of possible `Ne` (maybe
-`lapply()`?), and find the $N_e$ which gives the closest AFS to the observed AFS based on [Mean squared error](https://en.wikipedia.org/wiki/Mean_squared_error).
+- **Option 1** [easy but not rigorous]: Plot AFS vectors simulated for various
+$N_e$ values, then try to guess (just by looking at the AFS visualizations)
+which one looks closest to the empirical AFS and, therefore, which simulated
+$N_e$ is the closest match to the reality. (This is, of course, not how proper
+statistical inference is done, but it's a good start if you're just starting
+with simulation-based inference.)
+
+- **Option 2** [harder and more rigorous]: Simulate AFS vectors across a grid of
+possible `Ne` values depending on your prior information (perhaps using base R
+`lapply()` or _purrr_ `map()`), and find the $N_e$ which results in a simulated
+AFS which is closest to the observed AFS by computing [Mean squared
+error](https://en.wikipedia.org/wiki/Mean_squared_error) on the two of them.
+
+
+
+
+
+
+
+
 
 
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution to "Option 1"
 
-This is the observed AFS with which we want to compare our simulated AFS
+This is the empirical AFS to which we need to compare our simulated AFS
 vectors:
 
 ```{r}
-afs_observed <- c(2520, 1449, 855, 622, 530, 446, 365, 334, 349, 244,
-                  264, 218,  133, 173, 159, 142, 167, 129, 125, 143)
+afs_observed <- c(2493, 1167, 876, 649, 539, 543, 381, 330, 338, 211,
+                  268, 183, 205, 214, 155, 176, 144, 122, 121)
 ```
 
-
-We know that the true $N_e$ is supposed to be between 1000 and 30000, so
-let's simulate a bunch of AFS vectors for different $N_e$ values using our
-new AFS simulation function:
+We know that the true $N_e$ is supposed to be between 1000 and 30000, so let's
+simulate a couple of AFS vectors for different $N_e$ values using our new AFS
+simulation function:
 
 ```{r}
 afs_Ne1k <- simulate_afs(Ne = 1000)
@@ -267,8 +343,8 @@ afs_Ne20k <- simulate_afs(Ne = 20000)
 afs_Ne30k <- simulate_afs(Ne = 30000)
 ```
 
-Now let's plot our simulated AFS vectors together with the observed AFS
-(highlighting it in black):
+Now let's plot our simulated AFS vectors together with the observed AFS (shown
+in black):
 
 ```{r}
 plot(afs_observed, type = "b", col = "black", lwd = 3,
@@ -285,89 +361,140 @@ legend("topright",
        fill = c("black", "blue", "green", "pink", "purple", "orange", "cyan"))
 ```
 
-The true $N_e$ was 6543!
+From the figure, we can see that the black line (empirical AFS) seems to be
+closest to the simulated $N_e$ = 6000.
+
+And indeed, I can now reveal that the true $N_e$ of our population of interest
+was `{r} TRUE_NE`. Not a bad result for such a simple inference pipeline!
+
+---
+
+Having done the "Option 1" solution, now consider taking a stab at the "Option
+2". It's not that much harder, actually, and you've already practiced everything
+you need to solve this. You've got this!
 
 :::
+
+
+
+
+
+
+
+
 
 
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution to "Option 2"
 
-This is the observed AFS with which we want to compare our simulated AFS
+This is the empirical AFS to which we need to compare our simulated AFS
 vectors:
 
 ```{r}
-afs_observed <- c(2520, 1449, 855, 622, 530, 446, 365, 334, 349, 244,
-                  264, 218,  133, 173, 159, 142, 167, 129, 125, 143)
+afs_observed <- c(2493, 1167, 876, 649, 539, 543, 381, 330, 338, 211,
+                  268, 183, 205, 214, 155, 176, 144, 122, 121)
 ```
 
-We know that the true $N_e$ is supposed to be between 1000 and 30000.
-Let's generate regularly spaced values of potential Ne values whose AFS
-we want to investigate and compare to the obesrved AFS (our parameter grid):
+We know that the true $N_e$ is supposed to be between 1000 and 30000. Let's
+generate a regular grid of potential $N_e$ values for which we want to simulate
+AFS vectors:
 
 ```{r}
 Ne_grid <- seq(from = 1000, to = 30000, by = 500)
 Ne_grid
 ```
 
-With the parameter grid `Ne_grid` set up, let's simulate an AFS from each
-$N_e$ model:
+With the parameter grid `Ne_grid` set up, let's simulate an AFS from each $N_e$
+model (we simply loop over the grid using a parallel version of `lapply()` to
+speed things up, but plain `lapply()` or `map()` would work too):
 
 ```{r}
 library(parallel)
 
-afs_grid <- mclapply(Ne_grid, simulate_afs, mc.cores = detectCores())
+afs_grid <- mclapply(Ne_grid, simulate_afs, mc.cores = detectCores() - 1)
 names(afs_grid) <- Ne_grid
+```
 
-# show the first five simulated AFS vectors, for brevity, just to demonstrate
-# what the output of the grid simulations is supposed to look like
+Here's an example of the first five simulated AFS vectors, just to demonstrate
+what the output of the grid simulations looks like. As you can see, we get a
+list of numerical vectors, one element of the list corresponding to one AFS (and
+indexed by the corresponding `Ne`):
+
+```{r}
 afs_grid[1:5]
 ```
 
-
-Plot the observed AFS and overlay the simulated AFS vectors on top of it:
+To get a better idea of the grid simulations, let's visualize the observed AFS
+(in black) and overlay the simulated AFS vectors on top of it (in gray):
 
 ```{r}
+# plot the observed AFS in black
 plot(afs_observed, type = "b", col = "black", lwd = 3, xlab = "allele count bin", ylab = "count")
+
+# then loop over the list with simulated AFS, overlaying them onto the plot
 for (i in seq_along(Ne_grid)) {
   lines(afs_grid[[i]], lwd = 0.5)
 }
+
+# add a legend too
 legend("topright", legend = c("observed AFS", "simulated AFS"), fill = c("black", "gray"))
 ```
 
-Compute mean-squared error of the AFS produced by each $N_e$ value across the grid:
+Instead of just eyeballing the closest AFS like we do in "Option 1" (which is
+impossible to do here anyway because of how many AFS vectors we simulated), we
+want to compute the [mean squared
+error](https://en.wikipedia.org/wiki/Mean_squared_error) of the AFS produced by
+each $N_e$ value across the grid:
 
 ```{r}
-errors <- sapply(afs_grid, function(sim_afs) {
-  sum((sim_afs - afs_observed)^2) / length(sim_afs)
+# loop over simulated AFS vectors and compute the MSE from the observed AFS for each
+error_grid <- sapply(afs_grid, function(afs_simulated) {
+  sum((afs_simulated - afs_observed)^2) / length(afs_simulated)
 })
+```
 
+Let's visualize the error of each simulated AFS and highlight the one which was
+closest to the empirical AFS:
+
+```{r}
 plot(Ne_grid, errors, ylab = "error")
+
 abline(v = Ne_grid[which.min(errors)], col = "red")
+
 legend("topright", legend = paste("minimum error Ne =", Ne_grid[which.min(errors)]), fill = "red")
 ```
 
-Plot the AFS again, but this time highlight the most likely spectrum
-(i.e. the one which gave the lowest RMSE value):
+Plot the AFS again, but this time highlight the AFS which is the most
+statistically likely (i.e. the one which gave the lowest MSE value):
 
 ```{r}
+# plot the observed AFS again
 plot(afs_observed, type = "b", col = "black", lwd = 3, xlab = "allele count bin", ylab = "count")
+
+# loop over each simulated AFS...
 for (i in seq_along(Ne_grid)) {
+  # ... and assign a red color to the one which was the closest based on
+  # the computed error from the observed AFS
   color <- if (i == which.min(errors)) "red" else "gray"
   width <- if (i == which.min(errors)) 2 else 0.75
+
   lines(afs_grid[[i]], lwd = width, col = color)
 }
+
 legend("topright", legend = c("observed AFS", paste("best fitting Ne =", Ne_grid[which.min(errors)])),
        fill = c("black", "red"))
 ```
 
-The true $N_e$ was 6543!
+The true $N_e$ was `{r} TRUE_NE`!
 
 :::
 
 
 
+
+
+---
 
 
 
@@ -376,13 +503,9 @@ The true $N_e$ was 6543!
 Congratulations, you now know how to infer parameters of evolutionary models
 using simulations! What you just did is really very similar to how
 simulation-based inference is done in practice (even with methods such as ABC).
-Hopefully you now also see how easy _slendr_ makes it to do this (normally
-a rather laborious) process.
+Hopefully you now also see how easy _slendr_ makes it to do this process.
 
-This kind of approach can be used to infer all sorts of demographic
-parameters, even using other summary statistics that you've also learned
-to compute... including selection parameters, which we delve into in another
-exercise.
-
-
-
+As mentioned in the introduction, this kind of approach can be used to infer all
+sorts of demographic parameters using simulation-based inference, even using
+other summary statistics that you've also learned to compute ($f$-statistics,
+nucleotide diversity, IBD data, etc.).
