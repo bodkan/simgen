@@ -31,31 +31,17 @@ install.packages("slendr")
 the entire output from this command and send it to me via email.
 
 3. **Paste this little testing simulation script into the R console to make
-sure that everything works correctly.** Don't read too much into the meaning of
-the code, understanding (and being able to program) all this and much, much
-more will be the point of our workshop.
+sure that everything works correctly.**
 
 ```{r}
 #| collapse: true
 library(slendr)
 init_env(uv = TRUE)
 
-A <- population("popA", time = 8000, N = 1000)
-B <- population("popB", time = 4000, N = 1000, parent = A)
-C <- population("popC", time = 4000, N = 1000, parent = A)
-D <- population("popD", time = 3000, N = 1000, parent = C)
-
-gf <- list(
-  gene_flow(from = B, to = D, start = 1000, end = 800, proportion = 0.2),
-  gene_flow(from = C, to = D, start = 1000, end = 800, proportion = 0.1)
-)
-
-model <- compile_model(
-  populations = list(A, B, C, D),
-  gene_flow = gf, generation_time = 30
-)
-
+pop <- population("pop", time = 1, N = 1000)
+model <- compile_model(list(pop), generation_time = 1, simulation_length = 1000)
 ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+
 ts
 ```
 
@@ -90,22 +76,10 @@ workshop).
 library(slendr)
 init_env()
 
-A <- population("popA", time = 8000, N = 1000)
-B <- population("popB", time = 4000, N = 1000, parent = A)
-C <- population("popC", time = 4000, N = 1000, parent = A)
-D <- population("popD", time = 3000, N = 1000, parent = C)
-
-gf <- list(
-  gene_flow(from = B, to = D, start = 1000, end = 800, proportion = 0.2),
-  gene_flow(from = C, to = D, start = 1000, end = 800, proportion = 0.1)
-)
-
-model <- compile_model(
-  populations = list(A, B, C, D),
-  gene_flow = gf, generation_time = 30
-)
-
+pop <- population("pop", time = 1, N = 1000)
+model <- compile_model(list(pop), generation_time = 1, simulation_length = 1000)
 ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+
 ts
 ```
 
