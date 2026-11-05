@@ -13,18 +13,34 @@
 
 A couple of points before we start this chapter.
 
-1. **Every one of your solutions for each exercise should contain these two
-lines of code. If you get errors about missing functions, simulation failures,
-etc., make sure your script starts with these lines.**
+1. **Every one of your solutions for each exercise should contain the following
+two lines of code. If you get errors about missing functions, simulation
+failures, etc., make sure your script isn't missing this little bit of code.**
 
 ```{r}
 library(slendr)
 init_env()
 ```
 
-2. **Always write your solution in a dedicated script as instructed by each
-exercise. Don't write everything into a single long file. Don't run your code
-solution only in your R console without having them recorded in a script.**
+Or, alternatively, this (depending on how the _slendr_ Python environment is
+[set up](setup-installation.html)):
+
+```{r}
+library(slendr)
+init_env(uv = TRUE)
+```
+
+2. **Always try to write your solutions in a dedicated script (saved under an
+appropriate name) as usually instructed by each exercise. Don't write everything
+into a single long file. Don't run your code solution only in your R console
+without having them recorded in a script.**
+
+This might be frustrating at times and appear like unnecessary extra work, but
+keeping your code organized (and properly annotated with `# comments like this`)
+is critical for making computational workflows reproducible.
+
+
+
 
 
 
@@ -33,19 +49,20 @@ solution only in your R console without having them recorded in a script.**
 
 ## Exercise: Forward direction of time
 
-**Create a new R script and saved it as `slendr_models_forward.R`. Write your
-solutions to this exercise into that script.**
+**Create a new R script and save it as `forward_model.R`. Write your solutions
+to this exercise into that script.**
 
 ---
 
 **Encode the demographic model sketched in the following diagram using a series
 of `population()` calls, then compile it with `compile_model()`, storing it in
 the `model` variable. Finally, verify the correctness of the `model` visually
-using using the function `plot_model()`.**
+using using the function `plot_model()`. Make sure to write all of this into
+your script `forward_model.R`**
 
 **Hint:** Try to get into the habit of executing each command you add to your
 script (a line of code, a couple of lines, etc.) in your R console by pressing
-Ctrl (or Cmd)+Enter as you're writing your solutions.
+Ctrl+Enter as you're writing your solutions line by line.
 
 ::: aside
 
@@ -58,8 +75,8 @@ always indicate the "effective population size" $N_e$.
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-As always, we start our new script by loading _slendr_ itself and activating
-its environment:
+As always, we start our new script by loading _slendr_ itself and activating its
+environment:
 
 ```{r}
 library(slendr)
@@ -70,8 +87,8 @@ Adding to the script, we begin by creating the first population, called p1,
 storing it in a variable with the same name. When we execute this line and type
 `p1` in the R console, we get an informative summary. Especially when building
 very complex models with _slendr_, it pays off to develop the habit to program
-models like this, one command at a time, always making sure that what we are
-programming matches what we want to program!
+models like this, one command at a time, always making sure that what we _are_
+programming matches what we _want_ to program!
 
 ```{r}
 p1 <- population("p1", time = 1, N = 1000)
@@ -104,12 +121,17 @@ fmodel <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1,
 
 ---
 
-**What happens when you don't specify the `simulation_length` argument of
-the `compile_model()` function? Do you get an error if you leave out this
-argument? Why?**
+**What happens when you don't specify the `simulation_length` argument of the
+`compile_model()` function? Try running your `compile_model()` command without
+this argument. Do you get an error if you leave out this argument? Why?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+When you think about how we programmed demographic events, we start at
+generation 1, then generation 100, etc... but how would the computer know when
+we want to stop the model? That's what `simulation_length` ensures, whenever we
+want to build a forward-time model.
 
 ```{r}
 #| error: true
@@ -140,33 +162,45 @@ identifying where and how we made a mistake.
 
 ## Exercise: Backward direction of time
 
-Unlike most other simulation frameworks, _slendr_ gives us a lot of
-flexibility in how to encode the time units of our models, or even the
-direction of time used by our models.
+Unlike most other simulation frameworks (which all use either forward or
+backward time direction, but never both), _slendr_ gives us a lot of flexibility
+in how to encode the time units of our models, or even the direction of time
+used by our models. This saves us costly (and error-prone) conversion of model
+time units appropriate for our concrete use-case.
 
 ---
 
-**Create a new R script and saved it as `slendr_models_backward.R`. Write your
-solutions to this exercise into that script.**
+**Create a new R script and saved it as `backward_model.R`. Write your solutions
+to this exercise into that script.**
 
 ---
 
-**Convert your forward model into using a backward direction of time (i.e., the
-model will implicitly end at time 0---"the present day"---and start at the
-appropriate "time ago"). You can start by copying the contents of
-`slendr_models_forward.R` into your new script, and modify its features
-accordingly. Again, visualize the final `model` using the `plot_model()`
-function, which should get you (visually) exactly the same figure.**
+**Convert the forward model which you just wrote into using a backward direction
+of time (i.e., the model will implicitly end at time 0---"the present day"---and
+start at the appropriate "time ago"). You can start by copying the contents of
+`forward_model.R` into your new script, and modify its features accordingly.
+Again, visualize the final `model` using the `plot_model()` function, which
+should get you (visually) exactly the same figure.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 To solve this exercise, we simply have to take the total length of our original
-forward simulation and reverse the times of schedules event accordingly.
+forward simulation and reverse the times of scheduled events accordingly.
 
-Note that this is very annoying to do---and it is what's necessary to do with
-many frameworks other than _slendr_. This convenient flexibility of _slendr_
-becomes even more apparent once we start dealing with more realistic time units.
+Note that this is very annoying to do (and I'm sorry I'm making you do
+frustrating stuff!). This is just to show what's necessary to do with simulation
+frameworks other than _slendr_. This convenient flexibility of _slendr_ becomes
+even more apparent once we start dealing with more realistic time units later.
+
+For now, just remember that the direction of time of our models in _slendr_ is
+flexible.
+
+If you want to simulate yeast growing over generations in a lab (from generation 1),
+you can.
+
+If you want to simulate human history over thousands of years (starting, for
+instance, from the Anatolian migration thousands of years ago), you can.
 
 ```{r}
 library(slendr)
@@ -201,8 +235,8 @@ cowplot::plot_grid(
 ---
 
 **In the previous exercise, leaving out the `simulation_length` argument
-resulted in an error. Do you get an error when you leave it out this time? Why?
-Or why not?**
+resulted in an error. Do you get an error when you leave it out this time, for
+the backwards-time model? Why? Or why not?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -213,26 +247,37 @@ naturally end at time 0 (i.e., "the present day"). This means that setting this
 argument works (we can still do it), but it's redundant:
 
 ```{r}
-model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1, simulation_length = 400)
+model <- compile_model(
+  populations = list(p1, p2, p3, p4),
+  generation_time = 1,
+  simulation_length = 400
+)
 ```
 
 :::
 
 ---
 
-**What happens when you set this argument to a number that is shorter than the
-intended duration of the model in the schematic at the beginning, like setting
-`simulation_length = 120`? What would this imply about our programmed model?**
+**In your backwards model, what happens when you set `simulation_length` to a
+number that is shorter than the intended duration of the model in the sketch at
+the beginning, like setting `simulation_length = 120`? What would this imply
+about our programmed model?** Do this only in your R console, you don't have to
+modify your script permanently. This is just a demonstration of an occasionally
+useful feature of _slendr_.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-On the other hand, if we do set it to a smaller number, we effectively
-"truncate" the duration of the model. This is arelatively rare thing to do, but
-it could be useful in some circumstances, so it's worth mentioning here:
+If we do set the argument to a smaller number, we effectively "truncate" the
+duration of the model. This is arelatively rare thing to do, but it could be
+useful in some circumstances, so it's worth mentioning here:
 
 ```{r}
-model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1, simulation_length = 120)
+model <- compile_model(
+  populations = list(p1, p2, p3, p4),
+  generation_time = 1,
+  simulation_length = 120
+)
 
 plot_model(model)
 ```
@@ -248,12 +293,10 @@ cowplot::plot_grid(
 )
 ```
 
-**Note:** As I'm writing this solution, I just noticed that the colorscheme is
-wrong between the two visualization. That's a huge benefit of teaching---it puts
-me into situations and applications I wouldn't normally encounter! In fact, many
-improvements and new _slendr_ features I introduced over the years have come up
-during teaching. Fixing this is already on my [list of
-improvements](https://github.com/bodkan/slendr/issues/201).
+Fun fact: I discovered a bug in _slendr_ when I was writing this exercise. I had
+to write an emergency bugfix just in time for the workshop, but I'm just now
+realizing that I got the color scheme wrong. Sorry about that! To be fixed later
+([on my TODO list already](https://github.com/bodkan/slendr/issues/201)).
 
 :::
 
@@ -266,34 +309,35 @@ improvements](https://github.com/bodkan/slendr/issues/201).
 
 ## Exercise: Custom time units
 
-For more theoretical or general models, specifying time in generations going
-forward (or backward) is generally enough. However, in more empirical settings,
-encoding times in other units can be quite handy. For instance, imagine you work
-with ancient DNA samples assigned with radiocarbon dates which use units of
-"years before the present". Having to manually convert such times into
-generations gets cumbersome quickly, both when programming models and when
-analyzing simulated sequence data.
+For theoretical models, encoding time in generations is generally enough.
+However, in more empirical settings, encoding times in other units can be quite
+handy. For instance, imagine you work with ancient DNA samples assigned with
+radiocarbon dates which use units of "years before the present". Having to
+manually convert such times into generations gets cumbersome quickly, both when
+programming models and when analyzing simulated sequence data.
 
 This is where the `generation_time` argument of `compile_model()` comes into the
-picture---with this argument, we instruct _slendr_ on how should the various
-"genetic time numbers" in our model code interpreted as "real-world numbers".
+picture---with this argument, we instruct _slendr_ on how should the "generic
+time numbers" in our model code interpreted as "real-world numbers".
 Additionally, there's another optional argument called `time_units` which we can
 use to give the numbers an explicit description.
 
 ---
 
-**In a new script `slendr_models_human.qmd` add a copy of your "backwards time"
-model code from above, then change it so that the time units can be interpreted
-as "years before present (BP)", using the approximate human generation time of
-30 years. Then visualize the model again to make sure you've programmed
-everything correctly.**
+**Create a new script `human_model.R` and copy your current contents of
+`backward_model.R` into it. Then change your code so that the time units can be
+interpreted as "years before present (BP)", using the approximate human
+generation time of 30 years per generation. Finally, visualize the model to make
+sure you've programmed everything correctly (perhaps by comparing the
+visualization to that of the previous forward and backward models).**
 
-**Hint:** You will want to modify the times of all demographic events in your
-model---originally in units of generations---so that they are effectively
-30-times larger (so that the times represent human generation times), and make
-them run from larger values to smaller values (so that they represent units
-"years before present (BP)"). Finally, for clarity, you might want to use the
-`time_units` argument of `compile_model()` to give the units this description.
+**Hint:** This may sound more complicated than it is. Basically, you want to
+modify the times of all demographic events in your model---originally in units
+of generations---so that they are effectively 30-times larger (so that the times
+represent human generation times), and make them run from larger values to
+smaller values (so that they represent times "years before present (BP)" or
+"years ago"). Finally, for clarity, you might want to use the `time_units`
+argument of `compile_model()` to give the units this exact description.
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -317,18 +361,31 @@ plot_model(model)
 ```
 
 Again, when we compare this model to the very first model (which used time units
-of generations running forward in time), we see that they are completely
-identical---only the presentation changes (giving us much more convenience), but
-the population genetics theory underlying this model remains the same!
+of generations running forward in time), we see that they are _completely
+identical_---only the presentation changes (making the model more convenient for
+a reader expecting human demography), but the population genetics theory
+underlying this model remains the same!
+
+**Hint:** If you want, take a look how I created the composite panels by
+unfolding the code. It is done by the function `plot_grid()` from the R package
+_cowplot_. An absolute rockstar for composing complex scientific figures.
 
 ```{r}
 #| echo: false
-cowplot::plot_grid(
-  plot_model(fmodel) + ggplot2::ggtitle("Forward time direction"),
-  plot_model(bmodel) + ggplot2::ggtitle("Backward time direction"),
-  plot_model(model) + ggplot2::ggtitle("Model in 'years B.P.'"),
-  nrow = 1
-)
+#| code-fold: true
+library(cowplot)
+
+# Let's supose `fmodel`, `bmodel`, and `model` are the forward, backward, and "human"
+# compiled slendr model variables.
+
+# The ggplot2 package allows us to save plots into their own variables:
+p_forward <- plot_model(fmodel) + ggplot2::ggtitle("Forward time direction")
+p_backward <- plot_model(bmodel) + ggplot2::ggtitle("Backward time direction")
+p_human <- plot_model(model) + ggplot2::ggtitle("Model in 'years B.P.'")
+
+# And we can use cowplot to compose them together, making sure they're arranged
+# in three columns too:
+plot_grid(p_forward, p_backward, p_human, nrow = 1)
 ```
 
 :::
@@ -342,18 +399,25 @@ cowplot::plot_grid(
 
 ## Exercise: Programming gene flow
 
-Of course, real-world populations don't just split from one another or change
-their size. Another common demographic process is gene flow (also called
-admixture or introgression in various context and in different species).
+Of course, real-world populations don't just split from one another. Another
+common demographic process is gene flow (also called admixture or introgression
+in various contexts and in different species).
 
-**Modify your `slendr_models_human.qmd` script by using the function
-`gene_flow()` to program admixture from population "p2" into population "p3"
-starting at `time` 3000 "years B.P.", with an `end` at time 2200 "years B.P.".
-Set the total `proportion` of the "p2" ancestry in "p3" at 0.1 (i.e., 10% of
-the final "p3" population will be derived from "p2").**
+---
+
+**Modify your `human_model.R` script, adding a command to program admixture from
+population `p2` into population `p3` starting at `time` 3000 "years ago", with
+an `end` at time 2200 "years ago", using the function `gene_flow()`. Set the
+total `proportion` of the `p2` ancestry in `p3` at 0.1 (i.e., 10% of the final
+`p3` population will be derived from `p2`). When you plot this model using
+`plot_model()` (set also `proportions = TRUE`), you should see your "population
+tree model" turn into an "admixture model" as these are often called with an
+arrow indicating the programmed admixture event.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Here's the current status of `human_model.R`:
 
 ```{r}
 library(slendr)
@@ -367,7 +431,8 @@ p4 <- population("p4", time = 3000, N = 1000, parent = p3)
 gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2100, proportion = 0.1)
 
 model <- compile_model(
-    populations = list(p1, p2, p3, p4), gene_flow = gf,
+    populations = list(p1, p2, p3, p4),
+    gene_flow = gf,
     generation_time = 30,
     time_units = "years before present"
 )
@@ -379,17 +444,21 @@ plot_model(model, proportions = TRUE)
 
 ---
 
-**When you look at `?gene_flow` help page, you can see that the function has a
-`migration_rate` argument. What does it do? Is there any way to get the same
+**When you look at the `?gene_flow` help page, you can see that the function has
+a `migration_rate` argument. What does it do? Is there any way to get the same
 result (i.e., to encode the same gene-flow event) as you did just above, but
 using `rate` instead of `proportion`? When would you expect to use one or the
 other?**
 
+**Hint:** Try to make the habit of reading the help of various functions
+frequently---you discover lots of useful information that way that you wouldn't
+normally learn about.
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-A 10% _proportion_ of p2 ancestry derived from p3 over the time window of 3000
-to 2100 years B.P. is mathematically equivalent to a per-year rate of `0.1 /
+A 10% _proportion_ of `p2` ancestry derived from `p3` over the time window of
+3000 to 2100 years ago is mathematically equivalent to a per-year rate of `0.1 /
 (3000 - 2100)`, i.e. `{r} 0.1 / (3000 - 2100)`. To express this in a _slendr_
 model, take a look at the modified call to `gene_flow()` below:
 
@@ -413,6 +482,11 @@ model <- compile_model(
 
 plot_model(model, proportions = TRUE)
 ```
+
+This is useful because sometimes we need to model a situation such as _"we
+expect this number of migrants arriving into this settlement per generation"_
+etc., in which case we don't necessarily know the total proportion of genetic
+ancestry which would arrive like this in aggregate.
 
 :::
 
