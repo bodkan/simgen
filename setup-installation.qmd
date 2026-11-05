@@ -38,7 +38,6 @@ more will be the point of our workshop.
 ```{r}
 #| collapse: true
 library(slendr)
-
 init_env(uv = TRUE)
 
 A <- population("popA", time = 8000, N = 1000)
@@ -63,6 +62,54 @@ ts
 The outcome of this script should approximately match what you see above (minus
 some statistical noise manifesting in your numbers in the summary being
 slightly different).
+
+---
+
+**If the above script fails during the `init_env(uv = TRUE)` step, do the
+following.**
+
+::: {.callout-note collapse="true" icon=false}
+#### Click to see alternative instructions
+
+First, go to `Session -> Restart R` in the RStudio menu.
+
+Then paste this command into the R console:
+
+```{r}
+#| eval: false
+slendr::setup_env(agree = TRUE)
+```
+
+When the command finishes running, copy-paste the following version of the
+above-mentioned testing script into the R console (note that the `uv = TRUE` is
+missing in the `init_env()` function --- I'm happy to explain during the
+workshop).
+
+```{r}
+#| eval: false
+library(slendr)
+init_env()
+
+A <- population("popA", time = 8000, N = 1000)
+B <- population("popB", time = 4000, N = 1000, parent = A)
+C <- population("popC", time = 4000, N = 1000, parent = A)
+D <- population("popD", time = 3000, N = 1000, parent = C)
+
+gf <- list(
+  gene_flow(from = B, to = D, start = 1000, end = 800, proportion = 0.2),
+  gene_flow(from = C, to = D, start = 1000, end = 800, proportion = 0.1)
+)
+
+model <- compile_model(
+  populations = list(A, B, C, D),
+  gene_flow = gf, generation_time = 30
+)
+
+ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+ts
+```
+
+:::
 
 4. **Installing a couple of bonus R packages**
 
