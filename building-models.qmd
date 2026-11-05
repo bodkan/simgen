@@ -498,31 +498,34 @@ ancestry which would arrive like this in aggregate.
 
 
 
-## Exercise: Common _slendr_ errors
+## Exercise: Deciphering common errors produced by _slendr_
 
 As noted above, _slendr_ is designed around interactive use, executing little
-bits of code at a time, making sure that potential errors are caught as soon
-as we make them, rather than after spending lots of time programming long
-simulation scripts.
+bits of code at a time, making sure that potential errors are caught as soon as
+we make them rather than after spending lots of time programming long (and
+potentially eventually broken) simulation scripts.
 
 However, software errors often confuse new programmers, especially because most
 errors represent completely trivial typos and unintended mistakes rather than
-conceptual issues with our model's logic. This is why it's a good idea to
-spend a few moments to study the most common errors recognize why they occur in
-isolated, controlled settings.
+conceptual issues with the model logic. Situations when "basically correct
+script" still gives errors are incredibly frustrating.
+
+This is why it's a good idea to spend a few moments to study the most common
+errors in _slendr_ and recognize why they occur in an isolated, controlled
+setting when done on purpose.
 
 ---
 
-First, let's do a bit of a setup using things you already know. **Create a new
-script called `slendr_models_errors.R`, just to have a "throwaway script" to
-experiment in without breaking your other working code.**
+**First, let's do a bit of a setup using things you already know. Create a new
+_slendr_ model script called `slendr_errors.R`, just to have a "throwaway
+script" to experiment in without breaking your other working code.**
 
 ---
 
 **Create an R variable `pop` containing a _slendr_ population (using the
 `population()` function) with the name "pA", at time 1 and with the $N_e$ of
 5000. Then, create a population "pB" of the same size, which splits from "pA" at
-time 100.**.
+time 100. Then run this tiny toy script in your R console.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -537,22 +540,25 @@ pB <- population("pB", time = 100, N = 5000, parent = pA)
 
 :::
 
-When you do this, _slendr_ automatically infers that you intend to specify time
-in your model flowing in the forward direction (i.e., times of events move from
-smaller numbers to larger numbers). Not only that, from this point on, _slendr_
-also enforces all following demographic events to follow this time direction!
+When _slendr_ runs this code, it automatically infers that you intend to specify
+time in your model flowing in the forward direction (because times of your
+events move from smaller numbers to larger numbers). Not only that, from this
+point on, _slendr_ will also enforce all following demographic events to follow
+this time direction!
 
 **To see how this works, create a third population named "pC", which splits from
-"pB" at time 80. What does _slendr_ do when you do this? What's the closest
-appropriate value of pC's split time which would be consistent with _slendr_'s
-assumptions for the direction of time for this model?**
+`pB` at time 80. What does _slendr_ do when you re-run your three-population
+script? What error do you get? And if you were to fix this error, what's the
+closest appropriate value of the `pC` split time from `pB` which would be
+consistent with _slendr_'s assumptions outlined above (and so it wouldn't
+complain anymore)?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-We get an error because in the context of the model so far (pA starting
-at time 1 and pB splitting from it at time 100), pC would effectively split
-at an earlier time than it's parent!
+We get an error because in the context of the model so far (`pA` starting at
+time 1 and `pB` splitting from it at time 100), `pC` would effectively split at
+an earlier time than it's parent!
 
 ```{r}
 #| error: true
@@ -574,13 +580,22 @@ In other words, the earliest that pC can split is time 101:
 pC <- population("pC", time = 101, N = 5000, parent = pB)
 ```
 
+Giving us this model (we can barely see the difference between `pB` and `pC`
+splits because they're separated by only 1 generation difference in time):
+
+```{r}
+#| echo: false
+plot_model(compile_model(list(pA, pB, pC), generation_time = 1, simulation_length = 300))
+```
+
+
 :::
 
 ---
 
 **As another example, let's look at `gene_flow()`, which programs gene flow
-between two populations represented by two R variables. Let's say that you try
-to program:**
+between two populations represented by two R variables. Let's say that (still in
+your script `slendr_errors.R`) you try to program:**
 
 1. 42% gene flow from `pA` to `pC` starting at time 200 and ending at time 150,
 or
@@ -588,15 +603,19 @@ or
 2. gene flow starting at time 150 and ending at time 200.
 
 **Which of those two calls to `gene_flow()` do you think will result in an error
-and why?**
+and why? Try to answer this first before you actually run any of these two
+`gene_flow()` commands, then verify your intuition bu executing those commands.
+As a help, you may want to visualize a compiled version of this model using
+`plot_model()` (or just look at this visualization in my solution to the
+previous exercise).**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
 Programming gene flow starting at time 200 and ending at time 150 effectively
-implies a backward direction of time. This isn't a problem, necessarily,
-except that the information about histories of pA and pC populations (actually,
-only the pC population! can you tell why?) makes _slendr_'s `gene_flow()`
+implies a backward direction of time. This isn't a problem, necessarily, except
+that the information about histories of `pA` and `pC` populations (actually,
+only the `pC` population! can you tell why?) makes _slendr_'s `gene_flow()`
 function enforce a forward direction of time.
 
 ```{r}
@@ -604,7 +623,8 @@ function enforce a forward direction of time.
 gf <- gene_flow(from = pA, to = pC, proportion = 0.42, start = 200, end = 150)
 ```
 
-The second version works, of course, for the same reason:
+The second version works, of course, for the same reason why the previous
+command failed:
 
 ```{r}
 #| error: true
@@ -620,7 +640,8 @@ consistency described above still allows broken models to be programmed, which
 is why `compile_model()` provides yet another set of sanity checks. But we will
 leave those aside for now. If you end up running into these issues, this
 exercise has already equipped you to understand why _slendr_ sometimes gives
-errors and how to interpret them to fix your models.
+errors and how to interpret them to fix your models. And if in doubt, you can
+always ask me!
 
 
 
@@ -632,10 +653,10 @@ errors and how to interpret them to fix your models.
 
 ## Exercise: Resize events
 
-Of course, populations in traditional demographic models in evolutionary and
-population genetics don't just split and mix---they also experience population
-bottlenecks, population expansions, contractions, etc. The means to program
-these demographic events is through the function `resize()`.
+Finally, populations in traditional demographic models don't just split and
+mix---they also experience population bottlenecks, population expansions,
+contractions, etc. The means to program these demographic events is through the
+function `resize()`.
 
 In _slendr_, these events come in two variants, which we can call step resizes
 or exponential resizes. 
@@ -643,8 +664,8 @@ or exponential resizes.
 - **Step resizes**
 
 We can implement immediate step resize events simply by calling the function
-`resize()`, providing the new size `N` and the `time` at which the resize event
-should occur.
+`resize()`, providing the new size `N` for the population and the `time` at
+which the resize event should occur.
 
 - **Exponential resizes**
 
@@ -657,14 +678,14 @@ change.
 
 ---
 
-**Practice the use of the `resize()` function by programming a bottleneck event
-in the history of the population p3 in your script `slendr_models_human.qmd`.
-The bottleneck should happen at 1800 years BP, with the population contracting
-to the size of 100 individuals. Then program the recovery of this population,
-resizing in a step-wise fashion to size of 2000 individual at time 1000 years
-BP. Use the function `plot_model()` to visualize your new model and validate
-that you've programmed the bottleneck scenario correctly (remember to call it by
-setting its argument `proportion = TRUE`).**
+**Let's get back to our script `human_model.R`. Practice the application of the
+`resize()` function by programming a bottleneck event in the history of the
+population `p3`. The bottleneck should happen at 1800 years ago, with the
+population contracting to the size of 100 individuals. Then program the recovery
+of this population, resizing in a step-wise fashion to size of 2000 individual
+at time 1000 years ago. Again, always use the function `plot_model()` to
+visualize your compiled model and validate that you've programmed the bottleneck
+scenario correctly.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -711,10 +732,11 @@ fixed in a future _slendr_ version.
 ## Catch up
 
 If you want to just catch up to the point at which this section would conclude,
-here is the version of our simulation script at the end of the final exercise:
+here is the version of our simulation script `human_model.R` at the end of the
+final exercise:
 
 ::: {.callout-note collapse="true" icon=false}
-#### Click to see the solution
+#### Click to see the script `human_model.R`
 
 ```{r}
 library(slendr)
@@ -745,14 +767,14 @@ plot_model(model, proportions = TRUE)
 ## Bonus exercise: Models on disk
 
 Feel free to skip this exercise, unless you managed to run through everything
-quickly and want to learn a little bit about _slendr_ internals. Especially if
-you're a little bit familiar with _msprime_ or SLiM, this might be quite
-interesting.
+quickly or want to learn a little bit about _slendr_ internals. Knowing a little
+bit about what's going on behind the curtain of the software that we take for
+granted can come in very handy at times.
 
 A very important part of _slendr_'s approach to modeling is to make simple
 things be trivially easy. This is largely why expressing even relatively complex
-models with _slendr_ requires so little code compared to the amount of
-programming needed with traditional powerful simulators.
+models requires so little _slendr_ code compared to the amount of programming
+needed with other powerful simulators.
 
 Still, sometimes it's useful to peek behind the curtain and see what exactly is
 going on inside _slendr_ and how it operates.
@@ -760,13 +782,12 @@ going on inside _slendr_ and how it operates.
 ---
 
 **Type out the `model` object in the R console, paying attention to the
-description of the path where it's been compiled. Use your operating system disk
-browsing program (Finder on macOS, File Explorer on Windows, or any other means
-of browsing files on other systems, such as the terminal shell) to see what
-files are hiding in that path. Given the model we've programmed so far, pay
-particular attention to `populations.tsv` and `geneflow.tsv`. What format do
-those files have? Can you decipher the meaning of the information they store by
-comparing it to your own model R code?**
+description of the path where it's been compiled. Use your operating system's
+file browsing program to see what files are hiding in that path. Given the model
+we've programmed so far, pay particular attention to `populations.tsv`,
+`geneflow.tsv`, etc. When you open those files, what format do they have? Can
+you decipher the meaning of the information they store by comparing it to the
+code you write in `human_model.R`?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -813,11 +834,16 @@ print_file(model, "length.txt")
 
 ---
 
-**What is stored in the file `script.py` and `script.slim`? If you know either
-of those languages, can you decipher how _slendr_ simulates data, internally?**
+**What is stored in the file `script.py` and `script.slim`? If you know a bit of
+either Python or SLiM, can you decipher how will _slendr_ (later, as we'll see)
+simulate data?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Here are the
+[two](https://github.com/bodkan/slendr/blob/main/inst/scripts/script.py)
+[files](https://github.com/bodkan/slendr/blob/main/inst/scripts/script.slim).
 
 Both scripts are designed to read individual "model configuration files" (some
 of which we looked at right above) and use them to create a dedicated simulation
