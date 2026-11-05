@@ -38,6 +38,13 @@ including Neanderthal introgression into the ancestors of non-Africans. Again,
 please inspect this script to make sure you understand what it does---this is
 now even more important than before.**
 
+Please note that real-world simulations are rather computationally intensive,
+much more so than the modeling we did in our exercises. Generally speaking, most
+of simulation-based research happens on big computational servers. For our
+learning purposes here, if things take too long, just lower the amount of
+simulated sequence. However, be aware that this will, in turn, make statistics
+much more noisy (but that's OK, we're learning here).
+
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the the script `introgression.R`
 
@@ -78,7 +85,7 @@ schedule_present <- schedule_recording(
 schedule_neand <- schedule_recording(model, times = 50000, list(altai, 1, "Altai"), list(vindija, 1, "Vindija"))
 
 # schedule recording of Upper-Paleolithic modern humans
-schedule_emh <- schedule_recording(model, times = runif(n = 30, min = 1000, max = 45000), list(nonafr, 1))
+schedule_emh <- schedule_recording(model, times = runif(n = 50, min = 1000, max = 45000), list(nonafr, 1))
 
 # bind the schedules into one
 schedule <- rbind(schedule_present, schedule_neand, schedule_emh)
@@ -108,9 +115,6 @@ ts_recorded(ts) %>% print(n = Inf)
 ```
 
 :::
-
-
-
 
 
 
@@ -192,18 +196,30 @@ reassuring!
 Here's what my simulated trajectory looks like:
 
 ```{r}
+#| echo: false
+rm(ts)
+```
+
+```{r}
 #| message: false
 #| echo: false
 library(purrr)
 library(dplyr)
 library(ggplot2)
 
-seed <- 3996481
-ts <-
-  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
-  ts_mutate(mutation_rate = 1e-8, random_seed = seed)
+# sss <- as.integer(runif(n = 10, min = 1, max = 999999))
+#                   
+# for (seed in sss) {
+#   cat(seed, "\n")
+  # pdf(paste0("files/introgression/indirect_base_", seed, ".pdf"))
+# ts <-
+#   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
+#   ts_mutate(mutation_rate = 1e-8, random_seed = seed)
 
-indirect <-
+ts <- ts_read("files/introgression/indirect_base_409046.trees", model = model)
+s <- ts_names(ts, split = TRUE)
+
+indirect_base <-
   ts_recorded(ts) %>%                 # get the table of individuals
   filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
   mutate(
@@ -213,16 +229,21 @@ indirect <-
       })
   )
 
-ggplot(indirect, aes(time, ancestry)) +
+p <- ggplot(indirect_base, aes(time, ancestry)) +
   geom_point() +
-  geom_hline(yintercept = 0.03, linetype = "dashed", color = "black") +
   xlim(45000, 0) +
   ylim(0, 0.1) +
   geom_smooth(method = "lm") +
-  ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time",
-          subtitle = "[black dashed line indicates the true trajectory]") +
+  ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
+print(p)
+  # saveRDS(p, paste0("files/introgression/indirect_base_", seed, ".rds"))
+  # ts_save(ts, paste0("files/introgression/indirect_base_", seed, ".trees"))
+
+# dev.off()
+# }
+
 ```
 
 :::
@@ -290,12 +311,18 @@ model <- compile_model(
   generation_time = 30
 )
 
-seed <- 7639851
-ts <-
-  msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
-  ts_mutate(mutation_rate = 1e-8, random_seed = seed)
+# sss <- as.integer(runif(n = 10, min = 1, max = 999999))
+# 
+# for (seed in sss) {
+#   cat(seed, "\n")
+# ts <-
+#   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
+#   ts_mutate(mutation_rate = 1e-8, random_seed = seed)
 
-indirect <-
+ts <- ts_read("files/introgression/admix_874356.trees", model = model)
+s <- ts_names(ts, split = TRUE)
+
+indirect_admix <-
   ts_recorded(ts) %>%                 # get the table of individuals
   filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
   mutate(
@@ -304,7 +331,8 @@ indirect <-
         1 - ts_f4ratio(ts, X = x, A = s["Yoruba"], B = s["Dinka"], C = "Altai", O = s["outgroup"])$alpha
       })
   )
-direct <-
+
+direct_admix <-
   ts_recorded(ts) %>%                 # get the table of individuals
   filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
   mutate(
@@ -314,7 +342,7 @@ direct <-
       })
   )
 
-ggplot(indirect, aes(time, ancestry)) +
+p1 <- ggplot(indirect_admix, aes(time, ancestry)) +
   geom_point() +
   xlim(45000, 0) +
   ylim(0, 0.1) +
@@ -322,6 +350,21 @@ ggplot(indirect, aes(time, ancestry)) +
   ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
+
+p2 <- ggplot(direct_admix, aes(time, ancestry)) +
+  geom_point() +
+  xlim(45000, 0) +
+  ylim(0, 0.1) +
+  geom_smooth(method = "lm") +
+  ggtitle("Direct f4-ratio estimate of Neanderthal ancestry over time") +
+  xlab("time before present") +
+  ylab("Neanderthal ancestry proportion")
+
+p1
+
+#   saveRDS(p, paste0("files/introgression/admix_", seed, ".rds"))
+#   ts_save(ts, paste0("files/introgression/admix_", seed, ".trees"))
+# }
 ```
 
 We pick up a decline in Neanderthal ancestry even though we know there's no
@@ -392,34 +435,7 @@ Here's what my simulated trajectory looks like on the modified model:
 ```{r}
 #| message: false
 #| echo: false
-ggplot(direct, aes(time, ancestry)) +
-  geom_point() +
-  xlim(45000, 0) +
-  ylim(0, 0.1) +
-  geom_smooth(method = "lm") +
-  ggtitle("Direct f4-ratio estimate of Neanderthal ancestry over time") +
-  xlab("time before present") +
-  ylab("Neanderthal ancestry proportion")
-```
-
-And here are the two estimates compared to one another, both computed on the
-same simulated tree sequence:
-
-```{r}
-#| message: false
-#| echo: false
-rbind(
-  mutate(indirect, variant = "indirect f4-ratio"),
-  mutate(direct, variant = "direct f4-ratio")
-) %>%
-ggplot(aes(time, ancestry, color = variant)) +
-  geom_point() +
-  xlim(45000, 0) +
-  ylim(0, 0.1) +
-  geom_smooth(method = "lm") +
-  ggtitle("Trajectories of indirect and direct f4-ratio estimates") +
-  xlab("time before present") +
-  ylab("Neanderthal ancestry proportion")
+p2
 ```
 
 Don't worry if your own result is noisy! That's what replicate simulations are
