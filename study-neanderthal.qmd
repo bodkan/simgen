@@ -216,7 +216,7 @@ library(ggplot2)
 #   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
 #   ts_mutate(mutation_rate = 1e-8, random_seed = seed)
 
-ts <- ts_read("files/introgression/indirect_base_409046.trees", model = model)
+ts <- ts_read("files/introgression/base_409046.trees", model = model)
 s <- ts_names(ts, split = TRUE)
 
 indirect_base <-
@@ -294,6 +294,10 @@ Here's what my simulated trajectory looks like on the modified model:
 ```{r}
 #| message: false
 #| echo: false
+library(purrr)
+library(dplyr)
+library(ggplot2)
+
 gf <- list(
   # Neanderthal introgression
   gene_flow(from = vindija, to = nonafr, proportion = 0.03, start = 55000, end = 50000),
@@ -311,15 +315,15 @@ model <- compile_model(
   generation_time = 30
 )
 
-# sss <- as.integer(runif(n = 10, min = 1, max = 999999))
-# 
+# sss <- as.integer(runif(n = 20, min = 1, max = 999999))
+
 # for (seed in sss) {
 #   cat(seed, "\n")
 # ts <-
 #   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
 #   ts_mutate(mutation_rate = 1e-8, random_seed = seed)
 
-ts <- ts_read("files/introgression/admix_874356.trees", model = model)
+ts <- ts_read("files/introgression/admix_725458.trees", model = model)
 s <- ts_names(ts, split = TRUE)
 
 indirect_admix <-
@@ -360,10 +364,12 @@ p2 <- ggplot(direct_admix, aes(time, ancestry)) +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
 
+  # pdf(paste0("files/introgression/admix_", seed, ".pdf"))
+# print(cowplot::plot_grid(p1, p2, nrow = 2))
+# dev.off()
 p1
 
-#   saveRDS(p, paste0("files/introgression/admix_", seed, ".rds"))
-#   ts_save(ts, paste0("files/introgression/admix_", seed, ".trees"))
+  # ts_save(ts, paste0("files/introgression/admix_", seed, ".trees"))
 # }
 ```
 
@@ -441,6 +447,29 @@ p2
 Don't worry if your own result is noisy! That's what replicate simulations are
 for (remember the existence of the `ts_replicate()` function, which I wrote
 exactly for this purpose).
+
+Finally, here's a comparison of both indirect and direct $f_4$-ratio statistics
+against one another. Again, bear in mind that in reality (which we know from the
+simulations) the proportion of Neanderthal ancestry remained the same over tens
+of thousands of years---but the indirect $f_4$-ratio statistic gives us a
+misleading result, because it makes assumptions about modern human population
+relationships which simply do not hold:
+
+```{r}
+rbind(
+  indirect_admix %>% mutate(estimate = "indirect f4-ratio"),
+  direct_admix %>% mutate(estimate = "direct f4-ratio")
+) %>% 
+ggplot(aes(time, ancestry, color = estimate)) +
+  geom_point() +
+  xlim(45000, 0) +
+  ylim(0, 0.1) +
+  geom_smooth(method = "lm") +
+  ggtitle("Indirect vs direct f4-ratio estimates") +
+  xlab("time before present") +
+  ylab("Neanderthal ancestry proportion")
+```
+
 
 :::
 
