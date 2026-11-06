@@ -23,3 +23,9 @@ handout_%.qmd: slides_%.qmd
 
 clean:
 	rm -rf *_files *.rmarkdown site_libs *.html rendered/ *.md slides/*.html slides/*_files
+
+on:
+	mv _quarto.yml _quarto.yml_
+
+off:
+	mv _quarto.yml_ _quarto.yml
