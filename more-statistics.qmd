@@ -575,7 +575,7 @@ Here is a complete solution to the exercises so far, represented by a single
 reproducible R script `split_simulation.R`.
 
 ::: {.callout-note collapse="true" icon=false}
-### Click to see the entire script
+### Click to see the script `split_simulation.R`.
 
 ```{r}
 #| message: false
@@ -653,14 +653,24 @@ ggplot(f3_vs_fst, aes(Ne, value, color = statistic)) +
 
 :::
 
-## Exercise: "Admixture" $f_3$
 
-Now let's explore the application of the $f_3$ statistic in its other common
-use, which is an admixture test. Our primary interest in this exercise will be
-to investigate the limits of $f_3$ to detect evidence of admixture---in
-particular, if we see a "non-significant" $f_3$ statistic ("admixture $f_3$" is
-considered statistically not significant when it has a positive value), which
-factors could make this test being a false negative?
+
+
+
+
+
+
+
+
+
+## Exercise 4: "Admixture" $f_3$
+
+**Now let's explore the application of $f_3$ statistic in its other common use,
+which is an admixture test. Our primary interest in this exercise will be to
+investigate the limits of $f_3$ to detect evidence of admixture---in particular,
+if we see a "non-significant" $f_3$ statistic ("admixture $f_3$" is considered
+statistically not significant when it has a positive value), which factors could
+make this test being a false negative?**
 
 To do this, we will need to expand our baseline population model a little bit.
 
@@ -669,8 +679,9 @@ To do this, we will need to expand our baseline population model a little bit.
 **Create a new script, this time calling it `admixture_simulation.R`. Paste the
 following skeleton of a model into this script, read it and try to decipher what
 kind of model does it program (it's obvious from the text above, but still, do
-this as a code-reading practice). In particular, pay attention to how the
-admixture is programmed. Run the code and take a look at the plot visualization
+this as another code-reading practice). In particular, pay attention to how the
+admixture is programmed---how does the model encode the formation of the
+population `mix`? Run the code and take a look at the plot visualization
 produced.**
 
 ```{r}
@@ -706,8 +717,8 @@ plot_model(model, order = c("outgroup", "x", "mix", "y"), proportions = TRUE)
 In our model, the `x` and `y` populations merge at a time `tmix` to form a
 population `mix`. Note that due to the way in which _slendr_ currently
 implements population merges, we first need to program the split of the
-population "mix" from a parent "x" at time `tmix - 1`, followed at time `tmix`
-(i.e., immediately in the following generation) by admixture from "y" at some
+population `mix` from its parent `x` at time `tmix - 1`, followed at time `tmix`
+(i.e., immediately in the following generation) by admixture from `y` at some
 defined proportion `proportion` (a value between 0 and 1). To approximate the
 idea of a population merge as closely as possible within the constraints of the
 _slendr_ interface, we program this admixture event so that it ends after a
@@ -718,7 +729,8 @@ plot_model(model, order = c("outgroup", "x", "mix", "y"), proportions = TRUE)
 ```
 
 This is a bit of an annoying peculiarity of _slendr_ that I never got to make
-easier, sorry about that! Maybe one day.
+easier, sorry about that! Maybe one day I will implement population merges as
+truly "single-generation events".
 
 :::
 
@@ -726,30 +738,28 @@ easier, sorry about that! Maybe one day.
 
 Now, we want to establish the limits of statistical power of $f_3$ to detect
 signs of admixture across all sorts of parameters, given our general model of
-interest.
-
-You know what's coming!
+interest---and you know what that means! This annoying "refactoring" again...
 
 **Transform the `admixture_simulation.R` script (which has currently fixed
-values of parameters) into a generalized function model by wrapping it in a
-function called `simulate_admixture()`. Your function should accept three
-arguments this time:**
+values of all demographic parameters) into a generalized function model by
+wrapping it in a function called `simulate_admixture()`. For this exercise, your
+function should accept three arguments:**
 
 1. **`tmix` specifying the time of admixture**,
 
 2. **`prop` specifying the admixture proportion**,
 
-3. **`Ne` specifying the `N` size of the population "mix".**
+3. **`Ne` specifying the `N` size of the population `mix`.**
 
-**In your function, program the recording of 20 individuals from populations
-"x", "y", and "mix" at time 0 (i.e., at the end of the simulation), and program
-it to simulate a 10 Mb of tree sequence with recombination rate `1e-8` and
-mutation rate `1e-8`. Finally, compute the "admixture $f_3$ statistic in the
+**In your function, schedule the recording of 20 individuals from populations
+`x`, `y`, and `mix` at time 0 (i.e., at the end of the simulation), and program
+it to simulate a 25 Mb of tree sequence (recombination rate `1e-8`, mutation
+rate `1e-8`). Finally, compute the "admixture $f_3$" statistic in the
 appropriate A, B, C configuration, adding the arguments `tmix`, `prop`, and `Ne`
 to the data frame produced by the `ts_f3()` function.**
 
 **Your function will return this data frame as its output. Again, test it on a
-couple of parameter combinations, to make sure it produces results in the
+couple of parameter combinations to make sure it produces results in the
 desirable format described above.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -762,8 +772,10 @@ simulate_admixture <- function(tmix, prop, Ne) {
   outgroup <- population("outgroup", N = 5000, time = 10000)
   x <- population("x", N = 5000, time = 5000, parent = outgroup)
   y <- population("y", N = 5000, time = 5000, parent = outgroup)
-  mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
 
+  # in this generalized model, admixture parameters for the mixed
+  # population are parametrized as tmix, prop, and Ne
+  mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
   gf <- gene_flow(from = y, to = mix, start = tmix, end = tmix - 1, proportion = prop)
   
   model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
@@ -792,19 +804,15 @@ simulate_admixture(tmix = 1,    prop = 0,   Ne = 3000)
 ---
 
 **Having tested the function on a couple of individual simulations, run it along
-the range of potential `tsplit` values like this (add this code to your script),
-while fixing the admixture proportion to 20% and $N_e$ to 5000:**
+the range of potential `tmix` values like this using `map_dfr()` again, while
+fixing the admixture proportion to 20% (`prop = 0.2`) and $N_e$ to 5000 (`Ne =
+5000)`:**
 
-```{r}
-#| eval: false
-tsplit_grid <- seq(1, 1500, by = 100)
-f3_tsplit <- map_dfr(tsplit_grid, simulate_admixture, prop = 0.2, Ne = 5000)
-```
-
-**Do you see any interesting pattern of behavior of the admixture $f_3$ test?
-Can we rely on it to detect admixture (by showing a negative value) in all
-scenarios, or does it lose detection power in some circumstances (by showing a
-value above zero)?**
+**Do you see any interesting pattern in the behavior of the admixture $f_3$ test
+when you visualize $f_3$ as a function of the admixture time? Can we rely on it
+to detect admixture in all scenarios, or does it lose statistical power in some
+circumstances? Remember, you _know_ that all your simulations have admixture and
+$f_3$ detects that admixture only if it has a negative value.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -812,49 +820,51 @@ value above zero)?**
 Let's run a new grid simulation of our admixture $f_3$ model:
 
 ```{r}
-tsplit_grid <- seq(1, 1500, by = 100)
+tmix_grid <- seq(1, 1500, by = 100)
 
-f3_tsplit <- map_dfr(tsplit_grid, simulate_admixture, prop = 0.2, Ne = 5000)
-f3_tsplit
+f3_tmix <- map_dfr(tmix_grid, simulate_admixture, prop = 0.2, Ne = 5000)
+f3_tmix
 ```
 
-And we visualize the results ($f_3$ as a function of `tsplit`):
+And we visualize the results ($f_3$ as a function of `tmix`):
 
 ```{r}
-ggplot(f3_tsplit, aes(tmix, f3)) +
+ggplot(f3_tmix, aes(tmix, f3)) +
   geom_point() +
   geom_hline(yintercept = 0, linetype = "dashed") +
   geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
   coord_cartesian(xlim = c(0, 1500)) +
   labs(title = "f3(x, y; mix) as a function of admixture time (proportion = 20%, Ne = 5000)",
-       subtitle = "[f3 = 0 is interpreted as no evidence of admixture]",
-       x = "Time of admixture [generations B.P.]")
+       subtitle = "[f3 < 0 is evidence of admixture]",
+       x = "Time of admixture [generations ago]")
 ```
 
 From the trend presented by the trajectory of expected $f_3$ values as a
 function of the admixture time, we can see that the statistic appears to loose
-power to detect admixture around 1000 generations "before present" (BP)---recall,
-that $f_3$ admixture test is significant when it produces a negative value.
+power to detect admixture around 1000 generations "before present"
+(BP)---recall, that $f_3$ admixture test is significant when it produces a
+negative value. Curiously, this is the case even though there's quite a bit of
+admixture programmed (20%!).
 
 :::
 
 ---
 
 From the trend presented by the trajectory of expected $f_3$ values as a
-function of the admixture time, we can see that the statistic appears to loose
-power to detect admixture around 1000 generations "before present" (BP) because
-that's when it starts producing a positive (i.e., non-significant) value.
+function of the admixture time, we can see that the statistic appears to lose
+power to detect admixture around 1000 generations ago because that's when it
+starts producing a positive (i.e., non-significant) value.
 
-**Why is that? Under which conditions would the $f_3$ statistic gain more power?
-Conversely, which factor could make a true scenario of admixture lead to a
-non-significant $f_3$ value?**
+**Why is that? Under which conditions can we expect the $f_3$ statistic to gain
+more power? Conversely, which of the parameters of our model would make a true
+scenario of admixture lead to a non-significant $f_3$ value?**
 
-**To answer these questions, fix the `tadmix` parameter to 1000 generations ago
-(i.e., the point at which $f_3$ loses power to detect admixture) and `Ne` at
-5000, and then run simulations across a range of admixture proportions `prop`
-between 0% and 50% gene flow. Does $f_3$ pick up the admixture signal for any of
-these admixture proportions? What does it mean for the ability of $f_3$ to
-detect gene flow in our models in general?**
+**To answer these questions, fix the `tmix` parameter to 1000 generations ago
+and `Ne` at 5000 (i.e., the scenario in which we discovered that $f_3$ loses
+power to detect admixture) , then run simulations across a range of admixture
+proportions `prop` between 0% and 50% gene flow. Does $f_3$ pick up the
+admixture signal for any of these admixture proportions? What does it mean for
+the ability of $f_3$ to detect gene flow in our models in general?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -865,7 +875,8 @@ which the $f_3$ statistic stops giving us a negative value, i.e. it becomes
 statistically non-significant):
 
 ```{r}
-f3_prop <- map_dfr(seq(0, 0.5, by = 0.025), simulate_admixture, tmix = 1000, Ne = 5000)
+prop_grid <- seq(0, 0.5, by = 0.025)
+f3_prop <- map_dfr(prop_grid, simulate_admixture, tmix = 1000, Ne = 5000)
 ```
 
 When we visualize the results, we can see that --- perhaps not unexpectedly ---
@@ -888,24 +899,26 @@ ggplot(f3_prop, aes(prop, f3)) +
 ---
 
 **Similarly to how you investigated the detection power of $f_3$ as a function
-of admixture proportion for a given value of `tmix = 1000` in the previous
-exercise, repeat this analysis, but now loop over a range of `Ne` values of the
-mixing population, leaving the `prop` parameter fixed at `prop = 0.2`. What do
-you conclude based on this analysis? Does `Ne` have an impact on the $f_3$
-admixture detection? If it does, why?**
-
-**As you're interpreting your results, look at the related discussion
-surrounding equation 22 in [this
-paper](https://academic.oup.com/genetics/article/202/4/1485/5930214), and
-compare your figure to Figure 5B of the same paper!**
+of admixture proportion, repeat this analysis but now iterate with `map_dfr()`
+over a range of `Ne` values of the mixed population after admixture, leaving the
+`prop` parameter fixed at `prop = 0.2` (again, the scenario in which $f_3$ lost
+its admixture-detection power). What do you conclude based on this analysis?
+Does `Ne` have an impact on the $f_3$ admixture detection? If it does, why?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
+
+Let's run our final grid simulation batch, this time looping over $N_e$ values
+in the admixed population and fixing the remaining two parameters `tmix` and
+`prop` at the values which originally got us non-significant $f_3$ statistic
+(and, therefore, a false negative result on our admixture test):
 
 ```{r}
 Ne_grid <- seq(1000, 20000, by = 1000)
 f3_Ne <- map_dfr(Ne_grid, simulate_admixture, tmix = 1000, prop = 0.2)
 ```
+
+And visualize these results again:
 
 ```{r}
 ggplot(f3_Ne, aes(Ne, f3)) +
@@ -926,29 +939,119 @@ the $f_3$ value reaches a stable level below zero.
 
 :::
 
+---
 
 
+**After you've interpreted your results summarizing the expected behavior of the
+$f_3$ statistic across a range of scenarios, take a look at the discussion
+surrounding equation 22 in [this
+paper](https://academic.oup.com/genetics/article/202/4/1485/5930214).
+Specifically, look at [Figure
+5B](https://academic.oup.com/view-large/figure/379128953/1485fig5.jpeg) of the
+same paper! Does it look a bit familiar?**
+
+I hope these exercises (and the comparison to a real-world research result in
+theoretical population genetics linked above!) convinces you how powerful can
+even very small simulation pipelines be for benchmarking well-known summary
+statistics as well as for gaining confidence in the robustness of your inference
+results.
 
 
+## Catching up
+
+Here is a complete solution to the exercises so far, represented by a single
+reproducible R script `admixture_simulation.R`.
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the script `admixture_simulation.R`.
+
+```{r}
+#| message: false
+#| collapse: false
+#| output: false
+library(slendr)
+init_env()
+
+library(dplyr)   # manipulating tabular data
+library(ggplot2) # data visualization
+library(purrr)   # convenient looping functions
 
 
-<!-- ## Exercise: controlling stochasticity -->
+############################################################
+# generic function simulating population admixture with
+# three parameters:
+#   - tmix: admixture time
+#   - prop: admixture proportion
+#   - Ne: size of the admixed population
+
+simulate_admixture <- function(tmix, prop, Ne) {
+  outgroup <- population("outgroup", N = 5000, time = 10000)
+  x <- population("x", N = 5000, time = 5000, parent = outgroup)
+  y <- population("y", N = 5000, time = 5000, parent = outgroup)
+
+  # in this generalized model, admixture parameters for the mixed
+  # population are parametrized as tmix, prop, and Ne
+  mix <- population("mix", N = Ne, time = tmix + 1, parent = x)
+  gf <- gene_flow(from = y, to = mix, start = tmix, end = tmix - 1, proportion = prop)
+  
+  model <- compile_model(list(outgroup, x, y, mix), gene_flow = gf, generation_time = 1)
+
+  schedule <- schedule_recording(model, times = 0, list(x, 20), list(y, 20), list(mix, 20))
+
+  ts <- msprime(model, sequence_length = 25e6, recombination_rate = 1e-8, schedule = schedule) %>% ts_mutate(mutation_rate = 1e-8)
+
+  samples <- ts_names(ts, split = TRUE)
+
+  ts_f3(ts, A = samples["mix"], B = samples["x"], C = samples["y"]) %>%
+    mutate(tmix = tmix, prop = prop, Ne = Ne)
+}
 
 
-<!-- ```{r} -->
-<!-- #| eval: false -->
-<!-- ts_replicate( -->
-<!--   10, -->
-<!--   { -->
-<!--     ts <- -->
-<!--       msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>% -->
-<!--       ts_mutate(mutation_rate = 1e-8) -->
-<!--     pi_df <- ts_diversity(ts, ts_names(ts)) -->
-<!--     pi_df$Ne <- pi_df$diversity / (4 * 1e-8) -->
-<!--     pi_df -->
-<!--   } -->
-<!-- ) -->
-<!-- ``` -->
+############################################################
+# grid simulations over a range of admixture times
+
+tmix_grid <- seq(1, 1500, by = 100)
+f3_tmix <- map_dfr(tmix_grid, simulate_admixture, prop = 0.2, Ne = 5000)
+
+ggplot(f3_tmix, aes(tmix, f3)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  coord_cartesian(xlim = c(0, 1500)) +
+  labs(title = "f3(x, y; mix) as a function of admixture time (proportion = 20%, Ne = 5000)",
+       subtitle = "[f3 < 0 is evidence of admixture]",
+       x = "Time of admixture [generations ago]")
 
 
+############################################################
+# grid simulations over a range of admixture proportions
 
+prop_grid <- seq(0, 0.5, by = 0.025)
+f3_prop <- map_dfr(prop_grid, simulate_admixture, tmix = 1000, Ne = 5000)
+
+ggplot(f3_prop, aes(prop, f3)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_smooth(method = "lm", se = FALSE, color = "red", linetype = "dashed") +
+  coord_cartesian(xlim = c(0, 0.5)) +
+  labs(title = "f3(x, y; mix) as a function of admixture proportion (tsplit = 1000, Ne = 5000)",
+       subtitle = "[f3 < 0 is evidence of admixture]",
+       x = "Admixture proportion [0: no admixture, 0.5: 50% admixture]")
+
+
+############################################################
+# grid simulation over a range of Ne sizes
+Ne_grid <- seq(1000, 20000, by = 1000)
+f3_Ne <- map_dfr(Ne_grid, simulate_admixture, tmix = 1000, prop = 0.2)
+
+ggplot(f3_Ne, aes(Ne, f3)) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  coord_cartesian(xlim = c(1000, 20000)) +
+  geom_smooth(se = FALSE, color = "red", linetype = "dashed") +
+  labs(title = "f3(x, y; mix) as a function of Ne (tsplit = 1000, Ne = 5000)",
+       subtitle = "[f3 < 0 is evidence of admixture]",
+       x = "Effective population size of the 'mix' population")
+```
+
+:::
