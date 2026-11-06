@@ -1,7 +1,7 @@
 chapters := workshop r-bootcamp tidy-basics tidy-viz slendr
 
-slides_html := $(foreach chapter,$(chapters),slides_$(chapter).html)
-handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
+slides_html := $(foreach chapter,$(chapters),rendered/slides_$(chapter).html)
+handouts_html := $(foreach chapter,$(chapters),rendered/handout_$(chapter).html)
 
 all: $(slides_html) $(handouts_html)
 	git add *.qmd; git commit -m "Update .qmd files"; git push
