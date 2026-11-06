@@ -1,4 +1,4 @@
-chapters := whoami r-bootcamp tidy-basics tidy-viz slendr
+chapters := workshop r-bootcamp tidy-basics tidy-viz slendr
 
 slides_html := $(foreach chapter,$(chapters),slides_$(chapter).html)
 handouts_html := $(foreach chapter,$(chapters),handout_$(chapter).html)
@@ -11,13 +11,16 @@ all: $(slides_html) $(handouts_html)
 	git commit -m "Add rendered HTML slides"
 	git push
 	git checkout main
+	rm -f slides/handout_*.qmd
 
-%.html: %.qmd
-	quarto render $< --output $(notdir $@)
-	mkdir -p rendered; mv $@ rendered
+rendered/%.html: slides/%.qmd
+	cd slides; \
+		quarto render $(notdir $<) --output $(notdir $@); \
+		cd ..; \
+		mkdir -p rendered; mv slides/$(notdir $@) rendered
 
 handout_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | sed 's/^### handout //g' > $@
 
 clean:
-	rm -rf *_files *.rmarkdown site_libs *.html rendered/ *.md
+	rm -rf *_files *.rmarkdown site_libs *.html rendered/ *.md slides/*.html
