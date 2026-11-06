@@ -8,33 +8,41 @@
 
 
 
-## Exercise: Recap on R lists and vectors
+## Exercise 1: Recap on working with R lists and nested vectors
 
-In the previous session, you learned to compute within-group summary statistics
-by providing _slendr_ functions single vectors of individual names, most easily
-obtained by the function `ts_names()` in a very straightforward way.
+In the previous chapter, you learned to compute within-group summary statistics
+which is done by providing single single vectors of individual names (most
+easily obtained by the function `ts_names()`) to various _slendr_ functions in a
+very straightforward way.
 
-Whenever we work with "between-group statistics" (i.e., statistics based on
-comparing genomic variation between different groupings of individuals), we need
-to be aware of a couple of things with regards to how R handles nested lists of
-vectors.
+Whenever we work with "between-group statistics" (statistics based on
+comparisons of genomic variation between different groups of individuals, also
+known as ["multi-way
+statistics"](https://tskit.dev/tskit/docs/stable/stats.html#multi-way-methods)in
+_tskit_ which _slendr_ uses as an internal statistical computation engine), we
+need to be aware of a couple of things with regards to how R handles nested
+lists of vectors.
 
-Let's first set up a small model to demonstrate this.
+Let's first set up a small model to demonstrate this concept again and to
+practice it in an easy-to-understand context.
 
 ---
 
 **Start by creating a new R script called `split_simulation.R` and program the
-following model in it. Simulate a tree sequence object `ts` (sequence length
-10Mb, recombination rate `1e-8`, mutation rate `1e-8`) from this model,
+three-population model (populations called "outgroup", "X", and "Y") in the
+following sketch in this script. Simulate a tree sequence object `ts` (sequence
+length 10Mb, recombination rate `1e-8`, mutation rate `1e-8`) from this model,
 scheduling the recording of ten individuals from each of the three populations
 at time 0 (i.e., the "present-day").**
 
-**TODO:** Add a sketch of the model.
+<center>
+![](files/statistics/f3_fst_model.png){width=50%}
+</center>
 
-**Hint:** Unlike our previous toy examples, this model features multiple
-populations, so you will need to program population splits. Remember that you
-can specify that a population should split from some parent lineage by using the
-`population(..., parent = <parent population>)` format.
+**Hint:** As a gentle reminder, unlike our previous toy examples, this model
+features multiple populations, so you will need to program population splits.
+Remember that you can specify that a population should split from some parent
+lineage by using the `population(..., parent = <parent population>)` format.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -42,7 +50,7 @@ can specify that a population should split from some parent lineage by using the
 Here's what's in my `split_simulation.R` script:
 
 ```{r}
-#| collapse: false
+#| collapse: true
 library(slendr)
 init_env()
 
@@ -65,12 +73,12 @@ ts <-
 
 ---
 
-Let's work on a couple of basic vector- and list-based operations in R, which we
-will be using all the time (you can refresh your memory on this topic by
+Let's do a recap of a couple of vector- and list-based operations in R, which
+are used in _slendr_ all the time (you can refresh your memory on this topic by
 scrolling through the introductory [R bootcamp](r-bootcamp.html) chapter,
-particularly sections about subsetting and indexing into vectors and lists.
+particularly sections about subsetting and indexing into vectors and lists).
 
-**You're already familiar with the calling the function `ts_names()` as
+**You're already familiar with calling the function `ts_names()` as
 `ts_names(ts)` and know that it produces a plain vector of individual names.
 Now, add the following line to your script:**
 
@@ -78,27 +86,29 @@ Now, add the following line to your script:**
 samples <- ts_names(ts, split = TRUE)
 ```
 
-**What is the type of the data stored in the `samples` variable? What does this
-information tell us and how is it different from running simply
-`ts_names(ts)`?**
+**When you type `samples` in your R console, What is the type of the data stored
+in it? What does this information tell us and how is it different from running
+simply `ts_names(ts)`?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-The command `ts_names(ts)` produces vector of all individuals recorded in the 
-tree sequence, as we can see here:
+- The command `ts_names(ts)` produces a vector of all individuals recorded in
+the tree sequence, as we can see here:
 
 ```{r}
 samples <- ts_names(ts)
+# samples is a "character vector"
 class(samples)
 samples
 ```
 
-The variation `ts_names(ts, split = TRUE)` gives us a (named!) list of vectors,
-one for each population.
+- The variation `ts_names(ts, split = TRUE)` gives us a (named! this is
+important!) list of vectors, one for each population.
 
 ```{r}
 samples <- ts_names(ts, split = TRUE)
+# samples is a list
 class(samples)
 samples
 ```
@@ -107,32 +117,36 @@ samples
 
 ---
 
-**Now, using operations for manipulation of R lists, how do you access the names
-of individuals in the population X? Specifically, what's the difference between
-calling `samples$X`, `samples[["X"]]`, and `samples["X"]`? Try to answer first
-without running these commands, then run them in the R console to verify your
-intuition.**
+**Using operations for indexing and subsetting of R lists, how would you access
+the names of individuals in the population X? Specifically, what's the
+difference between calling `samples$X`, `samples[["X"]]`, and `samples["X"]`?
+Try to answer first without running these commands, then run them in the R
+console to verify your intuition.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-The first command extracts a "standalone" vector of X individuals from the list:
+- The first command extracts a "standalone" vector of X individuals from the
+list:
 
 ```{r}
 samples$X
+length(samples$X)
 ```
 
-The same goes for this variant:
+- The same goes for the second variant:
 
 ```{r}
 samples[["X"]]
+length(samples[["X"]])
 ```
 
-The third command is very different. It looks the same, superficially, but it's
-actually a list with a single element (the vector of names)!
+- The third command is very different. It looks the same, superficially, but
+it's actually a list with a single element (the vector of names)!
 
 ```{r}
 samples["X"]
+length(samples["X"])
 ```
 
 :::
@@ -149,8 +163,8 @@ them, such as:
 list(group_name = c("X_1", "X_2", "X_3"))
 ```
 
-Doing so for complex computations is very annoying. But also---notice how this
-chunk produces the same format of data as this:
+Doing so for complex computations is very annoying. But also---notice how the
+following command produces the same format of data as the above:
 
 ```{r}
 samples["X"]
@@ -158,26 +172,32 @@ samples["X"]
 
 This is why I implemented the variant `ts_names(ts, split = TRUE)` in _slendr_,
 as a shortcut for not having to deal with named lists of vectors. This makes it
-possible to use the `samples` variable to instruct _slendr_ to perform
-computation very efficiently.
+possible to use the `samples` variable to instruct _slendr_ to perform more
+complex multi-population calculations very efficiently.
 
 
 
 
 
 
-## Exercise: "Outgroup" $f_3$ statistic
+## Exercise 2: "Outgroup" $f_3$ statistic
 
 The $f_3$ statistic is a famous population genetic metric [formally established
 by Nick Patterson and David
 Reich](https://academic.oup.com/genetics/article/192/3/1065/5935193) in 2008. In
-practice, the statistic is used in two formulations: as a measure of shared
-drift between two populations (the "outgroup" formulation) and as an admixture
-test (something we'll look at later).
+practice, the statistic is used in two formulations:
 
-As the name implies, $f_3$ statistic involves the specification of samples from
-three different lineages (usually populations) called A, B, and C, making it a
-good starting example of how to compute multi-population statistics.
+- as a measure of shared drift between two populations (also known as the
+"outgroup" $f_3$ formulation), or
+
+- as an admixture test (also known as the "admixture $f_3$" formulation,
+something we'll look at later).
+
+As the name implies, $f_3$ statistic involves the specification of three
+different lineages (usually populations, or groups of samples from those
+populations) often called A, B, and C in various mathematical equations, making
+it a good starting example of how to compute multi-population statistics in
+_slendr_
 
 Let's develop a simulation-based model which will allow us to explore some
 practically relevant features of this important summary statistic.
@@ -194,12 +214,16 @@ lineage** (instead of having a fixed value for the split time as you have now).
 
 2. **Add the computation of the outgroup $f_3$ statistic, using the function
 `ts_f3()`, setting the "X" individuals as the `B =` argument, "Y" individuals as
-the `C =` argument, and the `A =` argument to the "outgroup" individuals
-(remember to use the `samples` variable produced by `ts_names()` to do this).**
+the `C =` argument, and the `A =` argument to the "outgroup" individuals**
+(remember to use the `samples` variable produced by `ts_names()` to do this).
 
 3. **The function should return a data frame produced by the `ts_f3()` function,
 with a new column named `tsplit` containing the value of this function
 argument.**
+
+As you see, this is similar to what we did in the previous chapter and over
+time, you will recognize this as common pattern in simulation-based inference
+and computer programming in general.
 
 ::: aside
 
@@ -246,13 +270,13 @@ simulate_split <- function(tsplit) {
 
 ---
 
-**Test your function `simulate_split()` by calling it on a few split times in
-the R console. When you're confident you programmed the function correctly, use
-`map_dfr()` from the _purrr_ package to run simulations of split times between 1
-and 10000 generations in steps of every 1000 generations (see `?seq` for a
-reminder on how to do this). Visualize the statistical expectation of the $f_3$
-statistic in a scatterplot as a function of the split time. Add all this
-analysis code in your script `split_simulation.R` after your function
+**Test your function `simulate_split()` by calling it on a few split time values
+in your R console. When you're confident that you programmed the function
+correctly, use the familiar function `map_dfr()` from the _purrr_ package to run simulations of split
+times between 1 and 10000 generations in steps of every 1000 generations** (see
+`?seq` for a reminder on how to do this). **Visualize the statistical expectation
+of the $f_3$ statistic in a scatterplot as a function of the split time. Add all
+this analysis code in your script `split_simulation.R` after your function
 definition, so that you have it properly recorded as a reproducible pipeline.**
 
 ::: {.callout-note collapse="true" icon=false}
@@ -295,10 +319,12 @@ ggplot(f3_outgroup, aes(tsplit, f3)) +
 ```
 
 We can see that, as expected, the $f_3$ statistic gives a nearly zero for the
-simulation of an extremely recent split of X and Y populations from the outgroup
-lineage---this is consistent with $f_3$ measuring the length of the shared
-branch of X and Y towards the outgroup sample which, in this case, is almost
-nonexistent, only 1 generation long. To demonstrate by visualizing such a model (which, necessarily, looks a bit silly):
+model involving an extremely recent split of X and Y populations from the
+outgroup lineage. As you'll see later, this is consistent with mathematical
+theory which defined $f_3$ as the length of the shared branch of X and Y towards
+the outgroup sample which is, in this case, almost nonexistent (only 1
+generation long). To demonstrate this by visualizing such a model (which,
+necessarily, looks a bit silly):
 
 ```{r}
 #| echo: false
@@ -332,22 +358,31 @@ plot_model(model, order = c("outgroup", "X", "Y"), proportions = TRUE, schedule 
 
 :::
 
----
+With this initial setup out of the way, let's delve into using our small
+simulation pipeline to answer a couple of practically relevant questions.
 
-**With this initial setup out of the way, let's delve into using our small
-simulation pipeline to answer a couple of practically relevant questions.**
 
-## Exercise: Statistical power of $F_{ST}$ vs outgroup $f_3$
+
+
+
+
+
+
+
+
+
+## Exercise 3: Statistical power of $F_{ST}$ vs outgroup $f_3$
 
 Another statistic which is very frequently used as a measure of population
 differentiation is [$F_{ST}$](https://en.wikipedia.org/wiki/Fixation_index).
-Let's say we want to understand, which of the two ($f_3$ or $F_{ST}$) is more
-robust to $N_e$ differences between the two populations under study. Recall that
-$N_e$ determines the amount of genetic drift (and, therefore, the rate of the
-loss) of genomic variation in a population. In other words, if you were
-interested in measuring how far in the past the populations began
+Let's say we want to understand which of the two statistics ($f_3$ or $F_{ST}$)
+is more robust to $N_e$ differences between the two populations under study.
+
+Recall that $N_e$ determines the amount of genetic drift (and, therefore, the
+rate of the loss) of genomic variation in a population. In other words, if you
+were interested in measuring how far in the past two populations began
 differentiating, would both of them give you a reliable answer, regardless of
-the $N_e$ of those populations?
+the $N_e$ of those populations under study?
 
 Both $F_{ST}$ and $f_3$ are routinely used as measures of population
 differentiation---can we use them equivalently? Does one have potentially more
@@ -361,41 +396,47 @@ in practical research---could it sometimes be a problem?
 
 1. Right now the function accepts a single argument `tsplit`. **Add a second
 argument to this function called `Ne`, then modify the two lines of code
-indicating splits of "X" and "Y" populations from the "outgroup" and change the
-fixed values of 1000 to use the new flexible parameters `Ne`.**
+programming the splits of `X` and `Y` populations from the `outgroup` and change
+the fixed values of `N = 1000` to use the new flexible parameters `Ne`.**
 
 2. **Modify the function so that it returns in the resulting data frame not only
-the $f_3$ value (computed by `ts_f3()`) but also the $F_{ST}$ value (computed by
-`ts_fst()`).** Look up the help for `?ts_fst` to see how to use it (it's very
-similar to using the `ts_f3()` function).
+containing the $f_3$ value (computed by `ts_f3()`) but also the $F_{ST}$ value
+(computed by `ts_fst()`).** You can look up the help in `?ts_fst` to see how to
+use this function.
 
 3. **The data frame returned by the function should now include not only the
 `tsplit` column (containing the value of the `tsplit` argument) as well as the
 column `Ne` (containing the value of the `Ne` argument).**
 
+**Finally, run the code for the function in your R console, then test it on a
+couple of `tsplit` and `Ne` parameter values.**
+
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
 
-Here's how the modified function looks like:
+Here's how the modified function looks like. Hopefully this is starting to look
+like a routine for you (because this is where we eventually want to get):
 
 ```{r}
 simulate_split <- function(tsplit, Ne) {
+  # create a generalized demographic model
   outgroup <- population("outgroup", N = 1000, time = 10000)
   X <- population("X", N = Ne, time = tsplit, parent = outgroup)
   Y <- population("Y", N = Ne, time = tsplit, parent = outgroup)
-  
   model <- compile_model(list(outgroup, X, Y), generation_time = 1)
   
-  schedule <- schedule_recording(model, times = 0, list("each", 25))
-  
+  # program recording of individuals from each model and simulate their
+  # genomic sequences
+  schedule <- schedule_recording(model, times = 0, list("each", 10))
   ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8, schedule = schedule) %>%
     ts_mutate(mutation_rate = 1e-8)
 
+  # compute Fst and f3 statistics
   samples <- ts_names(ts, split = TRUE)
-  
   value_fst <- ts_fst(ts, sample_sets = samples[c("X", "Y")])$Fst
   value_f3 <- ts_f3(ts, A = samples["outgroup"], B = samples["X"], C = samples["Y"])$f3
 
+  # compose the resulting data frame
   df <- data.frame(statistic = c("Fst", "f3"), value = c(value_fst, value_f3))
   df$tsplit <- tsplit
   df$Ne <- Ne
@@ -404,7 +445,7 @@ simulate_split <- function(tsplit, Ne) {
 }
 ```
 
-And here's how we can check that it works:
+And here's how we can check that the function works:
 
 ```{r}
 simulate_split(tsplit = 3000, Ne = 100)
@@ -416,10 +457,10 @@ simulate_split(tsplit = 3000, Ne = 5000)
 
 ---
 
-**Now that you have your updated function, use it to run a new batch of
-parameter grid simulations using the looping function `map_dfr()`, this time
-fixing `tsplit = 3000` and simulating the model for the values of the $N_e$
-parameter indicated below using the following code:**
+**Now that you have your updated function tested, use it to program a new batch
+of parameter grid simulations into your script pipeline using the looping
+function `map_dfr()`, this time fixing `tsplit = 3000` and simulating the model
+for the values of the $N_e$ parameter. You can use the following code:**
 
 ```{r}
 # define values of the Ne parameter grid
@@ -449,21 +490,24 @@ ggplot(df_tsplit3k, aes(Ne, value, color = statistic)) +
 
 Conclusion: the $f_3$ statistic really is an unbiased estimator of population
 divergence with respect to $N_e$ of the two lineages. On the other hand,
-$F_{ST}$ is not a great metric of shared branch length, even though it's
-sometimes colloquially used in this phylogenetic sense. However, this is not
-surprising, because $F_{ST}$ measures population _differentiation_! If the $N_e$
-is huge, both "X" and "Y" lineages can retain most of the genomic variation
-which arose in their ancestor (unless they diverged a very long time ago). On
-the other hand, $f_3$ truly measures the _shared branch length_ which is, by
-definition, indicative of the population divergence.
+$F_{ST}$ is not a great metric of a population split, even though it's sometimes
+colloquially used in this phylogenetic sense.
+
+However, to be fair, this is not surprising, because $F_{ST}$ measures
+population _differentiation_! If the $N_e$ is huge, both `X` and `Y` lineages
+can retain most of the genomic variation which arose in their ancestor (unless
+they diverged a very long time ago). On the other hand, $f_3$ truly measures the
+_shared branch length_ which is, by definition, accurately indicative of the
+population divergence.
 
 :::
 
 ---
 
-**Now, add a second batch of the same grid simulations, but this time fixing
-`tsplit` to 9999 generations ago. What changes when you visualize your results,
-with regards to the patterns shown by $f_3$ and $F_{ST}$?**
+**Now, program a second batch of the same grid simulations in your script below
+the last batch, this time fixing `tsplit` to 9999 generations ago. What changes
+when you visualize these new results in the same way as above, with regards to
+the patterns shown by $f_3$ and $F_{ST}$?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -474,9 +518,7 @@ We only need to rerun the simulation loop and visualise the results:
 df_tsplit10k <- map_dfr(Ne_grid, simulate_split, tsplit = 9999)
 ```
 
-**When you're done, visualize the expected values of `f3` and `Fst` summary
-statistics as functions of $N_e$ (and, therefore, as a function of the amount
-of genetic drift).*
+Here's a visualization of the new results:
 
 ```{r}
 ggplot(df_tsplit10k, aes(Ne, value, color = statistic)) +
@@ -491,12 +533,14 @@ ggplot(df_tsplit10k, aes(Ne, value, color = statistic)) +
 When we compare both results side-by-side, we see the difference right away. The
 split time at 3000 generations ago meant that, when the populations have large
 $N_e$, they retain lots of shared genetic variation, leading to a very low
-$F_{ST}$ which indicates they are not differentiated (upper row). However, the
-older the split time between the two populations, the more genetic drift causes
-both "X" and "Y" to become differentiated which is manifested by a higher
-$F_{ST}$ value even for very high $N_e$:
+$F_{ST}$ (actually, consistent with zero) which indicates they are not
+differentiated (upper row). However, the older the split time between the two
+populations, the more genetic drift causes both "X" and "Y" to become
+differentiated which is manifested by a higher $F_{ST}$ value even for very high
+$N_e$:
 
 ```{r}
+#| echo: false
 cowplot::plot_grid(
 ggplot(df_tsplit3k, aes(Ne, value, color = statistic)) +
   geom_point() +
@@ -518,22 +562,25 @@ nrow = 2
 )
 ```
 
-**Crucially, however, note that $f_3$ is completely robust to the amount of
+Crucially, however, note that $f_3$ is completely robust to the amount of
 genetic drift (i.e., the $N_e$ of the populations in question)---it always
 measures the correct branch length, regardless of the $N_e$ in the assumed
-model.**
+model.
 
 :::
 
 ## Catching up
 
 Here is a complete solution to the exercises so far, represented by a single
-tidy reproducible R script `split_simulation.R`.
+reproducible R script `split_simulation.R`.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the entire script
 
 ```{r}
+#| message: false
+#| collapse: false
+#| output: false
 library(slendr)
 init_env()
 
