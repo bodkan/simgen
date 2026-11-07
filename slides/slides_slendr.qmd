@@ -39,6 +39,24 @@ init_env()
 3. Ground truth for method development
 
 
+#
+
+<center>
+<h2>Again, these are relevant for every researcher in population genomics.</h2>
+</center>
+
+. . .
+
+<br>
+
+<center>
+We just haven't had the appropriate software tools.
+</center>
+<br>
+<br>
+<center>
+<small>(Not entirely accurate.)</small>
+</center>
 
 
 ## Simulation software
@@ -55,22 +73,21 @@ They are <u>very</u> powerful and (nearly) infinitely flexible.
 
 However, they both require:
 
-- quite a bit of code for complex simulations ("complex" is relative, of course)
+- quite a bit of code for complex simulations
 - relatively high confidence in programming
 
-<!-- (🐛🪲🐜). -->
 :::
 
 ::: {.fragment}
 <center>
 
-<h4>Our exercises will focus on the [_slendr_](http://www.slendr.net)<br> simulation toolkit for population genetics in R.</h4>
+<h4>Our exercises will focus on [_slendr_](http://www.slendr.net)---a simulation toolkit for population genomic simulations in R.</h4>
 
 </center>
 :::
 
 ::: {.fragment}
-<center><br>But, as a recap, let's look at _msprime_ and SLiM a little bit...</center>
+<center><br>But, for completeness, let's look at _msprime_ and SLiM a bit...</center>
 :::
 
 
@@ -141,7 +158,7 @@ cat ../files/slendr/script.py
   - various mating systems
   - natural selection
 
--   More than 700 pages long [manual](https://github.com/MesserLab/SLiM/releases/download/v4.3/SLiM_Manual.pdf)!
+-   Nearly 1000 pages long [manual](https://github.com/MesserLab/SLiM/releases/download/v5.2/SLiM_Manual.pdf)!
 :::
 
 ::: {.column width="40%"}
@@ -197,7 +214,7 @@ cat ../files/slendr/script.slim
 
 ![](../files/slendr/images/slendr_logo.png){width="30%"}
 
-<h4 style="font-family: 'Courier New'">[www.slendr.net](https://www.slendr.net)</h4>
+<h4 style="font-family: 'Courier New'">[https://bodkan.net/slendr](https://bodkan.net/slendr)</h4>
 
 </center>
 
@@ -231,25 +248,23 @@ cat ../files/slendr/script.slim
 
 - All but the most trivial simulations require lots of code
 
-::: {.fragment}
-- Yet, 90% <sup><font color="blue">\[citation needed\]</font></sup> of simulations are basically the same!
+. . .
 
-  - create populations (splits and $N_e$ changes)
+- Yet, 90% <sup><font color="blue">\[citation needed\]</font></sup> of models are basically the same!
 
-  - specify admixture rates and admixture times
+  - define populations, admixture events, bottlenecks, etc.
 
-- ... all this means duplication of code across many projects
-:::
+. . .
 
-::: {.fragment}
-- Computing statistics presents even more hurdles
-:::
+- Computing statistics is even more challenging
 
-::: {.fragment}
-<center><h4>_slendr_ makes this <u>very easy</u>, even for "complex models"</h4></center>
-:::
+. . .
 
+- This is a huge barrier to simulation-based research / learning
 
+. . .
+
+<center><h3><u>_slendr_ makes this as easy as possible</u></h3></center>
 
 
 
@@ -273,29 +288,64 @@ cat ../files/slendr/script.slim
 
 
 
-# _slendr_ crash course
 
-<br> <!-- ### remove for slides  -->
-You can use this document as a cheat sheet as you work on the exercises. <!-- ### remove for slides  -->
-It contains everything you need to know about _slendr_, in a compressed form. <!-- ### remove for slides  -->
 
-## Typical _slendr_ workflow
+ 
+# A quick overview of _slendr_
 
-We will always start our R scripts with this:
+<br>
+
+(The exercise worksheets have _a lot more_ background information, so don't
+worry about us rushing through this.)
+
+
+
+
+## Typical _slendr_ workflow in R
+
+We will always start our R scripts with one of these:
+
+:::: {.columns} 
+
+::: {.column width="40%"}
 
 ```{r}
 #| output: false
-library(slendr)     # You can safely ignore any potential warnings!
-init_env()          # This activates the internal Python environment
+library(slendr)
+init_env()
 ```
 
-<br>Followed by some combination of the following:
+:::
+
+::: {.column width="20%"}
+
+&nbsp;&nbsp;&nbsp; or
+
+:::
+
+::: {.column width="40%"}
+
+```{r}
+#| output: false
+library(slendr)
+init_env(uv = TRUE)
+```
+
+:::
+
+::::
+
+. . .
+
+<br>
+
+Followed by some combination of:
 
 1. creating populations
 2. programming $N_e$ size changes
 3. encoding gene-flow events
 4. simulating genomic data
-5. computing popgen statistics
+5. computing statistics
 
 
 
@@ -349,15 +399,6 @@ pop2 <- population("pop2", N = 100, time = 50, parent = pop1)
 **Note:** Here `pop1` is an R object created above, not a string `"pop1"`!
 :::
 
-::: {.fragment}
-
-The split is again reported in the "historical summary":
-
-```{r}
-pop2
-```
-
-:::
 
 
 
@@ -540,7 +581,7 @@ model <- compile_model(
   populations = list(pop1, pop2, pop3, pop4, pop5),
   generation_time = 1,       # (converts the all times into generations)
   simulation_length = 3000,  # (number of generations to run the simulation for)
-  direction = "forward"      # (not totally necessary but good practice)
+  direction = "forward"      # (not always necessary but good practice)
 )
 ```
 
@@ -722,8 +763,8 @@ increasing time value.**
 
 ## "Backward time units"
 
-
 ```{r}
+#| echo: false
 #| code-line-numbers: "|1|22-24"
 pop1 <- population("pop1", N = 1000, time = 30000)
 
@@ -746,24 +787,12 @@ pop5 <-
 
 model <- compile_model(
   populations = list(pop1, pop2, pop3, pop4, pop5),
-  generation_time = 10 # (10 time units for each generation)
+  generation_time = 10, # (10 time units for each generation)
+  time_units = "years ago"
   # (we don't need to provide `simulation_length =` because
   # "backwards" models end at time 0 by default, i.e. "present-day")
 )
 ```
-
-::: {.aside}
-**Same model as before, except now expressed in units of "years before present".**
-:::
-
-
-
-
-
-
-
-
-## "Backward time units"
 
 ```{r}
 #| fig-width: 7
@@ -772,7 +801,7 @@ plot_model(model) # see time progressing from "year" 30000 backwards
 ```
 
 ::: {.aside}
-**Same model as before, except now expressed in units of "years before present".**
+**Same model, except now in units of "years ago" (using `generation_time = 10`).**
 :::
 
 
@@ -785,7 +814,7 @@ plot_model(model) # see time progressing from "year" 30000 backwards
 
 <center>
 
-<h3>... but how do we simulate data from it?</h3>
+<h3>... how do we simulate data from it?</h3>
 
 </center>
 
@@ -832,6 +861,8 @@ ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8)
 
 
 
+
+
 # The result of a simulation is a tree sequence (`ts`)
 
 
@@ -846,7 +877,511 @@ ts <- msprime(model, sequence_length = 10e6, recombination_rate = 1e-8)
 
 
 
-## What is tree sequence?
+## What is a tree sequence?
+
+![](../files/slendr/images/tree_sequence_diagram_no_muts.png){width="80%" fig-align="center"}
+
+-   a record of full genetic ancestry of a set of samples
+-   an encoding of DNA sequence carried by those samples
+-   an efficient analysis framework
+
+
+
+
+
+
+
+
+
+
+## For now, let's treat it as a "genotype black box"
+
+. . .
+
+<center>![](../files/slendr/images/vcf_screenshot.png){width="80%"}</center>
+
+
+
+
+
+
+
+# How do we work with this `ts` thing?
+
+
+
+
+
+
+
+```{r}
+#| echo: false
+pop1 <- population("pop1", N = 1000, time = 1)
+
+pop2 <-
+  population("pop2", N = 1000, time = 300, parent = pop1) %>%
+  resize(N = 100, how = "step", time = 1000)
+
+pop3 <-
+  population("pop3", N = 1000, time = 400, parent = pop2) %>%
+  resize(N = 2500, how = "step", time = 800)
+
+pop4 <-
+  population("pop4", N = 1500, time = 500, parent = pop3) %>%
+  resize(N = 700, how = "exponential", time = 1200, end = 2000)
+
+pop5 <-
+  population("pop5", N = 100, time = 600, parent = pop4) %>%
+  resize(N = 50, how = "step", time = 900) %>%
+  resize(N = 1000, how = "exponential", time = 1600, end = 2200)
+
+gf <- gene_flow(from = pop1, to = pop2, start = 2000, end = 2200, proportion = 0.13)
+
+model <- compile_model(
+  populations = list(pop1, pop2, pop3, pop4, pop5),
+  gene_flow = gf,
+  generation_time = 1,
+  simulation_length = 3000,
+  direction = "forward"
+)
+
+ts <-
+  msprime(model, sequence_length = 50e6, recombination_rate = 1e-8) %>%
+  ts_mutate(1e-8)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+## _slendr_'s R interface to [_tskit_](https://tskit.dev/tskit) statistics
+
+<center>![](../files/slendr/images/slendr_tskit.png)</center>
+
+Allele-frequecy spectrum, $\pi$, $f$-statistics, $F_{ST}$, Tajima's D, etc.
+
+**Find help at [slendr.net/reference](https://slendr.net/reference) or in R under `?ts_fst` etc.**
+
+
+
+
+
+
+
+
+
+## Extracting names of recorded samples
+
+1. We can get individuals recorded in `ts` with `ts_recorded()`:
+
+```{r}
+#| eval: false
+ts_recorded(ts) %>% head(1) # returns a data frame (one row here, for brevity)
+```
+
+```{r}
+#| echo: false
+ts_recorded(ts) %>% as.data.frame %>% head(1)
+```
+
+::: {.fragment}
+2. A shortcut `ts_names()` can also be useful:
+
+```{r}
+ts_names(ts) %>% head(5) # returns a vector of individuals' names
+```
+
+:::
+
+::: {.fragment}
+
+3. We can get a per-population list of individuals like this:
+
+```{r}
+#| eval: false
+ts_names(ts, split = TRUE) # returns a named list of such vectors
+```
+
+```{r}
+#| echo: false
+ts_names(ts, split = TRUE) %>% lapply(sample, 5) %>% .[1]
+```
+
+:::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 
+
+<center>
+
+<h2>All _slendr_ statistics take individuals' names as their function arguments.</h2>
+
+</center>
+
+<br>
+
+<center>This is modelled after the `sample_sets=` argument of the respective [_tskit_ Python methods](https://tskit.dev/tskit/docs/stable/python-api.html#statistics) (except you use names of individuals directly, not tree-sequence node numbers).</center>
+
+<br>
+<center>Let's take a look at how it works in general...</center>
+
+
+
+
+
+
+
+
+
+
+
+## _tskit_ computation -- option #1
+
+**For functions computed within groups of individuals**, we can first get
+a vector of names to compute on like this:
+
+```{r}
+#| eval: false
+# a random selection of names of three individuals in a tree sequence
+samples <- c("popX_1", "popX_2", "popY_42")
+```
+
+::: {.fragment}
+
+<br>
+
+Then we can calculate the statistic of interest like this:
+
+```{r}
+#| eval: false
+# this computes nucleotide diversity in our set of individuals
+df_result <- ts_diversity(ts, sample_sets = list(samples))
+```
+
+:::
+
+::: {.aside}
+**Note:** Wherever you see `list(<vector of names>)`, you can think of it as
+_"compute a statistic for the entire group of individuals"_ (you get a single
+number). Without the `list()`, it would mean _"compute the statistic for each
+individual separately"_ (and get a value for each of them individually).
+:::
+
+
+
+
+
+
+
+
+## _tskit_ computation -- option #2
+
+For functions based on comparisons of multiple groups of individuals, we want a
+list of vectors of names (one per group):
+
+```{r}
+#| eval: false
+# when we compute on multiple groups, it's a good idea to name them
+samples <- list(
+  popX = c("popX_1", "popX_2", "popX_3"),
+  popY = c("popY_1", "popY_2", "popY_3"),
+  popZ = c("popZ_1", "popZ_2")
+)
+```
+
+<br>
+
+Then we use this list of vectors in the same way as before:
+
+```{r}
+#| eval: false
+# this computes a pairwise divergence between all three groups
+df_result <- ts_divergence(ts, sample_sets = samples)
+```
+
+
+
+
+
+
+
+
+
+
+## _tskit_ computation -- option #3
+
+For something like $f$ statistics, the function arguments must be more
+precisely specified (here `A`, `B`, `C`, not `sample_sets`):
+
+```{r}
+#| eval: false
+df_result <- ts_f3(
+  ts,
+  A = c("popX_1", "popX_2", "popX_3"),
+  B = c("popY_1", "popY_2", "popY_3"),
+  C = c("popZ_1", "popZ_2")
+)
+```
+
+::: {.fragment}
+
+Doing this manually can be annoying --- `ts_names()` helps by preparing 
+the list of names in the correct format:
+
+```{r}
+#| eval: false
+# get names of individuals in each population as a named list of vectors
+samples <- ts_names(ts, split = TRUE)
+
+# use this list directly by specifying which vectors to take out
+ts_f3(ts, A = samples$popX, B = samples$popY, C = samples$popZ)
+```
+
+:::
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- # -->
+
+<!-- <center> -->
+
+<!-- <h1>Some examples on simulated data</h1> -->
+
+<!-- <br><h3>(A tree sequence `ts` we got earlier.)</h3> -->
+
+<!-- </center> -->
+
+
+
+
+
+
+
+
+
+
+
+<!-- ## Example: [nucleotide diversity](https://en.wikipedia.org/wiki/Nucleotide_diversity) -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- pop1 <- population("pop1", N = 10000, time = 1) -->
+<!-- pop2 <- population("pop2", N = 1000, time = 5000, parent = pop1) -->
+
+<!-- model <- compile_model( -->
+<!--   populations = list(pop1, pop2), -->
+<!--   generation_time = 1, -->
+<!--   simulation_length = 10000 -->
+<!-- ) -->
+
+<!-- ts <- -->
+<!--   msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>% -->
+<!--   ts_mutate(mutation_rate = 1e-8) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- set.seed(42) -->
+<!-- ``` -->
+
+<!-- ::: {.columns}  -->
+<!-- ::: {.column width="45%"} -->
+<!-- Get a list of individuals in each population: -->
+
+<!-- ```{r} -->
+<!-- samples <- ts_names(ts, split = TRUE) -->
+
+<!-- names(samples) -->
+<!-- ``` -->
+
+<!-- ::: {.fragment} -->
+<!-- <br> -->
+
+<!-- We can index into the list via population name: -->
+
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- samples$pop1 -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- samples$pop1 %>% head(3) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- samples$pop2 -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- samples$pop2 %>% head(3) -->
+<!-- ``` -->
+
+
+<!-- ::: -->
+<!-- ::: -->
+
+<!-- ::: {.column width="2%"} -->
+<!--   -->
+<!-- ::: -->
+
+<!-- ::: {.column width="53%"} -->
+<!-- ::: {.fragment} -->
+<!-- Compute nucleotide diversity (note the list `samples`): -->
+
+<!-- ```{r} -->
+<!-- ts_diversity(ts, sample_sets = samples) -->
+<!-- ``` -->
+
+<!-- <br> -->
+
+<!-- Our tree sequence had two populations, `pop1` and `pop2`, which is why we -->
+<!-- get a data frame with diversity in each of them. -->
+
+<!-- ::: -->
+<!-- ::: -->
+<!-- ::: -->
+
+
+
+
+
+
+
+
+
+
+<!-- ## Example: [allele frequency spectrum](https://en.wikipedia.org/wiki/Allele_frequency_spectrum) -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- pop <- population("pop", N = 10000, time = 1) -->
+
+<!-- model <- compile_model(pop, generation_time = 1, simulation_length = 10000) -->
+
+<!-- ts <- -->
+<!--   msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>% -->
+<!--   ts_mutate(mutation_rate = 1e-8) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- set.seed(42) -->
+<!-- ``` -->
+
+<!-- ::: {.columns}  -->
+<!-- ::: {.column width="45%"} -->
+<!-- Get names of individuals: -->
+
+<!-- ```{r} -->
+<!-- samples <- ts_names(ts)[1:5] -->
+<!-- samples -->
+<!-- ``` -->
+
+<!-- ::: {.fragment} -->
+<!-- Compute the AFS: -->
+
+<!-- ```{r} -->
+<!-- afs <- ts_afs(ts, sample_sets = list(samples)) -->
+
+<!-- # we skip the 1st item because it has a special meaning in tskit -->
+<!-- afs[-1] -->
+<!-- ``` -->
+<!-- ::: -->
+<!-- ::: -->
+
+<!-- ::: {.column width="2%"} -->
+<!--   -->
+<!-- ::: -->
+
+<!-- ::: {.column width="53%"} -->
+<!-- ::: {.fragment} -->
+<!-- ```{r} -->
+<!-- #| eval: false -->
+<!-- plot(afs[-1], type = "b", -->
+<!--      xlab = "allele count bin", -->
+<!--      ylab = "frequency") -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- #| echo: false -->
+<!-- #| fig-height: 7 -->
+<!-- plot(afs[-1], type = "b", -->
+<!--      xlab = "allele count bin", -->
+<!--      ylab = "frequency", lwd = 3, -->
+<!--      cex = 1.5, cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5) -->
+<!-- ``` -->
+<!-- ::: -->
+<!-- ::: -->
+<!-- ::: -->
+
+
+<!-- ::: {.aside} -->
+<!-- **Note:** One of the rare examples when a _slendr_ / _tskit_ statistical  -->
+<!-- function does not return a data frame (`ts_afs()` returns a numerical vector, -->
+<!-- not a data frame). -->
+<!-- ::: -->
+
+
+
+
+
+
+
+
+
+
+
+
+# The result of a simulation is a tree sequence (`ts`)
+
+
+
+
+
+
+
+
+
+
+
+
+
+## What is a tree sequence?
 
 ![](../files/slendr/images/tree_sequence_diagram_no_muts.png){width="80%" fig-align="center"}
 
@@ -966,15 +1501,19 @@ There is a "duality" between mutations and branch lengths.
 
 ## What if we need mutations though?
 
-Coalescent and mutation processes can be decoupled!
-
 <center>
+
+Coalescent and mutation processes can be decoupled!
 
 ![](../files/slendr/images/tree_sequence_diagram.png)
 
-::: {.fragment}
-<h3>This means we can add mutations to `ts` _after_ the simulation using `ts_mutate()`.</h3>
-:::
+</center>
+
+. . .
+
+<center>
+
+<h3>This means we can overlay mutations across our tree sequence _after_ the simulation is over.</h3>
 
 </center>
 
@@ -988,59 +1527,7 @@ Coalescent and mutation processes can be decoupled!
 
 
 
-
-## Let's go back to our example `model`...
-
-```{r}
-#| eval: false
-plot_model(model)
-```
-
-```{r}
-#| fig-align: center
-#| echo: false
-pop1 <- population("pop1", N = 1000, time = 1)
-
-pop2 <-
-  population("pop2", N = 1000, time = 300, parent = pop1) %>%
-  resize(N = 100, how = "step", time = 1000)
-
-pop3 <-
-  population("pop3", N = 1000, time = 400, parent = pop2) %>%
-  resize(N = 2500, how = "step", time = 800)
-
-pop4 <-
-  population("pop4", N = 1500, time = 500, parent = pop3) %>%
-  resize(N = 700, how = "exponential", time = 1200, end = 2000)
-
-pop5 <-
-  population("pop5", N = 100, time = 600, parent = pop4) %>%
-  resize(N = 50, how = "step", time = 900) %>%
-  resize(N = 1000, how = "exponential", time = 1600, end = 2200)
-
-gf <- gene_flow(from = pop1, to = pop2, start = 2000, end = 2200, proportion = 0.13)
-
-model <- compile_model(
-  populations = list(pop1, pop2, pop3, pop4, pop5),
-  gene_flow = gf,
-  generation_time = 1,
-  simulation_length = 3000,
-  direction = "forward"
-)
-
-plot_model(model, proportions = TRUE)
-```
-
-
-
-
-
-
-
-
-
-
-## ... simulate a tree sequence...
+## In practice, we just go from this...
 
 <br>
 
@@ -1071,7 +1558,7 @@ ts <-
 
 
 
-## ... and overlay mutations on it
+## ... and overlay mutations on `ts`
 
 <br>
 
@@ -1103,9 +1590,8 @@ ts <-
 
 ::: {.aside}
 
-**Note:** In some exercises, mutations won't be necessary. Where we will need them,
-you can use `ts_mutate()` using the pattern shown here.</h4>
-:::
+**Note:** In most situations, mutations aren't actually necessary. But in our
+exercises, let's always add them because they don't cost us much.</h4> :::
 
 
 
@@ -1114,430 +1600,10 @@ you can use `ts_mutate()` using the pattern shown here.</h4>
 
 
 
-# So we can simulate data
 
-<center>
 
-<h3>How do we work with this `ts` thing?</h3>
 
-</center>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## _slendr_'s R interface to [_tskit_](https://tskit.dev/tskit) statistics
-
-<center>![](../files/slendr/images/slendr_tskit.png)</center>
-
-Allele-frequecy spectrum, $\pi$, $f$-statistics, $F_{ST}$, Tajima's D, etc.
-
-**Find help at [slendr.net/reference](https://slendr.net/reference) or in R under `?ts_fst` etc.**
-
-
-
-
-
-
-
-
-
-## Extracting names of recorded samples
-
-1. We can get individuals recorded in `ts` with `ts_recorded()`:
-
-```{r}
-#| eval: false
-ts_recorded(ts) %>% head(1) # returns a data frame (one row here, for brevity)
-```
-
-```{r}
-#| echo: false
-ts_recorded(ts) %>% as.data.frame %>% head(1)
-```
-
-::: {.fragment}
-2. A shortcut `ts_names()` can also be useful:
-
-```{r}
-ts_names(ts) %>% head(5) # returns a vector of individuals' names
-```
-
-:::
-
-::: {.fragment}
-
-3. We can get a per-population list of individuals like this:
-
-```{r}
-#| eval: false
-ts_names(ts, split = TRUE) # returns a named list of such vectors
-```
-
-```{r}
-#| echo: false
-ts_names(ts, split = TRUE) %>% lapply(sample, 5) %>% .[1]
-```
-
-:::
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 
-
-<center>
-
-<h2>All _slendr_ statistics take individuals' names as their function arguments.</h2>
-
-</center>
-
-<br>
-
-<center>This is modelled after the `sample_sets=` argument of the respective [_tskit_ Python methods](https://tskit.dev/tskit/docs/stable/python-api.html#statistics) (except you use names of individuals directly, not tree-sequence node numbers).</center>
-
-<br>
-<center>Let's take a look at how it works in general...</center>
-
-
-
-
-
-
-
-
-
-
-
-## _tskit_ computation -- option #1
-
-**For a function which operates on one set of individuals**, we can first get
-a vector of names to compute on like this:
-
-```{r}
-#| eval: false
-# a random selection of names of three individuals in a tree sequence
-samples <- c("popX_1", "popX_2", "popY_42")
-```
-
-::: {.fragment}
-
-<br>
-
-Then we can calculate the statistic of interest like this:
-
-```{r}
-#| eval: false
-# this computes nucleotide diversity in our set of individuals
-df_result <- ts_diversity(ts, sample_sets = list(samples))
-```
-
-:::
-
-::: {.aside}
-**Note:** Wherever you see `list(<vector of names>)`, you can think of it as
-_"compute a statistic for the entire group of individuals"_ (you get a single
-number). Without the `list()`, it would mean _"compute the statistic for each
-individual separately"_ (and get a value for each of them individually).
-:::
-
-
-
-
-
-
-
-
-## _tskit_ computation -- option #2
-
-For a function operating on multiple sets of individuals,
-we want a list of vectors of names (one such vector per group):
-
-```{r}
-#| eval: false
-# when we compute on multiple groups, it's a good idea to name them
-samples <- list(
-  popX = c("popX_1", "popX_2", "popX_3"),
-  popY = c("popY_1", "popY_2", "popY_3"),
-  popZ = c("popZ_1", "popZ_2")
-)
-```
-
-<br>
-
-Then we use this list of vectors in the same way as before:
-
-```{r}
-#| eval: false
-# this computes a pairwise divergence between all three groups
-df_result <- ts_divergence(ts, sample_sets = samples)
-```
-
-
-
-
-
-
-
-
-
-
-## _tskit_ computation -- option #3
-
-For something like $f$ statistics, the function arguments must be more
-precisely specified (here `A`, `B`, `C`, not `sample_sets`):
-
-```{r}
-#| eval: false
-df_result <- ts_f3(
-  ts,
-  A = c("popX_1", "popX_2", "popX_3"),
-  B = c("popY_1", "popY_2", "popY_3"),
-  C = c("popZ_1", "popZ_2")
-)
-```
-
-::: {.fragment}
-
-Doing this manually can be annoying --- `ts_names()` helps by preparing 
-the list of names in the correct format:
-
-```{r}
-#| eval: false
-# get names of individuals in each population as a named list of vectors
-samples <- ts_names(ts, split = TRUE)
-
-# use this list directly by specifying which vectors to take out
-ts_f3(ts, A = samples$popX, B = samples$popY, C = samples$popZ)
-```
-
-:::
-
-
-
-
-
-
-
-
-
-
-
-
-#
-
-<center>
-
-<h1>Some examples on simulated data</h1>
-
-<br><h3>(A tree sequence `ts` we got earlier.)</h3>
-
-</center>
-
-
-
-
-
-
-
-
-
-
-
-## Example: [nucleotide diversity](https://en.wikipedia.org/wiki/Nucleotide_diversity)
-
-```{r}
-#| echo: false
-pop1 <- population("pop1", N = 10000, time = 1)
-pop2 <- population("pop2", N = 1000, time = 5000, parent = pop1)
-
-model <- compile_model(
-  populations = list(pop1, pop2),
-  generation_time = 1,
-  simulation_length = 10000
-)
-
-ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
-  ts_mutate(mutation_rate = 1e-8)
-```
-
-```{r}
-#| echo: false
-set.seed(42)
-```
-
-::: {.columns} 
-::: {.column width="45%"}
-Get a list of individuals in each population:
-
-```{r}
-samples <- ts_names(ts, split = TRUE)
-
-names(samples)
-```
-
-::: {.fragment}
-<br>
-
-We can index into the list via population name:
-
-```{r}
-#| eval: false
-samples$pop1
-```
-
-```{r}
-#| echo: false
-samples$pop1 %>% head(3)
-```
-
-```{r}
-#| eval: false
-samples$pop2
-```
-
-```{r}
-#| echo: false
-samples$pop2 %>% head(3)
-```
-
-
-:::
-:::
-
-::: {.column width="2%"}
- 
-:::
-
-::: {.column width="53%"}
-::: {.fragment}
-Compute nucleotide diversity (note the list `samples`):
-
-```{r}
-ts_diversity(ts, sample_sets = samples)
-```
-
-<br>
-
-Our tree sequence had two populations, `pop1` and `pop2`, which is why we
-get a data frame with diversity in each of them.
-
-:::
-:::
-:::
-
-
-
-
-
-
-
-
-
-
-## Example: [allele frequency spectrum](https://en.wikipedia.org/wiki/Allele_frequency_spectrum)
-
-```{r}
-#| echo: false
-pop <- population("pop", N = 10000, time = 1)
-
-model <- compile_model(pop, generation_time = 1, simulation_length = 10000)
-
-ts <-
-  msprime(model, sequence_length = 10e6, recombination_rate = 1e-8) %>%
-  ts_mutate(mutation_rate = 1e-8)
-```
-
-```{r}
-#| echo: false
-set.seed(42)
-```
-
-::: {.columns} 
-::: {.column width="45%"}
-Get names of individuals:
-
-```{r}
-samples <- ts_names(ts)[1:5]
-samples
-```
-
-::: {.fragment}
-Compute the AFS:
-
-```{r}
-afs <- ts_afs(ts, sample_sets = list(samples))
-
-# we skip the 1st item because it has a special meaning in tskit
-afs[-1]
-```
-:::
-:::
-
-::: {.column width="2%"}
- 
-:::
-
-::: {.column width="53%"}
-::: {.fragment}
-```{r}
-#| eval: false
-plot(afs[-1], type = "b",
-     xlab = "allele count bin",
-     ylab = "frequency")
-```
-
-```{r}
-#| echo: false
-#| fig-height: 7
-plot(afs[-1], type = "b",
-     xlab = "allele count bin",
-     ylab = "frequency", lwd = 3,
-     cex = 1.5, cex.lab=1.5, cex.axis=1.5, cex.main=1.5, cex.sub=1.5)
-```
-:::
-:::
-:::
-
-
-::: {.aside}
-**Note:** One of the rare examples when a _slendr_ / _tskit_ statistical 
-function does not return a data frame (`ts_afs()` returns a numerical vector,
-not a data frame).
-:::
-
-
-
-
-
-#
-
-<h2>More details on tree-sequences</h2>
+# More details on tree-sequences
 
 
 
@@ -1545,16 +1611,18 @@ not a data frame).
 
 <br>
 
-This simulates 2 $\times$ 10000 chromosomes of 100 Mb:
+This tiny script simulates 2 $\times$ 10000 chromosomes of 100 Mb:
+
+<br>
 
 ```{r}
 #| eval: false
 library(slendr)
 init_env()
 
-pop <- population("pop", time = 100e6, N = 10000)
+pop <- population("pop", time = 100000, N = 10000)
 model <- compile_model(pop, generation_time = 30, direction = "backward")
-ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
+ts <- msprime(model, sequence_length = 100e6, recombination_rate = 1e-8)
 ```
 
 ```{r}
@@ -1567,15 +1635,21 @@ model <- compile_model(pop, generation_time = 30, direction = "backward")
 ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
 ```
 
-
 <br>
 
-**Runs in less than 30 seconds on my laptop!**
+<center>
+<b>
+Runs in less than 30 seconds on my laptop!
 
-**Takes only about 66 Mb of memory!**
+Takes only about 66 Mb of memory!
+</b>
+</center>
 
-## How is this even possible?!
 
+# How is this possible?!
+
+
+. . .
 
 <center>
 
@@ -1583,7 +1657,7 @@ ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
 
 <center>
 
-## Tree-sequence tables
+## Representation of tree sequences
 
 ::: row
 
@@ -1591,7 +1665,7 @@ ts <- msprime(model, sequence_length = 1e6, recombination_rate = 1e-8)
 
 ::: {.column width="60%"}
 
-A tree can be represented by
+A single tree can be represented by:
 
 ::: incremental
 
@@ -1617,14 +1691,10 @@ A tree can be represented by
 
 :::
 
-<h3>**A collection of such tables is a tree sequence.**</h3>
+. . .
 
-::: {.aside}
+<h3>**Tree sequence is just a collection of these tables!**</h3>
 
-**Note:** This is a huge oversimplification.
-Find more information in  [tskit docs](https://tskit.dev/tutorials/tables_and_editing.html).
-
-:::
 
 ## Tree-sequence tables in practice
 
@@ -1720,8 +1790,8 @@ well-established bioinformatics tools out there.
 
 <br>
 
-_tskit_ and _slendr_ offer a couple of functions to help integrate their simulation
-results into third-party software.
+_slendr_ offers functions to help integrate simulation results with third-party
+software (IBDseq, PLINK, ADMIXTOOLS, etc.).
 
 
 
@@ -1791,15 +1861,15 @@ ts_genotypes(ts) %>% as.data.frame() %>% .[1:2, 1:7]
 
 
 
-# Exercises! -- TODO
+# Exercises!
 
 ## Plan for the rest of this session
 
 1. Go to [bodkan.net/simgen](https://bodkan.net/simgen)
 
-2. Start with the section on _"Demographic models"_
+2. Start with the first chapter of _"Modeling with slendr"_
 
-3. Then, continue with the section on _"Tree-sequence statistics"_
+3. Most of the time of our workshop
 
 For convenience, you can refer to information from these slides using their
 single-page version under the _"Resources"_ section.
