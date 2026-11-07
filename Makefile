@@ -6,12 +6,10 @@ handouts_html := $(foreach chapter,$(chapters),rendered/handout_$(chapter).html)
 all: $(slides_html) $(handouts_html)
 	git add *.qmd; git commit -m "Update .qmd files"; git push
 	quarto publish gh-pages --no-prompt
-	git checkout gh-pages
-	git add rendered/
-	git commit -m "Add rendered HTML slides"
-	echo .quarto/ >> .gitignore; echo _book/ >> .gitignore; echo files/.DS_Store >> .gitignore; echo files/introgression/ >> .gitignore; echo 'files/popgen/*.snp' >> .gitignore; echo 'files/popgen/*.geno' >> .gitignore; echo 'files/popgen/*.ind' >> .gitignore; git add .gitignore; git cm "Update .gitignore"
-	git push
 	git checkout main
+
+#	git add rendered/
+#	git commit -m "Add rendered HTML slides"
 
 rendered/%.html: slides/%.qmd
 	cd slides; \
