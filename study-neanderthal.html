@@ -460,80 +460,87 @@ window.Quarto = {
 <span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">ts_names</span>(ts, <span class="at">split =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p><strong>In case your simulation takes frustratingly too long or your computer struggles, you can also replace the tree-sequence simulation command by this bit of code which reads my simulated <code>ts</code> object from the internet (and continue working with it as if you had simulated it yourself):</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ts_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">timeout =</span> <span class="dv">600</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(<span class="st">"https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/introgression/base_409046.trees"</span>, <span class="at">destfile =</span> ts_path, <span class="at">mode =</span> <span class="st">"wb"</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_read</span>(<span class="at">file =</span> ts_path, <span class="at">model =</span> model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 <p>Here’s the model visualization (very janky, I know, but it is what it is…):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>cowplot<span class="sc">::</span><span class="fu">plot_grid</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">schedule =</span> schedule),</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">schedule =</span> schedule, <span class="at">log =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">2</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cowplot<span class="sc">::</span><span class="fu">plot_grid</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">schedule =</span> schedule),</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>, <span class="at">schedule =</span> schedule, <span class="at">log =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">2</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>And here are the individuals we “sequenced”, as a sanity check (mostly because of how hard-to-read the model visualization above is):</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_recorded</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">print</span>(<span class="at">n =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 58 × 3
    name           time pop       
    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;     
  1 Altai         50000 Altai     
  2 Vindija       50000 Vindija   
- 3 nonAfrican_1  44183 nonAfrican
- 4 nonAfrican_2  43014 nonAfrican
- 5 nonAfrican_3  42843 nonAfrican
- 6 nonAfrican_4  42247 nonAfrican
- 7 nonAfrican_5  41407 nonAfrican
- 8 nonAfrican_6  40264 nonAfrican
- 9 nonAfrican_7  40148 nonAfrican
-10 nonAfrican_8  39722 nonAfrican
-11 nonAfrican_9  37341 nonAfrican
-12 nonAfrican_10 37209 nonAfrican
-13 nonAfrican_11 36547 nonAfrican
-14 nonAfrican_12 36490 nonAfrican
-15 nonAfrican_13 34743 nonAfrican
-16 nonAfrican_14 33878 nonAfrican
-17 nonAfrican_15 32377 nonAfrican
-18 nonAfrican_16 31771 nonAfrican
-19 nonAfrican_17 30191 nonAfrican
-20 nonAfrican_18 27595 nonAfrican
-21 nonAfrican_19 27407 nonAfrican
-22 nonAfrican_20 27395 nonAfrican
-23 nonAfrican_21 26535 nonAfrican
-24 nonAfrican_22 25677 nonAfrican
-25 nonAfrican_23 24446 nonAfrican
-26 nonAfrican_24 20791 nonAfrican
-27 nonAfrican_25 20304 nonAfrican
-28 nonAfrican_26 19919 nonAfrican
-29 nonAfrican_27 17889 nonAfrican
-30 nonAfrican_28 17605 nonAfrican
-31 nonAfrican_29 17386 nonAfrican
-32 nonAfrican_30 17346 nonAfrican
-33 nonAfrican_31 17235 nonAfrican
-34 nonAfrican_32 16160 nonAfrican
-35 nonAfrican_33 14475 nonAfrican
-36 nonAfrican_34 14423 nonAfrican
-37 nonAfrican_35 11623 nonAfrican
-38 nonAfrican_36 11546 nonAfrican
-39 nonAfrican_37 10305 nonAfrican
-40 nonAfrican_38  9091 nonAfrican
-41 nonAfrican_39  9036 nonAfrican
-42 nonAfrican_40  8591 nonAfrican
-43 nonAfrican_41  7584 nonAfrican
-44 nonAfrican_42  7161 nonAfrican
-45 nonAfrican_43  6828 nonAfrican
-46 nonAfrican_44  5453 nonAfrican
-47 nonAfrican_45  4839 nonAfrican
-48 nonAfrican_46  4196 nonAfrican
-49 nonAfrican_47  3234 nonAfrican
-50 nonAfrican_48  1400 nonAfrican
-51 nonAfrican_49  1294 nonAfrican
-52 nonAfrican_50  1028 nonAfrican
+ 3 nonAfrican_1  44817 nonAfrican
+ 4 nonAfrican_2  44547 nonAfrican
+ 5 nonAfrican_3  43198 nonAfrican
+ 6 nonAfrican_4  42490 nonAfrican
+ 7 nonAfrican_5  41708 nonAfrican
+ 8 nonAfrican_6  41350 nonAfrican
+ 9 nonAfrican_7  39128 nonAfrican
+10 nonAfrican_8  38995 nonAfrican
+11 nonAfrican_9  38420 nonAfrican
+12 nonAfrican_10 37994 nonAfrican
+13 nonAfrican_11 36537 nonAfrican
+14 nonAfrican_12 35012 nonAfrican
+15 nonAfrican_13 31968 nonAfrican
+16 nonAfrican_14 30783 nonAfrican
+17 nonAfrican_15 30133 nonAfrican
+18 nonAfrican_16 29967 nonAfrican
+19 nonAfrican_17 28768 nonAfrican
+20 nonAfrican_18 28251 nonAfrican
+21 nonAfrican_19 26562 nonAfrican
+22 nonAfrican_20 26423 nonAfrican
+23 nonAfrican_21 24809 nonAfrican
+24 nonAfrican_22 23667 nonAfrican
+25 nonAfrican_23 22767 nonAfrican
+26 nonAfrican_24 22107 nonAfrican
+27 nonAfrican_25 21172 nonAfrican
+28 nonAfrican_26 20199 nonAfrican
+29 nonAfrican_27 19127 nonAfrican
+30 nonAfrican_28 18576 nonAfrican
+31 nonAfrican_29 17861 nonAfrican
+32 nonAfrican_30 16905 nonAfrican
+33 nonAfrican_31 15371 nonAfrican
+34 nonAfrican_32 15069 nonAfrican
+35 nonAfrican_33 13050 nonAfrican
+36 nonAfrican_34 12749 nonAfrican
+37 nonAfrican_35 12265 nonAfrican
+38 nonAfrican_36  9932 nonAfrican
+39 nonAfrican_37  9758 nonAfrican
+40 nonAfrican_38  9626 nonAfrican
+41 nonAfrican_39  9570 nonAfrican
+42 nonAfrican_40  6174 nonAfrican
+43 nonAfrican_41  5658 nonAfrican
+44 nonAfrican_42  5500 nonAfrican
+45 nonAfrican_43  5489 nonAfrican
+46 nonAfrican_44  5015 nonAfrican
+47 nonAfrican_45  4161 nonAfrican
+48 nonAfrican_46  4033 nonAfrican
+49 nonAfrican_47  3584 nonAfrican
+50 nonAfrican_48  2116 nonAfrican
+51 nonAfrican_49  1178 nonAfrican
+52 nonAfrican_50  1114 nonAfrican
 53 Dinka_1           0 Dinka     
 54 Mbuti_1           0 Mbuti     
 55 San_1             0 San       
@@ -568,27 +575,27 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <p>Here’s a manual calculation of the “indirect <span class="math inline">\(f_4\)</span>-ratio” as a ratio of two <span class="math inline">\(f_4\)</span> statistics for a single individual “nonAfrican_1”:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"Yoruba"</span>], <span class="at">X =</span> s[<span class="st">"outgroup"</span>], <span class="at">Y =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">Z =</span> <span class="st">"Vindija"</span>)<span class="sc">$</span>f4 <span class="sc">/</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"Yoruba"</span>], <span class="at">X =</span> s[<span class="st">"outgroup"</span>], <span class="at">Y =</span> s[<span class="st">"Dinka"</span>], <span class="at">Z =</span> <span class="st">"Vindija"</span>)<span class="sc">$</span>f4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"Yoruba"</span>], <span class="at">X =</span> s[<span class="st">"outgroup"</span>], <span class="at">Y =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">Z =</span> <span class="st">"Vindija"</span>)<span class="sc">$</span>f4 <span class="sc">/</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"Yoruba"</span>], <span class="at">X =</span> s[<span class="st">"outgroup"</span>], <span class="at">Y =</span> s[<span class="st">"Dinka"</span>], <span class="at">Z =</span> <span class="st">"Vindija"</span>)<span class="sc">$</span>f4</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.9567532</code></pre>
+<pre><code>[1] 0.9781058</code></pre>
 </div>
 </div>
 <p>Here’s how the function <code>ts_f4ratio()</code> can be used for the same purpose:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">A =</span> s[<span class="st">"Yoruba"</span>], <span class="at">B =</span> s[<span class="st">"Dinka"</span>], <span class="at">C =</span> <span class="st">"Altai"</span>, <span class="at">O =</span> s[<span class="st">"outgroup"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">A =</span> s[<span class="st">"Yoruba"</span>], <span class="at">B =</span> s[<span class="st">"Dinka"</span>], <span class="at">C =</span> <span class="st">"Altai"</span>, <span class="at">O =</span> s[<span class="st">"outgroup"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 7
   X            A      B     C     O        statistic                       alpha
   &lt;chr&gt;        &lt;chr&gt;  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;                           &lt;dbl&gt;
-1 nonAfrican_1 Yoruba Dinka Altai outgroup f4-ratio(nonAfrican_1;Yoruba,D… 0.957</code></pre>
+1 nonAfrican_1 Yoruba Dinka Altai outgroup f4-ratio(nonAfrican_1;Yoruba,D… 0.978</code></pre>
 </div>
 </div>
 <p>Note, however, that this estimate effectively infers the “modern human ancestry” represented by our shared genetic roots in Africa. To arrive to a Neanderthal ancestry estimate, we need to compute it’s complement:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">A =</span> s[<span class="st">"Yoruba"</span>], <span class="at">B =</span> s[<span class="st">"Dinka"</span>], <span class="at">C =</span> <span class="st">"Altai"</span>, <span class="at">O =</span> s[<span class="st">"outgroup"</span>])<span class="sc">$</span>alpha</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">-</span> <span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">A =</span> s[<span class="st">"Yoruba"</span>], <span class="at">B =</span> s[<span class="st">"Dinka"</span>], <span class="at">C =</span> <span class="st">"Altai"</span>, <span class="at">O =</span> s[<span class="st">"outgroup"</span>])<span class="sc">$</span>alpha</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.04332463</code></pre>
+<pre><code>[1] 0.02191806</code></pre>
 </div>
 </div>
 <p>This is close to our simulated 3% Neanderthal ancestry proportion, which is reassuring!</p>
@@ -612,7 +619,7 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -629,6 +636,13 @@ window.Quarto = {
 <p><strong>What happens if you introduce additional gene flow events <em>within</em> the modern human population tree? For example, simulate admixture between the two African lineages used in your indirect <span class="math inline">\(f_4\)</span>-ratio calculation, as well as “back-flow” admixture from the non-African population into both of those African lineages. Let’s say that all of these admixture events should happen at 5% proportion, the within-Africa gene flow should happen starting from 20 kya until present-day time 0, and the backflow nonAfrican admixture should happen from 8 kya to 5 kya.</strong></p>
 <p>None of those changes into the demographic model changes the amount of true Neanderthal ancestry in Europeans. But <strong>what does the trajectory of the indirect Neanderthal ancestry estimate look like when you compute it on this model with additional complex admixture within modern humans?</strong></p>
 <p><strong>Hint:</strong> Feel free to make a copy of your <code>introgression.R</code> script to make the indicated changes, perhaps saving it as <code>introgression_complex.R</code>, just to make things clean and tidy.</p>
+<p><strong>Again, if the tree-sequence simulation would take too long, feel free to use this chunk of code to read my own <code>ts</code> tree sequence from the internet and work with it further as if you simulated it yourself:</strong></p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>ts_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">timeout =</span> <span class="dv">600</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(<span class="st">"https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/introgression/admix_725458.trees"</span>, <span class="at">destfile =</span> ts_path, <span class="at">mode =</span> <span class="st">"wb"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_read</span>(<span class="at">file =</span> ts_path, <span class="at">model =</span> model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -646,7 +660,7 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -678,7 +692,7 @@ window.Quarto = {
 <div class="callout-body-container callout-body">
 <p>Here’s how the function <code>ts_f4ratio()</code> can be used for this calculation. Basically, we exchange the two African lineages for the two Neanderthal lineages, it’s as simple as that:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">A =</span> <span class="st">"Altai"</span>, <span class="at">B =</span> <span class="st">"Vindija"</span>, <span class="at">C =</span> s[<span class="st">"Dinka"</span>], <span class="at">O =</span> s[<span class="st">"outgroup"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4ratio</span>(ts, <span class="at">X =</span> <span class="st">"nonAfrican_1"</span>, <span class="at">A =</span> <span class="st">"Altai"</span>, <span class="at">B =</span> <span class="st">"Vindija"</span>, <span class="at">C =</span> s[<span class="st">"Dinka"</span>], <span class="at">O =</span> s[<span class="st">"outgroup"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 7
   X            A     B       C     O        statistic                      alpha
@@ -706,7 +720,7 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -720,7 +734,7 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="study-neanderthal_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
