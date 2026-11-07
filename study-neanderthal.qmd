@@ -237,7 +237,10 @@ p <- ggplot(indirect_base, aes(time, ancestry)) +
   ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
-print(p)
+
+saveRDS(p, "files/introgression/base_indirect.rds")
+# p <- readRDS("files/introgression/base_indirect.rds")
+p
   # saveRDS(p, paste0("files/introgression/indirect_base_", seed, ".rds"))
   # ts_save(ts, paste0("files/introgression/indirect_base_", seed, ".trees"))
 
@@ -364,9 +367,11 @@ p2 <- ggplot(direct_admix, aes(time, ancestry)) +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
 
-  # pdf(paste0("files/introgression/admix_", seed, ".pdf"))
-# print(cowplot::plot_grid(p1, p2, nrow = 2))
 # dev.off()
+saveRDS(p1, "files/introgression/admix_indirect.rds")
+saveRDS(p2, "files/introgression/admix_direct.rds")
+# p1 <- readRDS("files/introgression/admix_indirect.rds")
+# p2 <- readRDS("files/introgression/admix_direct.rds")
 p1
 
   # ts_save(ts, paste0("files/introgression/admix_", seed, ".trees"))
@@ -457,7 +462,7 @@ relationships which simply do not hold:
 
 ```{r}
 #| echo: false
-rbind(
+p <- rbind(
   indirect_admix %>% mutate(estimate = "indirect f4-ratio"),
   direct_admix %>% mutate(estimate = "direct f4-ratio")
 ) %>% 
@@ -469,6 +474,9 @@ ggplot(aes(time, ancestry, color = estimate)) +
   ggtitle("Indirect vs direct f4-ratio estimates") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
+saveRDS(p, "files/introgression/admix_comparison.rds")
+# p <- readRDS("files/introgression/admix_comparison.rds")
+# p
 ```
 
 
