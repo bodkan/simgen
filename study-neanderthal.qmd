@@ -50,6 +50,7 @@ much more noisy (but that's OK, we're learning here).
 
 ```{r}
 #| outputs: false
+#| eval: false
 library(slendr)
 init_env()
 
@@ -98,6 +99,52 @@ s <- ts_names(ts, split = TRUE)
 ```
 
 Here's the model visualization (very janky, I know, but it is what it is...):
+
+```{r}
+#| echo: false
+library(slendr)
+init_env()
+
+outgroup <- population("outgroup",   time = 7000000, N = 10000)
+
+ancestor <- population("ancestor",   time = 6000001, N =  1000, parent = outgroup, remove = 599999)
+
+altai    <- population("Altai",      time =  600000, N =  1000, parent = ancestor, remove = 49999)
+vindija  <- population("Vindija",    time =  200000, N =  1000, parent = altai, remove = 49999)
+
+san      <- population("San",        time =  600000, N = 10000, parent = ancestor)
+mbuti    <- population("Mbuti",      time =  350000, N = 10000, parent = san)
+yoruba   <- population("Yoruba",     time =  220000, N = 10000, parent = mbuti)
+dinka    <- population("Dinka",      time =  150000, N = 15000, parent = yoruba)
+
+nonafr   <- population("nonAfrican", time =   70000, N = 3000,  parent = dinka)
+
+gf <- gene_flow(from = vindija, to = nonafr, proportion = 0.03, start = 55000, end = 50000)
+
+model <- compile_model(
+  populations = list(outgroup, ancestor, altai, vindija, san, mbuti, yoruba, dinka, nonafr),
+  gene_flow = gf,
+  generation_time = 30
+)
+
+# schedule recording of present-day individuals
+schedule_present <- schedule_recording(
+  model, times = 0,
+  list(outgroup, 1), list(san, 1), list(mbuti, 1), list(yoruba, 1), list(dinka, 1), list(nonafr, 1)
+)
+
+# schedule recording of two Nenderthals
+schedule_neand <- schedule_recording(model, times = 50000, list(altai, 1, "Altai"), list(vindija, 1, "Vindija"))
+
+# schedule recording of Upper-Paleolithic modern humans
+schedule_emh <- schedule_recording(model, times = runif(n = 50, min = 1000, max = 45000), list(nonafr, 1))
+
+# bind the schedules into one
+schedule <- rbind(schedule_present, schedule_neand, schedule_emh)
+
+ts <- ts_read("files/introgression/base_409046.trees", model = model)
+s <- ts_names(ts, split = TRUE)
+```
 
 ```{r}
 cowplot::plot_grid(
@@ -216,9 +263,7 @@ library(ggplot2)
 #   msprime(model, sequence_length = 100e6, recombination_rate = 1e-8, schedule = schedule, random_seed = seed) %>%
 #   ts_mutate(mutation_rate = 1e-8, random_seed = seed)
 
-ts <- ts_read("files/introgression/base_409046.trees", model = model)
-s <- ts_names(ts, split = TRUE)
-
+if (!file.exists("files/introgression/base_indirect.rds")) {
 indirect_base <-
   ts_recorded(ts) %>%                 # get the table of individuals
   filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
@@ -237,9 +282,10 @@ p <- ggplot(indirect_base, aes(time, ancestry)) +
   ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
-
-saveRDS(p, "files/introgression/base_indirect.rds")
-# p <- readRDS("files/introgression/base_indirect.rds")
+  saveRDS(p, "files/introgression/base_indirect.rds")
+} else {
+  p <- readRDS("files/introgression/base_indirect.rds")
+}
 p
   # saveRDS(p, paste0("files/introgression/indirect_base_", seed, ".rds"))
   # ts_save(ts, paste0("files/introgression/indirect_base_", seed, ".trees"))
@@ -349,6 +395,7 @@ direct_admix <-
       })
   )
 
+if (!file.exists("files/introgression/admix_indirect.rds")) {
 p1 <- ggplot(indirect_admix, aes(time, ancestry)) +
   geom_point() +
   xlim(45000, 0) +
@@ -357,7 +404,12 @@ p1 <- ggplot(indirect_admix, aes(time, ancestry)) +
   ggtitle("Indirect f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
+  saveRDS(p1, "files/introgression/admix_indirect.rds")
+} else {
+  p1 <- readRDS("files/introgression/admix_indirect.rds")
+}
 
+if (!file.exists("files/introgression/admix_direct.rds")) {
 p2 <- ggplot(direct_admix, aes(time, ancestry)) +
   geom_point() +
   xlim(45000, 0) +
@@ -366,12 +418,10 @@ p2 <- ggplot(direct_admix, aes(time, ancestry)) +
   ggtitle("Direct f4-ratio estimate of Neanderthal ancestry over time") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
-
-# dev.off()
-saveRDS(p1, "files/introgression/admix_indirect.rds")
-saveRDS(p2, "files/introgression/admix_direct.rds")
-# p1 <- readRDS("files/introgression/admix_indirect.rds")
-# p2 <- readRDS("files/introgression/admix_direct.rds")
+  saveRDS(p2, "files/introgression/admix_direct.rds")
+} else {
+  p2 <- readRDS("files/introgression/admix_direct.rds")
+}
 p1
 
   # ts_save(ts, paste0("files/introgression/admix_", seed, ".trees"))
@@ -462,6 +512,7 @@ relationships which simply do not hold:
 
 ```{r}
 #| echo: false
+if (!file.exists("files/introgression/admix_comparison.rds")) {
 p <- rbind(
   indirect_admix %>% mutate(estimate = "indirect f4-ratio"),
   direct_admix %>% mutate(estimate = "direct f4-ratio")
@@ -474,9 +525,11 @@ ggplot(aes(time, ancestry, color = estimate)) +
   ggtitle("Indirect vs direct f4-ratio estimates") +
   xlab("time before present") +
   ylab("Neanderthal ancestry proportion")
-saveRDS(p, "files/introgression/admix_comparison.rds")
-# p <- readRDS("files/introgression/admix_comparison.rds")
-# p
+  saveRDS(p, "files/introgression/admix_comparison.rds")
+} else {
+  p <- readRDS("files/introgression/admix_comparison.rds")
+}
+p
 ```
 
 
