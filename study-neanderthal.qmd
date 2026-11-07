@@ -401,6 +401,7 @@ model <- compile_model(
 ts <- ts_read("files/introgression/admix_725458.trees", model = model)
 s <- ts_names(ts, split = TRUE)
 
+if (!file.exists("files/introgression/admix_indirect.rds")) {
 indirect_admix <-
   ts_recorded(ts) %>%                 # get the table of individuals
   filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
@@ -410,7 +411,9 @@ indirect_admix <-
         1 - ts_f4ratio(ts, X = x, A = s["Yoruba"], B = s["Dinka"], C = "Altai", O = s["outgroup"])$alpha
       })
   )
+}
 
+if (!file.exists("files/introgression/admix_direct.rds")) {
 direct_admix <-
   ts_recorded(ts) %>%                 # get the table of individuals
   filter(pop == "nonAfrican") %>%     # filter it down to only non-Africans
@@ -420,6 +423,7 @@ direct_admix <-
         ts_f4ratio(ts, X = x, A = "Altai", B = "Vindija", C = s["Dinka"], O = s["outgroup"])$alpha
       })
   )
+}
 
 if (!file.exists("files/introgression/admix_indirect.rds")) {
 p1 <- ggplot(indirect_admix, aes(time, ancestry)) +
