@@ -10,6 +10,9 @@ all: $(slides_html) $(handouts_html)
 #	git add rendered/
 #	git commit -m "Add rendered HTML slides"
 
+slides: $(slides_html)
+handouts: $(handouts_html)
+
 rendered/%.html: slides/%.qmd
 	cd slides; \
 		quarto render $(notdir $<) --output $(notdir $@); \
