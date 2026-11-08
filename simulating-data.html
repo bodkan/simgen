@@ -358,7 +358,8 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#literature" id="toc-literature" class="nav-link active" data-scroll-target="#literature">Literature</a></li>
+  <li><a href="#theme-of-this-chapter" id="toc-theme-of-this-chapter" class="nav-link active" data-scroll-target="#theme-of-this-chapter">Theme of this chapter</a></li>
+  <li><a href="#literature" id="toc-literature" class="nav-link" data-scroll-target="#literature">Literature</a></li>
   <li><a href="#preparation" id="toc-preparation" class="nav-link" data-scroll-target="#preparation">Preparation</a></li>
   <li><a href="#exercise-1-simulating-genomic-data" id="toc-exercise-1-simulating-genomic-data" class="nav-link" data-scroll-target="#exercise-1-simulating-genomic-data">Exercise 1: Simulating genomic data</a></li>
   <li><a href="#exercise-2-referring-to-simulated-individuals" id="toc-exercise-2-referring-to-simulated-individuals" class="nav-link" data-scroll-target="#exercise-2-referring-to-simulated-individuals">Exercise 2: Referring to simulated individuals</a></li>
@@ -391,7 +392,10 @@ window.Quarto = {
 </header>
 
 
-<p>The exercises in this chapter will pick up from where we left of in the <a href="building-models.html">chapter on building demographic models</a> and use those foundations to learn how to simulate genomic data from these models.</p>
+<section id="theme-of-this-chapter" class="level2">
+<h2 class="anchored" data-anchor-id="theme-of-this-chapter">Theme of this chapter</h2>
+<p>Now that we have a <em>slendr</em> model encoded in a reproducible R script, how can we simulate genomic data in a form that is as close as possible to the genomic data (modern and ancient DNA) we have available in a hypothetical real-world scenario?</p>
+</section>
 <section id="literature" class="level2">
 <h2 class="anchored" data-anchor-id="literature">Literature</h2>
 <p>In case you find yourself with extra time for some background reading, I recommend the following papers:</p>
@@ -508,7 +512,7 @@ window.Quarto = {
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │        970║
+║Trees          │        993║
 ╟───────────────┼───────────╢
 ║Sequence Length│  1,000,000║
 ╟───────────────┼───────────╢
@@ -521,7 +525,7 @@ window.Quarto = {
 ╔═══════════╤══════╤═════════╤════════════╗
 ║Table      │Rows  │Size     │Has Metadata║
 ╠═══════════╪══════╪═════════╪════════════╣
-║Edges      │24,052│751.6 KiB│          No║
+║Edges      │24,199│756.2 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Individuals│ 5,000│136.7 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
@@ -529,7 +533,7 @@ window.Quarto = {
 ╟───────────┼──────┼─────────┼────────────╢
 ║Mutations  │     0│ 16 Bytes│          No║
 ╟───────────┼──────┼─────────┼────────────╢
-║Nodes      │21,187│579.3 KiB│          No║
+║Nodes      │21,225│580.4 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Populations│     4│335 Bytes│         Yes║
 ╟───────────┼──────┼─────────┼────────────╢
@@ -620,7 +624,7 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># the entire table of metadata for every single node in the tree sequence</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_nodes</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 21,187 × 8
+<pre><code># A tibble: 21,225 × 8
    name  pop   ind_id node_id  time time_tskit sampled pop_id
    &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt; &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;
  1 p1_1  p1         0       0     0          0 TRUE         0
@@ -633,12 +637,12 @@ window.Quarto = {
  8 p1_4  p1         3       7     0          0 TRUE         0
  9 p1_5  p1         4       8     0          0 TRUE         0
 10 p1_5  p1         4       9     0          0 TRUE         0
-# ℹ 21,177 more rows</code></pre>
+# ℹ 21,215 more rows</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ... which is a lot of data compared to just recorded individuals!</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_nodes</span>(ts) <span class="sc">%&gt;%</span> nrow</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 21187</code></pre>
+<pre><code>[1] 21225</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># here's a selection for a single individual (two rows because that</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="co"># individual is diploid)</span></span>
@@ -655,20 +659,20 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_nodes</span>(ts) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(time <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 11,187 × 8
-   name  pop   ind_id node_id     time time_tskit sampled pop_id
-   &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt;    &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;
- 1 &lt;NA&gt;  p2        NA   10000 0.000970  0.0000323 FALSE        1
- 2 &lt;NA&gt;  p3        NA   10001 0.00128   0.0000427 FALSE        2
- 3 &lt;NA&gt;  p4        NA   10002 0.0125    0.000415  FALSE        3
- 4 &lt;NA&gt;  p3        NA   10003 0.0155    0.000515  FALSE        2
- 5 &lt;NA&gt;  p1        NA   10004 0.0216    0.000721  FALSE        0
- 6 &lt;NA&gt;  p3        NA   10005 0.0237    0.000789  FALSE        2
- 7 &lt;NA&gt;  p3        NA   10006 0.0245    0.000816  FALSE        2
- 8 &lt;NA&gt;  p3        NA   10007 0.0282    0.000942  FALSE        2
- 9 &lt;NA&gt;  p2        NA   10008 0.0305    0.00102   FALSE        1
-10 &lt;NA&gt;  p3        NA   10009 0.0338    0.00113   FALSE        2
-# ℹ 11,177 more rows</code></pre>
+<pre><code># A tibble: 11,225 × 8
+   name  pop   ind_id node_id   time time_tskit sampled pop_id
+   &lt;chr&gt; &lt;fct&gt;  &lt;dbl&gt;   &lt;int&gt;  &lt;dbl&gt;      &lt;dbl&gt; &lt;lgl&gt;    &lt;int&gt;
+ 1 &lt;NA&gt;  p2        NA   10000 0.0213   0.000709 FALSE        1
+ 2 &lt;NA&gt;  p4        NA   10001 0.0235   0.000785 FALSE        3
+ 3 &lt;NA&gt;  p2        NA   10002 0.0238   0.000793 FALSE        1
+ 4 &lt;NA&gt;  p3        NA   10003 0.0341   0.00114  FALSE        2
+ 5 &lt;NA&gt;  p2        NA   10004 0.0348   0.00116  FALSE        1
+ 6 &lt;NA&gt;  p2        NA   10005 0.0360   0.00120  FALSE        1
+ 7 &lt;NA&gt;  p2        NA   10006 0.0395   0.00132  FALSE        1
+ 8 &lt;NA&gt;  p4        NA   10007 0.0472   0.00157  FALSE        3
+ 9 &lt;NA&gt;  p3        NA   10008 0.0580   0.00193  FALSE        2
+10 &lt;NA&gt;  p1        NA   10009 0.0647   0.00216  FALSE        0
+# ℹ 11,215 more rows</code></pre>
 </div>
 </div>
 <ul>
@@ -751,7 +755,7 @@ window.Quarto = {
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │        215║
+║Trees          │        227║
 ╟───────────────┼───────────╢
 ║Sequence Length│  1,000,000║
 ╟───────────────┼───────────╢
@@ -759,12 +763,12 @@ window.Quarto = {
 ╟───────────────┼───────────╢
 ║Sample Nodes   │         40║
 ╟───────────────┼───────────╢
-║Total Size     │   48.1 KiB║
+║Total Size     │   52.5 KiB║
 ╚═══════════════╧═══════════╝
 ╔═══════════╤════╤═════════╤════════════╗
 ║Table      │Rows│Size     │Has Metadata║
 ╠═══════════╪════╪═════════╪════════════╣
-║Edges      │ 892│ 27.9 KiB│          No║
+║Edges      │ 988│ 30.9 KiB│          No║
 ╟───────────┼────┼─────────┼────────────╢
 ║Individuals│  20│584 Bytes│          No║
 ╟───────────┼────┼─────────┼────────────╢
@@ -772,7 +776,7 @@ window.Quarto = {
 ╟───────────┼────┼─────────┼────────────╢
 ║Mutations  │   0│ 16 Bytes│          No║
 ╟───────────┼────┼─────────┼────────────╢
-║Nodes      │ 304│  8.3 KiB│          No║
+║Nodes      │ 328│  9.0 KiB│          No║
 ╟───────────┼────┼─────────┼────────────╢
 ║Populations│   4│335 Bytes│         Yes║
 ╟───────────┼────┼─────────┼────────────╢
@@ -786,7 +790,7 @@ window.Quarto = {
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │        950║
+║Trees          │        995║
 ╟───────────────┼───────────╢
 ║Sequence Length│  1,000,000║
 ╟───────────────┼───────────╢
@@ -799,7 +803,7 @@ window.Quarto = {
 ╔═══════════╤══════╤═════════╤════════════╗
 ║Table      │Rows  │Size     │Has Metadata║
 ╠═══════════╪══════╪═════════╪════════════╣
-║Edges      │24,065│752.0 KiB│          No║
+║Edges      │24,247│757.7 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Individuals│ 5,000│136.7 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
@@ -807,7 +811,7 @@ window.Quarto = {
 ╟───────────┼──────┼─────────┼────────────╢
 ║Mutations  │     0│ 16 Bytes│          No║
 ╟───────────┼──────┼─────────┼────────────╢
-║Nodes      │21,205│579.8 KiB│          No║
+║Nodes      │21,242│580.8 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Populations│     4│335 Bytes│         Yes║
 ╟───────────┼──────┼─────────┼────────────╢

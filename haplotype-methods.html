@@ -358,7 +358,8 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#preparation" id="toc-preparation" class="nav-link active" data-scroll-target="#preparation">Preparation</a></li>
+  <li><a href="#theme-of-this-chapter" id="toc-theme-of-this-chapter" class="nav-link active" data-scroll-target="#theme-of-this-chapter">Theme of this chapter</a></li>
+  <li><a href="#preparation" id="toc-preparation" class="nav-link" data-scroll-target="#preparation">Preparation</a></li>
   <li><a href="#exercise-local-ancestry-inference-lai-with-ts_tracts" id="toc-exercise-local-ancestry-inference-lai-with-ts_tracts" class="nav-link" data-scroll-target="#exercise-local-ancestry-inference-lai-with-ts_tracts">Exercise: Local ancestry inference (LAI) with <code>ts_tracts()</code></a></li>
   <li><a href="#exercise-dating-admixture-events" id="toc-exercise-dating-admixture-events" class="nav-link" data-scroll-target="#exercise-dating-admixture-events">Exercise: Dating admixture events</a></li>
   <li><a href="#exercise-identity-by-descent-segments-ibd" id="toc-exercise-identity-by-descent-segments-ibd" class="nav-link" data-scroll-target="#exercise-identity-by-descent-segments-ibd">Exercise: Identity-by-Descent segments (IBD)</a></li>
@@ -388,9 +389,11 @@ window.Quarto = {
 </header>
 
 
-<p>All of our exercises and all of our coding in <em>slendr</em> focused on population genetic statistics and metrics, all of whom were based, one way or another, on allele frequencies and allele frequency correlations.</p>
-<p>One class of modeling tools implemented in <em>slendr</em> which are also useful for you to learn methods based on haplotypes—i.e., continuous segments of DNA inherited from generation to generation, continuously broken up by the process of recombination.</p>
-<p>To make this session a little more relaxed compared to previous exercises, this chapter presents the haplotype-based techniques available in <em>slendr</em> more as a set of “recipes” rather than extensive exercises. The primary goal is to close off our sessions on learning modeling with a few more tools before we dig into developing modeling workflows for your own projects or working on a few suggested case studies.</p>
+<section id="theme-of-this-chapter" class="level2">
+<h2 class="anchored" data-anchor-id="theme-of-this-chapter">Theme of this chapter</h2>
+<p>All of our exercises so far focused on population genetic statistics which are generally thought about in terms of allele frequencies and allele frequency correlations. However, one class of modeling tools implemented in <em>slendr</em> which are also extremely useful are methods based on haplotypes—i.e., continuous segments of DNA inherited from generation to generation while being broken up by the process of recombination.</p>
+<p>To make this session a little more relaxed compared to previous exercises, this chapter presents these techniques as a set of “recipes” rather than extensive exercises. The primary goal is to conclude our exercise sessions with a few more tools before we switch gears and start implementing modeling workflows for your own projects or work through some of the few suggested case studies.</p>
+</section>
 <section id="preparation" class="level2">
 <h2 class="anchored" data-anchor-id="preparation">Preparation</h2>
 <p><strong>Take a look at the following basic admixture model, and save it as <code>haplotypes.R</code>. Note also the presence of a small helper function I provided (you don’t have to study it, although it should look familiar if you’ve done the <em>tidyverse</em> and <em>ggplot2</em> parts of this workbook):</strong></p>
@@ -500,12 +503,12 @@ window.Quarto = {
 <pre><code># A tibble: 6 × 10
   name    haplotype  time pop   source_pop     left   right length source_pop_id
   &lt;chr&gt;       &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;fct&gt;         &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;         &lt;dbl&gt;
-1 popY_51         1   400 popY  popX         957659  1.19e6 2.32e5             1
-2 popY_51         1   400 popY  popX        1662377  2.57e6 9.11e5             1
-3 popY_51         1   400 popY  popX        3772453  8.65e6 4.88e6             1
-4 popY_51         1   400 popY  popX       37010434  3.70e7 1.59e4             1
-5 popY_51         1   400 popY  popX       39811455  4.21e7 2.29e6             1
-6 popY_51         1   400 popY  popX       45292523  4.62e7 9.24e5             1
+1 popY_51         1   400 popY  popX       21907698  2.32e7 1.28e6             1
+2 popY_51         1   400 popY  popX       28488796  2.95e7 1.06e6             1
+3 popY_51         1   400 popY  popX       32050141  3.24e7 3.21e5             1
+4 popY_51         1   400 popY  popX       36723354  3.68e7 1.10e5             1
+5 popY_51         1   400 popY  popX       36920152  3.77e7 8.12e5             1
+6 popY_51         1   400 popY  popX       37945121  3.84e7 4.81e5             1
 # ℹ 1 more variable: node_id &lt;dbl&gt;</code></pre>
 </div>
 </div>
@@ -594,7 +597,7 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>names <span class="ot">&lt;-</span> tracts <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(time) <span class="sc">%&gt;%</span> <span class="fu">distinct</span>(name) <span class="sc">%&gt;%</span> <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">pull</span>(name)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>names</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] "popY_77" "popY_65" "popY_58"</code></pre>
+<pre><code>[1] "popY_75" "popY_69" "popY_54"</code></pre>
 </div>
 </div>
 <p>We then simply provide these names to the helper function:</p>
@@ -644,9 +647,9 @@ window.Quarto = {
 <pre><code># A tibble: 3 × 2
    time `mean(length)`
   &lt;dbl&gt;          &lt;dbl&gt;
-1     0        248275.
-2   200        415680.
-3   400       1113949.</code></pre>
+1     0        244565.
+2   200        402652.
+3   400       1214549.</code></pre>
 </div>
 </div>
 <p>Obviously, we can see that the older the individual, the closer to the admixture event that individual is and, consequently, the longer the admixture tracts are. This is, of course, because recombination hadn’t yet had the time to break up longer admixture chunks into shorter pieces.</p>
@@ -738,8 +741,7 @@ t \approx \frac{\hat{\lambda}}{r}
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(tracts<span class="sc">$</span>length, <span class="dv">10</span>) <span class="co"># ... etc</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1]  368703  240528 1162550  946452  251709  232397    1085  266705 1641712
-[10]  419081</code></pre>
+<pre><code> [1] 458376 204755 218864 303462 382887  24536 107613  56989  96186 341308</code></pre>
 </div>
 </div>
 <p>we can estimate the rate of exponential decay <span class="math inline">\(\hat{\lambda}\)</span> like this:</p>
@@ -747,7 +749,7 @@ t \approx \frac{\hat{\lambda}}{r}
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>lambda_hat <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> <span class="fu">mean</span>(tracts<span class="sc">$</span>length)</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>lambda_hat</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 4.027794e-06</code></pre>
+<pre><code>[1] 4.088886e-06</code></pre>
 </div>
 </div>
 <p>and then use this value to estimate of time since admixture in the history of these individual directly:</p>
@@ -758,7 +760,7 @@ t \approx \frac{\hat{\lambda}}{r}
 <span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>admixture_time</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 402.7794</code></pre>
+<pre><code>[1] 408.8886</code></pre>
 </div>
 </div>
 <hr>
@@ -828,9 +830,9 @@ t \approx \frac{\hat{\lambda}}{r}
 # Groups:   pop1 [3]
   pop1  pop2  ibd_count ibd_length
   &lt;fct&gt; &lt;fct&gt;     &lt;int&gt;      &lt;dbl&gt;
-1 popZ  popZ       1851   1046710.
-2 popX  popX        480   1031466.
-3 popY  popY         97   1166548.</code></pre>
+1 popZ  popZ       1558   1161432.
+2 popX  popX        428   1078000.
+3 popY  popY         85    946715.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -894,12 +896,24 @@ $popZ
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_ibd</span>(ts, <span class="at">between =</span> samples[<span class="fu">c</span>(<span class="st">"popY"</span>, <span class="st">"popX"</span>)], <span class="at">maximum_time =</span> <span class="dv">500</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 13
-  node1 node2 length  mrca node1_time node2_time tmrca   left  right name1 name2
-  &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;
-1   141   162  94430  8091          0          0  500. 9.50e6 9.59e6 popX… popY…
-2   141   168  94430  8091          0          0  500. 9.50e6 9.59e6 popX… popY…
-# ℹ 2 more variables: pop1 &lt;fct&gt;, pop2 &lt;fct&gt;</code></pre>
+<pre><code># A tibble: 14 × 13
+   node1 node2 length  mrca node1_time node2_time tmrca     left    right name1 
+   &lt;int&gt; &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt; 
+ 1   142   165  78132  8023          0          0  499. 70099101 70177233 popX_2
+ 2   142   171  88136  8023          0          0  499. 70099101 70187237 popX_2
+ 3   143   165  37427  8023          0          0  499. 69870106 69907533 popX_2
+ 4   143   169  40870  8036          0          0  500.  9794462  9835332 popX_2
+ 5   147   165  87074  8023          0          0  499. 69879711 69966785 popX_4
+ 6   149   165  78132  8023          0          0  499. 70099101 70177233 popX_5
+ 7   149   171  88136  8023          0          0  499. 70099101 70187237 popX_5
+ 8   151   165  39989  8035          0          0  500. 99201291 99241280 popX_6
+ 9   151   166  39989  8035          0          0  500. 99201291 99241280 popX_6
+10   152   165  87074  8023          0          0  499. 69879711 69966785 popX_7
+11   152   165  46501  8035          0          0  500. 99166664 99213165 popX_7
+12   152   166  46501  8035          0          0  500. 99166664 99213165 popX_7
+13   153   165  87074  8023          0          0  499. 69879711 69966785 popX_7
+14   158   165  87074  8023          0          0  499. 69879711 69966785 popX_…
+# ℹ 3 more variables: name2 &lt;chr&gt;, pop1 &lt;fct&gt;, pop2 &lt;fct&gt;</code></pre>
 </div>
 </div>
 <hr>
@@ -928,13 +942,13 @@ $popZ
 ##INFO=&lt;ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes"&gt;
 ##INFO=&lt;ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes"&gt;
 ##bcftools_viewVersion=1.25+htslib-1.25
-##bcftools_viewCommand=view -s popX_1,popY_1,popZ_1 /tmp/genotypes.vcf.gz; Date=Sun Nov  8 12:23:35 2026
+##bcftools_viewCommand=view -s popX_1,popY_1,popZ_1 /tmp/genotypes.vcf.gz; Date=Sun Nov  8 15:46:20 2026
 #CHROM  POS ID  REF ALT QUAL    FILTER  INFO    FORMAT  popX_1  popY_1  popZ_1
-chr1    1687    0   T   A   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
-chr1    1821    1   A   G   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
-chr1    2149    2   A   G   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
-chr1    2253    3   C   T   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
-chr1    2393    4   C   A   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0</code></pre>
+chr1    1916    0   A   C   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
+chr1    3150    1   A   G   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
+chr1    5340    2   C   G   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
+chr1    6199    3   A   G   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0
+chr1    6286    4   C   G   .   PASS    AC=2;AN=6   GT  0|0 0|1 0|1</code></pre>
 </div>
 </div>
 <ol start="2" type="1">
@@ -942,6 +956,9 @@ chr1    2393    4   C   A   .   PASS    AC=0;AN=6   GT  0|0 0|0 0|0</code></pre>
 </ol>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_eigenstrat</span>(ts, <span class="at">prefix =</span> <span class="st">"/tmp/eigenstrat"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>1 multiallelic sites (0.091% out of 1097 total) detected and removed</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code>EIGENSTRAT object
 =================
@@ -955,22 +972,25 @@ components:
 <li><strong>Get a normal table of genotypes as a data frame with the function <code>ts_genotypes()</code></strong></li>
 </ol>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_genotypes</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_genotypes</span>(ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>1 multiallelic sites (0.091% out of 1097 total) detected and removed</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 1,035 × 201
+<pre><code># A tibble: 1,096 × 201
      pos popY_1_chr1 popY_1_chr2 popY_2_chr1 popY_2_chr2 popY_3_chr1 popY_3_chr2
    &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;       &lt;int&gt;
- 1  1687           0           0           0           0           0           0
- 2  1821           0           0           0           0           0           0
- 3  2149           0           0           0           0           0           0
- 4  2253           0           0           0           0           0           0
- 5  2393           0           0           0           0           0           0
- 6  5030           0           0           0           0           0           0
- 7  5169           0           0           0           0           0           0
- 8  5503           0           0           0           0           0           0
- 9  5739           0           0           0           0           0           0
-10  6787           0           0           0           0           0           0
-# ℹ 1,025 more rows
+ 1  1916           0           0           0           0           0           0
+ 2  3150           0           0           0           0           0           0
+ 3  5340           0           0           0           0           0           0
+ 4  6199           0           0           0           0           0           0
+ 5  6286           0           1           1           1           0           0
+ 6  7699           0           0           0           0           0           0
+ 7 10365           0           0           0           0           0           0
+ 8 11501           0           0           0           0           0           0
+ 9 11805           0           0           0           0           0           0
+10 12903           0           0           0           0           0           0
+# ℹ 1,086 more rows
 # ℹ 194 more variables: popY_4_chr1 &lt;int&gt;, popY_4_chr2 &lt;int&gt;,
 #   popY_5_chr1 &lt;int&gt;, popY_5_chr2 &lt;int&gt;, popY_6_chr1 &lt;int&gt;, popY_6_chr2 &lt;int&gt;,
 #   popY_7_chr1 &lt;int&gt;, popY_7_chr2 &lt;int&gt;, popY_8_chr1 &lt;int&gt;, popY_8_chr2 &lt;int&gt;,
