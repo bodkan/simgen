@@ -11,7 +11,7 @@
 What features does _slendr_ offer for encoding traditional demographic models
 (i.e., tree-like models featuring population splits, population size changes,
 and admixture)? How can we transform a model that came up in a discussion, in a
-brainstorming session, or from a figure published in a literature, into a
+brainstorming session, or which we saw in a figure in a research paper, into a
 working script as quickly as possible?
 
 
@@ -41,14 +41,14 @@ library(slendr)
 init_env(uv = TRUE)
 ```
 
-2. **Always try to write your solutions in a dedicated script (saved under an
-appropriate name) as usually instructed by each exercise. Don't write everything
-into a single long file. Don't run your code solution only in your R console
-without having them recorded in a script.**
+2. **Try to write your solutions in a dedicated script (saved under an
+appropriate name) as instructed by any given exercise. Don't write everything
+into a single long file, or only in your R console (without having things
+recorded in a dedicated solution script).**
 
-This might be frustrating at times and appear like unnecessary extra work, but
-keeping your code organized (and properly annotated with `# comments like this`)
-is critical for making computational workflows reproducible.
+The second point might be frustrating at times and appear like unnecessary extra
+work, but keeping your code organized (and also annotated with `# comments like
+this`) is critical for making your computational workflows reproducible.
 
 
 
@@ -67,13 +67,18 @@ to this exercise into that script.**
 
 **Encode the demographic model sketched in the following diagram using a series
 of `population()` calls, then compile it with `compile_model()`, storing it in
-the `model` variable. Finally, verify the correctness of the `model` visually
-using using the function `plot_model()`. Make sure to write all of this into
-your script `forward_model.R`**
+the `model` variable (it should be compiled to run for 401 generations total
+with the generation time of 1). Finally, verify the correctness of the `model`
+visually using using the function `plot_model()`. Make sure to write all of this
+code in your script `forward_model.R`**
 
 **Hint:** Try to get into the habit of executing each command you add to your
 script (a line of code, a couple of lines, etc.) in your R console by pressing
 Ctrl+Enter as you're writing your solutions line by line.
+
+<center>
+![](files/statistics/base_model.png){width=50%}
+</center>
 
 ::: aside
 
@@ -94,7 +99,7 @@ library(slendr)
 init_env()
 ```
 
-Adding to the script, we begin by creating the first population, called p1,
+Adding to the script, we begin by creating the first population, called "p1",
 storing it in a variable with the same name. When we execute this line and type
 `p1` in the R console, we get an informative summary. Especially when building
 very complex models with _slendr_, it pays off to develop the habit to program
@@ -142,7 +147,7 @@ this argument. Do you get an error if you leave out this argument? Why?**
 When you think about how we programmed demographic events, we start at
 generation 1, then generation 100, etc... but how would the computer know when
 we want to stop the model? That's what `simulation_length` ensures, whenever we
-want to build a forward-time model.
+want to build a forward-time model. This is why _slendr_ gives us this error:
 
 ```{r}
 #| error: true
@@ -157,8 +162,8 @@ after another, "conversing" with the R console in a way which lets _slendr_
 catch our mistakes as early as possible.
 
 This is opposed to the other way of working, in which we would first write an
-entire (potentially very long) script and then potentially have trouble
-identifying where and how we made a mistake.
+entire (potentially very long) script and then have trouble identifying where we
+made a mistake.
 
 :::
 
@@ -189,9 +194,9 @@ to this exercise into that script.**
 **Convert the forward model which you just wrote into using a backward direction
 of time (i.e., the model will implicitly end at time 0---"the present day"---and
 start at the appropriate "time ago"). You can start by copying the contents of
-`forward_model.R` into your new script, and modify its features accordingly.
-Again, visualize the final `model` using the `plot_model()` function, which
-should get you (visually) exactly the same figure.**
+`forward_model.R` into your new script, and modify it as needed. Again,
+visualize the final `model` using the `plot_model()` function, which should get
+you (visually) exactly the same figure.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -201,17 +206,19 @@ forward simulation and reverse the times of scheduled events accordingly.
 
 Note that this is very annoying to do (and I'm sorry I'm making you do
 frustrating stuff!). This is just to show what's necessary to do with simulation
-frameworks other than _slendr_. This convenient flexibility of _slendr_ becomes
-even more apparent once we start dealing with more realistic time units later.
+frameworks other than _slendr_. This convenient flexibility becomes even more
+clear once we start dealing with realistic time units later.
 
 For now, just remember that the direction of time of our models in _slendr_ is
-flexible.
+flexible:
 
-If you want to simulate yeast growing over generations in a lab (from generation 1),
-you can.
+- If you want to simulate yeast growing over generations in a lab (starting from
+generation 1), you can.
 
-If you want to simulate human history over thousands of years (starting, for
+- If you want to simulate human history over thousands of years (starting, for
 instance, from the Anatolian migration thousands of years ago), you can.
+
+Here's a complete solution for the backward-time model:
 
 ```{r}
 library(slendr)
@@ -261,7 +268,7 @@ argument works (we can still do it), but it's redundant:
 model <- compile_model(
   populations = list(p1, p2, p3, p4),
   generation_time = 1,
-  simulation_length = 400
+  simulation_length = 400 # this works (but it's formally not needed)
 )
 ```
 
@@ -281,7 +288,7 @@ useful feature of _slendr_.
 
 If we do set the argument to a smaller number, we effectively "truncate" the
 duration of the model. This is arelatively rare thing to do, but it could be
-useful in some circumstances, so it's worth mentioning here:
+useful in some circumstances so it's worth mentioning here:
 
 ```{r}
 model <- compile_model(
@@ -353,6 +360,10 @@ argument of `compile_model()` to give the units this exact description.
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
+Here's the original model transformed into what could represent "human
+demography" (particularly because all times are now in units of "years ago", and
+populations assumed to have the generation time of 30 years):
+
 ```{r}
 library(slendr)
 init_env()
@@ -377,13 +388,9 @@ identical_---only the presentation changes (making the model more convenient for
 a reader expecting human demography), but the population genetics theory
 underlying this model remains the same!
 
-**Hint:** If you want, take a look how I created the composite panels by
-unfolding the code. It is done by the function `plot_grid()` from the R package
-_cowplot_. An absolute rockstar for composing complex scientific figures.
-
 ```{r}
 #| echo: false
-#| code-fold: true
+#| fig-height: 13
 library(cowplot)
 
 # Let's supose `fmodel`, `bmodel`, and `model` are the forward, backward, and "human"
@@ -396,7 +403,7 @@ p_human <- plot_model(model) + ggplot2::ggtitle("Model in 'years B.P.'")
 
 # And we can use cowplot to compose them together, making sure they're arranged
 # in three columns too:
-plot_grid(p_forward, p_backward, p_human, nrow = 1)
+plot_grid(p_forward, p_backward, p_human, nrow = 3)
 ```
 
 :::
@@ -422,13 +429,13 @@ an `end` at time 2200 "years ago", using the function `gene_flow()`. Set the
 total `proportion` of the `p2` ancestry in `p3` at 0.1 (i.e., 10% of the final
 `p3` population will be derived from `p2`). When you plot this model using
 `plot_model()` (set also `proportions = TRUE`), you should see your "population
-tree model" turn into an "admixture model" as these are often called with an
-arrow indicating the programmed admixture event.**
+tree model" turned into an "admixture model" (as these models are often called
+in the literature) with an arrow indicating the programmed admixture event.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-Here's the current status of `human_model.R`:
+Here's the current status of `human_model.R`, now featuring an admixture event:
 
 ```{r}
 library(slendr)
@@ -457,9 +464,9 @@ plot_model(model, proportions = TRUE)
 
 **When you look at the `?gene_flow` help page, you can see that the function has
 a `migration_rate` argument. What does it do? Is there any way to get the same
-result (i.e., to encode the same gene-flow event) as you did just above, but
-using `rate` instead of `proportion`? When would you expect to use one or the
-other?**
+result (i.e., to encode the same 10% ancestry gene-flow event) as you did just
+above, but using `rate` instead of `proportion`? When would you expect to use
+one or the other?**
 
 **Hint:** Try to make the habit of reading the help of various functions
 frequently---you discover lots of useful information that way that you wouldn't
@@ -470,8 +477,9 @@ normally learn about.
 
 A 10% _proportion_ of `p2` ancestry derived from `p3` over the time window of
 3000 to 2100 years ago is mathematically equivalent to a per-year rate of `0.1 /
-(3000 - 2100)`, i.e. `{r} 0.1 / (3000 - 2100)`. To express this in a _slendr_
-model, take a look at the modified call to `gene_flow()` below:
+(3000 - 2100)`, i.e. ~`{r} sprintf("%.6f", 0.1 / (3000 - 2100))`. To express
+this in a _slendr_ model, take a look at the modified call to `gene_flow()`
+below:
 
 ```{r}
 library(slendr)
@@ -482,6 +490,8 @@ p2 <- population("p2", time = 9000, N = 1000, parent = p1)
 p3 <- population("p3", time = 6000, N = 1000, parent = p2)
 p4 <- population("p4", time = 3000, N = 1000, parent = p3)
 
+# same gene-flow event, now expressed as "yearly migration rate" instead of
+# the "total admixture proportion" as before
 year_rate <- 0.1 / (3000 - 2100)
 gf <- gene_flow(from = p2, to = p3, start = 3000, end = 2100, migration_rate = year_rate)
 
@@ -511,10 +521,10 @@ ancestry which would arrive like this in aggregate.
 
 ## Exercise 5: Deciphering common errors produced by _slendr_
 
-As noted above, _slendr_ is designed around interactive use, executing little
-bits of code at a time, making sure that potential errors are caught as soon as
-we make them rather than after spending lots of time programming long (and
-potentially eventually broken) simulation scripts.
+_slendr_ is designed around interactive use, executing little bits of code at a
+time, making sure that potential errors are caught as soon as we make them
+rather than after spending lots of time programming long (and potentially
+eventually broken) simulation scripts.
 
 However, software errors often confuse new programmers, especially because most
 errors represent completely trivial typos and unintended mistakes rather than
@@ -534,12 +544,14 @@ script" to experiment in without breaking your other working code.**
 ---
 
 **Create an R variable `pop` containing a _slendr_ population (using the
-`population()` function) with the name "pA", at time 1 and with the $N_e$ of
-5000. Then, create a population "pB" of the same size, which splits from "pA" at
-time 100. Then run this tiny toy script in your R console.**
+`population()` function) with the name "pA", at time 1 and with $N_e$ of 5000.
+Then, create a population "pB" of the same size, which splits from "pA" at time
+100. Then run this tiny toy script in your R console.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Here's that script `slendr_errors.R`:
 
 ```{r}
 library(slendr)
@@ -558,11 +570,11 @@ point on, _slendr_ will also enforce all following demographic events to follow
 this time direction!
 
 **To see how this works, create a third population named "pC", which splits from
-`pB` at time 80. What does _slendr_ do when you re-run your three-population
-script? What error do you get? And if you were to fix this error, what's the
-closest appropriate value of the `pC` split time from `pB` which would be
-consistent with _slendr_'s assumptions outlined above (and so it wouldn't
-complain anymore)?**
+`pB` at time 80. What does _slendr_ do when you re-run your (now
+three-population) script? What error do you get? And if you were to fix this
+error, what's the closest appropriate value of the `pC` split time from `pB`
+which would be consistent with _slendr_'s assumptions outlined above (and so it
+wouldn't complain anymore)?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -615,7 +627,7 @@ or
 
 **Which of those two calls to `gene_flow()` do you think will result in an error
 and why? Try to answer this first before you actually run any of these two
-`gene_flow()` commands, then verify your intuition bu executing those commands.
+`gene_flow()` commands, then verify your intuition by executing those commands.
 As a help, you may want to visualize a compiled version of this model using
 `plot_model()` (or just look at this visualization in my solution to the
 previous exercise).**
@@ -692,14 +704,17 @@ change.
 **Let's get back to our script `human_model.R`. Practice the application of the
 `resize()` function by programming a bottleneck event in the history of the
 population `p3`. The bottleneck should happen at 1800 years ago, with the
-population contracting to the size of 100 individuals. Then program the recovery
-of this population, resizing in a step-wise fashion to size of 2000 individual
-at time 1000 years ago. Again, always use the function `plot_model()` to
-visualize your compiled model and validate that you've programmed the bottleneck
-scenario correctly.**
+population contracting to the size of 100 individuals. Then program a recovery
+of this population, resizing it in a step to size of 2000 individual at time
+1000 years ago. Again, always use the function `plot_model()` to visualize your
+compiled model and validate that you've programmed the bottleneck scenario
+correctly.**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
+
+Here's the complete `human_model.R` in its current state after implementing the
+bottleneck and recovery of `p3`:
 
 ```{r}
 library(slendr)
@@ -742,7 +757,7 @@ fixed in a future _slendr_ version.
 
 ## Catching up
 
-If you want to just catch up to the point at which this section would conclude,
+If you want to just catch up to the point at which this chapter would conclude,
 here is the version of our simulation script `human_model.R` at the end of the
 final exercise:
 
@@ -798,12 +813,13 @@ file browsing program to see what files are hiding in that path. Given the model
 we've programmed so far, pay particular attention to `populations.tsv`,
 `geneflow.tsv`, etc. When you open those files, what format do they have? Can
 you decipher the meaning of the information they store by comparing it to the
-code you write in `human_model.R`?**
+code you wrote in your script `human_model.R`?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
 
-We can see that _slendr_ saved data to the location `{r} model$path`:
+We can see that _slendr_ saved some data to the location `{r} model$path` (it
+calls this data "configuration files"):
 
 ```{r}
 model
@@ -822,7 +838,7 @@ inspecting the files:
 print_file <- function(model, file) cat(paste(readLines(file.path(model$path, file)), collapse = "\n"))
 ```
 
-And here are the most relevant files:
+And here are the most relevant files printed using this helper function:
 
 ```{r}
 print_file(model, "populations.tsv")
@@ -841,13 +857,16 @@ print_file(model, "orig_length.txt")
 print_file(model, "length.txt")
 ```
 
+We can see that those files store all the information about our demographic
+model in a serialized form outside R!
+
 :::
 
 ---
 
-**What is stored in the file `script.py` and `script.slim`? If you know a bit of
-either Python or SLiM, can you decipher how will _slendr_ (later, as we'll see)
-simulate data?**
+**What is stored in the files `script.py` and `script.slim`? If you know a bit
+of either Python or SLiM, can you decipher how will _slendr_ (later, as we'll
+see) simulate data?**
 
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -856,8 +875,8 @@ Here are the
 [two](https://github.com/bodkan/slendr/blob/main/inst/scripts/script.py)
 [files](https://github.com/bodkan/slendr/blob/main/inst/scripts/script.slim).
 
-Both scripts are designed to read individual "model configuration files" (some
-of which we looked at right above) and use them to create a dedicated simulation
-run in either of the two "simulation engines" written in _msprime_ or SLiM.
+Both scripts are designed to read the model's "configuration files" (some of
+which we looked at above) and use them to create a dedicated simulation run in
+either of the two "simulation engines" written in _msprime_ or SLiM.
 
 :::
