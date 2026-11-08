@@ -395,7 +395,7 @@ window.Quarto = {
 
 <section id="theme-of-this-chapter" class="level2">
 <h2 class="anchored" data-anchor-id="theme-of-this-chapter">Theme of this chapter</h2>
-<p>What features does <em>slendr</em> offer for encoding traditional demographic models (i.e., tree-like models featuring population splits, population size changes, and admixture)? How can we transform a model that came up in a discussion, in a brainstorming session, or from a figure published in a literature, into a working script as quickly as possible?</p>
+<p>What features does <em>slendr</em> offer for encoding traditional demographic models (i.e., tree-like models featuring population splits, population size changes, and admixture)? How can we transform a model that came up in a discussion, in a brainstorming session, or which we saw in a figure in a research paper, into a working script as quickly as possible?</p>
 </section>
 <section id="preparation" class="level2">
 <h2 class="anchored" data-anchor-id="preparation">Preparation</h2>
@@ -413,16 +413,19 @@ window.Quarto = {
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>(<span class="at">uv =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <ol start="2" type="1">
-<li><strong>Always try to write your solutions in a dedicated script (saved under an appropriate name) as usually instructed by each exercise. Don’t write everything into a single long file. Don’t run your code solution only in your R console without having them recorded in a script.</strong></li>
+<li><strong>Try to write your solutions in a dedicated script (saved under an appropriate name) as instructed by any given exercise. Don’t write everything into a single long file, or only in your R console (without having things recorded in a dedicated solution script).</strong></li>
 </ol>
-<p>This might be frustrating at times and appear like unnecessary extra work, but keeping your code organized (and properly annotated with <code># comments like this</code>) is critical for making computational workflows reproducible.</p>
+<p>The second point might be frustrating at times and appear like unnecessary extra work, but keeping your code organized (and also annotated with <code># comments like this</code>) is critical for making your computational workflows reproducible.</p>
 </section>
 <section id="exercise-1-forward-direction-of-time" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="exercise-1-forward-direction-of-time">Exercise 1: Forward direction of time</h2>
 <p><strong>Create a new R script and save it as <code>forward_model.R</code>. Write your solutions to this exercise into that script.</strong></p>
 <hr>
-<p><strong>Encode the demographic model sketched in the following diagram using a series of <code>population()</code> calls, then compile it with <code>compile_model()</code>, storing it in the <code>model</code> variable. Finally, verify the correctness of the <code>model</code> visually using using the function <code>plot_model()</code>. Make sure to write all of this into your script <code>forward_model.R</code></strong></p>
+<p><strong>Encode the demographic model sketched in the following diagram using a series of <code>population()</code> calls, then compile it with <code>compile_model()</code>, storing it in the <code>model</code> variable (it should be compiled to run for 401 generations total with the generation time of 1). Finally, verify the correctness of the <code>model</code> visually using using the function <code>plot_model()</code>. Make sure to write all of this code in your script <code>forward_model.R</code></strong></p>
 <p><strong>Hint:</strong> Try to get into the habit of executing each command you add to your script (a line of code, a couple of lines, etc.) in your R console by pressing Ctrl+Enter as you’re writing your solutions line by line.</p>
+<center>
+<img src="files/statistics/base_model.png" class="img-fluid" style="width:50.0%">
+</center>
 
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
 <p><strong>Note:</strong> At this moment, the <code>time</code> value has a completely arbitrary unit to be determined later. Additionally, unless otherwise specified, the size <code>N</code> will always indicate the “effective population size” <span class="math inline">\(N_e\)</span>.</p>
@@ -443,7 +446,7 @@ window.Quarto = {
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>Adding to the script, we begin by creating the first population, called p1, storing it in a variable with the same name. When we execute this line and type <code>p1</code> in the R console, we get an informative summary. Especially when building very complex models with <em>slendr</em>, it pays off to develop the habit to program models like this, one command at a time, always making sure that what we <em>are</em> programming matches what we <em>want</em> to program!</p>
+<p>Adding to the script, we begin by creating the first population, called “p1”, storing it in a variable with the same name. When we execute this line and type <code>p1</code> in the R console, we get an informative summary. Especially when building very complex models with <em>slendr</em>, it pays off to develop the habit to program models like this, one command at a time, always making sure that what we <em>are</em> programming matches what we <em>want</em> to program!</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p1"</span>, <span class="at">time =</span> <span class="dv">1</span>, <span class="at">N =</span> <span class="dv">1000</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -497,7 +500,7 @@ population history overview:
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>When you think about how we programmed demographic events, we start at generation 1, then generation 100, etc… but how would the computer know when we want to stop the model? That’s what <code>simulation_length</code> ensures, whenever we want to build a forward-time model.</p>
+<p>When you think about how we programmed demographic events, we start at generation 1, then generation 100, etc… but how would the computer know when we want to stop the model? That’s what <code>simulation_length</code> ensures, whenever we want to build a forward-time model. This is why <em>slendr</em> gives us this error:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">generation_time =</span> <span class="dv">1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-error">
@@ -510,7 +513,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 </div>
 <p>Notice that we did not yet run any (potentially computationally costly) simulation and <em>slendr</em> gave us an informative error message as soon as it encountered a potential error in our code. Again, this is a very strong argument for developing <em>slendr</em> models step by step, executing individual commands one after another, “conversing” with the R console in a way which lets <em>slendr</em> catch our mistakes as early as possible.</p>
-<p>This is opposed to the other way of working, in which we would first write an entire (potentially very long) script and then potentially have trouble identifying where and how we made a mistake.</p>
+<p>This is opposed to the other way of working, in which we would first write an entire (potentially very long) script and then have trouble identifying where we made a mistake.</p>
 </div>
 </div>
 </div>
@@ -521,7 +524,7 @@ setting `direction = 'backward'.`</code></pre>
 <hr>
 <p><strong>Create a new R script and saved it as <code>backward_model.R</code>. Write your solutions to this exercise into that script.</strong></p>
 <hr>
-<p><strong>Convert the forward model which you just wrote into using a backward direction of time (i.e., the model will implicitly end at time 0—“the present day”—and start at the appropriate “time ago”). You can start by copying the contents of <code>forward_model.R</code> into your new script, and modify its features accordingly. Again, visualize the final <code>model</code> using the <code>plot_model()</code> function, which should get you (visually) exactly the same figure.</strong></p>
+<p><strong>Convert the forward model which you just wrote into using a backward direction of time (i.e., the model will implicitly end at time 0—“the present day”—and start at the appropriate “time ago”). You can start by copying the contents of <code>forward_model.R</code> into your new script, and modify it as needed. Again, visualize the final <code>model</code> using the <code>plot_model()</code> function, which should get you (visually) exactly the same figure.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -535,10 +538,13 @@ setting `direction = 'backward'.`</code></pre>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>To solve this exercise, we simply have to take the total length of our original forward simulation and reverse the times of scheduled events accordingly.</p>
-<p>Note that this is very annoying to do (and I’m sorry I’m making you do frustrating stuff!). This is just to show what’s necessary to do with simulation frameworks other than <em>slendr</em>. This convenient flexibility of <em>slendr</em> becomes even more apparent once we start dealing with more realistic time units later.</p>
-<p>For now, just remember that the direction of time of our models in <em>slendr</em> is flexible.</p>
-<p>If you want to simulate yeast growing over generations in a lab (from generation 1), you can.</p>
-<p>If you want to simulate human history over thousands of years (starting, for instance, from the Anatolian migration thousands of years ago), you can.</p>
+<p>Note that this is very annoying to do (and I’m sorry I’m making you do frustrating stuff!). This is just to show what’s necessary to do with simulation frameworks other than <em>slendr</em>. This convenient flexibility becomes even more clear once we start dealing with realistic time units later.</p>
+<p>For now, just remember that the direction of time of our models in <em>slendr</em> is flexible:</p>
+<ul>
+<li><p>If you want to simulate yeast growing over generations in a lab (starting from generation 1), you can.</p></li>
+<li><p>If you want to simulate human history over thousands of years (starting, for instance, from the Anatolian migration thousands of years ago), you can.</p></li>
+</ul>
+<p>Here’s a complete solution for the backward-time model:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -591,7 +597,7 @@ setting `direction = 'backward'.`</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4),</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">generation_time =</span> <span class="dv">1</span>,</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">simulation_length =</span> <span class="dv">400</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">simulation_length =</span> <span class="dv">400</span> <span class="co"># this works (but it's formally not needed)</span></span>
 <span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
@@ -611,7 +617,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 <div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>If we do set the argument to a smaller number, we effectively “truncate” the duration of the model. This is arelatively rare thing to do, but it could be useful in some circumstances, so it’s worth mentioning here:</p>
+<p>If we do set the argument to a smaller number, we effectively “truncate” the duration of the model. This is arelatively rare thing to do, but it could be useful in some circumstances so it’s worth mentioning here:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4),</span>
@@ -662,6 +668,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Here’s the original model transformed into what could represent “human demography” (particularly because all times are now in units of “years ago”, and populations assumed to have the generation time of 30 years):</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -687,7 +694,6 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 </div>
 <p>Again, when we compare this model to the very first model (which used time units of generations running forward in time), we see that they are <em>completely identical</em>—only the presentation changes (making the model more convenient for a reader expecting human demography), but the population genetics theory underlying this model remains the same!</p>
-<p><strong>Hint:</strong> If you want, take a look how I created the composite panels by unfolding the code. It is done by the function <code>plot_grid()</code> from the R package <em>cowplot</em>. An absolute rockstar for composing complex scientific figures.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -705,7 +711,7 @@ setting `direction = 'backward'.`</code></pre>
 <h2 class="anchored" data-anchor-id="exercise-4-programming-gene-flow">Exercise 4: Programming gene flow</h2>
 <p>Of course, real-world populations don’t just split from one another. Another common demographic process is gene flow (also called admixture or introgression in various contexts and in different species).</p>
 <hr>
-<p><strong>Modify your <code>human_model.R</code> script, adding a command to program admixture from population <code>p2</code> into population <code>p3</code> starting at <code>time</code> 3000 “years ago”, with an <code>end</code> at time 2200 “years ago”, using the function <code>gene_flow()</code>. Set the total <code>proportion</code> of the <code>p2</code> ancestry in <code>p3</code> at 0.1 (i.e., 10% of the final <code>p3</code> population will be derived from <code>p2</code>). When you plot this model using <code>plot_model()</code> (set also <code>proportions = TRUE</code>), you should see your “population tree model” turn into an “admixture model” as these are often called with an arrow indicating the programmed admixture event.</strong></p>
+<p><strong>Modify your <code>human_model.R</code> script, adding a command to program admixture from population <code>p2</code> into population <code>p3</code> starting at <code>time</code> 3000 “years ago”, with an <code>end</code> at time 2200 “years ago”, using the function <code>gene_flow()</code>. Set the total <code>proportion</code> of the <code>p2</code> ancestry in <code>p3</code> at 0.1 (i.e., 10% of the final <code>p3</code> population will be derived from <code>p2</code>). When you plot this model using <code>plot_model()</code> (set also <code>proportions = TRUE</code>), you should see your “population tree model” turned into an “admixture model” (as these models are often called in the literature) with an arrow indicating the programmed admixture event.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -718,7 +724,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 <div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Here’s the current status of <code>human_model.R</code>:</p>
+<p>Here’s the current status of <code>human_model.R</code>, now featuring an admixture event:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -750,7 +756,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 </div>
 <hr>
-<p><strong>When you look at the <code>?gene_flow</code> help page, you can see that the function has a <code>migration_rate</code> argument. What does it do? Is there any way to get the same result (i.e., to encode the same gene-flow event) as you did just above, but using <code>rate</code> instead of <code>proportion</code>? When would you expect to use one or the other?</strong></p>
+<p><strong>When you look at the <code>?gene_flow</code> help page, you can see that the function has a <code>migration_rate</code> argument. What does it do? Is there any way to get the same result (i.e., to encode the same 10% ancestry gene-flow event) as you did just above, but using <code>rate</code> instead of <code>proportion</code>? When would you expect to use one or the other?</strong></p>
 <p><strong>Hint:</strong> Try to make the habit of reading the help of various functions frequently—you discover lots of useful information that way that you wouldn’t normally learn about.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
@@ -764,7 +770,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>A 10% <em>proportion</em> of <code>p2</code> ancestry derived from <code>p3</code> over the time window of 3000 to 2100 years ago is mathematically equivalent to a per-year rate of <code>0.1 / (3000 - 2100)</code>, i.e.&nbsp;1.1111111^{-4}. To express this in a <em>slendr</em> model, take a look at the modified call to <code>gene_flow()</code> below:</p>
+<p>A 10% <em>proportion</em> of <code>p2</code> ancestry derived from <code>p3</code> over the time window of 3000 to 2100 years ago is mathematically equivalent to a per-year rate of <code>0.1 / (3000 - 2100)</code>, i.e.&nbsp;~0.000111. To express this in a <em>slendr</em> model, take a look at the modified call to <code>gene_flow()</code> below:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -774,16 +780,18 @@ setting `direction = 'backward'.`</code></pre>
 <span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>p3 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p3"</span>, <span class="at">time =</span> <span class="dv">6000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p2)</span>
 <span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>p4 <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"p4"</span>, <span class="at">time =</span> <span class="dv">3000</span>, <span class="at">N =</span> <span class="dv">1000</span>, <span class="at">parent =</span> p3)</span>
 <span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>year_rate <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="sc">/</span> (<span class="dv">3000</span> <span class="sc">-</span> <span class="dv">2100</span>)</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p2, <span class="at">to =</span> p3, <span class="at">start =</span> <span class="dv">3000</span>, <span class="at">end =</span> <span class="dv">2100</span>, <span class="at">migration_rate =</span> year_rate)</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">gene_flow =</span> gf,</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation_time =</span> <span class="dv">30</span>,</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_units =</span> <span class="st">"years before present"</span></span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co"># same gene-flow event, now expressed as "yearly migration rate" instead of</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># the "total admixture proportion" as before</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>year_rate <span class="ot">&lt;-</span> <span class="fl">0.1</span> <span class="sc">/</span> (<span class="dv">3000</span> <span class="sc">-</span> <span class="dv">2100</span>)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>gf <span class="ot">&lt;-</span> <span class="fu">gene_flow</span>(<span class="at">from =</span> p2, <span class="at">to =</span> p3, <span class="at">start =</span> <span class="dv">3000</span>, <span class="at">end =</span> <span class="dv">2100</span>, <span class="at">migration_rate =</span> year_rate)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">populations =</span> <span class="fu">list</span>(p1, p2, p3, p4), <span class="at">gene_flow =</span> gf,</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">generation_time =</span> <span class="dv">30</span>,</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">time_units =</span> <span class="st">"years before present"</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -799,13 +807,13 @@ setting `direction = 'backward'.`</code></pre>
 </section>
 <section id="exercise-5-deciphering-common-errors-produced-by-slendr" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-5-deciphering-common-errors-produced-by-slendr">Exercise 5: Deciphering common errors produced by <em>slendr</em></h2>
-<p>As noted above, <em>slendr</em> is designed around interactive use, executing little bits of code at a time, making sure that potential errors are caught as soon as we make them rather than after spending lots of time programming long (and potentially eventually broken) simulation scripts.</p>
+<p><em>slendr</em> is designed around interactive use, executing little bits of code at a time, making sure that potential errors are caught as soon as we make them rather than after spending lots of time programming long (and potentially eventually broken) simulation scripts.</p>
 <p>However, software errors often confuse new programmers, especially because most errors represent completely trivial typos and unintended mistakes rather than conceptual issues with the model logic. Situations when “basically correct script” still gives errors are incredibly frustrating.</p>
 <p>This is why it’s a good idea to spend a few moments to study the most common errors in <em>slendr</em> and recognize why they occur in an isolated, controlled setting when done on purpose.</p>
 <hr>
 <p><strong>First, let’s do a bit of a setup using things you already know. Create a new <em>slendr</em> model script called <code>slendr_errors.R</code>, just to have a “throwaway script” to experiment in without breaking your other working code.</strong></p>
 <hr>
-<p><strong>Create an R variable <code>pop</code> containing a <em>slendr</em> population (using the <code>population()</code> function) with the name “pA”, at time 1 and with the <span class="math inline">\(N_e\)</span> of 5000. Then, create a population “pB” of the same size, which splits from “pA” at time 100. Then run this tiny toy script in your R console.</strong></p>
+<p><strong>Create an R variable <code>pop</code> containing a <em>slendr</em> population (using the <code>population()</code> function) with the name “pA”, at time 1 and with <span class="math inline">\(N_e\)</span> of 5000. Then, create a population “pB” of the same size, which splits from “pA” at time 100. Then run this tiny toy script in your R console.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -818,6 +826,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Here’s that script <code>slendr_errors.R</code>:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -829,7 +838,7 @@ setting `direction = 'backward'.`</code></pre>
 </div>
 </div>
 <p>When <em>slendr</em> runs this code, it automatically infers that you intend to specify time in your model flowing in the forward direction (because times of your events move from smaller numbers to larger numbers). Not only that, from this point on, <em>slendr</em> will also enforce all following demographic events to follow this time direction!</p>
-<p><strong>To see how this works, create a third population named “pC”, which splits from <code>pB</code> at time 80. What does <em>slendr</em> do when you re-run your three-population script? What error do you get? And if you were to fix this error, what’s the closest appropriate value of the <code>pC</code> split time from <code>pB</code> which would be consistent with <em>slendr</em>’s assumptions outlined above (and so it wouldn’t complain anymore)?</strong></p>
+<p><strong>To see how this works, create a third population named “pC”, which splits from <code>pB</code> at time 80. What does <em>slendr</em> do when you re-run your (now three-population) script? What error do you get? And if you were to fix this error, what’s the closest appropriate value of the <code>pC</code> split time from <code>pB</code> which would be consistent with <em>slendr</em>’s assumptions outlined above (and so it wouldn’t complain anymore)?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -883,7 +892,7 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 <li><p>42% gene flow from <code>pA</code> to <code>pC</code> starting at time 200 and ending at time 150, or</p></li>
 <li><p>gene flow starting at time 150 and ending at time 200.</p></li>
 </ol>
-<p><strong>Which of those two calls to <code>gene_flow()</code> do you think will result in an error and why? Try to answer this first before you actually run any of these two <code>gene_flow()</code> commands, then verify your intuition bu executing those commands. As a help, you may want to visualize a compiled version of this model using <code>plot_model()</code> (or just look at this visualization in my solution to the previous exercise).</strong></p>
+<p><strong>Which of those two calls to <code>gene_flow()</code> do you think will result in an error and why? Try to answer this first before you actually run any of these two <code>gene_flow()</code> commands, then verify your intuition by executing those commands. As a help, you may want to visualize a compiled version of this model using <code>plot_model()</code> (or just look at this visualization in my solution to the previous exercise).</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -927,7 +936,7 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 </ul>
 <p>If we need to implement exponential resize event (either exponential increase or decrease of population size), we provide the new size <code>N</code>, the <code>time</code> at which the resizing should start (same as for step resizes) but also the time at which it should <code>end</code>. From this information, <em>slendr</em> is able to interpolate the resizes needed at each time point in order to simulate the gradual exponential change.</p>
 <hr>
-<p><strong>Let’s get back to our script <code>human_model.R</code>. Practice the application of the <code>resize()</code> function by programming a bottleneck event in the history of the population <code>p3</code>. The bottleneck should happen at 1800 years ago, with the population contracting to the size of 100 individuals. Then program the recovery of this population, resizing in a step-wise fashion to size of 2000 individual at time 1000 years ago. Again, always use the function <code>plot_model()</code> to visualize your compiled model and validate that you’ve programmed the bottleneck scenario correctly.</strong></p>
+<p><strong>Let’s get back to our script <code>human_model.R</code>. Practice the application of the <code>resize()</code> function by programming a bottleneck event in the history of the population <code>p3</code>. The bottleneck should happen at 1800 years ago, with the population contracting to the size of 100 individuals. Then program a recovery of this population, resizing it in a step to size of 2000 individual at time 1000 years ago. Again, always use the function <code>plot_model()</code> to visualize your compiled model and validate that you’ve programmed the bottleneck scenario correctly.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -940,6 +949,7 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 </div>
 <div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Here’s the complete <code>human_model.R</code> in its current state after implementing the bottleneck and recovery of <code>p3</code>:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
@@ -978,7 +988,7 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 </div></div></section>
 <section id="catching-up" class="level2">
 <h2 class="anchored" data-anchor-id="catching-up">Catching up</h2>
-<p>If you want to just catch up to the point at which this section would conclude, here is the version of our simulation script <code>human_model.R</code> at the end of the final exercise:</p>
+<p>If you want to just catch up to the point at which this chapter would conclude, here is the version of our simulation script <code>human_model.R</code> at the end of the final exercise:</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1029,7 +1039,7 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 <p>A very important part of <em>slendr</em>’s approach to modeling is to make simple things be trivially easy. This is largely why expressing even relatively complex models requires so little <em>slendr</em> code compared to the amount of programming needed with other powerful simulators.</p>
 <p>Still, sometimes it’s useful to peek behind the curtain and see what exactly is going on inside <em>slendr</em> and how it operates.</p>
 <hr>
-<p><strong>Type out the <code>model</code> object in the R console, paying attention to the description of the path where it’s been compiled. Use your operating system’s file browsing program to see what files are hiding in that path. Given the model we’ve programmed so far, pay particular attention to <code>populations.tsv</code>, <code>geneflow.tsv</code>, etc. When you open those files, what format do they have? Can you decipher the meaning of the information they store by comparing it to the code you write in <code>human_model.R</code>?</strong></p>
+<p><strong>Type out the <code>model</code> object in the R console, paying attention to the description of the path where it’s been compiled. Use your operating system’s file browsing program to see what files are hiding in that path. Given the model we’ve programmed so far, pay particular attention to <code>populations.tsv</code>, <code>geneflow.tsv</code>, etc. When you open those files, what format do they have? Can you decipher the meaning of the information they store by comparing it to the code you wrote in your script <code>human_model.R</code>?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1042,7 +1052,7 @@ time (100) is lower or equal to the parent's (100)</code></pre>
 </div>
 <div id="callout-14" class="callout-14-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>We can see that <em>slendr</em> saved data to the location /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpCiE2lQ/filea16a55f5ce65_slendr_model:</p>
+<p>We can see that <em>slendr</em> saved some data to the location /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmp48wgXt/fileabd53f999c06_slendr_model (it calls this data “configuration files”):</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>model</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1056,7 +1066,7 @@ time units: years before present
 total running length: 12000 time units
 model type: non-spatial
 
-configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/RtmpCiE2lQ/filea16a55f5ce65_slendr_model </code></pre>
+configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T/Rtmp48wgXt/fileabd53f999c06_slendr_model </code></pre>
 </div>
 </div>
 <p>Here’s how we can see the files in the model path:</p>
@@ -1074,7 +1084,7 @@ configuration files in: /private/var/folders/7f/n68ck8q969z_d628zqqnl4ch0000gn/T
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>print_file <span class="ot">&lt;-</span> <span class="cf">function</span>(model, file) <span class="fu">cat</span>(<span class="fu">paste</span>(<span class="fu">readLines</span>(<span class="fu">file.path</span>(model<span class="sc">$</span>path, file)), <span class="at">collapse =</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>And here are the most relevant files:</p>
+<p>And here are the most relevant files printed using this helper function:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print_file</span>(model, <span class="st">"populations.tsv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
@@ -1108,11 +1118,12 @@ p2  p3  0.1 0   301 3000    331 2100    1   2</code></pre>
 <pre><code>400</code></pre>
 </div>
 </div>
+<p>We can see that those files store all the information about our demographic model in a serialized form outside R!</p>
 </div>
 </div>
 </div>
 <hr>
-<p><strong>What is stored in the file <code>script.py</code> and <code>script.slim</code>? If you know a bit of either Python or SLiM, can you decipher how will <em>slendr</em> (later, as we’ll see) simulate data?</strong></p>
+<p><strong>What is stored in the files <code>script.py</code> and <code>script.slim</code>? If you know a bit of either Python or SLiM, can you decipher how will <em>slendr</em> (later, as we’ll see) simulate data?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1126,7 +1137,7 @@ p2  p3  0.1 0   301 3000    331 2100    1   2</code></pre>
 <div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Here are the <a href="https://github.com/bodkan/slendr/blob/main/inst/scripts/script.py">two</a> <a href="https://github.com/bodkan/slendr/blob/main/inst/scripts/script.slim">files</a>.</p>
-<p>Both scripts are designed to read individual “model configuration files” (some of which we looked at right above) and use them to create a dedicated simulation run in either of the two “simulation engines” written in <em>msprime</em> or SLiM.</p>
+<p>Both scripts are designed to read the model’s “configuration files” (some of which we looked at above) and use them to create a dedicated simulation run in either of the two “simulation engines” written in <em>msprime</em> or SLiM.</p>
 </div>
 </div>
 </div>
