@@ -12,19 +12,18 @@ population genetic statistics from this data?
 
 Computing statistics requires a specification of _what_ should be computed and
 _how_. For instance, which individuals should a computation be performed on? If
-multiple individuals are involved then how do we group them?
+groups of multiple individuals are involved then how do we group them?
 
-Exercises in this (and the next) chapter will demonstrate these techniques using
-the most fundamental concepts of population genomics, namely $N_e$, nucleotide
-diversity, and allele frequency spectrum. Rather than delving into the
-mathematical underpinning of these statistics, they we will be used as a
-familiar context to show how easy it is to gain insight into the (sometimes
-unintuitive) behavior of statistics through simulation-based exploration with
-_slendr_.
+Exercises in this chapter will demonstrate these techniques using the most
+fundamental concepts of population genomics, namely $N_e$, nucleotide diversity,
+and allele frequency spectrum. Rather than delving into the mathematical
+underpinning of these statistics, they will be used to provide a familiar
+context to show how easy it is to gain insight into (sometimes unintuitive)
+behavior of statistics in general through simulation-based exploration.
 
-More concretely, the coding exercises will introduce an example of benchmarking
-a hypothetical inference method (using a toy example of $N_e$ inference) using
-parameter grid simulations.
+More concretely, the coding exercises will focus on the testing of a
+hypothetical inference method (using a toy example of $N_e$ inference) using
+simulation-based benchmarking across a parameter grid.
 
 
 
@@ -34,7 +33,7 @@ parameter grid simulations.
 
 ## Literature
 
-In case you find yourself with extra time for some background reading, I
+**In case you find yourself with extra time for some background reading**, I
 recommend the following two chapters from the absolutely brilliant,
 freely-available textbook called [_"An Owner's Guide to the Human
 Genome"_](https://web.stanford.edu/group/pritchardlab/HGbook.html). I don't
@@ -66,9 +65,9 @@ discussion of the allele frequency spectrum (AFS).
 ## Preparation
 
 
-Let's start with the following single-population model to be able to focus on
-statistics without having to deal with complexities of demographic modeling
-itself.
+Let's start with the following single-population model to be able to exclusively
+focus on statistics without having to deal with complexities of demographic
+modeling itself.
 
 **Restart your R session (`Session -> Restart R`), then look through the code
 below to understand what it does and save it as `slendr_statistics.R`. Run the
@@ -122,9 +121,9 @@ of R, having mutations is often useful. Here's how we can make that happen.
 
 **Modify the `msprime(...)` command in your script `slendr_statistics.R` by
 "piping" its output to `ts_mutate(mutation_rate = 1e-8)` (remember the `%>%`
-"pipe operator" introduced in the earlier chapters). After you execute this new
-command and type `ts` in the R console to inspect the summary, you should see
-that mutations have been added.**
+"pipe operator" introduced earlier). After you execute this new command and type
+`ts` in the R console to inspect the summary, you should see that mutations have
+been added.**
   
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -180,9 +179,9 @@ statistics using _slendr_ and _tskit_.
 ## Exercise 2: Within-group(s) statistics --- nucleotide diversity
 
 The simplest possible computation we can do is to compute a statistic for a
-single population. As an example, let's look at [nucleotide diversity
-$\pi$](https://en.wikipedia.org/wiki/Nucleotide_diversity), implemented by a
-_slendr_ function `ts_diversity()`.
+single population. As an example, let's look at [nucleotide diversity (also
+known as $\pi$)](https://en.wikipedia.org/wiki/Nucleotide_diversity),
+implemented by the _slendr_ function `ts_diversity()`.
 
 ---
 
@@ -192,8 +191,9 @@ is obviously a tree-sequence object, such as the one produced by the `msprime()`
 engine) and `sample_sets =`.
 
 **Compute `ts_diversity()` on a single simulated individual, such as the
-individual with the name "pop_1". Knowing that _slendr_ simulates diploids and
-knowing the definition of [nucleotide
+individual with the name "pop_1", by providing this name as the `sample_sets =`
+argument of this function. Knowing that _slendr_ simulates diploids and knowing
+the definition of [nucleotide
 diversity](https://en.wikipedia.org/wiki/Nucleotide_diversity), how would you
 interpret the result that you get?**
 
@@ -233,9 +233,9 @@ length("single_value")
 ---
 
 **Now run the following three commands, one after the other. They look extremely
-similar, right? Do they produce the same value? If not, based on the results
-which you get, can you decipher a general rule for how _slendr_ treats the
-`sample_sets =` argument?**
+similar, right? Do they produce the same value? If not, based on the results you
+get from each, can you decipher a general rule for how _slendr_ interprets what
+it gets in the `sample_sets =` argument?**
 
 ```{r}
 #| output: false
@@ -258,7 +258,8 @@ think about this, even though this looks trivial and nitpicky!
 - The first command is supposed to demonstrate that specifying a plain vector of
 names to a statistic computed within a group computes that statistic as if each
 individual was "its own group". In this example, we get individual-based
-heterozygosity for each of the two individuals separately:
+heterozygosity for each of the two individuals separately (notice that the
+"pop_1" value is the same you got in the previous task):
 
 ```{r}
 ts_diversity(ts, sample_sets = c("pop_1", "pop_42"))
@@ -268,7 +269,7 @@ ts_diversity(ts, sample_sets = c("pop_1", "pop_42"))
 This is how you instruct _slendr_ to treat a given set of individuals as a
 group---and in this case, compute a statistic for the group as a whole. In this
 context, this command computes the nucleotide diversity within a group formed by
-two individuals from the population "pop":
+the given two individuals from the population "pop":
 
 ```{r}
 ts_diversity(ts, sample_sets = list(c("pop_1", "pop_42")))
@@ -307,7 +308,7 @@ computing `ts_diversity()` for a single group of individuals (like "pop_1" and
 "pop_42" above), compute it on multiple subsets of individuals of increasing
 samples sizes (let's say groups of 1, 2, 5, 10, 500 1000, and finally all
 individuals in the population "pop"). Do you expect the same value of nucleotide
-diversity? And why?**
+diversity? Why, or why not?**
 
 **Hint:** You can get a random subset of a larger set of elements using the
 built-in R function `sample()`. Take a look at `?sample` manual page if you need
@@ -323,9 +324,10 @@ options:
 
 ```{r}
 # first get all names of all individuals recorded in the tree sequence
+# as a single vector stored in the variable named `all`
 all <- ts_names(ts)
 
-# then manually create all subset names
+# then "manually" create all required subsets
 subsets <- list(
   sample(all, 1),
   sample(all, 2),
@@ -348,12 +350,13 @@ subsets <- lapply(sizes, sample, x = all)
 names(subsets) <- sizes
 ```
 
-Either way, both approaches create a list of vectors of appropriate lengths.
+Either way, both approaches create a list of vectors of appropriate lengths that
+we need to solve this exercise.
 
 ---
 
 Having created the lists of subsets of individuals from the population, we can
-finally compute nucleotide diversity in each of those groups:
+finally compute nucleotide diversity in each of those groups like this:
 
 ```{r}
 ts_diversity(ts, sample_sets = subsets)
@@ -362,11 +365,10 @@ ts_diversity(ts, sample_sets = subsets)
 Not surprisingly, we don't see much difference. This is expected, because there
 is only one true (unknown) value of nucleotide diversity of the entire
 population. What changes when we compute this statistic on subsets of different
-sizes is the stochastic noise due to random chance when we compute the statistic
-on subsets of the complete population.
+sizes is the stochastic noise due to random chance.
 
-We'll see a bit more on how to control (and quantify) the noise using
-simulations a little bit later.
+We'll see a bit more on how to control (and quantify) the noise in simulations a
+little bit later.
 
 :::
 
@@ -381,17 +383,19 @@ simulations a little bit later.
 
 ## Exercise 3: Parameter estimation --- $N_e$
 
-In practical research, we often use various software or statistics to estimate
-some parameter of interest. In our context---again, to demonstrate the concept
-of simulation-based exploration in a familiar context---let's look at a measure
-of the population size called [effective population
-size](https://en.wikipedia.org/wiki/Effective_population_size), or $N_e$.
+In practical research, we often use various software to estimate some model
+parameter of interest. In our context---again, to demonstrate the concept of
+simulation-based analyses in a familiar context---let's look at a measure of the
+population size called [effective population
+size](https://en.wikipedia.org/wiki/Effective_population_size), or $N_e$, as
+this model parameter of interest we want to infer.
 
 From a bit of [background theory of population
 genetics](https://en.wikipedia.org/wiki/Effective_population_size#Empirical_measurements),
 we know that we can obtain an estimate of $N_e$ from nucleotide diversity (which
 we just computed). Specifically, neutral theory of molecular evolution posits
-that an idealised diploid population will have a nucleotide diversity equal to
+that an idealised diploid population will have the nucleotide diversity (usually
+called $\theta$ in literature) equal to
 
 $$\theta = 4 N_e \mu,$$
 
@@ -401,8 +405,10 @@ nucleotide diversity in the form of
 
 $$N_e = \frac{\theta}{4 \mu}.$$
 
-**Let's build a simple simulation-based analysis to determine how well does this
-estimator perform under different scenarios.**
+**In principle, this is an estimate which could be computed by some external
+software (in a more complex real-world scenario). Let's build a simple
+simulation-based analysis to determine how well does this estimator perform
+under different scenarios.**
 
 ::: aside
 
@@ -466,8 +472,8 @@ step forward.
 
 **Suppose we need to evaluate how our hypothetical statistic of interest (in
 this example, our estimator of $N_e$) behaves under different parameters,
-different, models, different bioinformatic processing, etc. This happens always
-in research, so how would we go about it using simulations?**
+different, models, different bioinformatic processing, etc. This happens very
+often in practical research, so how would we go about it using simulations?**
 
 To do this, we could make a copy of our original script, modify it a bunch of
 times, and re-run the modifications as needed, collecting the results in the
@@ -488,8 +494,8 @@ nucleotide diversity in mathematical theory $\pi$).
 
 **In this script, create a function called `sim_constant`, which will accept a
 single argument `Ne_true`, and will "wrap around" the following bits of code
-(most of which can be copy-pasted from the original `slendr_statistics.R`, with
-minor modifications):**
+(most of which can be copy-pasted from the original `slendr_statistics.R` you
+worked on so far in this chapter, with minor modifications):**
 
 1. **the code implementing our _slendr_ demographic `model`** (substituting the originally fixed `N` value for `Ne_true`, of course),
 
@@ -504,13 +510,13 @@ argument given to your function.**
 
 6. **returning this `df` object as the output of the function.**
 
-**When you're done, all the code doing the above in the original script
-`slendr_statistics.R` should be entirely replaced by this function.**
+**When you're done, all code which was doing the steps above in your original
+script should be entirely replaced by this function.**
 
 **Hint:** If you need help, you can use the following template which shows what
 should your script look like when you're done. Additionally, you can get a
 refresher on programming custom functions by skimming the [relevant
-section](r-bootcamp.html#exercise-10-functions) of the R bootcamp chapter.
+section](r-bootcamp.html#exercise-10-functions) of the _"R bootcamp"_ chapter.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the template
@@ -534,8 +540,8 @@ sim_constant <- function(Ne_true) {
 ### Click to see the solution
 
 Here's how my entire `slendr_Ne_pi.R` looks like. As you can see, it's basically
-the same exact code as the script we started this chapter with, just "wrapped"
-in the `function(Ne_true) { ... }` block.
+the same exact code as the script `slendr_statistics.R` we started with, just
+"wrapped" in the `function(Ne_true) { ... }` block.
 
 ```{r}
 library(slendr)
@@ -565,7 +571,7 @@ sim_constant <- function(Ne_true) {
 ---
 
 **To test your function, restart your R session (in the RStudio top menu go
-`Session -> Restart R`), then run your entire script. Then, evaluate your
+`Session -> Restart R`), then run your entire script again. Then, evaluate your
 function in the R console by running it for different values of $N_e$ (for
 instance, type `sim_constant(100)`, `sim_constant(1234)`, `sim_constant(20000)`,
 etc.). Each of your function calls should produce a data frame with the
@@ -614,7 +620,7 @@ Whenever we want to benchmark a statistic or understand its expected behavior
 under different circumstances, we need to re-run a model many times, usually for
 different model parameters (or even different models entirely).
 
-**Imagine we want to compute our inference on many different potential values of
+**Imagine we want to repeat our inference on many different potential values of
 true $N_e$**. What we could do is something like the solution above, running the
 model individually. But this isn't scalable, definitely not if we need to run
 the same model across a huge number of parameter values (or even multiple sets
@@ -625,9 +631,9 @@ convenient function `map_dfr()` from the package _purrr_**.
 
 ---
 
-**Let's demonstrate how this technique works.** You don't have to run any of
-this code, just skim through this demonstration to get an idea how this works
-and apply it later.
+**Let's demonstrate how this technique works. You don't have to run any of this
+code, just skim through this demonstration to get an idea how this works and
+apply it later.**
 
 Imagine a silly little function like this, which creates a data frame with a
 given number and its square:
@@ -637,12 +643,12 @@ silly_fun <- function(x) {
   return(data.frame(value = x, squared = x * x))
 }
 
-silly_fun(42)
+silly_fun(10)
 ```
 
 The way **you use `map_dfr` is by providing a list of values of our parameter of
 interest and a name of some function**. In the case of our silly function, we
-can use it like this:
+can use `map_dfr()` like this:
 
 ```{r}
 library(purrr)
@@ -656,11 +662,12 @@ its output above, this is exactly what happened.
 
 ---
 
-**In your script `slendr_statistics_Ne.R`, program a simulation of $N_e$
-inference across a grid of `Ne_true` values of `c(1000, 2000, 3000, 4000, 5000,
-10000, 15000, 20000)`, then visualize the results as a scatterplot of `Ne_true`
-against `Ne_estimated`. Use the function `map_dfr()` to do this in an efficient,
-automated way.**
+**In your script `slendr_Ne_pi.R`, program a simulation of $N_e$ inference
+across a grid of `Ne_true` values of `c(1000, 2000, 3000, 4000, 5000, 10000,
+15000, 20000)`. Use the function `map_dfr()` to do this in an efficient,
+automated way, thus obtaining a single data frame. Then, visualize the results
+in this data frame as a scatterplot of columns `Ne_true` against
+`Ne_estimated`.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -697,9 +704,6 @@ but this idea extends to many other settings:
 
 - understanding how PCA differs for different sample sizes from different populations,
 
-- using IBD or LAI results for inference of admixture parameters after they've
-shown accurate in benchmarking,
-
 ... and many others.
 
 
@@ -718,18 +722,19 @@ to see how robust our estimator is to the assumptions behind the underlying
 demographic model (which is almost always uncertain to some degree, meaning that
 our assumptions can be also uncertain!).**
 
-In the previous exercise, we worked with using nucleotide diversity to estimate
-the $N_e$ a population under study ($N_e$) and verified that it works very well
-for a model of a long-term constant population size.
+In the previous exercise, we used nucleotide diversity to infer the $N_e$ of a
+population under study (we used an equation, but it could be also external
+software) and verified that it works very well for a model of a long-term
+constant population size.
 
 But what about population that experienced a resize event? How well does our
 $N_e$ estimate work in such case?
 
 ---
 
-**In your script `slendr_statistics_Ne.R`, make a copy of your function
-`sim_constant()` and name that copy `sim_resize()`. Make the following changes
-in this function:**
+**In your script `slendr_Ne_pi.R`, make a copy of your function `sim_constant()`
+and name that copy `sim_resize()`. Make the following changes in this
+function:**
 
 1. **the population "pop" will start with fixed $N_e$ of 5000,**
 
@@ -739,9 +744,9 @@ given to the argument `Ne_true` at time 500.**
 
 **Then, use `map_dfr()` to run the new function `sim_resize()` along the same
 parameter grid as before, visualizing the results of `Ne_true` against
-`Ne_estimated`. How well does our diversity-based $N_e$ estimate perform in such
-a demographic scenario? Is it robust to non-constant demographic histories? If
-not, why?**
+`Ne_estimated` again. How well does our diversity-based $N_e$ estimate perform
+in such a demographic scenario? Is it robust to non-constant demographic
+histories? If not, why?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -787,13 +792,13 @@ ggplot(df_change, aes(Ne_true, Ne_estimated)) +
 
 We can see that even a large population resize event doesn't change the observed
 levels of nucleotide diversity that much. As a result, the $N_e$ based on the
-population nucleotide diversity parameter $\theta$ is very wrong---we
-consistently estimate it at the level of 5000 (i.e., the size prior to the
-resize), regardless of the true size of the population after the bottleneck.
+population nucleotide diversity is very wrong---we consistently estimate it at
+the level of 5000 (i.e., the size prior to the resize), regardless of the true
+size of the population after the resize.
 
 It's only very drastic bottlenecks that are picked up by our $N_e$ estimator,
-and even in those cases we still overestimate the true $N_e$ after the resize
-event.
+and even in those cases we still severely overestimate the true $N_e$ after the
+resize event.
 
 :::
 
@@ -806,10 +811,10 @@ event.
 
 ## Exercise 7: Expanding the parameter grid
 
-Our hypothesis for how poorly the nucleotide diversity-based estimate is doing
-under non-constant population size is that the resize event is very recent. As a
-result, diversity hasn't yet reached an equilibrium value which would be picked
-up by our $N_e$ estimator.
+Our hypothesis for how poorly the nucleotide diversity-based estimate of $N_e$
+is doing under non-constant population size is that the resize event is very
+recent. As a result, diversity hasn't yet reached an equilibrium value which
+would be picked up by our $N_e$ estimator.
 
 Let's test this hypothesis while, at the same time, showing how we can expand
 the parameter grid simulations to include another parameter---this time the time
@@ -817,12 +822,12 @@ of the population size change in addition to the $N_e$ resize value.
 
 ---
 
-**In your script `slendr_statistics_Ne.R`, add a second argument to your
-function `sim_change()` called `T_change`. Then change the `resize()` command in
-your function to use variable `T_change` instead of the fixed value of 1000.
-Then, run four versions of the `map_dfr()` command in the same way as before,
-except now in the form such as `map_dfr(Ne_grid, sim_change, T_change = 100)`** (this
-will run `sim_change()` for each of the `Ne_grid` values like before, while also
+**In your script `slendr_Ne_pi.R`, add a second argument to your function
+`sim_change()` called `T_change`. Then change the `resize()` command in your
+function to use variable `T_change` instead of the fixed value of 1000. Then,
+run four versions of the `map_dfr()` command in the same way as before, except
+now in the form such as `map_dfr(Ne_grid, sim_change, T_change = 100)`** (this
+will run `sim_change()` for each of the `Ne_grid` values like before, while
 fixing the `T_change` parameter to 100). **Do this for `T_change` of 1, 100,
 1000, and 2000.**
 
@@ -870,8 +875,8 @@ results in a tidy way with four panels:
 Ne_grid <- c(1000, 1500, 2000, 2500, 3000, 4000, 5000, 10000, 15000, 20000)
 
 df_change <- rbind(
-  map_dfr(Ne_grid, sim_change, T_change = 1),    # change 1 generation ago
-  map_dfr(Ne_grid, sim_change, T_change = 100),  # change 100 generations ago
+  map_dfr(Ne_grid, sim_change, T_change = 1),    # simulate size change 1 generation ago
+  map_dfr(Ne_grid, sim_change, T_change = 100),  # simulate size change 100 generations ago
   map_dfr(Ne_grid, sim_change, T_change = 1000), # etc.
   map_dfr(Ne_grid, sim_change, T_change = 2000)
 )
@@ -898,7 +903,10 @@ $\theta = 4 N_e \mu$ nucleotide diversity parameter is going to be a little
 closer to the true (unknown) population size.
 
 Still, it's absolutely clear that non-constant demography can completely mislead
-the $N_e$ estimator based on nucleotide diversity.
+the $N_e$ estimator based on nucleotide diversity---this is a conclusion that is
+actually quite relevant for real-world applications. For instance, we could have
+very endangered species (with a very small $N_e$) which still maintains quite a
+bit of nucleotide diversity!
 
 :::
 
@@ -909,20 +917,11 @@ reduces the entirety of genetic variation in the population (which mutations
 there are at which frequencies) into a single number. As a result, we lose a lot
 of potentially very useful information about the population's demographic
 history. When we try to estimate $N_e$ using this summary statistic, we can only
-hope to infer a long-term $N_e$.
+hope to infer a long-term $N_e$, but we won't be able to infer recent population
+dynamics.
 
 As we have seen, a single bottleneck doesn't cause nucleotide diversity to drop
 significantly enough for us to pick up that this bottleneck even happened.
-
-
-
-
-
-**If you have the time and energy for more programming, you can get more
-practice with this kind of simulation-based exploratory modeling by testing
-whether the allele frequency spectrum has more statistical power for demographic
-inference.**
-
 
 
 
@@ -996,8 +995,9 @@ accept a single argument `Ne_true` and implement the exact same demographic
 model as you did in your function `sim_change()` (i.e., resize from the initial
 `N` of 5000 to the given value of `Ne_true` at time 1000). In this function,
 compute the `afs` vector from this model, then run it for a range of `Ne_grid`
-values and visualize the individual AFS results. Does AFS pick up signal even
-from such recent population size changes?**
+values and visualize the individual AFS vectors produced for each of them. Does
+AFS pick up signal even from such recent population size changes, unlike the
+nucleotide diversity?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -1070,7 +1070,10 @@ cowplot::plot_grid(
 
 This simulation indicates that AFS does, indeed, carry much more information
 about population history, even for recent changes in population size, driven
-largely by singletons!
+largely by singletons! Therefore, at least for population expansions, AFS is
+much more statistically powerful than nucleotide diversity. From population
+genetic theory perspective this makes sense, because nucleotide diversity is
+actually nothing but a summary of the AFS.
 
 :::
 
@@ -1081,17 +1084,12 @@ point of this chapter was to demonstrate how to compute within-population
 statistics with _slendr_, how we can use manipulation of R lists and vectors to
 instruct _slendr_ on how to compute a given statistic, and provide a set of
 small examples of how population genomic simulations (even extremely simple
-ones!) and a bit of data processing can be used to build intuition into
-sometimes unintuitive concepts.
+ones!) and a bit of data processing can be used to benchmark real-world
+inference methods..
 
 Towards the end of the workshop, you'll have the opportunity work through a
 slightly more realistic case-study which will demonstrate how to do
 simulation-based inference of $N_e$ in a fully automated way.
-
-For now, we're going to move on into computing between-group statistics and use
-similar computational methodology to explore a couple of concepts behind metrics
-such as $F_{ST}$ or $f$-statistics.
-
 
 
 
