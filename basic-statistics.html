@@ -368,6 +368,7 @@ window.Quarto = {
   <li><a href="#exercise-5-simulations-across-parameter-grids" id="toc-exercise-5-simulations-across-parameter-grids" class="nav-link" data-scroll-target="#exercise-5-simulations-across-parameter-grids">Exercise 5: Simulations across parameter grids</a></li>
   <li><a href="#exercise-6-comparing-multiple-models" id="toc-exercise-6-comparing-multiple-models" class="nav-link" data-scroll-target="#exercise-6-comparing-multiple-models">Exercise 6: Comparing multiple models</a></li>
   <li><a href="#exercise-7-expanding-the-parameter-grid" id="toc-exercise-7-expanding-the-parameter-grid" class="nav-link" data-scroll-target="#exercise-7-expanding-the-parameter-grid">Exercise 7: Expanding the parameter grid</a></li>
+  <li><a href="#exercise-8-real-world-example" id="toc-exercise-8-real-world-example" class="nav-link" data-scroll-target="#exercise-8-real-world-example">Exercise 8: Real-world example</a></li>
   <li><a href="#bonus-exercise-allele-frequency-spectrum-afs" id="toc-bonus-exercise-allele-frequency-spectrum-afs" class="nav-link" data-scroll-target="#bonus-exercise-allele-frequency-spectrum-afs">Bonus exercise: Allele frequency spectrum (AFS)</a></li>
   <li><a href="#catching-up" id="toc-catching-up" class="nav-link" data-scroll-target="#catching-up">Catching up</a></li>
   </ul>
@@ -431,14 +432,14 @@ window.Quarto = {
 </section>
 <section id="exercise-1-adding-mutations" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-1-adding-mutations">Exercise 1: Adding mutations</h2>
-<p>When you typed <code>ts</code> in your R console earlier, you may have noticed a strange thing — although <code>msprime()</code> simulated genomic data, there are no mutations! How can this be?</p>
+<p>When you typed <code>ts</code> in your R console earlier, you may have noticed a strange thing — although <code>msprime()</code> simulated genomic data, there are no mutations! How can this be? Just take a look the tree-sequence summary below (specifically, the “Mutations” field):</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │     18,311║
+║Trees          │     18,615║
 ╟───────────────┼───────────╢
 ║Sequence Length│ 10,000,000║
 ╟───────────────┼───────────╢
@@ -451,7 +452,7 @@ window.Quarto = {
 ╔═══════════╤══════╤═════════╤════════════╗
 ║Table      │Rows  │Size     │Has Metadata║
 ╠═══════════╪══════╪═════════╪════════════╣
-║Edges      │89,149│  2.7 MiB│          No║
+║Edges      │90,108│  2.7 MiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Individuals│ 5,000│136.7 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
@@ -459,7 +460,7 @@ window.Quarto = {
 ╟───────────┼──────┼─────────┼────────────╢
 ║Mutations  │     0│ 16 Bytes│          No║
 ╟───────────┼──────┼─────────┼────────────╢
-║Nodes      │32,935│900.6 KiB│          No║
+║Nodes      │33,218│908.3 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Populations│     1│222 Bytes│         Yes║
 ╟───────────┼──────┼─────────┼────────────╢
@@ -471,7 +472,7 @@ window.Quarto = {
 </div>
 <p>As we will see later, the magic of tree sequences allows us to compute any population genetic statistic without mutations. That said, for comparing simulated results to statistics computed by various third-party software outside of R, having mutations is often useful. Here’s how we can make that happen.</p>
 <hr>
-<p><strong>Modify the <code>msprime(...)</code> command in your script <code>slendr_statistics.R</code> by “piping” its output to <code>ts_mutate(mutation_rate = 1e-8)</code> (remember the <code>%&gt;%</code> “pipe operator” introduced earlier). After you execute this new command and type <code>ts</code> in the R console to inspect the summary, you should see that mutations have been added.</strong></p>
+<p><strong>Modify the <code>msprime(...)</code> command in your script <code>slendr_statistics.R</code> by “piping” its output to <code>ts_mutate(mutation_rate = 1e-8)</code> (remember the <code>%&gt;%</code> “pipe operator” introduced earlier). After you execute this new command and type <code>ts</code> in the R console to inspect the summary, you should see that mutations have been added. Verify that this is the case by typing <code>ts</code> in your R console.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -490,14 +491,14 @@ window.Quarto = {
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We can see that, indeed, the tree sequence now has 19419 mutations in it:</p>
+<p>We can see that, indeed, the tree sequence now has 19384 mutations in it:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │     17,840║
+║Trees          │     18,196║
 ╟───────────────┼───────────╢
 ║Sequence Length│ 10,000,000║
 ╟───────────────┼───────────╢
@@ -505,26 +506,26 @@ window.Quarto = {
 ╟───────────────┼───────────╢
 ║Sample Nodes   │     10,000║
 ╟───────────────┼───────────╢
-║Total Size     │    5.5 MiB║
+║Total Size     │    5.6 MiB║
 ╚═══════════════╧═══════════╝
 ╔═══════════╤══════╤═════════╤════════════╗
 ║Table      │Rows  │Size     │Has Metadata║
 ╠═══════════╪══════╪═════════╪════════════╣
-║Edges      │87,248│  2.7 MiB│          No║
+║Edges      │88,901│  2.7 MiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Individuals│ 5,000│136.7 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Migrations │     0│  8 Bytes│          No║
 ╟───────────┼──────┼─────────┼────────────╢
-║Mutations  │19,419│701.7 KiB│          No║
+║Mutations  │19,384│700.4 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
-║Nodes      │32,646│892.7 KiB│          No║
+║Nodes      │32,880│899.1 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Populations│     1│222 Bytes│         Yes║
 ╟───────────┼──────┼─────────┼────────────╢
 ║Provenances│     2│  2.2 KiB│          No║
 ╟───────────┼──────┼─────────┼────────────╢
-║Sites      │19,397│473.6 KiB│          No║
+║Sites      │19,375│473.0 KiB│          No║
 ╚═══════════╧══════╧═════════╧════════════╝</code></pre>
 </div>
 </div>
@@ -540,7 +541,7 @@ window.Quarto = {
 <p>The simplest possible computation we can do is to compute a statistic for a single population. As an example, let’s look at <a href="https://en.wikipedia.org/wiki/Nucleotide_diversity">nucleotide diversity (also known as <span class="math inline">\(\pi\)</span>)</a>, implemented by the <em>slendr</em> function <code>ts_diversity()</code>.</p>
 <hr>
 <p>If you <strong>look at its help page under <code>?ts_diversity</code></strong>, you will see that it accepts several arguments—for now let’s focus on the first two, <code>ts =</code> (which is obviously a tree-sequence object, such as the one produced by the <code>msprime()</code> engine) and <code>sample_sets =</code>.</p>
-<p><strong>Compute <code>ts_diversity()</code> on a single simulated individual, such as the individual with the name “pop_1”, by providing this name as the <code>sample_sets =</code> argument of this function. Knowing that <em>slendr</em> simulates diploids and knowing the definition of <a href="https://en.wikipedia.org/wiki/Nucleotide_diversity">nucleotide diversity</a>, how would you interpret the result that you get?</strong></p>
+<p><strong>Compute <code>ts_diversity()</code> on a single simulated individual, such as the individual with the name “pop_1”, by providing this name as the <code>sample_sets =</code> argument of this function. Knowing that <em>slendr</em> simulates diploids and knowing the definition of <a href="https://en.wikipedia.org/wiki/Nucleotide_diversity">nucleotide diversity</a>, how would you interpret the result that you get for this one individual from the perspective of genomics?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -560,7 +561,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 pop_1  0.000209</code></pre>
+1 pop_1  0.000163</code></pre>
 </div>
 </div>
 <!-- ```{r} -->
@@ -573,7 +574,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 pop_1  0.000209</code></pre>
+1 pop_1  0.000163</code></pre>
 </div>
 </div>
 <p>This is because in R, a single value is the same thing as a vector of length one (this might seem like a bit of curious R trivia but it’s good to keep in mind):</p>
@@ -595,7 +596,7 @@ window.Quarto = {
 </div>
 </div>
 <hr>
-<p><strong>Now run the following three commands, one after the other. They look extremely similar, right? Do they produce the same value? If not, based on the results you get from each, can you decipher a general rule for how <em>slendr</em> interprets what it gets in the <code>sample_sets =</code> argument?</strong></p>
+<p><strong>Now run the following three commands, one after the other. They look extremely similar, right? Do they produce the same value? If not, based on the results you get from each of those commands, can you deduce a general rule for how <em>slendr</em> interprets what it gets in the <code>sample_sets =</code> argument?</strong></p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_42"</span>))</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_diversity</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"pop_1"</span>, <span class="st">"pop_42"</span>)))</span>
@@ -625,8 +626,8 @@ window.Quarto = {
 <pre><code># A tibble: 2 × 2
   set    diversity
   &lt;chr&gt;      &lt;dbl&gt;
-1 pop_1   0.000209
-2 pop_42  0.000217</code></pre>
+1 pop_1   0.000163
+2 pop_42  0.000192</code></pre>
 </div>
 </div>
 <ul>
@@ -638,7 +639,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 set_1  0.000210</code></pre>
+1 set_1  0.000181</code></pre>
 </div>
 </div>
 <ul>
@@ -651,7 +652,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 2
   set        diversity
   &lt;chr&gt;          &lt;dbl&gt;
-1 pop_subset  0.000210</code></pre>
+1 pop_subset  0.000181</code></pre>
 </div>
 </div>
 </div>
@@ -659,8 +660,8 @@ window.Quarto = {
 </div>
 <hr>
 <p>Of course, we can compute any statistic not only for one group of individuals, but for multiple of them. What result such computation produces depends on whether we’re computing the so-called <a href="https://tskit.dev/tskit/docs/stable/stats.html#sec-stats-sample-sets-one-way">“one-way statistics”</a> (computed within groups, like nucleotide diversity we started with here) or <a href="https://tskit.dev/tskit/docs/stable/stats.html#multi-way-methods">“multi-way statistics”</a> (computed between groups, like <span class="math inline">\(F_{ST}\)</span>). For now we’ll stay with one-way statistics.</p>
-<p><strong>To make the “one-way” statistic concept clear, let’s practice this. Instead of computing <code>ts_diversity()</code> for a single group of individuals (like “pop_1” and “pop_42” above), compute it on multiple subsets of individuals of increasing samples sizes (let’s say groups of 1, 2, 5, 10, 500 1000, and finally all individuals in the population “pop”). Do you expect the same value of nucleotide diversity? Why, or why not?</strong></p>
-<p><strong>Hint:</strong> You can get a random subset of a larger set of elements using the built-in R function <code>sample()</code>. Take a look at <code>?sample</code> manual page if you need more help.</p>
+<p><strong>To make the “one-way” statistic concept clear, let’s practice this. Instead of computing <code>ts_diversity()</code> for a single group of individuals (like “pop_1” and “pop_42” above), compute it on multiple subsets of individuals of increasing samples sizes (let’s say groups of 1, 2, 5, 10, 500 1000, and finally all individuals in the population “pop”). Before you run this computation, do you expect the same value of nucleotide diversity for each of those sample sizes? Why, or why not?</strong></p>
+<p><strong>Hint:</strong> You can get a random subset of a larger set of elements using the built-in R function <code>sample()</code>. Take a look at <code>?sample</code> manual page if you need more help. If you need even more help, take a peek at the beginning of the solution below (point 2. specifically). When you have a list of the different subsets of individuals, you can provide it as the <code>sample_sets =</code> argument of <code>ts_diversity()</code> again.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -713,13 +714,13 @@ window.Quarto = {
 <pre><code># A tibble: 7 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 1      0.000192
-2 2      0.000193
-3 5      0.000202
-4 10     0.000199
-5 500    0.000202
-6 1000   0.000202
-7 5000   0.000203</code></pre>
+1 1      0.000176
+2 2      0.000187
+3 5      0.000187
+4 10     0.000187
+5 500    0.000186
+6 1000   0.000186
+7 5000   0.000186</code></pre>
 </div>
 </div>
 <p>Not surprisingly, we don’t see much difference. This is expected, because there is only one true (unknown) value of nucleotide diversity of the entire population. What changes when we compute this statistic on subsets of different sizes is the stochastic noise due to random chance.</p>
@@ -740,7 +741,7 @@ window.Quarto = {
 <div class="no-row-height column-margin column-container"><div class="margin-aside">
 <p><strong>Note:</strong> If you are familiar with population genetics, this exercise has all sorts of obvious answers, but let’s demonstrate how we can benchmark this estimate using simulations, establishing a useful <em>slendr</em> recipe which you will be able to use in many other contexts on many other inference methods (some of the more complex ones will be demonstrated later in this workshop).</p>
 </div></div><hr>
-<p><strong>Start by computing the nucleotide diversity value for every single individual in your tree sequence (instead of a small subset) and store this result of <code>ts_diversity()</code> in a data frame <code>df</code>. Then, use the equation above to estimate <span class="math inline">\(N_e\)</span> from nucleotide diversity, adding a new column <code>Ne_estimated</code> to this data frame with this value. Do you get a somewhat reasonably looking result?</strong></p>
+<p><strong>In your script <code>slendr_statistics.R</code>, start by computing nucleotide diversity across all individuals in your tree sequence taken together (instead of a small subset) and store this result of <code>ts_diversity()</code> in a data frame <code>df</code>. Then, use the equation above to estimate <span class="math inline">\(N_e\)</span> from nucleotide diversity, adding a new column called <code>Ne_estimated</code> to this data frame with this value. Do you get a somewhat reasonably looking result?</strong></p>
 <p><strong>Hint:</strong> Remember that you know the true <span class="math inline">\(N_e\)</span> in your model — it’s the <code>N</code> value in your simulation script! That’s the most powerful thing about simulations — they allow you to establish a ground truth and benchmark various methods against this truth!</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
@@ -762,7 +763,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 2
   set   diversity
   &lt;chr&gt;     &lt;dbl&gt;
-1 all    0.000203</code></pre>
+1 all    0.000186</code></pre>
 </div>
 </div>
 <p>Then add the inferred <span class="math inline">\(N_e\)</span> according to the equation above:</p>
@@ -773,7 +774,7 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 3
   set   diversity Ne_estimated
   &lt;chr&gt;     &lt;dbl&gt;        &lt;dbl&gt;
-1 all    0.000203        5064.</code></pre>
+1 all    0.000186        4645.</code></pre>
 </div>
 </div>
 <p>We programmed the true <span class="math inline">\(N_e\)</span> in our model at 5000, so this estimate doesn’t look bad at all!</p>
@@ -788,9 +789,9 @@ window.Quarto = {
 <p>To do this, we could make a copy of our original script, modify it a bunch of times, and re-run the modifications as needed, collecting the results in the process. This works, but is almost always the wrong approach. The correct way to do this is to generalize our code into a self-contained function.</p>
 <p>To demonstrate, let’s break this down into individual steps (in software engineering, this process of modifying code and improving it is called <a href="https://en.wikipedia.org/wiki/Code_refactoring">“refactoring”</a>).</p>
 <hr>
-<p><strong>First, create and save a new script called <code>slendr_Ne_pi.R</code>. We’ll be working on our improvements in this new file</strong> (the <code>pi</code> comes from a shortcut name for nucleotide diversity in mathematical theory <span class="math inline">\(\pi\)</span>).</p>
+<p><strong>First, save your current script <code>slendr_statistics.R</code> as a new script called <code>slendr_Ne_pi.R</code>. We’ll be working on improvements in this new file</strong> (the <code>pi</code> comes from a shortcut name for nucleotide diversity in mathematical theory <span class="math inline">\(\pi\)</span>).</p>
 <hr>
-<p><strong>In this script, create a function called <code>sim_constant</code>, which will accept a single argument <code>Ne_true</code>, and will “wrap around” the following bits of code (most of which can be copy-pasted from the original <code>slendr_statistics.R</code> you worked on so far in this chapter, with minor modifications):</strong></p>
+<p><strong>In this new script <code>slendr_Ne_pi.R</code>, create a new R function called <code>sim_constant</code>, which will accept a single argument <code>Ne_true</code>, and will “wrap around” the following bits of code (most of which can be copy-pasted from the original <code>slendr_statistics.R</code> you worked on so far in this chapter, with minor modifications):</strong></p>
 <ol type="1">
 <li><p><strong>the code implementing our <em>slendr</em> demographic <code>model</code></strong> (substituting the originally fixed <code>N</code> value for <code>Ne_true</code>, of course),</p></li>
 <li><p><strong>the command simulating a <code>ts</code> object from the <code>model</code></strong>,</p></li>
@@ -800,7 +801,7 @@ window.Quarto = {
 <li><p><strong>returning this <code>df</code> object as the output of the function.</strong></p></li>
 </ol>
 <p><strong>When you’re done, all code which was doing the steps above in your original script should be entirely replaced by this function.</strong></p>
-<p><strong>Hint:</strong> If you need help, you can use the following template which shows what should your script look like when you’re done. Additionally, you can get a refresher on programming custom functions by skimming the <a href="r-bootcamp.html#exercise-10-functions">relevant section</a> of the <em>“R bootcamp”</em> chapter.</p>
+<p><strong>Hint:</strong> If you need help with creating a custom function, you can use the following template which shows what should your script look like when you’re done. Additionally, you can get a refresher on programming custom functions by skimming the <a href="r-bootcamp.html#exercise-10-functions">relevant section</a> of the <em>“R bootcamp”</em> chapter.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -886,21 +887,21 @@ window.Quarto = {
 <pre><code># A tibble: 1 × 4
   set    diversity Ne_estimated Ne_true
   &lt;chr&gt;      &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
-1 all   0.00000173         43.2     100</code></pre>
+1 all   0.00000471         118.     100</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sim_constant</span>(<span class="at">Ne_true =</span> <span class="dv">1234</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
   set   diversity Ne_estimated Ne_true
   &lt;chr&gt;     &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
-1 all   0.0000474        1185.    1234</code></pre>
+1 all   0.0000432        1079.    1234</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="fu">sim_constant</span>(<span class="at">Ne_true =</span> <span class="dv">20000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 4
   set   diversity Ne_estimated Ne_true
   &lt;chr&gt;     &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;
-1 all    0.000792       19791.   20000</code></pre>
+1 all    0.000826       20642.   20000</code></pre>
 </div>
 </div>
 <p>Again, it looks like our estimator can—at least on this extremely trivial underlying demographic model—infer the hidden <span class="math inline">\(N_e\)</span> quite well.</p>
@@ -914,17 +915,19 @@ window.Quarto = {
 <section id="exercise-5-simulations-across-parameter-grids" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-5-simulations-across-parameter-grids">Exercise 5: Simulations across parameter grids</h2>
 <p>Whenever we want to benchmark a statistic or understand its expected behavior under different circumstances, we need to re-run a model many times, usually for different model parameters (or even different models entirely).</p>
-<p><strong>Imagine we want to repeat our inference on many different potential values of true <span class="math inline">\(N_e\)</span></strong>. What we could do is something like the solution above, running the model individually. But this isn’t scalable, definitely not if we need to run the same model across a huge number of parameter values (or even multiple sets of such parameters).</p>
+<p><strong>Imagine we want to repeat our inference on many different potential values of true <span class="math inline">\(N_e\)</span></strong>. What we could do is something like what you did while testing your function earlier, running the variations of the simulation individually and manually. But this isn’t scalable, definitely not if we need to run the same model across a huge number of parameter values (or even multiple sets of such parameters).</p>
 <p>In cases like this, <strong>we can use a “looping” function, such as the very convenient function <code>map_dfr()</code> from the package <em>purrr</em></strong>.</p>
 <hr>
 <p><strong>Let’s demonstrate how this technique works. You don’t have to run any of this code, just skim through this demonstration to get an idea how this works and apply it later.</strong></p>
 <p>Imagine a silly little function like this, which creates a data frame with a given number and its square:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>silly_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">data.frame</span>(<span class="at">value =</span> x, <span class="at">squared =</span> x <span class="sc">*</span> x))</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="fu">silly_fun</span>(<span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># define a custom function</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>silly_fun <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">data.frame</span>(<span class="at">value =</span> x, <span class="at">squared =</span> x <span class="sc">*</span> x))</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a><span class="co"># run it for the value of x = 10</span></span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a><span class="fu">silly_fun</span>(<span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  value squared
 1    10     100</code></pre>
@@ -934,17 +937,18 @@ window.Quarto = {
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
 <span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">map_dfr</span>(<span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">1234</span>, <span class="dv">20000</span>), silly_fun)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">map_dfr</span>(<span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">1234</span>, <span class="dv">20000</span>), silly_fun)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  value   squared
-1   100     10000
-2  1234   1522756
-3 20000 400000000</code></pre>
+1    10       100
+2   100     10000
+3  1234   1522756
+4 20000 400000000</code></pre>
 </div>
 </div>
 <p>The name <code>map_dfr</code> stands for <em>“<code>map</code> a given function producing a <code>d</code>ata <code>f</code>rame and then bind its <code>r</code>ows together”</em>, hence, <code>map_dfr</code>. When you look at its output above, this is exactly what happened.</p>
 <hr>
-<p><strong>In your script <code>slendr_Ne_pi.R</code>, program a simulation of <span class="math inline">\(N_e\)</span> inference across a grid of <code>Ne_true</code> values of <code>c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000)</code>. Use the function <code>map_dfr()</code> to do this in an efficient, automated way, thus obtaining a single data frame. Then, visualize the results in this data frame as a scatterplot of columns <code>Ne_true</code> against <code>Ne_estimated</code>.</strong></p>
+<p><strong>In your script <code>slendr_Ne_pi.R</code>, use the same technique program an automated simulation of <span class="math inline">\(N_e\)</span> inference across a grid of <code>Ne_true</code> values of <code>c(1000, 2000, 3000, 4000, 5000, 10000, 15000, 20000)</code>. Use the function <code>map_dfr()</code> to do this in an efficient, automated way, thus obtaining a single data frame. Then, visualize the results in this data frame as a scatterplot of columns <code>Ne_true</code> against <code>Ne_estimated</code>.</strong> You can use <em>ggplot2</em>, or base-R plotting, whatever you find easier.</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -992,11 +996,11 @@ window.Quarto = {
 </section>
 <section id="exercise-6-comparing-multiple-models" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-6-comparing-multiple-models">Exercise 6: Comparing multiple models</h2>
-<p>Let’s make it a bit more interesting and practically relevant. <strong>Suppose we want to see how robust our estimator is to the assumptions behind the underlying demographic model (which is almost always uncertain to some degree, meaning that our assumptions can be also uncertain!).</strong></p>
-<p>In the previous exercise, we used nucleotide diversity to infer the <span class="math inline">\(N_e\)</span> of a population under study (we used an equation, but it could be also external software) and verified that it works very well for a model of a long-term constant population size.</p>
-<p>But what about population that experienced a resize event? How well does our <span class="math inline">\(N_e\)</span> estimate work in such case?</p>
+<p>Let’s make it a bit more interesting and more practically relevant. <strong>Suppose we want to see how robust our estimator is to the assumptions behind the underlying demographic model (which is almost always uncertain to some degree, meaning that our assumptions can be also uncertain!).</strong></p>
+<p>In the previous exercise, we used nucleotide diversity to infer the <span class="math inline">\(N_e\)</span> of a population under study (we used an equation, but it could be also external software) and verified that it works very well for a model of a constant population size.</p>
+<p>But <strong>what about population that experienced a resize event? How well does our <span class="math inline">\(N_e\)</span> estimate work in such case?</strong></p>
 <hr>
-<p><strong>In your script <code>slendr_Ne_pi.R</code>, make a copy of your function <code>sim_constant()</code> and name that copy <code>sim_resize()</code>. Make the following changes in this function:</strong></p>
+<p><strong>In your script <code>slendr_Ne_pi.R</code>, make a copy of your function <code>sim_constant()</code> and name that copy <code>sim_resize()</code>. Make the following changes to this function:</strong></p>
 <ol type="1">
 <li><p><strong>the population “pop” will start with fixed <span class="math inline">\(N_e\)</span> of 5000,</strong></p></li>
 <li><p><strong>the population will experience a population resize (implemented by the function <code>resize()</code>), which will set the size of the population to the value given to the argument <code>Ne_true</code> at time 500.</strong></p></li>
@@ -1150,25 +1154,11 @@ window.Quarto = {
 <p>In conclusion, the problem with the nucleotide diversity is that it effectively reduces the entirety of genetic variation in the population (which mutations there are at which frequencies) into a single number. As a result, we lose a lot of potentially very useful information about the population’s demographic history. When we try to estimate <span class="math inline">\(N_e\)</span> using this summary statistic, we can only hope to infer a long-term <span class="math inline">\(N_e\)</span>, but we won’t be able to infer recent population dynamics.</p>
 <p>As we have seen, a single bottleneck doesn’t cause nucleotide diversity to drop significantly enough for us to pick up that this bottleneck even happened.</p>
 </section>
-<section id="bonus-exercise-allele-frequency-spectrum-afs" class="level2">
-<h2 class="anchored" data-anchor-id="bonus-exercise-allele-frequency-spectrum-afs">Bonus exercise: Allele frequency spectrum (AFS)</h2>
-<p><strong>Create a new script called <code>slendr_Ne_afs.R</code>. Copy-paste the following code into that script. Note that this is the same exact model we started this chapter with (except for the one line which selects only 20 individuals from all individuals recorded in the tree sequence).</strong></p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">simulation_length =</span> <span class="dv">1000</span>)</span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span></span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb51-10"><a href="#cb51-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-11"><a href="#cb51-11" aria-hidden="true" tabindex="-1"></a>subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-<hr>
-<p>Unlike nucleotide diversity which, as mentioned above, reduces the entire genomic variation of a population into a single number, the <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">allele frequency spectrum</a> carries information about the distribution of the counts of mutations at each observable frequency.</p>
-<p><strong>Look at the <code>?ts_afs</code> help page to learn how the <em>slendr</em> function <code>ts_afs()</code> works. As you’ve seen, <code>ts_diversity()</code> (like the vast majority of <em>slendr</em> statistical functions) produces a data frame. What data format does <code>ts_afs()</code> produce? Compute the AFS from your simulated tree sequence <code>ts</code> on your <code>subset</code> of individuals, then visualize it (with whatever means you know).</strong></p>
+<section id="exercise-8-real-world-example" class="level2">
+<h2 class="anchored" data-anchor-id="exercise-8-real-world-example">Exercise 8: Real-world example</h2>
+<p>To put the simulation-based exploration above in a real-world context, let’s consider the case of estimating the <span class="math inline">\(N_e\)</span> of a present-day modern human population.</p>
+<p><strong>Take a look at the <a href="https://www.nature.com/articles/nature18964#Sec10">Supplementary Table 1</a> published in this <a href="https://www.nature.com/articles/nature18964">hugely influential paper</a>. Look up the value of heterozygosity computed for the individual with the sample ID “S_Czech-2” in the column called “samtools autosomal heterozygosity”. What is the <span class="math inline">\(N_e\)</span> value you can estimate from the heterozygosity observed in this individual, if you assume autosomal human mutation rate <span class="math inline">\(\mu\)</span> of <span class="math inline">\(1.3 × 10^{−8}\)</span> per base pair, per generation (<code>1.3e-8</code> in R) and substitute the individual’s heterozygosity for the <span class="math inline">\(\theta\)</span> parameter?</strong></p>
+<p><strong>Knowing what you’ve learned from your simulation benchmarking of this simple <span class="math inline">\(N_e\)</span> estimator above, how does your inferred modern human <span class="math inline">\(N_e\)</span> fit in the context of the fact that there are more than 8 billion people in the world right now?</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1181,32 +1171,42 @@ window.Quarto = {
 </div>
 <div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>As we can see, <code>ts_afs()</code> produces a plain R vector of integer numbers, each of which represents the count of mutations observed at a given frequency — the count of singletons, the count of doubletons, etc.:</p>
+<p>In the Excel sheet we see the following heterozygosity for this individual:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
-<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>afs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">&lt;-</span> <span class="fl">0.00085124</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Using our <span class="math inline">\(N_e\)</span> equation, this gives us the estimate of <span class="math inline">\(N_e\)</span> like this:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>Ne <span class="ot">&lt;-</span> theta <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1.3e-8</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a>Ne</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code> [1] 1280  166   78   80   44   44   39   23   31   23   18   19   29    6   11
-[16]   18    6   13    6   15   11</code></pre>
+<pre><code>[1] 16370</code></pre>
 </div>
 </div>
-<p>This vector can be easily visualized with a base-R function <code>plot()</code>:</p>
+<p>We can see that this <span class="math inline">\(N_e\)</span> value is drastically lower compared to the billions of people alive today. This reflects the fact that—although there are so many of us alive today—human population for most of our history was very small, which is why the <span class="math inline">\(N_e\)</span> that we estimated reflects a kind of average of population sizes over the past few millions of years.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="bonus-exercise-allele-frequency-spectrum-afs" class="level2">
+<h2 class="anchored" data-anchor-id="bonus-exercise-allele-frequency-spectrum-afs">Bonus exercise: Allele frequency spectrum (AFS)</h2>
+<p><strong>Create a new script called <code>slendr_Ne_afs.R</code>. Copy-paste the following code into that script. Note that this is the same exact model we started this chapter with (except for the one line which selects only 20 individuals from all individuals recorded in the tree sequence).</strong></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">col =</span> <span class="st">"lightblue"</span>, <span class="at">xlab =</span> <span class="st">"allele frequency"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="basic-statistics_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-</div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>)</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">simulation_length =</span> <span class="dv">1000</span>)</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb54-11"><a href="#cb54-11" aria-hidden="true" tabindex="-1"></a>subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <hr>
-<p>But does the AFS really carry more information about demographic changes?</p>
-<p><strong>Write a new function in your script, called <code>sim_afs()</code>, which will again accept a single argument <code>Ne_true</code> and implement the exact same demographic model as you did in your function <code>sim_change()</code> (i.e., resize from the initial <code>N</code> of 5000 to the given value of <code>Ne_true</code> at time 1000). In this function, compute the <code>afs</code> vector from this model, then run it for a range of <code>Ne_grid</code> values and visualize the individual AFS vectors produced for each of them. Does AFS pick up signal even from such recent population size changes, unlike the nucleotide diversity?</strong></p>
+<p>Unlike nucleotide diversity which, as mentioned above, reduces the entire genomic variation of a population into a single number, the <a href="https://en.wikipedia.org/wiki/Allele_frequency_spectrum">allele frequency spectrum</a> carries information about the distribution of the counts of mutations at each observable frequency.</p>
+<p><strong>Look at the <code>?ts_afs</code> help page to learn how the <em>slendr</em> function <code>ts_afs()</code> works. As you’ve seen, <code>ts_diversity()</code> (like the vast majority of <em>slendr</em> statistical functions) produces a data frame. What data format does <code>ts_afs()</code> produce? Compute the AFS from your simulated tree sequence <code>ts</code> on your <code>subset</code> of individuals, then visualize it (with whatever means you know).</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1219,47 +1219,85 @@ window.Quarto = {
 </div>
 <div id="callout-13" class="callout-13-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Here’s a function which simulates an AFS for a demographic history given by the <code>Ne_true</code> argument:</p>
+<p>As we can see, <code>ts_afs()</code> produces a plain R vector of integer numbers, each of which represents the count of mutations observed at a given frequency — the count of singletons, the count of doubletons, etc.:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
-<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>sim_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
-<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
-<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
-<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
-<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb55-13"><a href="#cb55-13" aria-hidden="true" tabindex="-1"></a>  subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span>
-<span id="cb55-14"><a href="#cb55-14" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb55-15"><a href="#cb55-15" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
-<span id="cb55-16"><a href="#cb55-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb55-17"><a href="#cb55-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the result not as a plain integer vector, but a proper data frame</span></span>
-<span id="cb55-18"><a href="#cb55-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># annotated by the frequency bin number -- this makes visualization of</span></span>
-<span id="cb55-19"><a href="#cb55-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># results later with ggplot2 much easier</span></span>
-<span id="cb55-20"><a href="#cb55-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
-<span id="cb55-21"><a href="#cb55-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ne_true =</span> Ne_true,</span>
-<span id="cb55-22"><a href="#cb55-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">frequency =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afs),</span>
-<span id="cb55-23"><a href="#cb55-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> afs</span>
-<span id="cb55-24"><a href="#cb55-24" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb55-25"><a href="#cb55-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>afs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] 1234  274  100   80   70   40   45   33   39   22   28   21   21   19   17
+[16]   15   18   15   11   34   13</code></pre>
 </div>
-<p>We run the AFS simulation batch in the same way as we did before:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>df_afs <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_afs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>And we visualize the individual AFS vectors, colored by their underlying assumed <span class="math inline">\(N_e\)</span> after the demographic history change:</p>
+<p>This vector can be easily visualized with a base-R function <code>plot()</code>:</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_afs, <span class="fu">aes</span>(frequency, count, <span class="at">color =</span> <span class="fu">factor</span>(Ne_true))) <span class="sc">+</span></span>
-<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"AFS vector for different population size change models"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afs, <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">col =</span> <span class="st">"lightblue"</span>, <span class="at">xlab =</span> <span class="st">"allele frequency"</span>, <span class="at">ylab =</span> <span class="st">"count"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="basic-statistics_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<hr>
+<p>But does the AFS really carry more information about demographic changes?</p>
+<p><strong>Write a new function in your script, called <code>sim_afs()</code>, which will again accept a single argument <code>Ne_true</code> and implement the exact same demographic model as you did in your function <code>sim_change()</code> (i.e., resize from the initial <code>N</code> of 5000 to the given value of <code>Ne_true</code> at time 1000). In this function, compute the <code>afs</code> vector from this model, then run it for a range of <code>Ne_grid</code> values and visualize the individual AFS vectors produced for each of them. Does AFS pick up signal even from such recent population size changes, unlike the nucleotide diversity?</strong></p>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to see the solution
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here’s a function which simulates an AFS for a demographic history given by the <code>Ne_true</code> argument:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>sim_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>  subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the result not as a plain integer vector, but a proper data frame</span></span>
+<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># annotated by the frequency bin number -- this makes visualization of</span></span>
+<span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a>  <span class="co"># results later with ggplot2 much easier</span></span>
+<span id="cb58-20"><a href="#cb58-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb58-21"><a href="#cb58-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ne_true =</span> Ne_true,</span>
+<span id="cb58-22"><a href="#cb58-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">frequency =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afs),</span>
+<span id="cb58-23"><a href="#cb58-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> afs</span>
+<span id="cb58-24"><a href="#cb58-24" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb58-25"><a href="#cb58-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>We run the AFS simulation batch in the same way as we did before:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>df_afs <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_afs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>And we visualize the individual AFS vectors, colored by their underlying assumed <span class="math inline">\(N_e\)</span> after the demographic history change:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_afs, <span class="fu">aes</span>(frequency, count, <span class="at">color =</span> <span class="fu">factor</span>(Ne_true))) <span class="sc">+</span></span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"AFS vector for different population size change models"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1272,7 +1310,7 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="basic-statistics_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="basic-statistics_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1289,7 +1327,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="catching-up">Catching up</h2>
 <p>Here is a complete solution to the exercises in this section represented by a single tidy reproducible R script:</p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1298,119 +1336,119 @@ window.Quarto = {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>For simplicity, this script only evaluates models when the size change happens 1000 generations ago (but it could be expanded, of course).</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first we import a couple of packages ------------------------------------</span></span>
-<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
-<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
-<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
-<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
-<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates a constant size model --------------------------</span></span>
-<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>sim_constant <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
-<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> Ne_true)</span>
-<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
-<span id="cb59-15"><a href="#cb59-15" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-16"><a href="#cb59-16" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
-<span id="cb59-17"><a href="#cb59-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb59-18"><a href="#cb59-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb59-19"><a href="#cb59-19" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-20"><a href="#cb59-20" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
-<span id="cb59-21"><a href="#cb59-21" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-22"><a href="#cb59-22" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
-<span id="cb59-23"><a href="#cb59-23" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-24"><a href="#cb59-24" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
-<span id="cb59-25"><a href="#cb59-25" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-26"><a href="#cb59-26" aria-hidden="true" tabindex="-1"></a>  df</span>
-<span id="cb59-27"><a href="#cb59-27" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb59-28"><a href="#cb59-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-29"><a href="#cb59-29" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates a model of population size change --------------</span></span>
-<span id="cb59-30"><a href="#cb59-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-31"><a href="#cb59-31" aria-hidden="true" tabindex="-1"></a>sim_change <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
-<span id="cb59-32"><a href="#cb59-32" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
-<span id="cb59-33"><a href="#cb59-33" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-34"><a href="#cb59-34" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
-<span id="cb59-35"><a href="#cb59-35" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-36"><a href="#cb59-36" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
-<span id="cb59-37"><a href="#cb59-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb59-38"><a href="#cb59-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb59-39"><a href="#cb59-39" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-40"><a href="#cb59-40" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
-<span id="cb59-41"><a href="#cb59-41" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-42"><a href="#cb59-42" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
-<span id="cb59-43"><a href="#cb59-43" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-44"><a href="#cb59-44" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
-<span id="cb59-45"><a href="#cb59-45" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-46"><a href="#cb59-46" aria-hidden="true" tabindex="-1"></a>  df</span>
-<span id="cb59-47"><a href="#cb59-47" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb59-48"><a href="#cb59-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-49"><a href="#cb59-49" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates the AFS from a size change model ---------------</span></span>
-<span id="cb59-50"><a href="#cb59-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-51"><a href="#cb59-51" aria-hidden="true" tabindex="-1"></a>sim_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
-<span id="cb59-52"><a href="#cb59-52" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
-<span id="cb59-53"><a href="#cb59-53" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-54"><a href="#cb59-54" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
-<span id="cb59-55"><a href="#cb59-55" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-56"><a href="#cb59-56" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
-<span id="cb59-57"><a href="#cb59-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb59-58"><a href="#cb59-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
-<span id="cb59-59"><a href="#cb59-59" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-60"><a href="#cb59-60" aria-hidden="true" tabindex="-1"></a>  subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span>
-<span id="cb59-61"><a href="#cb59-61" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-62"><a href="#cb59-62" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
-<span id="cb59-63"><a href="#cb59-63" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb59-64"><a href="#cb59-64" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the result not as a plain integer vector, but a proper data frame</span></span>
-<span id="cb59-65"><a href="#cb59-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># annotated by the frequency bin number</span></span>
-<span id="cb59-66"><a href="#cb59-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
-<span id="cb59-67"><a href="#cb59-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ne_true =</span> Ne_true,</span>
-<span id="cb59-68"><a href="#cb59-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">frequency =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afs),</span>
-<span id="cb59-69"><a href="#cb59-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> afs</span>
-<span id="cb59-70"><a href="#cb59-70" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb59-71"><a href="#cb59-71" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb59-72"><a href="#cb59-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-73"><a href="#cb59-73" aria-hidden="true" tabindex="-1"></a><span class="co"># run simulations across a given grid -------------------------------------</span></span>
-<span id="cb59-74"><a href="#cb59-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-75"><a href="#cb59-75" aria-hidden="true" tabindex="-1"></a><span class="co"># for the constant model, these values represent the constant Ne, for the size</span></span>
-<span id="cb59-76"><a href="#cb59-76" aria-hidden="true" tabindex="-1"></a><span class="co"># change model they represent the final Ne after the initial size of 5000</span></span>
-<span id="cb59-77"><a href="#cb59-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-78"><a href="#cb59-78" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">2500</span>, <span class="dv">3000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>)</span>
-<span id="cb59-79"><a href="#cb59-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-80"><a href="#cb59-80" aria-hidden="true" tabindex="-1"></a>df_constant <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_constant)</span>
-<span id="cb59-81"><a href="#cb59-81" aria-hidden="true" tabindex="-1"></a>df_change <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_change)</span>
-<span id="cb59-82"><a href="#cb59-82" aria-hidden="true" tabindex="-1"></a>df_afs <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_afs)</span>
-<span id="cb59-83"><a href="#cb59-83" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-84"><a href="#cb59-84" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize the results ---------------------------------------------------</span></span>
-<span id="cb59-85"><a href="#cb59-85" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-86"><a href="#cb59-86" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity in the constant size models</span></span>
-<span id="cb59-87"><a href="#cb59-87" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_constant, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
-<span id="cb59-88"><a href="#cb59-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb59-89"><a href="#cb59-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb59-90"><a href="#cb59-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (constant population size)"</span>)</span>
-<span id="cb59-91"><a href="#cb59-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-92"><a href="#cb59-92" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"constant_size_pi.pdf"</span>)</span>
-<span id="cb59-93"><a href="#cb59-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-94"><a href="#cb59-94" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity in the size change models</span></span>
-<span id="cb59-95"><a href="#cb59-95" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_change, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
-<span id="cb59-96"><a href="#cb59-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb59-97"><a href="#cb59-97" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb59-98"><a href="#cb59-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (population size change)"</span>) <span class="sc">+</span></span>
-<span id="cb59-99"><a href="#cb59-99" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">20000</span>) <span class="sc">+</span></span>
-<span id="cb59-100"><a href="#cb59-100" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">20000</span>)</span>
-<span id="cb59-101"><a href="#cb59-101" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-102"><a href="#cb59-102" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"changing_size_pi.pdf"</span>)</span>
-<span id="cb59-103"><a href="#cb59-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-104"><a href="#cb59-104" aria-hidden="true" tabindex="-1"></a><span class="co"># AFS in the size change models</span></span>
-<span id="cb59-105"><a href="#cb59-105" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_afs, <span class="fu">aes</span>(frequency, count, <span class="at">color =</span> <span class="fu">factor</span>(Ne_true))) <span class="sc">+</span></span>
-<span id="cb59-106"><a href="#cb59-106" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb59-107"><a href="#cb59-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"AFS vector for different population size change models"</span>)</span>
-<span id="cb59-108"><a href="#cb59-108" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb59-109"><a href="#cb59-109" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"changing_size_afs.pdf"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first we import a couple of packages ------------------------------------</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(slendr)</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a><span class="fu">init_env</span>()</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates a constant size model --------------------------</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>sim_constant <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> Ne_true)</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-20"><a href="#cb62-20" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb62-21"><a href="#cb62-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-22"><a href="#cb62-22" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb62-23"><a href="#cb62-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-24"><a href="#cb62-24" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb62-25"><a href="#cb62-25" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-26"><a href="#cb62-26" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb62-27"><a href="#cb62-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-28"><a href="#cb62-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-29"><a href="#cb62-29" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates a model of population size change --------------</span></span>
+<span id="cb62-30"><a href="#cb62-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-31"><a href="#cb62-31" aria-hidden="true" tabindex="-1"></a>sim_change <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb62-32"><a href="#cb62-32" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb62-33"><a href="#cb62-33" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-34"><a href="#cb62-34" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb62-35"><a href="#cb62-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-36"><a href="#cb62-36" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb62-37"><a href="#cb62-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">10e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-38"><a href="#cb62-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb62-39"><a href="#cb62-39" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-40"><a href="#cb62-40" aria-hidden="true" tabindex="-1"></a>  df <span class="ot">&lt;-</span> <span class="fu">ts_diversity</span>(ts, <span class="fu">list</span>(<span class="at">all =</span> <span class="fu">ts_names</span>(ts)))</span>
+<span id="cb62-41"><a href="#cb62-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-42"><a href="#cb62-42" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_estimated <span class="ot">&lt;-</span> df<span class="sc">$</span>diversity <span class="sc">/</span> (<span class="dv">4</span> <span class="sc">*</span> <span class="fl">1e-8</span>)</span>
+<span id="cb62-43"><a href="#cb62-43" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-44"><a href="#cb62-44" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>Ne_true <span class="ot">&lt;-</span> Ne_true</span>
+<span id="cb62-45"><a href="#cb62-45" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-46"><a href="#cb62-46" aria-hidden="true" tabindex="-1"></a>  df</span>
+<span id="cb62-47"><a href="#cb62-47" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-48"><a href="#cb62-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-49"><a href="#cb62-49" aria-hidden="true" tabindex="-1"></a><span class="co"># function which simulates the AFS from a size change model ---------------</span></span>
+<span id="cb62-50"><a href="#cb62-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-51"><a href="#cb62-51" aria-hidden="true" tabindex="-1"></a>sim_afs <span class="ot">&lt;-</span> <span class="cf">function</span>(Ne_true) {</span>
+<span id="cb62-52"><a href="#cb62-52" aria-hidden="true" tabindex="-1"></a>  pop <span class="ot">&lt;-</span> <span class="fu">population</span>(<span class="st">"pop"</span>, <span class="at">time =</span> <span class="dv">2001</span>, <span class="at">N =</span> <span class="dv">5000</span>) <span class="sc">%&gt;%</span> <span class="fu">resize</span>(<span class="at">N =</span> Ne_true, <span class="at">time =</span> <span class="dv">1000</span>)</span>
+<span id="cb62-53"><a href="#cb62-53" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-54"><a href="#cb62-54" aria-hidden="true" tabindex="-1"></a>  model <span class="ot">&lt;-</span> <span class="fu">compile_model</span>(<span class="at">populations =</span> pop, <span class="at">generation_time =</span> <span class="dv">1</span>, <span class="at">direction =</span> <span class="st">"backward"</span>)</span>
+<span id="cb62-55"><a href="#cb62-55" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-56"><a href="#cb62-56" aria-hidden="true" tabindex="-1"></a>  ts <span class="ot">&lt;-</span></span>
+<span id="cb62-57"><a href="#cb62-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">msprime</span>(model, <span class="at">sequence_length =</span> <span class="fl">1e6</span>, <span class="at">recombination_rate =</span> <span class="fl">1e-8</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb62-58"><a href="#cb62-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ts_mutate</span>(<span class="at">mutation_rate =</span> <span class="fl">1e-8</span>)</span>
+<span id="cb62-59"><a href="#cb62-59" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-60"><a href="#cb62-60" aria-hidden="true" tabindex="-1"></a>  subset <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="fu">ts_names</span>(ts), <span class="dv">10</span>)</span>
+<span id="cb62-61"><a href="#cb62-61" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-62"><a href="#cb62-62" aria-hidden="true" tabindex="-1"></a>  afs <span class="ot">&lt;-</span> <span class="fu">ts_afs</span>(ts, <span class="at">sample_sets =</span> <span class="fu">list</span>(subset))</span>
+<span id="cb62-63"><a href="#cb62-63" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb62-64"><a href="#cb62-64" aria-hidden="true" tabindex="-1"></a>  <span class="co"># return the result not as a plain integer vector, but a proper data frame</span></span>
+<span id="cb62-65"><a href="#cb62-65" aria-hidden="true" tabindex="-1"></a>  <span class="co"># annotated by the frequency bin number</span></span>
+<span id="cb62-66"><a href="#cb62-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb62-67"><a href="#cb62-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">Ne_true =</span> Ne_true,</span>
+<span id="cb62-68"><a href="#cb62-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">frequency =</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">length</span>(afs),</span>
+<span id="cb62-69"><a href="#cb62-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">count =</span> afs</span>
+<span id="cb62-70"><a href="#cb62-70" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb62-71"><a href="#cb62-71" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb62-72"><a href="#cb62-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-73"><a href="#cb62-73" aria-hidden="true" tabindex="-1"></a><span class="co"># run simulations across a given grid -------------------------------------</span></span>
+<span id="cb62-74"><a href="#cb62-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-75"><a href="#cb62-75" aria-hidden="true" tabindex="-1"></a><span class="co"># for the constant model, these values represent the constant Ne, for the size</span></span>
+<span id="cb62-76"><a href="#cb62-76" aria-hidden="true" tabindex="-1"></a><span class="co"># change model they represent the final Ne after the initial size of 5000</span></span>
+<span id="cb62-77"><a href="#cb62-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-78"><a href="#cb62-78" aria-hidden="true" tabindex="-1"></a>Ne_grid <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">2500</span>, <span class="dv">3000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>, <span class="dv">15000</span>, <span class="dv">20000</span>)</span>
+<span id="cb62-79"><a href="#cb62-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-80"><a href="#cb62-80" aria-hidden="true" tabindex="-1"></a>df_constant <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_constant)</span>
+<span id="cb62-81"><a href="#cb62-81" aria-hidden="true" tabindex="-1"></a>df_change <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_change)</span>
+<span id="cb62-82"><a href="#cb62-82" aria-hidden="true" tabindex="-1"></a>df_afs <span class="ot">&lt;-</span> <span class="fu">map_dfr</span>(Ne_grid, sim_afs)</span>
+<span id="cb62-83"><a href="#cb62-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-84"><a href="#cb62-84" aria-hidden="true" tabindex="-1"></a><span class="co"># visualize the results ---------------------------------------------------</span></span>
+<span id="cb62-85"><a href="#cb62-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-86"><a href="#cb62-86" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity in the constant size models</span></span>
+<span id="cb62-87"><a href="#cb62-87" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_constant, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb62-88"><a href="#cb62-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb62-89"><a href="#cb62-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb62-90"><a href="#cb62-90" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (constant population size)"</span>)</span>
+<span id="cb62-91"><a href="#cb62-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-92"><a href="#cb62-92" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"constant_size_pi.pdf"</span>)</span>
+<span id="cb62-93"><a href="#cb62-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-94"><a href="#cb62-94" aria-hidden="true" tabindex="-1"></a><span class="co"># diversity in the size change models</span></span>
+<span id="cb62-95"><a href="#cb62-95" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_change, <span class="fu">aes</span>(Ne_true, Ne_estimated)) <span class="sc">+</span></span>
+<span id="cb62-96"><a href="#cb62-96" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb62-97"><a href="#cb62-97" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"red"</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb62-98"><a href="#cb62-98" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"True Ne vs Ne estimated from nucleotide diversity (population size change)"</span>) <span class="sc">+</span></span>
+<span id="cb62-99"><a href="#cb62-99" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlim</span>(<span class="dv">0</span>, <span class="dv">20000</span>) <span class="sc">+</span></span>
+<span id="cb62-100"><a href="#cb62-100" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylim</span>(<span class="dv">0</span>, <span class="dv">20000</span>)</span>
+<span id="cb62-101"><a href="#cb62-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-102"><a href="#cb62-102" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"changing_size_pi.pdf"</span>)</span>
+<span id="cb62-103"><a href="#cb62-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-104"><a href="#cb62-104" aria-hidden="true" tabindex="-1"></a><span class="co"># AFS in the size change models</span></span>
+<span id="cb62-105"><a href="#cb62-105" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_afs, <span class="fu">aes</span>(frequency, count, <span class="at">color =</span> <span class="fu">factor</span>(Ne_true))) <span class="sc">+</span></span>
+<span id="cb62-106"><a href="#cb62-106" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb62-107"><a href="#cb62-107" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"AFS vector for different population size change models"</span>)</span>
+<span id="cb62-108"><a href="#cb62-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb62-109"><a href="#cb62-109" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"changing_size_afs.pdf"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
