@@ -494,7 +494,7 @@ $px
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0001030982</code></pre>
+<pre><code>[1] 0.0001064596</code></pre>
 </div>
 </div>
 <p>Finally, let’s compute <span class="math inline">\(f_3\)</span> using the “official” built-in <em>slendr</em> function:</p>
@@ -505,7 +505,7 @@ $px
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic          f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;           &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 0.000103</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 0.000106</code></pre>
 </div>
 </div>
 <p>You can see that the <code>ts_f3()</code> implementation gives basically the same value as our “homemade” implementation based on a linear combination of <span class="math inline">\(f_2\)</span> statistics, just as predicted by the underlying math!</p>
@@ -538,7 +538,7 @@ $px
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic        f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 10038.</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 10727.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -550,7 +550,7 @@ $px
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 10038.1</code></pre>
+<pre><code>[1] 10726.72</code></pre>
 </div>
 </div>
 <p>We can see that when we specify <code>mode = "branch"</code>, the returned values of <span class="math inline">\(f\)</span> statistics correspond to the <em>real branch lengths</em> in terms of times in generations! To see this, just take a look at your model sketch again, counting how much time there’s between split times. This is quite cool because as we discussed, the mathematical expectation of <span class="math inline">\(f_3\)</span> statistic does, in fact, represent the overlap of paths in a tree going from p1 and p2 to the outgroup p4:</p>
@@ -593,9 +593,9 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"p1"</span>], <span class="at">X =</span> s[<span class="st">"px"</span>], <span class="at">Y =</span> s[<span class="st">"p3"</span>], <span class="at">Z =</span> s[<span class="st">"p4"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
-  W     X     Y     Z     statistic                f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt;
-1 p1    px    p3    p4    f4(p1,px;p3,p4) 0.000000502</code></pre>
+  W     X     Y     Z     statistic                 f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt;
+1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000974</code></pre>
 </div>
 </div>
 <p>The reason we didn’t get <em>exactly</em> zero is stochastic noise of any evolutionary process, which means that that along a genome (even a small one, only 10 Mb of simulated sequence) there are many possible trees. Sometimes, <a href="https://en.wikipedia.org/wiki/Incomplete_lineage_sorting">incomplete lineage sorting</a> will lead to genealogical trees which do not fit the expected “well-behaved” population tree like the one we see when we run <code>plot_model()</code>. We will see examples of this at the end of this chapter.</p>
@@ -653,14 +653,14 @@ $px
 1 p1    px    p3    p4    f4(p1,px;p3,p4)     0</code></pre>
 </div>
 </div>
-<p>Indeed, when we type <code>ts</code> into the R console, we see that it only contains 7 individual trees compared to the previous count of 4410, consistent with an absolutely extreme amounts of genetic drift in your model:</p>
+<p>Indeed, when we type <code>ts</code> into the R console, we see that it only contains 9 individual trees compared to the previous count of 4329, consistent with an absolutely extreme amounts of genetic drift in your model:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │          7║
+║Trees          │          9║
 ╟───────────────┼───────────╢
 ║Sequence Length│ 10,000,000║
 ╟───────────────┼───────────╢
@@ -668,26 +668,26 @@ $px
 ╟───────────────┼───────────╢
 ║Sample Nodes   │         50║
 ╟───────────────┼───────────╢
-║Total Size     │  107.8 KiB║
+║Total Size     │  107.6 KiB║
 ╚═══════════════╧═══════════╝
 ╔═══════════╤═════╤═════════╤════════════╗
 ║Table      │Rows │Size     │Has Metadata║
 ╠═══════════╪═════╪═════════╪════════════╣
-║Edges      │  118│  3.7 KiB│          No║
+║Edges      │  123│  3.9 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Individuals│   25│724 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Migrations │    0│  8 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Mutations  │1,562│ 56.5 KiB│          No║
+║Mutations  │1,554│ 56.2 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Nodes      │  105│  2.9 KiB│          No║
+║Nodes      │  106│  2.9 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Populations│    5│373 Bytes│         Yes║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Provenances│    2│  4.0 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Sites      │1,562│ 38.2 KiB│          No║
+║Sites      │1,554│ 38.0 KiB│          No║
 ╚═══════════╧═════╧═════════╧════════════╝</code></pre>
 </div>
 </div>
@@ -758,18 +758,18 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 7
-   W     X     Y     Z     statistic                  f4   rep
-   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt; &lt;int&gt;
- 1 p1    px    p3    p4    f4(p1,px;p3,p4)  0.0000000280     1
- 2 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000518      2
- 3 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000703      3
- 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000128      4
- 5 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000352      5
- 6 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000183      6
- 7 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000210      7
- 8 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000761      8
- 9 p1    px    p3    p4    f4(p1,px;p3,p4) -0.0000000670     9
-10 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000061      10</code></pre>
+   W     X     Y     Z     statistic                 f4   rep
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
+ 1 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000111      1
+ 2 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000145      2
+ 3 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000853     3
+ 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000101      4
+ 5 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000311     5
+ 6 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000144     6
+ 7 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000310     7
+ 8 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000454     8
+ 9 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000201     9
+10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000182     10</code></pre>
 </div>
 </div>
 <p>This means we can visualize their distribution easily like this, for example:</p>
@@ -836,16 +836,16 @@ $px
 <pre><code># A tibble: 30 × 7
    W     X     Y     Z     statistic                 f4   rep
    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
- 1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000175      1
- 2 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000855      1
- 3 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000103       1
- 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000154      2
- 5 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000955      2
- 6 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000111       2
- 7 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000668     3
- 8 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000111       3
- 9 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000104       3
-10 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000168     4
+ 1 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000322     1
+ 2 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000983      1
+ 3 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000951      1
+ 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000821     2
+ 5 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000106       2
+ 6 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000114       2
+ 7 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000799     3
+ 8 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000766      3
+ 9 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000845      3
+10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000185      4
 # ℹ 20 more rows</code></pre>
 </div>
 </div>
@@ -1379,7 +1379,7 @@ $px
 <p>We’ve mentioned the concept of “tree sequence” only in passing so far, although they’ve been absolutely central to every single one of our simulations because of that mysterious <code>ts</code> object. However, we’ve been referring to trees, genealogies, population trees, etc. throughout the exercises, particularly in this chapter, although we’ve never actually looked at those underlying trees at all.</p>
 <p>Generally speaking, for most of the practical work, we don’t need to be aware of the underlying tree-sequence data that much, but it’s always a good idea to know what’s going on behind the scenes of the methods that we use, so let’s take a small peek at what actually <em>is</em> hiding behind our familiar <code>ts</code> objects. <strong>This section will be more like a demonstration rather than a “serious exercise”, just in case you’re curious about this topic.</strong></p>
 <hr>
-<p><strong>When you type <code>ts</code> into your R console, you’ll get a summary of the most important characteristics in your data. For instance, consider a small 100 kb tree-sequence simulation like this, and note the number of trees (in this case, 4542), the number of edges, nodes, and mutations:</strong></p>
+<p><strong>When you type <code>ts</code> into your R console, you’ll get a summary of the most important characteristics in your data. For instance, consider a small 100 kb tree-sequence simulation like this, and note the number of trees (in this case, 4484), the number of edges, nodes, and mutations:</strong></p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">1</span>))</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1429,7 +1429,7 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, <span class="at">i =</span> <span class="dv">0</span>)</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>tree</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;tskit.trees.Tree object at 0x1193cae40&gt;</code></pre>
+<pre><code>&lt;tskit.trees.Tree object at 0x11916f8f0&gt;</code></pre>
 </div>
 </div>
 <hr>
@@ -1439,7 +1439,7 @@ $px
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="tree-thinking_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="tree-thinking_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1454,8 +1454,30 @@ $px
 <li><p><strong>You might encounter red cross signs plotted on the trees—what do you think these represent?</strong></p></li>
 </ol>
 <p><strong>The outcome of an evolutionary simulation is completely random, so don’t get too frustrated if you don’t find lots of meaningful information while doing this.</strong> At the very least, when you explore the trees along the tree sequence, even for a small section of a genome like 1 Mb in this case, it makes you appreciate just how complex real-world evolutionary processes are.</p>
+<p><strong>If you want to explore the exact same tree-sequence that I had, you can load it with the following commands and use it instead of your simulated data:</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Click to read my own tree sequence <code>ts</code> instead
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>ts_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">timeout =</span> <span class="dv">600</span>)</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="fu">download.file</span>(<span class="st">"https://raw.githubusercontent.com/bodkan/simgen/refs/heads/main/files/introgression/example.trees"</span>, <span class="at">destfile =</span> ts_path, <span class="at">mode =</span> <span class="st">"wb"</span>)</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>ts <span class="ot">&lt;-</span> <span class="fu">ts_read</span>(<span class="at">file =</span> ts_path, <span class="at">model =</span> model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note no-icon callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
@@ -1464,44 +1486,16 @@ $px
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div id="callout-18" class="callout-18-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Here’s what I found after a couple of minutes of visualizing different trees in my tree sequence:</p>
 <ul>
 <li><strong>A neat and tidy genealogy which is completely concordant with our population tree</strong> (take a look at the tip labels with population names and compare this tree to the overall population tree model we worked with in this chapter):</li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">203</span></span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, i)</span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_draw</span>(tree, <span class="at">labels =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">height =</span> <span class="dv">500</span>, <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Tree #"</span>, tree<span class="sc">$</span>index))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="tree-thinking_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p>We can also see that the tree immediately after this one is basically the same. This is because of a single (ancient) recombination event which only affected one branch in the tree, but the remainder of the genealogy stays the same (because recombination didn’t affect those individuals’ ancestors):</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">204</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">203</span></span>
 <span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, i)</span>
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_draw</span>(tree, <span class="at">labels =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">height =</span> <span class="dv">500</span>, <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Tree #"</span>, tree<span class="sc">$</span>index))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="tree-thinking_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<ul>
-<li><strong>A tree showing a clear evidence of introgression from <code>p3</code> into <code>px</code>:</strong></li>
-</ul>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">243</span></span>
-<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, i)</span>
-<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_draw</span>(tree, <span class="at">labels =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">height =</span> <span class="dv">500</span>, <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Tree #"</span>, tree<span class="sc">$</span>index))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1510,17 +1504,45 @@ $px
 </div>
 </div>
 </div>
+<p>We can also see that the tree immediately after this one is basically the same. This is because of a single (ancient) recombination event which only affected one branch in the tree, but the remainder of the genealogy stays the same (because recombination didn’t affect those individuals’ ancestors):</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">204</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, i)</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_draw</span>(tree, <span class="at">labels =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">height =</span> <span class="dv">500</span>, <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Tree #"</span>, tree<span class="sc">$</span>index))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="tree-thinking_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <ul>
-<li><strong>Another locus in the genome carries a tree which is an utter mess and doesn’t seem to be similar to our underlying population tree model at all:</strong></li>
+<li><strong>A tree showing a clear evidence of introgression from <code>p3</code> into <code>px</code>:</strong></li>
 </ul>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">114</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">243</span></span>
 <span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, i)</span>
 <span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_draw</span>(tree, <span class="at">labels =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">height =</span> <span class="dv">500</span>, <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Tree #"</span>, tree<span class="sc">$</span>index))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="tree-thinking_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="tree-thinking_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Another locus in the genome carries a tree which is an utter mess and doesn’t seem to be similar to our underlying population tree model at all:</strong></li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>i <span class="ot">&lt;-</span> <span class="dv">114</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, i)</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_draw</span>(tree, <span class="at">labels =</span> <span class="cn">TRUE</span>, <span class="at">width =</span> <span class="dv">1000</span>, <span class="at">height =</span> <span class="dv">500</span>, <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Tree #"</span>, tree<span class="sc">$</span>index))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="tree-thinking_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
