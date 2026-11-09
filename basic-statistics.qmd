@@ -106,7 +106,8 @@ samples <- ts_names(ts)
 
 When you typed `ts` in your R console earlier, you may have noticed a strange
 thing --- although `msprime()` simulated genomic data, there are no mutations!
-How can this be?
+How can this be? Just take a look the tree-sequence summary below (specifically,
+the "Mutations" field):
 
 ```{r}
 ts
@@ -123,7 +124,7 @@ of R, having mutations is often useful. Here's how we can make that happen.
 "piping" its output to `ts_mutate(mutation_rate = 1e-8)` (remember the `%>%`
 "pipe operator" introduced earlier). After you execute this new command and type
 `ts` in the R console to inspect the summary, you should see that mutations have
-been added.**
+been added. Verify that this is the case by typing `ts` in your R console.**
   
 ::: {.callout-note collapse="true" icon=false}
 #### Click to see the solution
@@ -195,7 +196,8 @@ individual with the name "pop_1", by providing this name as the `sample_sets =`
 argument of this function. Knowing that _slendr_ simulates diploids and knowing
 the definition of [nucleotide
 diversity](https://en.wikipedia.org/wiki/Nucleotide_diversity), how would you
-interpret the result that you get?**
+interpret the result that you get for this one individual from the perspective
+of genomics?**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -234,8 +236,8 @@ length("single_value")
 
 **Now run the following three commands, one after the other. They look extremely
 similar, right? Do they produce the same value? If not, based on the results you
-get from each, can you decipher a general rule for how _slendr_ interprets what
-it gets in the `sample_sets =` argument?**
+get from each of those commands, can you deduce a general rule for how _slendr_
+interprets what it gets in the `sample_sets =` argument?**
 
 ```{r}
 #| output: false
@@ -307,12 +309,16 @@ statistics.
 computing `ts_diversity()` for a single group of individuals (like "pop_1" and
 "pop_42" above), compute it on multiple subsets of individuals of increasing
 samples sizes (let's say groups of 1, 2, 5, 10, 500 1000, and finally all
-individuals in the population "pop"). Do you expect the same value of nucleotide
-diversity? Why, or why not?**
+individuals in the population "pop"). Before you run this computation, do you
+expect the same value of nucleotide diversity for each of those sample sizes?
+Why, or why not?**
 
 **Hint:** You can get a random subset of a larger set of elements using the
 built-in R function `sample()`. Take a look at `?sample` manual page if you need
-more help.
+more help. If you need even more help, take a peek at the beginning of the
+solution below (point 2. specifically). When you have a list of the different
+subsets of individuals, you can provide it as the `sample_sets =` argument of
+`ts_diversity()` again.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -422,11 +428,12 @@ the more complex ones will be demonstrated later in this workshop).
  
 ---
 
-**Start by computing the nucleotide diversity value for every single individual
-in your tree sequence (instead of a small subset) and store this result of
-`ts_diversity()` in a data frame `df`. Then, use the equation above to estimate
-$N_e$ from nucleotide diversity, adding a new column `Ne_estimated` to this data
-frame with this value. Do you get a somewhat reasonably looking result?**
+**In your script `slendr_statistics.R`, start by computing nucleotide diversity
+across all individuals in your tree sequence taken together (instead of a small
+subset) and store this result of `ts_diversity()` in a data frame `df`. Then,
+use the equation above to estimate $N_e$ from nucleotide diversity, adding a new
+column called `Ne_estimated` to this data frame with this value. Do you get a
+somewhat reasonably looking result?**
 
 **Hint:** Remember that you know the true $N_e$ in your model --- it's the `N`
 value in your simulation script! That's the most powerful thing about
@@ -486,16 +493,18 @@ engineering, this process of modifying code and improving it is called
 
 ---
 
-**First, create and save a new script called `slendr_Ne_pi.R`. We'll be working
-on our improvements in this new file** (the `pi` comes from a shortcut name for
-nucleotide diversity in mathematical theory $\pi$).
+**First, save your current script `slendr_statistics.R` as a new script called
+`slendr_Ne_pi.R`. We'll be working on improvements in this new file** (the `pi`
+comes from a shortcut name for nucleotide diversity in mathematical theory
+$\pi$).
 
 ---
 
-**In this script, create a function called `sim_constant`, which will accept a
-single argument `Ne_true`, and will "wrap around" the following bits of code
-(most of which can be copy-pasted from the original `slendr_statistics.R` you
-worked on so far in this chapter, with minor modifications):**
+**In this new script `slendr_Ne_pi.R`, create a new R function called
+`sim_constant`, which will accept a single argument `Ne_true`, and will "wrap
+around" the following bits of code (most of which can be copy-pasted from the
+original `slendr_statistics.R` you worked on so far in this chapter, with minor
+modifications):**
 
 1. **the code implementing our _slendr_ demographic `model`** (substituting the originally fixed `N` value for `Ne_true`, of course),
 
@@ -513,10 +522,11 @@ argument given to your function.**
 **When you're done, all code which was doing the steps above in your original
 script should be entirely replaced by this function.**
 
-**Hint:** If you need help, you can use the following template which shows what
-should your script look like when you're done. Additionally, you can get a
-refresher on programming custom functions by skimming the [relevant
-section](r-bootcamp.html#exercise-10-functions) of the _"R bootcamp"_ chapter.
+**Hint:** If you need help with creating a custom function, you can use the
+following template which shows what should your script look like when you're
+done. Additionally, you can get a refresher on programming custom functions by
+skimming the [relevant section](r-bootcamp.html#exercise-10-functions) of the
+_"R bootcamp"_ chapter.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the template
@@ -621,10 +631,11 @@ under different circumstances, we need to re-run a model many times, usually for
 different model parameters (or even different models entirely).
 
 **Imagine we want to repeat our inference on many different potential values of
-true $N_e$**. What we could do is something like the solution above, running the
-model individually. But this isn't scalable, definitely not if we need to run
-the same model across a huge number of parameter values (or even multiple sets
-of such parameters).
+true $N_e$**. What we could do is something like what you did while testing your
+function earlier, running the variations of the simulation individually and
+manually. But this isn't scalable, definitely not if we need to run the same
+model across a huge number of parameter values (or even multiple sets of such
+parameters).
 
 In cases like this, **we can use a "looping" function, such as the very
 convenient function `map_dfr()` from the package _purrr_**.
@@ -639,10 +650,12 @@ Imagine a silly little function like this, which creates a data frame with a
 given number and its square:
 
 ```{r}
+# define a custom function
 silly_fun <- function(x) {
   return(data.frame(value = x, squared = x * x))
 }
 
+# run it for the value of x = 10
 silly_fun(10)
 ```
 
@@ -653,7 +666,7 @@ can use `map_dfr()` like this:
 ```{r}
 library(purrr)
 
-map_dfr(c(100, 1234, 20000), silly_fun)
+map_dfr(c(10, 100, 1234, 20000), silly_fun)
 ```
 
 The name `map_dfr` stands for _"`map` a given function producing a `d`ata
@@ -662,12 +675,13 @@ its output above, this is exactly what happened.
 
 ---
 
-**In your script `slendr_Ne_pi.R`, program a simulation of $N_e$ inference
-across a grid of `Ne_true` values of `c(1000, 2000, 3000, 4000, 5000, 10000,
-15000, 20000)`. Use the function `map_dfr()` to do this in an efficient,
-automated way, thus obtaining a single data frame. Then, visualize the results
-in this data frame as a scatterplot of columns `Ne_true` against
-`Ne_estimated`.**
+**In your script `slendr_Ne_pi.R`, use the same technique program an automated
+simulation of $N_e$ inference across a grid of `Ne_true` values of `c(1000,
+2000, 3000, 4000, 5000, 10000, 15000, 20000)`. Use the function `map_dfr()` to
+do this in an efficient, automated way, thus obtaining a single data frame.
+Then, visualize the results in this data frame as a scatterplot of columns
+`Ne_true` against `Ne_estimated`.** You can use _ggplot2_, or base-R plotting,
+whatever you find easier.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -717,23 +731,23 @@ but this idea extends to many other settings:
 
 ## Exercise 6: Comparing multiple models
 
-Let's make it a bit more interesting and practically relevant. **Suppose we want
-to see how robust our estimator is to the assumptions behind the underlying
+Let's make it a bit more interesting and more practically relevant. **Suppose we
+want to see how robust our estimator is to the assumptions behind the underlying
 demographic model (which is almost always uncertain to some degree, meaning that
 our assumptions can be also uncertain!).**
 
 In the previous exercise, we used nucleotide diversity to infer the $N_e$ of a
 population under study (we used an equation, but it could be also external
-software) and verified that it works very well for a model of a long-term
-constant population size.
+software) and verified that it works very well for a model of a constant
+population size.
 
-But what about population that experienced a resize event? How well does our
-$N_e$ estimate work in such case?
+But **what about population that experienced a resize event? How well does our
+$N_e$ estimate work in such case?**
 
 ---
 
 **In your script `slendr_Ne_pi.R`, make a copy of your function `sim_constant()`
-and name that copy `sim_resize()`. Make the following changes in this
+and name that copy `sim_resize()`. Make the following changes to this
 function:**
 
 1. **the population "pop" will start with fixed $N_e$ of 5000,**
@@ -922,6 +936,57 @@ dynamics.
 
 As we have seen, a single bottleneck doesn't cause nucleotide diversity to drop
 significantly enough for us to pick up that this bottleneck even happened.
+
+
+
+
+
+
+
+## Exercise 8: Real-world example
+
+To put the simulation-based exploration above in a real-world context, let's
+consider the case of estimating the $N_e$ of a present-day modern human
+population.
+
+**Take a look at the [Supplementary Table
+1](https://www.nature.com/articles/nature18964#Sec10) published in this [hugely
+influential paper](https://www.nature.com/articles/nature18964). Look up the
+value of heterozygosity computed for the individual with the sample ID
+"S_Czech-2" in the column called "samtools autosomal heterozygosity". What is
+the $N_e$ value you can estimate from the heterozygosity observed in this
+individual, if you assume autosomal human mutation rate $\mu$ of $1.3 × 10^{−8}$
+per base pair, per generation (`1.3e-8` in R) and substitute the individual's
+heterozygosity for the $\theta$ parameter?**
+
+**Knowing what you've learned from your simulation benchmarking of this simple
+$N_e$ estimator above, how does your inferred modern human $N_e$ fit in the
+context of the fact that there are more than 8 billion people in the world right
+now?**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+In the Excel sheet we see the following heterozygosity for this individual:
+
+```{r}
+theta <- 0.00085124
+```
+
+Using our $N_e$ equation, this gives us the estimate of $N_e$ like this:
+
+```{r}
+Ne <- theta / (4 * 1.3e-8)
+Ne
+```
+
+We can see that this $N_e$ value is drastically lower compared to the billions
+of people alive today. This reflects the fact that---although there are so many
+of us alive today---human population for most of our history was very small,
+which is why the $N_e$ that we estimated reflects a kind of average of
+population sizes over the past few millions of years.
+
+:::
 
 
 
