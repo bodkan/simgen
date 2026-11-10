@@ -294,12 +294,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./project-structure.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">Robustness of STRUCTURE / ADMIXTURE</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./project-software.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">PCA, LAI, DATES, IBD</span></a>
+  <a href="./project-software.html" class="sidebar-item-text sidebar-link"><span class="chapter-title">PCA, STRUCTURE, LAI, DATES, IBD</span></a>
   </div>
 </li>
       </ul>
@@ -394,12 +389,13 @@ window.Quarto = {
 
 <section id="theme-of-this-chapter" class="level2">
 <h2 class="anchored" data-anchor-id="theme-of-this-chapter">Theme of this chapter</h2>
-<p>In this chapter, we will move from computing “within-group” population genetic statistics to “between-group” statistics. In a couple of practical exercises, we will implement “recipes” showcasing how simulation-based exploration allows us to characterize the expected behavior of statistics of interest under various relevant demographic scenarios to confidently understand their strengths and limitations. In the process, we will re-discover a couple of known features of <span class="math inline">\(F_{ST}\)</span> and <span class="math inline">\(f_3\)</span> statistics highly relevant for practical research.</p>
+<p>In this chapter, we will move from computing “within-group” population genetic statistics to “between-group” statistics. In a couple of practical exercises, we will implement “recipes” showcasing how simulation-based exploration allows us to characterize the expected behavior of statistics of interest under various relevant demographic scenarios to confidently understand their strengths and limitations. In the process, we will (re-)discover a couple of known features of <span class="math inline">\(F_{ST}\)</span> and <span class="math inline">\(f_3\)</span> statistics highly relevant for practical research.</p>
 </section>
 <section id="literature" class="level2">
 <h2 class="anchored" data-anchor-id="literature">Literature</h2>
 <ul>
-<li><a href="https://web.stanford.edu/group/pritchardlab/HGbook/Release-2023-09/HGBook-2023-09-chapters/HGBook-2023-09-23-ch2.4.pdf">Chapter 2.4, <em>“2.4 Genetic drift in structured populations.”</em></a>: As mentioned in the introduction, to do the exercises in this chapter, you don’t have to know more about <span class="math inline">\(F_{ST}\)</span> other than that it’s a frequently useful metric of genetic differentiation between two populations scaled between 0 (no differentiation, i.e.&nbsp;both groups form a single panmictic population) to 1 (complete differentiation without any shared genetic variation betweeen the two groups). Still, if you want to know a bit more about the technical details (and many, many caveats) of <span class="math inline">\(F_{ST}\)</span>, take a look at the linked chapter of the book <em>“An Owner’s Guide to the Human Genome”</em>, specifically section titled <em>“Measuring population structure: FST”</em>.</li>
+<li><p><a href="https://web.stanford.edu/group/pritchardlab/HGbook/Release-2023-09/HGBook-2023-09-chapters/HGBook-2023-09-23-ch2.4.pdf">Chapter 2.4, <em>“2.4 Genetic drift in structured populations.”</em></a>: As mentioned in the introduction, to do the exercises in this chapter, you don’t have to know more about <span class="math inline">\(F_{ST}\)</span> other than that it’s a frequently useful metric of genetic differentiation between two populations scaled between 0 (no differentiation, i.e.&nbsp;both groups form a single panmictic population) to 1 (complete differentiation without any shared genetic variation betweeen the two groups). Still, if you want to know a bit more about the technical details (and many, many caveats) of <span class="math inline">\(F_{ST}\)</span>, take a look at the linked chapter of the book <em>“An Owner’s Guide to the Human Genome”</em>, specifically section titled <em>“Measuring population structure: FST”</em>.</p></li>
+<li><p>If you want to know much more technical background into <span class="math inline">\(f_3\)</span> statistics (introduced in this chapter), and <span class="math inline">\(f_4\)</span> statistics and admixture proportion estimators <span class="math inline">\(f_4\)</span>-ratio (introduced in the following chapter), you can take a look at the following papers: <a href="https://academic.oup.com/genetics/article/202/4/1485/5930214">Peter, 2016</a>, <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1755-0998.13230">Lipson 2020</a>, and <a href="https://academic.oup.com/genetics/article/192/3/1065/5935193">Patterson <em>et al.</em>, 2008</a>.</p></li>
 </ul>
 </section>
 <section id="exercise-1-recap-on-working-with-r-lists-and-nested-vectors" class="level2">
@@ -679,21 +675,21 @@ A).\)</span></p>
 <pre><code># A tibble: 1 × 6
   A        B     C     statistic                f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     f3(outgroup;X,Y) 0.00000791   1000</code></pre>
+1 outgroup X     Y     f3(outgroup;X,Y) 0.00000892   1000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">2000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
   A        B     C     statistic               f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     f3(outgroup;X,Y) 0.0000211   2000</code></pre>
+1 outgroup X     Y     f3(outgroup;X,Y) 0.0000195   2000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
   A        B     C     statistic               f3 tsplit
   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                &lt;dbl&gt;  &lt;dbl&gt;
-1 outgroup X     Y     f3(outgroup;X,Y) 0.0000580   5000</code></pre>
+1 outgroup X     Y     f3(outgroup;X,Y) 0.0000489   5000</code></pre>
 </div>
 </div>
 <p>Now we can run it on a grid of parameter values:</p>
@@ -706,18 +702,18 @@ A).\)</span></p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>f3_outgroup</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 6
-   A        B     C     statistic                 f3 tsplit
-   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt;  &lt;dbl&gt;
- 1 outgroup X     Y     f3(outgroup;X,Y) 0.000000174      1
- 2 outgroup X     Y     f3(outgroup;X,Y) 0.00000891    1001
- 3 outgroup X     Y     f3(outgroup;X,Y) 0.0000181     2001
- 4 outgroup X     Y     f3(outgroup;X,Y) 0.0000324     3001
- 5 outgroup X     Y     f3(outgroup;X,Y) 0.0000418     4001
- 6 outgroup X     Y     f3(outgroup;X,Y) 0.0000494     5001
- 7 outgroup X     Y     f3(outgroup;X,Y) 0.0000589     6001
- 8 outgroup X     Y     f3(outgroup;X,Y) 0.0000666     7001
- 9 outgroup X     Y     f3(outgroup;X,Y) 0.0000750     8001
-10 outgroup X     Y     f3(outgroup;X,Y) 0.0000865     9001</code></pre>
+   A        B     C     statistic                  f3 tsplit
+   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt;  &lt;dbl&gt;
+ 1 outgroup X     Y     f3(outgroup;X,Y) -0.000000140      1
+ 2 outgroup X     Y     f3(outgroup;X,Y)  0.00000982    1001
+ 3 outgroup X     Y     f3(outgroup;X,Y)  0.0000207     2001
+ 4 outgroup X     Y     f3(outgroup;X,Y)  0.0000269     3001
+ 5 outgroup X     Y     f3(outgroup;X,Y)  0.0000378     4001
+ 6 outgroup X     Y     f3(outgroup;X,Y)  0.0000512     5001
+ 7 outgroup X     Y     f3(outgroup;X,Y)  0.0000574     6001
+ 8 outgroup X     Y     f3(outgroup;X,Y)  0.0000709     7001
+ 9 outgroup X     Y     f3(outgroup;X,Y)  0.0000792     8001
+10 outgroup X     Y     f3(outgroup;X,Y)  0.0000878     9001</code></pre>
 </div>
 </div>
 <p>And we can finally visualize our results:</p>
@@ -825,20 +821,20 @@ A).\)</span></p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">100</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  statistic        value tsplit  Ne
-1       Fst 9.333384e-01   3000 100
-2        f3 3.454526e-05   3000 100</code></pre>
+1       Fst 9.263116e-01   3000 100
+2        f3 3.206342e-05   3000 100</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">1000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  statistic        value tsplit   Ne
-1       Fst 4.259367e-01   3000 1000
-2        f3 3.374854e-05   3000 1000</code></pre>
+1       Fst 4.080047e-01   3000 1000
+2        f3 2.556321e-05   3000 1000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_split</span>(<span class="at">tsplit =</span> <span class="dv">3000</span>, <span class="at">Ne =</span> <span class="dv">5000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>  statistic        value tsplit   Ne
-1       Fst 1.070472e-01   3000 5000
-2        f3 2.718704e-05   3000 5000</code></pre>
+1       Fst 9.982746e-02   3000 5000
+2        f3 2.977671e-05   3000 5000</code></pre>
 </div>
 </div>
 </div>
@@ -1148,21 +1144,21 @@ A).\)</span></p>
 <pre><code># A tibble: 1 × 8
   A     B     C     statistic           f3  tmix  prop    Ne
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;            &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     f3(mix;x,y) 0.00000439  2000   0.2 10000</code></pre>
+1 mix   x     y     f3(mix;x,y) 0.00000444  2000   0.2 10000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_admixture</span>(<span class="at">tmix =</span> <span class="dv">1000</span>, <span class="at">prop =</span> <span class="fl">0.1</span>, <span class="at">Ne =</span> <span class="dv">10000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 8
   A     B     C     statistic            f3  tmix  prop    Ne
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;             &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     f3(mix;x,y) -0.00000198  1000   0.1 10000</code></pre>
+1 mix   x     y     f3(mix;x,y) -0.00000119  1000   0.1 10000</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="fu">simulate_admixture</span>(<span class="at">tmix =</span> <span class="dv">1</span>,    <span class="at">prop =</span> <span class="dv">0</span>,   <span class="at">Ne =</span> <span class="dv">3000</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 8
-  A     B     C     statistic             f3  tmix  prop    Ne
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 mix   x     y     f3(mix;x,y) -0.000000222     1     0  3000</code></pre>
+  A     B     C     statistic              f3  tmix  prop    Ne
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;               &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 mix   x     y     f3(mix;x,y) -0.0000000533     1     0  3000</code></pre>
 </div>
 </div>
 </div>
@@ -1193,21 +1189,21 @@ A).\)</span></p>
 <pre><code># A tibble: 15 × 8
    A     B     C     statistic             f3  tmix  prop    Ne
    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
- 1 mix   x     y     f3(mix;x,y) -0.0000165       1   0.2  5000
- 2 mix   x     y     f3(mix;x,y) -0.0000120     101   0.2  5000
- 3 mix   x     y     f3(mix;x,y) -0.0000140     201   0.2  5000
- 4 mix   x     y     f3(mix;x,y) -0.0000129     301   0.2  5000
- 5 mix   x     y     f3(mix;x,y) -0.00000868    401   0.2  5000
- 6 mix   x     y     f3(mix;x,y) -0.00000864    501   0.2  5000
- 7 mix   x     y     f3(mix;x,y) -0.00000638    601   0.2  5000
- 8 mix   x     y     f3(mix;x,y) -0.00000267    701   0.2  5000
- 9 mix   x     y     f3(mix;x,y) -0.00000181    801   0.2  5000
-10 mix   x     y     f3(mix;x,y) -0.00000184    901   0.2  5000
-11 mix   x     y     f3(mix;x,y) -0.00000182   1001   0.2  5000
-12 mix   x     y     f3(mix;x,y)  0.00000132   1101   0.2  5000
-13 mix   x     y     f3(mix;x,y)  0.000000743  1201   0.2  5000
-14 mix   x     y     f3(mix;x,y)  0.00000747   1301   0.2  5000
-15 mix   x     y     f3(mix;x,y)  0.00000436   1401   0.2  5000</code></pre>
+ 1 mix   x     y     f3(mix;x,y) -0.0000116       1   0.2  5000
+ 2 mix   x     y     f3(mix;x,y) -0.0000124     101   0.2  5000
+ 3 mix   x     y     f3(mix;x,y) -0.0000150     201   0.2  5000
+ 4 mix   x     y     f3(mix;x,y) -0.0000117     301   0.2  5000
+ 5 mix   x     y     f3(mix;x,y) -0.00000980    401   0.2  5000
+ 6 mix   x     y     f3(mix;x,y) -0.00000822    501   0.2  5000
+ 7 mix   x     y     f3(mix;x,y) -0.00000595    601   0.2  5000
+ 8 mix   x     y     f3(mix;x,y) -0.00000531    701   0.2  5000
+ 9 mix   x     y     f3(mix;x,y) -0.00000278    801   0.2  5000
+10 mix   x     y     f3(mix;x,y)  0.000000103   901   0.2  5000
+11 mix   x     y     f3(mix;x,y)  0.00000293   1001   0.2  5000
+12 mix   x     y     f3(mix;x,y)  0.00000210   1101   0.2  5000
+13 mix   x     y     f3(mix;x,y)  0.000000993  1201   0.2  5000
+14 mix   x     y     f3(mix;x,y)  0.00000275   1301   0.2  5000
+15 mix   x     y     f3(mix;x,y)  0.00000591   1401   0.2  5000</code></pre>
 </div>
 </div>
 <p>And we visualize the results (<span class="math inline">\(f_3\)</span> as a function of <code>tmix</code>):</p>
