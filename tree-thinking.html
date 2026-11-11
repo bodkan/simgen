@@ -498,7 +498,7 @@ $px
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0001073157</code></pre>
+<pre><code>[1] 0.0001026231</code></pre>
 </div>
 </div>
 <p>Finally, let’s compute <span class="math inline">\(f_3\)</span> using the “official” built-in <em>slendr</em> function:</p>
@@ -509,7 +509,7 @@ $px
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic          f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;           &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 0.000107</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 0.000103</code></pre>
 </div>
 </div>
 <p>You can see that the <code>ts_f3()</code> implementation gives basically the same value as our “homemade” implementation based on a linear combination of <span class="math inline">\(f_2\)</span> statistics, just as predicted by the underlying math!</p>
@@ -542,7 +542,7 @@ $px
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic        f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 10742.</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 10227.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -554,7 +554,7 @@ $px
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 10742.15</code></pre>
+<pre><code>[1] 10227.1</code></pre>
 </div>
 </div>
 <p>We can see that when we specify <code>mode = "branch"</code>, the returned values of <span class="math inline">\(f\)</span> statistics correspond to the <em>real branch lengths</em> in terms of times in generations! To see this, just take a look at your model sketch again, counting how much time there’s between split times. This is quite cool because as we discussed, the mathematical expectation of <span class="math inline">\(f_3\)</span> statistic does, in fact, represent the overlap of paths in a tree going from p1 and p2 to the outgroup p4:</p>
@@ -575,7 +575,7 @@ $px
 </section>
 <section id="exercise-basic-intuition-into-the-f_4-statistic" class="level2">
 <h2 class="anchored" data-anchor-id="exercise-basic-intuition-into-the-f_4-statistic">Exercise: Basic intuition into the <span class="math inline">\(f_4\)</span> statistic</h2>
-<p>Now let’s finally dig into exploring the most critical component of population genetics research (particularly in the context of ancient DNA)—the venerable <span class="math inline">\(f_4\)</span>-statistic, formally established by Nick Patterson and David Reich in 2008.</p>
+<p>Now let’s finally dig into exploring the most critical component of population genetics research (particularly in the context of ancient DNA)—the venerable <span class="math inline">\(f_4\)</span>-statistic, <a href="https://academic.oup.com/genetics/article/192/3/1065/5935193">formally established</a> by Nick Patterson and David Reich in 2012.</p>
 <p>From the <a href="https://academic.oup.com/genetics/article/202/4/1485/5930214">intuitive follow-up paper on <span class="math inline">\(f\)</span>-statistics by Benjamin Peter</a>, we know that (in a very similar way to <span class="math inline">\(f_2\)</span> and <span class="math inline">\(f_3\)</span>) <strong>the <span class="math inline">\(f_4(W, X; Y, Z)\)</span> statistic can be interpreted as the overlap between the paths in a tree connecting the pairs W-X and Y-Z</strong>, as is demonstrated in <a href="https://academic.oup.com/view-large/figure/379128872/1485fig1.jpeg">Figure 1</a> of the linked paper.</p>
 <p>That said, <strong>what value does any given <span class="math inline">\(f_4\)</span> statistic <em>actually</em> gives you depends on the (in practice, hidden) underlying demographic model which determines how populations are related</strong>—this is what we need to infer—<strong>and also what individuals assign into each of the four positions of the <span class="math inline">\(f_4\)</span> “quartet configuration”</strong>.</p>
 <hr>
@@ -597,9 +597,9 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"p1"</span>], <span class="at">X =</span> s[<span class="st">"px"</span>], <span class="at">Y =</span> s[<span class="st">"p3"</span>], <span class="at">Z =</span> s[<span class="st">"p4"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
-  W     X     Y     Z     statistic               f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                &lt;dbl&gt;
-1 p1    px    p3    p4    f4(p1,px;p3,p4) 0.00000106</code></pre>
+  W     X     Y     Z     statistic                f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt;
+1 p1    px    p3    p4    f4(p1,px;p3,p4) 0.000000911</code></pre>
 </div>
 </div>
 <p>The reason we didn’t get <em>exactly</em> zero is stochastic noise of any evolutionary process, which means that that along a genome (even a small one, only 10 Mb of simulated sequence) there are many possible trees. Sometimes, <a href="https://en.wikipedia.org/wiki/Incomplete_lineage_sorting">incomplete lineage sorting</a> will lead to genealogical trees which do not fit the expected “well-behaved” population tree like the one we see when we run <code>plot_model()</code>. We will see examples of this at the end of this chapter.</p>
@@ -657,14 +657,14 @@ $px
 1 p1    px    p3    p4    f4(p1,px;p3,p4)     0</code></pre>
 </div>
 </div>
-<p>Indeed, when we type <code>ts</code> into the R console, we see that it only contains 5 individual trees compared to the previous count of 4559, consistent with an absolutely extreme amounts of genetic drift in your model:</p>
+<p>Indeed, when we type <code>ts</code> into the R console, we see that it only contains 7 individual trees compared to the previous count of 4444, consistent with an absolutely extreme amounts of genetic drift in your model:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │          5║
+║Trees          │          7║
 ╟───────────────┼───────────╢
 ║Sequence Length│ 10,000,000║
 ╟───────────────┼───────────╢
@@ -672,26 +672,26 @@ $px
 ╟───────────────┼───────────╢
 ║Sample Nodes   │         50║
 ╟───────────────┼───────────╢
-║Total Size     │  107.1 KiB║
+║Total Size     │  107.7 KiB║
 ╚═══════════════╧═══════════╝
 ╔═══════════╤═════╤═════════╤════════════╗
 ║Table      │Rows │Size     │Has Metadata║
 ╠═══════════╪═════╪═════════╪════════════╣
-║Edges      │  111│  3.5 KiB│          No║
+║Edges      │  117│  3.7 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Individuals│   25│724 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Migrations │    0│  8 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Mutations  │1,555│ 56.2 KiB│          No║
+║Mutations  │1,561│ 56.4 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Nodes      │  103│  2.8 KiB│          No║
+║Nodes      │  105│  2.9 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Populations│    5│373 Bytes│         Yes║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Provenances│    2│  4.0 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Sites      │1,555│ 38.0 KiB│          No║
+║Sites      │1,561│ 38.1 KiB│          No║
 ╚═══════════╧═════╧═════════╧════════════╝</code></pre>
 </div>
 </div>
@@ -762,18 +762,18 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 7
-   W     X     Y     Z     statistic                 f4   rep
-   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
- 1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000942     1
- 2 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000895     2
- 3 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000496     3
- 4 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000161      4
- 5 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000887     5
- 6 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000144      6
- 7 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000892     7
- 8 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000809     8
- 9 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000582     9
-10 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000792    10</code></pre>
+   W     X     Y     Z     statistic                  f4   rep
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt; &lt;int&gt;
+ 1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000195      1
+ 2 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000204      2
+ 3 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000148      3
+ 4 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000124      4
+ 5 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000478      5
+ 6 p1    px    p3    p4    f4(p1,px;p3,p4)  0.0000000640     6
+ 7 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000587      7
+ 8 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000138       8
+ 9 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000210       9
+10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000184     10</code></pre>
 </div>
 </div>
 <p>This means we can visualize their distribution easily like this, for example:</p>
@@ -838,18 +838,18 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 30 × 7
-   W     X     Y     Z     statistic                f4   rep
-   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt; &lt;int&gt;
- 1 p1    px    p3    p4    f4(p1,px;p3,p4) 0.000000787     1
- 2 p1    p3    px    p4    f4(p1,p3;px,p4) 0.00000958      1
- 3 p1    p4    px    p3    f4(p1,p4;px,p3) 0.00000880      1
- 4 p1    px    p3    p4    f4(p1,px;p3,p4) 0.00000180      2
- 5 p1    p3    px    p4    f4(p1,p3;px,p4) 0.00000893      2
- 6 p1    p4    px    p3    f4(p1,p4;px,p3) 0.00000713      2
- 7 p1    px    p3    p4    f4(p1,px;p3,p4) 0.000000144     3
- 8 p1    p3    px    p4    f4(p1,p3;px,p4) 0.00000781      3
- 9 p1    p4    px    p3    f4(p1,p4;px,p3) 0.00000766      3
-10 p1    px    p3    p4    f4(p1,px;p3,p4) 0.000000199     4
+   W     X     Y     Z     statistic                 f4   rep
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
+ 1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000714     1
+ 2 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000861      1
+ 3 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000932      1
+ 4 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000739     2
+ 5 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000882      2
+ 6 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000809      2
+ 7 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000149     3
+ 8 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000106       3
+ 9 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000108       3
+10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000126      4
 # ℹ 20 more rows</code></pre>
 </div>
 </div>
@@ -1383,7 +1383,7 @@ $px
 <p>We’ve mentioned the concept of “tree sequence” only in passing so far, although they’ve been absolutely central to every single one of our simulations because of that mysterious <code>ts</code> object. However, we’ve been referring to trees, genealogies, population trees, etc. throughout the exercises, particularly in this chapter, although we’ve never actually looked at those underlying trees at all.</p>
 <p>Generally speaking, for most of the practical work, we don’t need to be aware of the underlying tree-sequence data that much, but it’s always a good idea to know what’s going on behind the scenes of the methods that we use, so let’s take a small peek at what actually <em>is</em> hiding behind our familiar <code>ts</code> objects. <strong>This section will be more like a demonstration rather than a “serious exercise”, just in case you’re curious about this topic.</strong></p>
 <hr>
-<p><strong>When you type <code>ts</code> into your R console, you’ll get a summary of the most important characteristics in your data. For instance, consider a small 100 kb tree-sequence simulation like this, and note the number of trees (in this case, 4272), the number of edges, nodes, and mutations:</strong></p>
+<p><strong>When you type <code>ts</code> into your R console, you’ll get a summary of the most important characteristics in your data. For instance, consider a small 100 kb tree-sequence simulation like this, and note the number of trees (in this case, 4255), the number of edges, nodes, and mutations:</strong></p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>schedule <span class="ot">&lt;-</span> <span class="fu">schedule_recording</span>(model, <span class="at">times =</span> <span class="dv">0</span>, <span class="fu">list</span>(<span class="st">"each"</span>, <span class="dv">1</span>))</span>
 <span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -1433,7 +1433,7 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, <span class="at">i =</span> <span class="dv">0</span>)</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>tree</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;tskit.trees.Tree object at 0x1193da690&gt;</code></pre>
+<pre><code>&lt;tskit.trees.Tree object at 0x117339eb0&gt;</code></pre>
 </div>
 </div>
 <hr>
@@ -1560,7 +1560,7 @@ $px
 <section id="bonus-exercise-if-you-want-a-programming-challenge" class="level2">
 <h2 class="anchored" data-anchor-id="bonus-exercise-if-you-want-a-programming-challenge">Bonus exercise (if you want a programming challenge)</h2>
 <p>When playing with <span class="math inline">\(f\)</span>-statistics in this chapter, you’ve probably noticed various symmetries in <span class="math inline">\(f_4\)</span> (but also other <span class="math inline">\(f\)</span>-statistics) depending on the arrangement of their “configuration” (order of populations). As a trivial example, an <span class="math inline">\(f_3(A; B, C)\)</span> and <span class="math inline">\(f_3(A; C, B)\)</span> will give you exactly the same value.</p>
-<p><strong>Try to figure out, how many unique <span class="math inline">\(f_4\)</span> values involving a single quartet (for instance, quartets involving different permutations of p1, p2, p3, and p4 populations) are there. How about how many absolute values? You can answer this either by drawing and doodling on paper, but freel free to also use computer simulations if you’d like! You can program whatever demographic model you’d like—the specifics don’t matter much as long as the model has four populations involved.</strong></p>
+<p><strong>Try to figure out how many unique <span class="math inline">\(f_4\)</span> values involving a single quartet (for instance, quartets involving different permutations of p1, p2, p3, and p4 populations) are there. How about how many absolute values? You could answer this by drawing and doodling on paper, but try to use computer simulations to do this too! You can program whatever demographic model you’d like for this purpose—the specifics don’t matter much as long as the model has some four populations involved.</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -1573,6 +1573,7 @@ $px
 </div>
 <div id="callout-19" class="callout-19-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>Here’s a complete script with comments explaining the most important steps:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
 <span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
@@ -1694,51 +1695,55 @@ $px
 <span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(all_f4, <span class="at">n =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 24 × 6
-   W     X     Y     Z     statistic                      f4
-   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                       &lt;dbl&gt;
- 1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1)  0       
- 2 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0       
- 3 p3_1  p4_1  p1_1  p2_1  f4(p3_1,p4_1;p1_1,p2_1)  0       
- 4 p4_1  p3_1  p1_1  p2_1  f4(p4_1,p3_1;p1_1,p2_1)  0       
- 5 p4_1  p3_1  p2_1  p1_1  f4(p4_1,p3_1;p2_1,p1_1)  0       
- 6 p3_1  p4_1  p2_1  p1_1  f4(p3_1,p4_1;p2_1,p1_1)  0       
- 7 p2_1  p1_1  p4_1  p3_1  f4(p2_1,p1_1;p4_1,p3_1)  0       
- 8 p2_1  p1_1  p3_1  p4_1  f4(p2_1,p1_1;p3_1,p4_1)  0       
- 9 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.000026
-10 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.000026
-11 p4_1  p1_1  p3_1  p2_1  f4(p4_1,p1_1;p3_1,p2_1)  0.000026
-12 p1_1  p4_1  p3_1  p2_1  f4(p1_1,p4_1;p3_1,p2_1) -0.000026
-13 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.000026
-14 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.000026
-15 p3_1  p1_1  p2_1  p4_1  f4(p3_1,p1_1;p2_1,p4_1) -0.000026
-16 p3_1  p1_1  p4_1  p2_1  f4(p3_1,p1_1;p4_1,p2_1)  0.000026
-17 p3_1  p2_1  p4_1  p1_1  f4(p3_1,p2_1;p4_1,p1_1)  0.000026
-18 p3_1  p2_1  p1_1  p4_1  f4(p3_1,p2_1;p1_1,p4_1) -0.000026
-19 p2_1  p3_1  p1_1  p4_1  f4(p2_1,p3_1;p1_1,p4_1)  0.000026
-20 p2_1  p3_1  p4_1  p1_1  f4(p2_1,p3_1;p4_1,p1_1) -0.000026
-21 p2_1  p4_1  p3_1  p1_1  f4(p2_1,p4_1;p3_1,p1_1) -0.000026
-22 p4_1  p2_1  p3_1  p1_1  f4(p4_1,p2_1;p3_1,p1_1)  0.000026
-23 p4_1  p2_1  p1_1  p3_1  f4(p4_1,p2_1;p1_1,p3_1) -0.000026
-24 p2_1  p4_1  p1_1  p3_1  f4(p2_1,p4_1;p1_1,p3_1)  0.000026</code></pre>
+   W     X     Y     Z     statistic                       f4
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;
+ 1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1)  0.0000005
+ 2 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1) -0.0000005
+ 3 p3_1  p4_1  p1_1  p2_1  f4(p3_1,p4_1;p1_1,p2_1)  0.0000005
+ 4 p4_1  p3_1  p1_1  p2_1  f4(p4_1,p3_1;p1_1,p2_1) -0.0000005
+ 5 p4_1  p3_1  p2_1  p1_1  f4(p4_1,p3_1;p2_1,p1_1)  0.0000005
+ 6 p3_1  p4_1  p2_1  p1_1  f4(p3_1,p4_1;p2_1,p1_1) -0.0000005
+ 7 p2_1  p1_1  p4_1  p3_1  f4(p2_1,p1_1;p4_1,p3_1)  0.0000005
+ 8 p2_1  p1_1  p3_1  p4_1  f4(p2_1,p1_1;p3_1,p4_1) -0.0000005
+ 9 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.0000115
+10 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.0000115
+11 p4_1  p1_1  p3_1  p2_1  f4(p4_1,p1_1;p3_1,p2_1)  0.0000115
+12 p1_1  p4_1  p3_1  p2_1  f4(p1_1,p4_1;p3_1,p2_1) -0.0000115
+13 p3_1  p2_1  p4_1  p1_1  f4(p3_1,p2_1;p4_1,p1_1)  0.0000115
+14 p3_1  p2_1  p1_1  p4_1  f4(p3_1,p2_1;p1_1,p4_1) -0.0000115
+15 p2_1  p3_1  p1_1  p4_1  f4(p2_1,p3_1;p1_1,p4_1)  0.0000115
+16 p2_1  p3_1  p4_1  p1_1  f4(p2_1,p3_1;p4_1,p1_1) -0.0000115
+17 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.000012 
+18 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.000012 
+19 p3_1  p1_1  p2_1  p4_1  f4(p3_1,p1_1;p2_1,p4_1) -0.000012 
+20 p3_1  p1_1  p4_1  p2_1  f4(p3_1,p1_1;p4_1,p2_1)  0.000012 
+21 p2_1  p4_1  p3_1  p1_1  f4(p2_1,p4_1;p3_1,p1_1) -0.000012 
+22 p4_1  p2_1  p3_1  p1_1  f4(p4_1,p2_1;p3_1,p1_1)  0.000012 
+23 p4_1  p2_1  p1_1  p3_1  f4(p4_1,p2_1;p1_1,p3_1) -0.000012 
+24 p2_1  p4_1  p1_1  p3_1  f4(p2_1,p4_1;p1_1,p3_1)  0.000012 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># narrow down the results to only unique f4 values</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4, f4, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 6
-  W     X     Y     Z     statistic                      f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                       &lt;dbl&gt;
-1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1)  0       
-2 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.000026
-3 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.000026</code></pre>
+<pre><code># A tibble: 6 × 6
+  W     X     Y     Z     statistic                       f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;
+1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1)  0.0000005
+2 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1) -0.0000005
+3 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.0000115
+4 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.0000115
+5 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.000012 
+6 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.000012 </code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># narrow down the results to only unique absolute f4 values</span></span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4, <span class="fu">abs</span>(f4), <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 7
-  W     X     Y     Z     statistic                     f4 `abs(f4)`
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                      &lt;dbl&gt;     &lt;dbl&gt;
-1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) 0         0       
-2 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1) 0.000026  0.000026</code></pre>
+<pre><code># A tibble: 3 × 7
+  W     X     Y     Z     statistic                       f4 `abs(f4)`
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;     &lt;dbl&gt;
+1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1)  0.0000005 0.0000005
+2 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.0000115 0.0000115
+3 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.000012  0.000012 </code></pre>
 </div>
 </div>
 </div>
