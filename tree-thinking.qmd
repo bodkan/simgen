@@ -1412,3 +1412,84 @@ population genetic statistics do for us in understanding the hidden truth behind
 real-world evolutionary processes---they do this by aggregating massive amounts
 of convoluted data resulting from these genealogical processes, and help us
 extract and see meaningful patterns in them.
+
+
+
+
+
+
+
+
+
+## Bonus exercise (if you want a programming challenge)
+
+
+When playing with $f$-statistics in this chapter, you've probably noticed
+various symmetries in $f_4$ (but also other $f$-statistics) depending on the
+arrangement of their "configuration" (order of populations). As a trivial
+example, an $f_3(A; B, C)$ and $f_3(A; C, B)$ will give you exactly the same
+value.
+
+**Try to figure out, how many unique $f_4$ values involving a single quartet
+(our p1, p2, p3, and p4 populations) are there. How about how many absolute
+values? You can answer this either by drawing and doodling on paper, but freel
+free to also use computer simulations if you'd like! You can program whatever
+demographic model you'd like---the specifics don't matter much as long as the
+model has four populations involved.**
+
+::: {.callout-note collapse="true" icon=false}
+### Click to see the solution
+
+```{r}
+#| message: false
+library(purrr)
+library(dplyr)
+
+library(slendr)
+init_env()
+
+p4 <- population("p4", time = 20000, N = 1000)
+p3 <- population("p3", time = 6000, N = 1000, parent = p4)
+p2 <- population("p2", time = 2000, N = 1000, parent = p3)
+p1 <- population("p1", time = 1000, N = 1000, parent = p2)
+
+model <- compile_model(populations = list(p1, p2, p3, p4), generation_time = 1)
+
+ts <-
+  msprime(model, sequence_length = 1e6, recombination_rate = 1e-8) %>%
+  ts_mutate(mutation_rate = 1e-8)
+
+# install a combinatorics R package:
+# install.packages("combinat")
+library(combinat)
+
+# these are the four samples we can create quartet combinations from:
+quartet <- c("p1_1", "p2_1", "p3_1", "p4_1")
+
+# this is how we can generate all permutations:
+quartets <- permn(quartet)
+quartets
+
+# how many permutations there are in total?
+#   4! = 4 * 3 * 2 * 1 = 24
+factorial(4)
+
+# we should therefore have 24 different quartet combinations of samples
+length(quartets)
+
+# loop across all quartets, computing the corresponding f4 statistic
+all_f4 <-
+  map_dfr(quartets, function(q) ts_f4(ts, q[1], q[2], q[3], q[4])) %>%
+  arrange(abs(f4))
+
+# print all f4 values
+print(all_f4, n = Inf)
+
+# narrow down the results to only unique f4 values
+distinct(all_f4, f4, .keep_all = TRUE)
+
+# narrow down the results to only unique absolute f4 values
+distinct(all_f4, abs(f4), .keep_all = TRUE)
+```
+
+:::
