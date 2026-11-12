@@ -988,8 +988,8 @@ population split of `px` from `p2`.
 
 ---
 
-**Now that we've established the two possible paths from `px` to `p2` in our
-population tree, what would be the interpretation of $f_4(p1,p4;px,p2)$ at any
+**Now that we've established that there are two possible paths from `px` to `p2`
+in our admixture model, what is the interpretation of $f_4(p1,p4;px,p2)$ at any
 given locus of the genome? What would be the possible values of this $f_4$ in
 this situation? Again, try to use pen and paper to figure it out based on the
 knowledge of $f_4$ as a measures of internal branches in a tree.**
@@ -1081,7 +1081,8 @@ the known value of 20% of admixture?**
 
 **If you want an extra challenge, it turns out there are multiple variations of
 how the ancestry proportion can be estimated. Try to find them, add them to your
-`ts_replicate()` code and compare them to one another!**
+`ts_replicate()` code and compare them to one another by visualizing their
+distributions across all replicates.**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -1169,8 +1170,8 @@ proof-of-principle, and increasing number of applications include them for
 benchmarking and validation of results. Now you know how to do these things as
 well!
 
-If you want to check in with the state of the final `f_admixture.R` script,
-you can find it below.
+If you want to see the state of the final `f_admixture.R` script, you can find
+it below.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the entire script
@@ -1262,27 +1263,21 @@ p_panels
 
 ## Exercise: What are tree sequences?
 
-We've mentioned the concept of "tree sequence" only in passing so far, although
-they've been absolutely central to every single one of our simulations because
-of that mysterious `ts` object. However, we've been referring to trees,
-genealogies, population trees, etc. throughout the exercises, particularly in
-this chapter, although we've never actually looked at those underlying trees at
-all.
-
-Generally speaking, for most of the practical work, we don't need to be aware of
-the underlying tree-sequence data that much, but it's always a good idea to know
-what's going on behind the scenes of the methods that we use, so let's take a
-small peek at what actually _is_ hiding behind our familiar `ts` objects. **This
+We've mentioned the concept of a "tree sequence" many times but until this
+chapter, we haven't considered tree-thinking very explicitly. Indeed, for most
+of our daily practical work, we don't need to be aware of the underlying
+tree-sequence data that much, but it's always a good idea to know what's going
+on behind the scenes of the methods that we use. Let's take a small peek at what
+actually _is_ hiding behind our familiar `ts` objects in practice. **This
 section will be more like a demonstration rather than a "serious exercise", just
 in case you're curious about this topic.**
-
 
 ---
 
 **When you type `ts` into your R console, you'll get a summary of the most
-important characteristics in your data. For instance, consider a small 100 kb
-tree-sequence simulation like this, and note the number of trees (in this case,
-`{r} ts$num_trees`), the number of edges, nodes, and mutations:**
+important characteristics in your data. For instance, consider a small 1 Mb
+tree-sequence simulation like this, and note the number of trees, the number of
+edges, nodes, and mutations:**
 
 ```{r}
 schedule <- schedule_recording(model, times = 0, list("each", 1))
@@ -1307,7 +1302,8 @@ if (!file.exists("files/introgression/example.trees")) {
 `ts_tree()`.** (Note that because _slendr_ ties into the Python module _tskit_
 behind the scenes, indexing into the tree sequence starts at 0.) **This doesn't
 give us much information  though---it's just an opaque object in computer
-memory, but we don't see anything interesting:**
+memory, but we don't see anything interesting when we type the `tree` variable
+into the R console:**
 
 ```{r}
 tree <- ts_tree(ts, i = 0)
@@ -1317,11 +1313,11 @@ tree
 ---
 
 **We can use the built-in _slendr_ helper function `ts_draw()` to visualize
-these tree objects. For instance, here's how we can visualize the 0-th (i.e.,
-the first) tree in our small tree sequence. Note that by setting `labels =
-TRUE`, we can see individuals' names at the tips of the tree (which are normally
-only assigned numerical identifiers), as well as the fact that each individual
-is represented by two tips (one for each of its chromosome).**
+these tree objects. For instance, here's how we can visualize the 0<sup>th</sup>
+(i.e., the first) tree in our small tree sequence. Note that by setting `labels
+= TRUE`, we can see individuals' names at the leaves of the tree, as well as the
+fact that each individual is represented by two leaves (one for each of its two
+chromosomes).**
 
 ```{r}
 ts_draw(tree, labels = TRUE, width = 1000, height = 500, title = paste("Tree #", tree$index))
@@ -1329,8 +1325,8 @@ ts_draw(tree, labels = TRUE, width = 1000, height = 500, title = paste("Tree #",
 
 ---
 
-**Take a few minutes visualizing different trees, perhaps starting from 0-th and
-going forward, until you get bored!**
+**Take a few minutes visualizing different trees, perhaps starting from
+0<sup>th</sup> and going forward, until you get bored!**
 
 1. **As you do this, notice that "neighboring" trees tend to be quite similar (why do you think this is?).**
 
@@ -1339,11 +1335,11 @@ model?**
 
 3. **How about trees which clearly "contradict" this model? Can you find any?**
 
-4. **How about a tree which would show evidence of the gene flow from `p3`
-to `px` we programmed in our model? Can you find one?**
+4. **How about a tree which would show evidence of gene flow from `p3` to `px`
+we programmed in our model? Can you find one?**
 
-5. **You might encounter red cross signs plotted on the trees---what do you
-think these represent?**
+5. **You might encounter red cross signs plotted on the trees---what do they
+represent?**
 
 **The outcome of an evolutionary simulation is completely random, so don't get
 too frustrated if you don't find lots of meaningful information while doing
@@ -1351,8 +1347,9 @@ this.** At the very least, when you explore the trees along the tree sequence,
 even for a small section of a genome like 1 Mb in this case, it makes you
 appreciate just how complex real-world evolutionary processes are.
 
-**If you want to explore the exact same tree-sequence that I had, you can load
-it with the following commands and use it instead of your simulated data:**
+**If you want to explore the exact same tree-sequence that I had, you can
+download it with the following commands and use it instead of your simulated
+`ts` object:**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to read my own tree sequence `ts` instead
@@ -1417,7 +1414,7 @@ Oh, and the red crosses represent mutations!
 I hope that this little exercise illustrates nicely just how much work
 population genetic statistics do for us in understanding the hidden truth behind
 real-world evolutionary processes---they do this by aggregating massive amounts
-of convoluted data resulting from these genealogical processes, and help us
+of convoluted genealogical data resulting from these processes, and help us
 extract and see meaningful patterns in them.
 
 
