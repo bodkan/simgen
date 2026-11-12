@@ -26,19 +26,19 @@ component of population genomics research.
 
 ## Literature
 
-- If you want to know much more technical background into $f_3$ statistics
-(introduced in this chapter), and $f_4$ statistics and admixture proportion
-estimators $f_4$-ratio (introduced in the following chapter), you can take a
-look at the following papers: [Peter,
+- If you want to know much more about the technical background of $f_3$ and
+$f_4$ statistics and admixture proportion estimators like $f_4$-ratio, you can
+take a look at the following papers: [Peter,
 2016](https://academic.oup.com/genetics/article/202/4/1485/5930214), [Lipson
 2020](https://onlinelibrary.wiley.com/doi/abs/10.1111/1755-0998.13230), and
 [Patterson _et al._,
 2008](https://academic.oup.com/genetics/article/192/3/1065/5935193).
 
-- There are a number of software tools that can compute $f_3$ statistics on real
-data. If you'd like to compare simulated $f$ statistics to empirical results,
-take a look at [ADMIXTOOLS 2](https://uqrmaie1.github.io/admixtools/index.html)
-or my own R package [_admixr_](https://bodkan.net/admixr).
+- There are a number of software tools that can compute various $f$ statistics
+on real data. If you'd like to compare simulated $f$ statistics to empirical
+results, take a look at [ADMIXTOOLS
+2](https://uqrmaie1.github.io/admixtools/index.html) or my own R package
+[_admixr_](https://bodkan.net/admixr).
 
 
 
@@ -95,7 +95,7 @@ plot_model(model, schedule = schedule)
 
 We know from [the paper describing the theory of
 $f$-statistics](https://academic.oup.com/genetics/article/202/4/1485/5930214)
-that:
+and from our brief introduction that:
 
 1. **$f_2(A, B)$ statistic measures the branch length between A and B (two
 individuals, two groups of individuals, two populations, etc.)**, and similarly
@@ -110,11 +110,13 @@ internal most recent common ancestor node of A and B with the lineage C**,
 linked paper.)
 
 Another thing established in the paper is the fact that **any $f$-statistic can
-be expressed as a linear combination of multiple $f_2$ statistics**. If you're
-not familiar with linear algebra, this might sound a bit obscure, but the idea
-is simple. More concretely, **for instance, equation (20b) in the same paper
-states the following, which decomposes an $f_3$ statistic into a composite of
-simpler $f_2$ statistics** (this is what "linear combination" basically is):
+be expressed as a linear combination of multiple $f_2$ statistics. In other
+words, you can "build" them by adding or subtracting multiple individual $f_2$
+branch lengths**. If you're not familiar with linear algebra, this might sound a
+bit obscure, but the idea is simple. More concretely, **for instance, equation
+(20b) in the same paper states the following, which decomposes an $f_3$
+statistic into a composite of simpler $f_2$ statistics** (this is what "linear
+combination" basically is):
 
 $$f_3(A; B, C) = \frac{1}{2} (f_2(A, C) + f_2(A, B) - f_2(B, C))$$
 
@@ -122,25 +124,27 @@ $$f_3(A; B, C) = \frac{1}{2} (f_2(A, C) + f_2(A, B) - f_2(B, C))$$
 
 **Draw a sketch of the population model (of populations p1, p2, p3, etc.) on a
 piece of paper, then trace by hand the paths indicated by the three $f_2$
-statistics in this equation on that drawning (again, knowing that $f_2(A, B)$
-describes the branch between some two nodes $A$ and $B$. When you "add" and
-"subtract" paths based on the equation (graphically by hand!), do you arrive at
-the definition of "outgroup" $f_3$ as branch length from A and B towards the
-outgroup, as we described it in point 2. above?**
-
+statistics in this equation on that sketch. When you "add" and "subtract" paths
+based on the equation (graphically by hand!), do you arrive at the definition of
+"outgroup" $f_3$ as branch length from A and B towards the outgroup, as we
+described it in point 2. above?**
 
 ---
 
 When I was writing this chapter, I made a mistake in the equation above, which I
-discovered after I wrote a quick simulation to double-check that the equation is
-correct. Let's retrace my steps here because it shows why even very quick
-simulations can be really useful (almost like a "popgen calculator"!).
+discovered only after I wrote a quick simulation to double-check that the
+equation is correct. Let's retrace my steps here because it shows why even very
+quick simulations can be really useful (almost like a "popgen calculator"!).
 
 **Let's move to R. Use the function `ts_f2()` to implement this equation in
 code, computing a "homemade" $f_3(A = p4; B = p1, C = p2)$ statistic which you
 just solved on paper, and compare it to the result you get if you run the
 computation using the `ts_f3()` function by _slendr_. Do you get the same result
 using both methods, and therefore verifying that the equation is correct?**
+
+**Hint:** You can either refer to entire populations in the `ts_f2()` like you
+did until now, or you can also use as A, B, and C single individuals (i.e.,
+"pop4_1", "pop1_1", etc.).
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -173,8 +177,8 @@ simulated_f3
 ```
 
 You can see that the `ts_f3()` implementation gives basically the same value as
-our "homemade" implementation based on a linear combination of $f_2$
-statistics, just as predicted by the underlying math!
+our "homemade" implementation based on a linear combination of $f_2$ statistics,
+just as predicted by the underlying mathematical equation!
 
 :::
 
@@ -204,11 +208,12 @@ mathematically the same result in terms of theoretical statistical expectations
 **Repeat the previous exercise, but this time specify `mode = "branch"` in all
 your `ts_f3()` and `ts_f2()` commands.** I suggest that you make a copy of your
 `ts_f3()` and `ts_f2()`-based code in your `f_null.R` script and and modify the
-copies for easier comparison. **What numbers do you get compared to the results
-of the previous exercise in terms of their scale? Can you relate those values to
-what your population tree model visualization indicates (in terms of branch
-lenghts)? Look at your sketch with pen and paper again if this helps in putting
-your results in clearer context (particularly with regards to split times).**
+copies for easier comparison of the results. **What numbers do you get compared
+to the results of the previous exercise in terms of their scale? Can you relate
+those values to what your population tree model visualization indicates (in
+terms of branch lenghts)? Look at your sketch with pen and paper again if this
+helps in putting your results in clearer context (particularly with regards to
+split times).**
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
@@ -250,8 +255,8 @@ Hopefully, you can now appreciate that there's nothing magical about $f$
 statistics. Even though their practical interpretation can get sometimes
 complicated, internally they _always_ boil down to tracing paths through
 population trees in order to obtain statistical expectations of allele frequency
-correlations between lineages under study, easily visualized by tracing paths
-through population trees.
+correlations between lineages under study (interpreted as branch lengths),
+easily visualized by tracing paths through population trees.
 
 In a way, setting `mode = "branch"` can be understood as instructing _slendr_ to
 compute the results --- in this case, of the $f_3$ statistic --- in "real time
@@ -295,9 +300,9 @@ also what individuals assign into each of the four positions of the $f_4$
 programmed in your script `f_null.R` and the interpretation of the $f_4$
 statistic, what is the expected value of $f_4(p1, px; p3, p4)$ for this model?
 Try to answer by taking a look at the sketch of your model and tracing the path
-overlaps between p1-px and p3-p4 pairs, then compute the statistic on a `ts`
-simulated data with the `ts_f4()` function to verify your intuition. Does your
-simulation give you the _exact_ result you might expect based on the
+overlaps between `p1`-`px` and `p3`-`p4` pairs, then compute the statistic on a
+`ts` simulated data with the `ts_f4()` function to verify your intuition. Does
+your simulation give you the _exact_ result you might expect based on the
 visualization of the model alone? If it doesn't give you the _exact_ expected
 result, why could this be?**
 
@@ -338,7 +343,7 @@ your 10 Mb tree-sequence.**
 
 **Now, restart your R session (`Session -> Restart R`). Then, temporarily change
 the `N` of all populations in your model to 1 and re-run your script to get a
-new `ts` and compute the same $f_4$ statistic again. $N_e$ of one implies a
+new `ts` and compute the same $f_4$ statistic again. $N_e = 1$ implies a
 ludicrously high amount of drift, which should eliminate ILS completely, giving
 us $f_4$ close to its mathematical expectation of zero. Is this true in your new
 simulation? And how many trees does your tree sequence have with this high
@@ -438,7 +443,8 @@ s <- ts_names(ts, split = TRUE)
 ## Exercise: Reducing stochastic noise via simulation replicates
 
 **First, set the `N` sizes of your populations in your model from 1 back to
-1000, then re-run your script to make sure the original `model` is compiled.**
+1000, then re-run your script to make sure the original `model` is compiled
+(ideally by restarting R again).**
 
 As a means to tame the stochasticity and help meaningful statistical patterns
 stand out, I recently implemented a new _slendr_ function `ts_replicates()`,
@@ -464,7 +470,7 @@ replicate simulations of the $f_4$ statistic above** (the one which should give
 us exactly zero value, but didn't), **saving the result to variable `df`. What
 format does the result have? When you visualize the distribution of $f_4$ values
 across all 10 replicates, are they more interpretable in terms of the
-statistical expectation for this particular $f_4$ quartet?**
+statistical expectation for this particular $f_4$ "quartet"?**
 
 ::: aside
 
@@ -541,13 +547,17 @@ Of course, $f_4(p1, px; p3, p4)$ is only one possible "quartet configuration".
 **Expand your 10 replicates simulation $f_4(p1, px; p3, p4)$ by adding the
 computation of $f_4(p1, p3; px, p4)$ and $f_4(p1, p4; px, p3)$ in the same `{
 ... }` block provided to `ts_replicate()` (making sure you `rbind()` all three
-data resulting frames together at the end).**
+data resulting frames together at the end of the `{ ... }` block).**
 
-**How would you compare the interpretation of the three $f_4$ statistics? Again,
-use sketching of paths on a population tree on paper to try to figure it out
-first based on the definition of what $f_4$ between the given two pairs of
-lineages indicate, then compare your understanding to what you see when you
-visualize the distributions of those three statistics.**
+**How would you compare the interpretation of the three $f_4$ statistics against
+one another? Again, use sketching of paths on a population tree on paper to try
+to figure it out first based on the definition of what $f_4$ between the given
+two pairs of lineages indicate, then compare your understanding to what you see
+when you visualize the distributions of those three statistics.**
+
+**Hint:** This requires some _ggplot2_ visualization knowledge. Feel free to
+take a peek at my solution to learn how to plot the results, or just my own
+visualization for interpreting the differences between the three statistics.
 
 ::: {.callout-note collapse="true" icon=false}
 ### Click to see the solution
