@@ -499,7 +499,7 @@ $px
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.0001030728</code></pre>
+<pre><code>[1] 0.0001060048</code></pre>
 </div>
 </div>
 <p>Finally, let’s compute <span class="math inline">\(f_3\)</span> using the “official” built-in <em>slendr</em> function:</p>
@@ -510,7 +510,7 @@ $px
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic          f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;           &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 0.000103</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 0.000106</code></pre>
 </div>
 </div>
 <p>You can see that the <code>ts_f3()</code> implementation gives basically the same value as our “homemade” implementation based on a linear combination of <span class="math inline">\(f_2\)</span> statistics, just as predicted by the underlying mathematical equation!</p>
@@ -523,7 +523,7 @@ $px
 <p>Do you recall how I told you that you don’t have to add mutations to your tree sequence <code>ts</code>, and still be able to compute population genetic statistics? But that you can safely add them with <code>ts_mutate()</code> anyway?</p>
 <p>The reason this works is because some very smart people figured out a mathematical <a href="https://academic.oup.com/genetics/article/215/3/779/5930459">duality between mutation-based and branch-based statistics</a>—it actually doesn’t matter which way we compute our statistics, they give mathematically the same result in terms of theoretical statistical expectations (i.e., expectations of what happen in real data).</p>
 <hr>
-<p><strong>Repeat the previous exercise, but this time specify <code>mode = "branch"</code> in all your <code>ts_f3()</code> and <code>ts_f2()</code> commands.</strong> I suggest that you make a copy of your <code>ts_f3()</code> and <code>ts_f2()</code>-based code in your <code>f_null.R</code> script and and modify the copies for easier comparison of the results. <strong>What numbers do you get compared to the results of the previous exercise in terms of their scale? Can you relate those values to what your population tree model visualization indicates (in terms of branch lenghts)? Look at your sketch with pen and paper again if this helps in putting your results in clearer context (particularly with regards to split times).</strong></p>
+<p><strong>Repeat the previous exercise, but this time specify <code>mode = "branch"</code> in all your <code>ts_f3()</code> and <code>ts_f2()</code> commands.</strong> I suggest that you make a copy of your <code>ts_f3()</code> and <code>ts_f2()</code>-based code in your <code>f_null.R</code> script and and modify the copies for easier comparison of the results. <strong>What numbers do you get compared to the results of the previous exercise in terms of their scale? Can you relate those values to what your population tree model visualization indicates (in terms of branch lengths)? Look at your sketch with pen and paper again if this helps in putting your results in clearer context (particularly with regards to split times).</strong></p>
 <div class="callout callout-style-default callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -543,7 +543,7 @@ $px
 <pre><code># A tibble: 1 × 5
   A     B     C     statistic        f3
   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt;
-1 p4    p1    p2    f3(p4;p1,p2) 10297.</code></pre>
+1 p4    p1    p2    f3(p4;p1,p2) 10646.</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -555,7 +555,7 @@ $px
 <span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>homemade_f3</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 10297.13</code></pre>
+<pre><code>[1] 10645.62</code></pre>
 </div>
 </div>
 <p>We can see that when we specify <code>mode = "branch"</code>, the returned values of <span class="math inline">\(f\)</span> statistics correspond to the <em>real branch lengths</em> in terms of times in generations! To see this, just take a look at your model sketch again, counting how much time there’s between split times. This is quite cool because as we discussed, the mathematical expectation of <span class="math inline">\(f_3\)</span> statistic does, in fact, represent the overlap of paths in a tree going from p1 and p2 to the outgroup p4:</p>
@@ -598,9 +598,9 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_f4</span>(ts, <span class="at">W =</span> s[<span class="st">"p1"</span>], <span class="at">X =</span> s[<span class="st">"px"</span>], <span class="at">Y =</span> s[<span class="st">"p3"</span>], <span class="at">Z =</span> s[<span class="st">"p4"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 6
-  W     X     Y     Z     statistic                 f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt;
-1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000986</code></pre>
+  W     X     Y     Z     statistic                f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                 &lt;dbl&gt;
+1 p1    px    p3    p4    f4(p1,px;p3,p4) 0.000000439</code></pre>
 </div>
 </div>
 <p>The reason we didn’t get <em>exactly</em> zero is stochastic noise of any evolutionary process, which means that along a genome (even a small one, only 10 Mb of simulated sequence) there are many possible trees. Sometimes, <a href="https://en.wikipedia.org/wiki/Incomplete_lineage_sorting">incomplete lineage sorting</a> will lead to genealogical trees which do not fit the expected “well-behaved” population tree like the one we see when we run <code>plot_model()</code>. We will see examples of this at the end of this chapter.</p>
@@ -661,14 +661,14 @@ $px
 1 p1    px    p3    p4    f4(p1,px;p3,p4)     0</code></pre>
 </div>
 </div>
-<p>Indeed, when we type <code>ts</code> into the R console, we see that it only contains 7 individual trees compared to the previous count of 4355, consistent with an absolutely extreme amounts of genetic drift in your model:</p>
+<p>Indeed, when we type <code>ts</code> into the R console, we see that it only contains 5 individual trees compared to the previous count of 4247, consistent with an absolutely extreme amounts of genetic drift in your model:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ts</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>╔═══════════════════════════╗
 ║TreeSequence               ║
 ╠═══════════════╤═══════════╣
-║Trees          │          7║
+║Trees          │          5║
 ╟───────────────┼───────────╢
 ║Sequence Length│ 10,000,000║
 ╟───────────────┼───────────╢
@@ -676,26 +676,26 @@ $px
 ╟───────────────┼───────────╢
 ║Sample Nodes   │         50║
 ╟───────────────┼───────────╢
-║Total Size     │  105.4 KiB║
+║Total Size     │  106.5 KiB║
 ╚═══════════════╧═══════════╝
 ╔═══════════╤═════╤═════════╤════════════╗
 ║Table      │Rows │Size     │Has Metadata║
 ╠═══════════╪═════╪═════════╪════════════╣
-║Edges      │  119│  3.7 KiB│          No║
+║Edges      │  111│  3.5 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Individuals│   25│724 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Migrations │    0│  8 Bytes│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Mutations  │1,521│ 55.0 KiB│          No║
+║Mutations  │1,546│ 55.9 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Nodes      │  105│  2.9 KiB│          No║
+║Nodes      │  103│  2.8 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Populations│    5│373 Bytes│         Yes║
 ╟───────────┼─────┼─────────┼────────────╢
 ║Provenances│    2│  4.0 KiB│          No║
 ╟───────────┼─────┼─────────┼────────────╢
-║Sites      │1,521│ 37.1 KiB│          No║
+║Sites      │1,546│ 37.8 KiB│          No║
 ╚═══════════╧═════╧═════════╧════════════╝</code></pre>
 </div>
 </div>
@@ -766,18 +766,18 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>df</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 10 × 7
-   W     X     Y     Z     statistic                  f4   rep
-   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt; &lt;int&gt;
- 1 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000167      1
- 2 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000312       2
- 3 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000395      3
- 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000121       4
- 5 p1    px    p3    p4    f4(p1,px;p3,p4)  0.0000000340     5
- 6 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000181       6
- 7 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000894      7
- 8 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000963      8
- 9 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000274      9
-10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000571     10</code></pre>
+   W     X     Y     Z     statistic             f4   rep
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;              &lt;dbl&gt; &lt;int&gt;
+ 1 p1    px    p3    p4    f4(p1,px;p3,p4)  3.45e-7     1
+ 2 p1    px    p3    p4    f4(p1,px;p3,p4)  1.97e-6     2
+ 3 p1    px    p3    p4    f4(p1,px;p3,p4) -5.84e-7     3
+ 4 p1    px    p3    p4    f4(p1,px;p3,p4) -7.46e-7     4
+ 5 p1    px    p3    p4    f4(p1,px;p3,p4)  9.2 e-7     5
+ 6 p1    px    p3    p4    f4(p1,px;p3,p4)  1.41e-6     6
+ 7 p1    px    p3    p4    f4(p1,px;p3,p4)  6.00e-9     7
+ 8 p1    px    p3    p4    f4(p1,px;p3,p4) -1.93e-7     8
+ 9 p1    px    p3    p4    f4(p1,px;p3,p4)  4.35e-7     9
+10 p1    px    p3    p4    f4(p1,px;p3,p4) -2.47e-7    10</code></pre>
 </div>
 </div>
 <p>This means we can visualize their distribution easily like this, for example:</p>
@@ -845,16 +845,16 @@ $px
 <pre><code># A tibble: 30 × 7
    W     X     Y     Z     statistic                 f4   rep
    &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                  &lt;dbl&gt; &lt;int&gt;
- 1 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000703     1
- 2 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000102       1
- 3 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000109       1
- 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000032      2
- 5 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000115       2
- 6 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000118       2
- 7 p1    px    p3    p4    f4(p1,px;p3,p4)  0.00000136      3
- 8 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000946      3
- 9 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000810      3
-10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.00000136      4
+ 1 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000047     1
+ 2 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000124       1
+ 3 p1    p4    px    p3    f4(p1,p4;px,p3)  0.0000124       1
+ 4 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000309     2
+ 5 p1    p3    px    p4    f4(p1,p3;px,p4)  0.00000564      2
+ 6 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000595      2
+ 7 p1    px    p3    p4    f4(p1,px;p3,p4)  0.000000385     3
+ 8 p1    p3    px    p4    f4(p1,p3;px,p4)  0.0000103       3
+ 9 p1    p4    px    p3    f4(p1,p4;px,p3)  0.00000995      3
+10 p1    px    p3    p4    f4(p1,px;p3,p4) -0.000000942     4
 # ℹ 20 more rows</code></pre>
 </div>
 </div>
@@ -1029,7 +1029,7 @@ $px
 </div>
 <div id="callout-9" class="callout-9-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Here’s the final visualization of the three <span class="math inline">\(f_3\)</span> statistics for easier reference as you work on the following exercise.</p>
+<p>Here’s the final visualization of the three <span class="math inline">\(f_4\)</span> statistics for easier reference as you work on the following exercise.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -1188,12 +1188,9 @@ $px
 <li><p>the other one gives the internal branch length (and happens in <span class="math inline">\(\alpha\)</span> proportion of cases).</p></li>
 </ul>
 <p>We can then use this fact to expand the ratio given in the equation above like this (using the fact that the red-highlighted branch length is zero, leaving the rest of the fraction to cancel each other):</p>
-<p><span class="math display">\[
-\frac{f_4(p1,p4;px,p2)}{f_4(p1,p4;p3,p2)} =
-\frac{(1 - \alpha) f_4(p1,p4;p2,p2) + \alpha f_4(p1,p4;p3,p2)}{f_4(p1,p4;p3,p2)} =
-\frac{\textcolor{red}{\cancelto{0}{(1-\alpha)f_4(p1,p4;p2,p2)}} + \alpha \cancel{f_4(p1,p4;p3,p2)}}{\cancel{f_4(p1,p4;p3,p2)}} =
-\alpha
-\]</span></p>
+<p>$$ = </p>
+<p> = </p>
+<p> = $$</p>
 <p>And hurray, just like this, we invented the famous <span class="math inline">\(f_4\)</span>-ratio estimator for ancestry proportion!</p>
 </div>
 </div>
@@ -1250,24 +1247,23 @@ $px
 <span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">proportion =</span> <span class="fu">c</span>(<span class="st">"variant1"</span>, <span class="st">"variant2"</span>, <span class="st">"variant3 (weird one?)"</span>),</span>
 <span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="fu">c</span>(prop1, prop2, prop3)</span>
 <span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>  },</span>
-<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a>  <span class="at">parallel =</span> parallel<span class="sc">::</span><span class="fu">detectCores</span>() <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>p_model <span class="ot">&lt;-</span> <span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>p_f4ratios <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(props, <span class="fu">aes</span>(value, <span class="at">color =</span> proportion)) <span class="sc">+</span></span>
-<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
-<span id="cb31-38"><a href="#cb31-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb31-39"><a href="#cb31-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb31-40"><a href="#cb31-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Simulation-based validation of f4-ratio ancestry estimates"</span>,</span>
-<span id="cb31-41"><a href="#cb31-41" aria-hidden="true" tabindex="-1"></a>         <span class="at">subtitle =</span> <span class="st">"(three different variations of f4-ratios are shown)"</span>,</span>
-<span id="cb31-42"><a href="#cb31-42" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> <span class="st">"ancestry proportion"</span>) <span class="sc">+</span></span>
-<span id="cb31-43"><a href="#cb31-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
-<span id="cb31-44"><a href="#cb31-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-45"><a href="#cb31-45" aria-hidden="true" tabindex="-1"></a>p_ratios <span class="ot">&lt;-</span> <span class="fu">plot_grid</span>(p_model, p_f4ratios, <span class="at">nrow =</span> <span class="dv">2</span>)</span>
-<span id="cb31-46"><a href="#cb31-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-47"><a href="#cb31-47" aria-hidden="true" tabindex="-1"></a>p_ratios</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a>p_model <span class="ot">&lt;-</span> <span class="fu">plot_model</span>(model, <span class="at">proportions =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a>p_f4ratios <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(props, <span class="fu">aes</span>(value, <span class="at">color =</span> proportion)) <span class="sc">+</span></span>
+<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.8</span>), <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb31-38"><a href="#cb31-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_cartesian</span>(<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb31-39"><a href="#cb31-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Simulation-based validation of f4-ratio ancestry estimates"</span>,</span>
+<span id="cb31-40"><a href="#cb31-40" aria-hidden="true" tabindex="-1"></a>         <span class="at">subtitle =</span> <span class="st">"(three different variations of f4-ratios are shown)"</span>,</span>
+<span id="cb31-41"><a href="#cb31-41" aria-hidden="true" tabindex="-1"></a>         <span class="at">x =</span> <span class="st">"ancestry proportion"</span>) <span class="sc">+</span></span>
+<span id="cb31-42"><a href="#cb31-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span>
+<span id="cb31-43"><a href="#cb31-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-44"><a href="#cb31-44" aria-hidden="true" tabindex="-1"></a>p_ratios <span class="ot">&lt;-</span> <span class="fu">plot_grid</span>(p_model, p_f4ratios, <span class="at">nrow =</span> <span class="dv">2</span>)</span>
+<span id="cb31-45"><a href="#cb31-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-46"><a href="#cb31-46" aria-hidden="true" tabindex="-1"></a>p_ratios</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -1436,7 +1432,7 @@ $px
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>tree <span class="ot">&lt;-</span> <span class="fu">ts_tree</span>(ts, <span class="at">i =</span> <span class="dv">0</span>)</span>
 <span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>tree</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>&lt;tskit.trees.Tree object at 0x11ae02270&gt;</code></pre>
+<pre><code>&lt;tskit.trees.Tree object at 0x11b1589b0&gt;</code></pre>
 </div>
 </div>
 <hr>
@@ -1698,55 +1694,55 @@ $px
 <span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(all_f4, <span class="at">n =</span> <span class="cn">Inf</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 24 × 6
-   W     X     Y     Z     statistic                       f4
-   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;
- 1 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.0000075
- 2 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.0000075
- 3 p3_1  p1_1  p2_1  p4_1  f4(p3_1,p1_1;p2_1,p4_1) -0.0000075
- 4 p3_1  p1_1  p4_1  p2_1  f4(p3_1,p1_1;p4_1,p2_1)  0.0000075
- 5 p2_1  p4_1  p3_1  p1_1  f4(p2_1,p4_1;p3_1,p1_1) -0.0000075
- 6 p4_1  p2_1  p3_1  p1_1  f4(p4_1,p2_1;p3_1,p1_1)  0.0000075
- 7 p4_1  p2_1  p1_1  p3_1  f4(p4_1,p2_1;p1_1,p3_1) -0.0000075
- 8 p2_1  p4_1  p1_1  p3_1  f4(p2_1,p4_1;p1_1,p3_1)  0.0000075
- 9 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.0000125
-10 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0.0000125
-11 p3_1  p4_1  p1_1  p2_1  f4(p3_1,p4_1;p1_1,p2_1) -0.0000125
-12 p4_1  p3_1  p1_1  p2_1  f4(p4_1,p3_1;p1_1,p2_1)  0.0000125
-13 p4_1  p3_1  p2_1  p1_1  f4(p4_1,p3_1;p2_1,p1_1) -0.0000125
-14 p3_1  p4_1  p2_1  p1_1  f4(p3_1,p4_1;p2_1,p1_1)  0.0000125
-15 p2_1  p1_1  p4_1  p3_1  f4(p2_1,p1_1;p4_1,p3_1) -0.0000125
-16 p2_1  p1_1  p3_1  p4_1  f4(p2_1,p1_1;p3_1,p4_1)  0.0000125
-17 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.00002  
-18 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.00002  
-19 p4_1  p1_1  p3_1  p2_1  f4(p4_1,p1_1;p3_1,p2_1)  0.00002  
-20 p1_1  p4_1  p3_1  p2_1  f4(p1_1,p4_1;p3_1,p2_1) -0.00002  
-21 p3_1  p2_1  p4_1  p1_1  f4(p3_1,p2_1;p4_1,p1_1)  0.00002  
-22 p3_1  p2_1  p1_1  p4_1  f4(p3_1,p2_1;p1_1,p4_1) -0.00002  
-23 p2_1  p3_1  p1_1  p4_1  f4(p2_1,p3_1;p1_1,p4_1)  0.00002  
-24 p2_1  p3_1  p4_1  p1_1  f4(p2_1,p3_1;p4_1,p1_1) -0.00002  </code></pre>
+   W     X     Y     Z     statistic                        f4
+   &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                         &lt;dbl&gt;
+ 1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.000004  
+ 2 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0.000004  
+ 3 p3_1  p4_1  p1_1  p2_1  f4(p3_1,p4_1;p1_1,p2_1) -0.000004  
+ 4 p4_1  p3_1  p1_1  p2_1  f4(p4_1,p3_1;p1_1,p2_1)  0.000004  
+ 5 p4_1  p3_1  p2_1  p1_1  f4(p4_1,p3_1;p2_1,p1_1) -0.000004  
+ 6 p3_1  p4_1  p2_1  p1_1  f4(p3_1,p4_1;p2_1,p1_1)  0.000004  
+ 7 p2_1  p1_1  p4_1  p3_1  f4(p2_1,p1_1;p4_1,p3_1) -0.000004  
+ 8 p2_1  p1_1  p3_1  p4_1  f4(p2_1,p1_1;p3_1,p4_1)  0.000004  
+ 9 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.00000575
+10 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.00000575
+11 p3_1  p1_1  p2_1  p4_1  f4(p3_1,p1_1;p2_1,p4_1) -0.00000575
+12 p3_1  p1_1  p4_1  p2_1  f4(p3_1,p1_1;p4_1,p2_1)  0.00000575
+13 p2_1  p4_1  p3_1  p1_1  f4(p2_1,p4_1;p3_1,p1_1) -0.00000575
+14 p4_1  p2_1  p3_1  p1_1  f4(p4_1,p2_1;p3_1,p1_1)  0.00000575
+15 p4_1  p2_1  p1_1  p3_1  f4(p4_1,p2_1;p1_1,p3_1) -0.00000575
+16 p2_1  p4_1  p1_1  p3_1  f4(p2_1,p4_1;p1_1,p3_1)  0.00000575
+17 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.00000975
+18 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.00000975
+19 p4_1  p1_1  p3_1  p2_1  f4(p4_1,p1_1;p3_1,p2_1)  0.00000975
+20 p1_1  p4_1  p3_1  p2_1  f4(p1_1,p4_1;p3_1,p2_1) -0.00000975
+21 p3_1  p2_1  p4_1  p1_1  f4(p3_1,p2_1;p4_1,p1_1)  0.00000975
+22 p3_1  p2_1  p1_1  p4_1  f4(p3_1,p2_1;p1_1,p4_1) -0.00000975
+23 p2_1  p3_1  p1_1  p4_1  f4(p2_1,p3_1;p1_1,p4_1)  0.00000975
+24 p2_1  p3_1  p4_1  p1_1  f4(p2_1,p3_1;p4_1,p1_1) -0.00000975</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="co"># narrow down the results to only unique f4 values</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4, f4, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 6
-  W     X     Y     Z     statistic                       f4
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;
-1 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.0000075
-2 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.0000075
-3 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.0000125
-4 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0.0000125
-5 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.00002  
-6 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.00002  </code></pre>
+  W     X     Y     Z     statistic                        f4
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                         &lt;dbl&gt;
+1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.000004  
+2 p1_1  p2_1  p4_1  p3_1  f4(p1_1,p2_1;p4_1,p3_1)  0.000004  
+3 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.00000575
+4 p1_1  p3_1  p2_1  p4_1  f4(p1_1,p3_1;p2_1,p4_1)  0.00000575
+5 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.00000975
+6 p4_1  p1_1  p2_1  p3_1  f4(p4_1,p1_1;p2_1,p3_1) -0.00000975</code></pre>
 </div>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="co"># narrow down the results to only unique absolute f4 values</span></span>
 <span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(all_f4, <span class="fu">abs</span>(f4), <span class="at">.keep_all =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 3 × 7
-  W     X     Y     Z     statistic                       f4 `abs(f4)`
-  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                        &lt;dbl&gt;     &lt;dbl&gt;
-1 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.0000075 0.0000075
-2 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.0000125 0.0000125
-3 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.00002   0.00002  </code></pre>
+  W     X     Y     Z     statistic                        f4  `abs(f4)`
+  &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;                         &lt;dbl&gt;      &lt;dbl&gt;
+1 p1_1  p2_1  p3_1  p4_1  f4(p1_1,p2_1;p3_1,p4_1) -0.000004   0.000004  
+2 p1_1  p3_1  p4_1  p2_1  f4(p1_1,p3_1;p4_1,p2_1) -0.00000575 0.00000575
+3 p1_1  p4_1  p2_1  p3_1  f4(p1_1,p4_1;p2_1,p3_1)  0.00000975 0.00000975</code></pre>
 </div>
 </div>
 </div>
