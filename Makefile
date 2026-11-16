@@ -23,7 +23,7 @@ handout_%.qmd: slides_%.qmd
 	grep -v '### slides' $< | sed 's/^### handout //g' > $@
 
 clean:
-	rm -rf *_files *.rmarkdown site_libs *.html *.md slides/*.html slides/*_files
+	rm -rf _book/ *_files *.rmarkdown site_libs *.html *.md slides/*.html slides/*_files
 
 on:
 	mv _quarto.yml _quarto.yml_
